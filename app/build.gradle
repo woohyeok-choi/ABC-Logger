@@ -1,0 +1,173 @@
+apply plugin: 'com.google.protobuf'
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'io.objectbox'
+apply plugin: 'io.fabric'
+apply plugin: 'com.google.gms.google-services'
+
+android {
+    packagingOptions {
+        exclude 'META-INF/proguard/androidx-annotations.pro'
+    }
+    signingConfigs {
+        iclab_abc {
+            keyAlias 'abc'
+            keyPassword 'iclabsystem12!@'
+            //storeFile file('D:\\Workspace\\Projects\\key-store\\abc-iclab-kaist-key-store.jks')
+            //storePassword 'iclabsystem12!@'
+        }
+    }
+    dexOptions {
+        maxProcessCount 6
+        javaMaxHeapSize "2g"
+    }
+    compileSdkVersion 29
+    defaultConfig {
+        applicationId 'kaist.iclab.abclogger'
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 42
+        versionName "2.1.5.3"
+        setProperty('archivesBaseName', applicationId + "-v" + versionName)
+
+        // buildConfigField("String", "SERVER_ADDRESS", "\"abc.kaist.ac.kr:50051\"")
+        resValue("string", "version_name", "$versionName")
+        resValue("bool", "is_debug_mode", "false")
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //proguardFile '/Users/CubePenguin/Dropbox/ICLAB/1803 SuggestBot/ABC-Platform-for-Android-master/app/proguard-rules.pro'
+            signingConfig signingConfigs.iclab_abc
+        }
+        debug {
+        }
+    }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
+        main.proto.srcDirs += '../../../protos'
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+    buildToolsVersion = '29.0.2'
+    productFlavors {
+    }
+}
+
+
+dependencies {
+
+    //implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    /**
+     * Kotlin
+     */
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.61"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.61"
+
+    //testImplementation "org.jetbrains.kotlin:kotlin-test:${kotlinVersion}"
+    //testImplementation "org.jetbrains.kotlin:kotlin-test-junit:${kotlinVersion}"
+
+    /**
+     * Koin for dependency injection
+     */
+    implementation "org.koin:koin-core:2.0.1"
+    implementation "org.koin:koin-android:2.0.1"
+
+
+    /**
+     * Firebase
+     */
+    implementation "com.google.firebase:firebase-auth:19.2.0"
+    implementation "com.google.firebase:firebase-core:17.2.1"
+    implementation "com.google.firebase:firebase-firestore:21.3.1"
+    implementation "com.crashlytics.sdk.android:crashlytics:2.10.1"
+
+    /**
+     * Support libraries
+     */
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.media:media:1.1.0'
+    implementation 'androidx.fragment:fragment:1.1.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.preference:preference:1.1.0'
+
+    /**
+     * Lifecycle and Workmanager
+     */
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    implementation 'androidx.paging:paging-runtime:2.1.0'
+    implementation 'androidx.work:work-runtime:2.2.0'
+
+    /**
+     * Google GMS libraries
+     */
+    implementation "com.google.android.gms:play-services-location:17.0.0"
+    implementation "com.google.android.gms:play-services-fitness:18.0.0"
+    implementation "com.google.android.gms:play-services-auth:17.0.0"
+
+    /**
+     * GRPC
+     */
+    implementation 'io.grpc:grpc-okhttp:1.25.0'
+    implementation 'io.grpc:grpc-protobuf-lite:1.25.0'
+    implementation 'io.grpc:grpc-stub:1.25.0'
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+
+    /**
+     * Others
+     */
+    implementation 'com.beust:klaxon:3.0.1'
+    implementation "br.com.simplepass:loading-button-android:1.14.0"
+    implementation "gun0912.ted:tedpermission:2.2.0"
+    implementation 'com.github.AgustaRC.koap:koap:1.0.1'
+
+    /**
+     * DatabaseHelper
+     * https://github.com/Madrapps/AsyncQuery
+     */
+    implementation 'com.github.madrapps:asyncquery:1.0.1'
+
+    //ok
+    implementation "io.objectbox:objectbox-kotlin:2.0.0"
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.6.0"
+    }
+
+    plugins {
+        javalite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+        }
+
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.13.1"
+        }
+
+    }
+
+    generateProtoTasks {
+        all().each { task ->
+            task.plugins {
+                javalite {}
+                grpc {
+                    option 'lite'
+                }
+            }
+        }
+    }
+}

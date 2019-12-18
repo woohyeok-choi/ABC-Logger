@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/edtName"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/editTextMarginVertical"
+        android:layout_marginEnd="@dimen/itemSpaceHorizontal"
+        android:layout_marginStart="@dimen/itemSpaceHorizontal"
+        android:layout_marginTop="@dimen/editTextMarginVertical"
+        android:transitionGroup="true"
+        app:errorEnabled="false">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_name"
+            android:inputType="text"
+            android:textSize="@dimen/txtSizeTitle" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/edtPhoneNumber"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/editTextMarginVertical"
+        android:layout_marginEnd="@dimen/itemSpaceHorizontal"
+        android:layout_marginStart="@dimen/itemSpaceHorizontal"
+        android:layout_marginTop="@dimen/editTextMarginVertical"
+        android:transitionGroup="true"
+        app:errorEnabled="false">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_phone_number"
+            android:inputType="phone"
+            android:textSize="@dimen/txtSizeTitle" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/edtAffiliation"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/editTextMarginVertical"
+        android:layout_marginEnd="@dimen/itemSpaceHorizontal"
+        android:layout_marginStart="@dimen/itemSpaceHorizontal"
+        android:layout_marginTop="@dimen/editTextMarginVertical"
+        app:errorEnabled="false">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_affiliation"
+            android:inputType="text"
+            android:textSize="@dimen/txtSizeTitle" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/editTextMarginVertical"
+        android:layout_marginEnd="@dimen/itemSpaceHorizontal"
+        android:layout_marginStart="@dimen/itemSpaceHorizontal"
+        android:layout_marginTop="@dimen/editTextMarginVertical"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/Widget.AppCompat.EditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="@string/label_gender"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/txtSizeTitle" />
+
+        <Button
+            style="@android:style/Widget.Holo.Light.Spinner"
+            android:theme="@android:style/Theme.Holo.Light"
+            android:id="@+id/btnGender"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/label_touch_to_set"
+            android:textColor="@color/colorDisabled"
+            android:textSize="@dimen/txtSizeTitle"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/editTextMarginVertical"
+        android:layout_marginEnd="@dimen/itemSpaceHorizontal"
+        android:layout_marginStart="@dimen/itemSpaceHorizontal"
+        android:layout_marginTop="@dimen/editTextMarginVertical"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/Widget.AppCompat.EditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="@string/label_birth_date"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/txtSizeTitle" />
+
+        <Button
+            style="@android:style/Widget.Holo.Light.Spinner"
+            android:theme="@android:style/Theme.Holo.Light"
+            android:id="@+id/btnBirthDate"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/label_touch_to_set"
+            android:textColor="@color/colorDisabled"
+            android:textSize="@dimen/txtSizeTitle"/>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<accessibility-service
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowContentChanged|typeWindowStateChanged|typeWindowsChanged|typeViewTextChanged|typeViewTextSelectionChanged|typeViewClicked|typeViewFocused"
+    android:accessibilityFlags="flagDefault|flagReportViewIds|flagRetrieveInteractiveWindows|flagIncludeNotImportantViews|flagRequestAccessibilityButton"
+    android:accessibilityFeedbackType="feedbackAllMask"
+    android:notificationTimeout="0"
+    android:canRetrieveWindowContent="true"
+    android:canControlMagnification="true"
+    android:canRequestTouchExplorationMode="true"
+    android:canRequestEnhancedWebAccessibility="true"
+    android:canRequestFilterKeyEvents="true"
+    android:canPerformGestures="true"
+    android:canRequestFingerprintGestures="true"
+    android:description="@string/app_name" />
+
+    <!--android:accessibilityEventTypes="typeWindowStateChanged|typeViewTextChanged|typeViewTextSelectionChanged|typeViewAccessibilityFocused|typeContextClicked" -->
+    <!--android:accessibilityFlags="flagDefault|flagReportViewIds|flagRetrieveInteractiveWindows|flagIncludeNotImportantViews|flagRequestAccessibilityButton" -->

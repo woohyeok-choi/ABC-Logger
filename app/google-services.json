@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "900633385805",
+    "firebase_url": "https://abc-platform-for-android.firebaseio.com",
+    "project_id": "abc-platform-for-android",
+    "storage_bucket": "abc-platform-for-android.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900633385805:android:f67ed422a5d662a4",
+        "android_client_info": {
+          "package_name": "kaist.iclab.abclogger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "900633385805-31mk5trrf83s2r8u8mirq3cj8kcc36t9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqo1L1Ysw1Es5ove6rsAoTvK3nWH_tqp4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

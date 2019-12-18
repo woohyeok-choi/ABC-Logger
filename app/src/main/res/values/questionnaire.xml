@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="esm">{
+  \"title\": \"감정 설문 시간입니다.\",
+  \"message\": \"설문에 응답해주세요.\",
+  \"instruction\": \"알림 도착 시간 이후 10분 이내의 상황을 기준으로 아래에 응답해주세요.\",
+  \"policy\": {
+    \"initialDelay\": {
+      \"value\": 10,
+      \"unit\": \"MINUTES\"
+    },
+    \"daysOfWeek\": [
+      \"MONDAY\",
+      \"TUESDAY\",
+      \"WEDNESDAY\",
+      \"THURSDAY\",
+      \"FRIDAY\",
+      \"SATURDAY\",
+      \"SUNDAY\"
+    ],
+    \"dailySurveyTime\": {
+      \"from\": {
+        \"hour\": 10,
+        \"minute\": 0
+      },
+      \"to\": {
+        \"hour\": 22,
+        \"minute\": 00
+      }
+    },
+    \"minInterval\": {
+      \"value\": 40,
+      \"unit\": \"MINUTES\"
+    },
+    \"flexInterval\": {
+      \"value\": 20,
+      \"unit\": \"MINUTES\"
+    },
+    \"triggerEvents\": [\"NONE\"],
+    \"cancelEvents\": [\"NONE\"],
+    \"timeout\": {
+      \"value\": 5,
+      \"unit\": \"MINUTES\"
+    },
+    \"timeoutPolicyType\": \"DISABLED\"
+  },
+  \"questions\": [
+    {
+      \"type\": \"LIKERT\",
+      \"shouldAnswers\": true,
+      \"text\": \"My emotion right before doing this survey was (-3: Very negative ~ +3: Very positive)\",
+      \"options\": [
+        \"-3\", \"-2\", \"-1\", \"0\", \"1\", \"2\", \"3\"
+      ]
+    },
+    {
+      \"type\": \"LIKERT\",
+      \"shouldAnswers\": true,
+      \"text\": \"My emotion right before doing this survey was (-3: Very calm ~ +3: Very excited)\",
+      \"options\": [
+        \"-3\", \"-2\", \"-1\", \"0\", \"1\", \"2\", \"3\"
+      ]
+    },
+    {
+      \"type\": \"LIKERT\",
+      \"shouldAnswers\": true,
+      \"text\": \"My stress level right before doing this survey could be rated as (-3: Not stressed at all ~ +3: Very stressed)\",
+      \"options\": [
+        \"-3\", \"-2\", \"-1\", \"0\", \"1\", \"2\", \"3\"
+      ]
+    },
+    {
+      \"type\": \"LIKERT\",
+      \"shouldAnswers\": true,
+      \"text\": \"The emotion that I answered with above has not changed for the past ___ minutes.\",
+      \"options\": [
+        \"0\", \"5\", \"10\", \"15\", \"20\", \"25\", \"30\", \"35\", \"40\", \"45\", \"50\", \"55\", \"60\", \"I\'m not sure\"
+      ]
+    },
+    {
+      \"type\": \"LIKERT\",
+      \"shouldAnswers\": true,
+      \"text\": \"My attention level right before doing this survey could be rated as (-3: Very bored ~ +3: Very engaged)\",
+      \"options\": [
+        \"-3\", \"-2\", \"-1\", \"0\", \"1\", \"2\", \"3\"
+      ]
+    },
+    {
+      \"type\": \"LIKERT\",
+      \"shouldAnswers\": true,
+      \"text\": \"Did answering this survey disturb the activity that I was performing before doing it? (-3: Did not disturb me at all ~ +3: It was very disturbing)\",
+      \"options\": [
+        \"-3\", \"-2\", \"-1\", \"0\", \"1\", \"2\", \"3\"
+      ]
+    },
+    {
+      \"type\": \"LIKERT\",
+      \"shouldAnswers\": true,
+      \"text\": \"How mentally demanding was my activity before doing this survey? (-3: Very low ~ +3: Very high)\",
+      \"options\": [
+        \"-3\", \"-2\", \"-1\", \"0\", \"1\", \"2\", \"3\"
+      ]
+    },
+    {
+      \"type\": \"LIKERT\",
+      \"shouldAnswers\": true,
+      \"text\": \"How have your emotions changed while you\'ve been answering this survey? (-3: I\'ve felt more negative ~ +3: I\'ve felt more positive)\",
+      \"options\": [
+        \"-3\", \"-2\", \"-1\", \"0\", \"1\", \"2\", \"3\"
+      ]
+    }
+  ]
+}
+</string>
+</resources>

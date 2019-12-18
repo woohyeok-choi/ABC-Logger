@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/containerPaddingVertical"
+        android:gravity="center_horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/itemSpaceVertical">
+
+            <Switch
+                android:id="@+id/switchGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="SuggestBot?" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/edtEmail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/editTextMarginVertical"
+                android:layout_marginTop="@dimen/editTextMarginVertical"
+                android:layout_marginStart="@dimen/itemSpaceHorizontal"
+                android:layout_marginEnd="@dimen/itemSpaceHorizontal"
+                android:transitionGroup="true"
+                app:errorEnabled="false">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="@string/label_email"
+                    android:inputType="textEmailAddress" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/edtPassword"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/editTextMarginVertical"
+                android:layout_marginTop="@dimen/editTextMarginVertical"
+                android:layout_marginStart="@dimen/itemSpaceHorizontal"
+                android:layout_marginEnd="@dimen/itemSpaceHorizontal"
+                android:transitionGroup="true"
+                app:errorEnabled="false"
+                app:passwordToggleEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/txtSizeTitle"
+                    android:hint="@string/label_password"
+                    android:inputType="textPassword" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+        <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
+            android:id="@+id/btnSignUp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/btnSpaceBottom"
+            android:layout_marginTop="@dimen/btnSpaceTop"
+            android:layout_marginStart="@dimen/itemSpaceHorizontal"
+            android:layout_marginEnd="@dimen/itemSpaceHorizontal"
+            android:background="@color/colorButton"
+            android:scaleType="fitCenter"
+            android:text="@string/btn_sign_up"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/txtSizeTitle"
+            android:theme="@style/AppTheme"
+            app:spinning_bar_color="@android:color/white"
+            app:spinning_bar_padding="@dimen/circularBarPadding" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

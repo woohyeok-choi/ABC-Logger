@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/btnEventEnterStill"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Trigger: ENTER_STILL" />
+
+    <Button
+        android:id="@+id/btnEventExitStill"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Trigger: EXIT_STILL" />
+
+    <Button
+        android:id="@+id/btnEventEnterVehicle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Trigger: ENTER_VEHICLE" />
+
+    <Button
+        android:id="@+id/btnEventExitVehicle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Trigger: EXIT_VEHICLE" />
+
+    <Button
+        android:id="@+id/btnEventCombination1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Trigger: EXIT_WALKING and ENTER_STILL" />
+
+    <Button
+        android:id="@+id/btnEventCombination2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Trigger: ENTER_WALKING and EXIT_STILL" />
+</LinearLayout>

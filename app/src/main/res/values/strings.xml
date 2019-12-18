@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="noti_title_service_running">@string/app_name</string>
+    <string name="noti_text_service_running">Experiment in progress&#8230;</string>
+    <string name="noti_title_survey_check">Not Responded Surveys</string>
+    <string name="noti_text_survey_check"> survey(s) remain(s) not responded. </string>
+    <string name="noti_title_sync">Sync</string>
+    <string name="noti_text_sync">Sync in progress&#8230;</string>
+    <string name="noti_text_sync_complete">Sync complete!</string>
+    <string name="noti_text_sync_failed">Sync failed</string>
+    <string name="general_experiment_open">Recruiting</string>
+    <string name="general_experiment_close">Close</string>
+    <string name="general_no_permissions">No granted permissions</string>
+    <string name="general_permission_denied">Denied</string>
+    <string name="general_permission_granted">Granted</string>
+    <string name="general_dot" translatable="false">&#8226;</string>
+    <string name="general_daily">Daily</string>
+    <string name="general_undefined">Undefined</string>
+    <string name="general_contains_weekend">incl. weekend</string>
+    <string name="general_not_contains_weekend">excl. weekend</string>
+    <string name="general_people"> people</string>
+    <string name="general_open">Open</string>
+    <string name="general_close">Close</string>
+    <string name="general_empty_email">Unknown user</string>
+    <string name="general_empty_sync_time">Not yet sync</string>
+    <string name="general_or">Or</string>
+    <string name="general_loading">Loading&#8230;</string>
+    <string name="general_gender_male">Male</string>
+    <string name="general_gender_female">Female</string>
+    <string name="general_survey_included">Survey included</string>
+    <string name="general_survey_excluded">No survey</string>
+
+    <string name="general_no_participated_experiment">Not participated in experiment</string>
+    <string name="general_participating_in_experiment">Participating in experiment&#8230;</string>
+    <string name="general_sync_in_progress">Sync in progress&#8230;</string>
+
+    <string name="label_last_sync_time">Last sync time</string>
+    <string name="label_free_text">Freely type it.</string>
+    <string name="label_email">Email</string>
+    <string name="label_password">Password</string>
+    <string name="label_gender">Gender</string>
+    <string name="label_birth_date">Birth date</string>
+    <string name="label_phone_number">Phone number</string>
+    <string name="label_affiliation">Affiliation</string>
+    <string name="label_name">Name</string>
+    <string name="label_new_password">New password</string>
+    <string name="label_email_registered">Email registered</string>
+    <string name="label_experiment_group">Experiment group</string>
+    <string name="label_survey_link">Survey link</string>
+    <string name="label_touch_to_set">Touch to set</string>
+
+    <string name="btn_sign_up">Sign up</string>
+    <string name="btn_sign_in">Sign in</string>
+    <string name="btn_forget_password">Forgot password?</string>
+    <string name="btn_create_account">No account yet? Create one!</string>
+    <string name="btn_password_reset">Reset Password</string>
+    <string name="btn_change_password">Change Password</string>
+    <string name="btn_respond">Respond</string>
+    <string name="btn_error_already_respond">Already Responded</string>
+    <string name="btn_error_expired_survey">Expired Survey</string>
+    <string name="btn_participate">Request for participation</string>
+    <string name="btn_experiment_save_and_next">Save and Go to Next Step</string>
+    <string name="btn_survey_preview">Preview</string>
+    <string name="btn_start_to_participate">Start Experiment</string>
+    <string name="btn_dropout_experiment">Dropout</string>
+    <string name="btn_set_permission">Setup</string>
+
+    <string name="label_start_time">From</string>
+    <string name="label_end_time">To</string>
+    <string name="label_survey_instruction">* means you should answer it</string>
+    <string name="label_survey_preview">Preview</string>
+    <string name="label_participation_info">Participation Info.</string>
+    <string name="label_has_survey">Survey</string>
+
+    <string name="label_enter_subject_info">(Step 1) Please enter your information.</string>
+    <string name="label_enter_survey_check">(Step 2) Please enter your experimental group and survey info.</string>
+    <string name="label_enter_data_provided">(Step 3) Please set and check data you will provide.</string>
+    <string name="label_experiment_description">Description</string>
+    <string name="label_experiment_contact">Experimenter Contact</string>
+
+    <string name="label_current_experiment">Current experiment</string>
+    <string name="label_data_provided">Data Provided</string>
+    <string name="label_permission">App Permission</string>
+    <string name="label_data_required">Data Required</string>
+    <string name="label_optional_info">Optional Info.</string>
+
+    <string name="dialog_title_survey_respond">Respond to Survey</string>
+    <string name="dialog_message_survey_respond">Cannot modify responses after you save it. Do you want to save it now?</string>
+    <string name="dialog_title_dropout">Experiment Dropout</string>
+    <string name="dialog_message_dropout">Do you want to really drop out of this experiment?</string>
+    <string name="dialog_title_already_sign_in">Already Signed In</string>
+
+
+    <string name="format_hour">hour(s)</string>
+    <string name="format_day">day(s)</string>
+    <string name="format_week">week(s)</string>
+    <string name="format_month">month(s)</string>
+    <string name="format_year">year(s)</string>
+
+    <string name="edt_error_email_invalid">Invalid email address</string>
+    <string name="edt_error_password_invalid">Password length should be longer than 8</string>
+    <string name="edt_error_phone_number_invalid">Invalid phone number</string>
+    <string name="edt_error_url_invalid">Invalid URL format</string>
+
+    <string name="error_already_sign_in_account">You are already signed in other devices. If you sign in this device, other devices will be signed out.</string>
+    <string name="error_cancel_sign_in_account">Sign in request is canceled.</string>
+    <string name="error_invalid_url_request">Invalid request. Please check an address.</string>
+
+    <string name="error_google_sign_out_error">Failed to sign out existing signed in account. Please retry it.</string>
+    <string name="error_general_error">Failed to load contents.</string>
+    <string name="error_empty_entity">There is no content.</string>
+    <string name="error_too_long_time_request">Request timeout. Please check network connection.</string>
+    <string name="error_already_closed_experiment">Already closed experiment.</string>
+    <string name="error_no_participated_experiment">There is no experiment you participate in.</string>
+    <string name="error_no_network_available">No active network.</string>
+    <string name="error_app_internal">App crashes. Please contact to a developer.</string>
+    <string name="error_server_unavailable">Server sends invalid responses.. Please check a server state.</string>
+    <string name="error_invalid_json_format">Invalid JSON format.</string>
+    <string name="error_auth_failure">Failed to authenticate.</string>
+    <string name="error_request_canceled">Request is canceled during communication.</string>
+    <string name="error_no_corresponding_experiment">There is no experiment corresponding to request.</string>
+    <string name="error_no_signed_account">There is no account signed in.</string>
+    <string name="error_weak_password">Password is too weak.</string>
+    <string name="error_invalid_email">Invalid email.</string>
+    <string name="error_user_already_exists">Already registered account.</string>
+    <string name="error_no_account">Non-registered account.</string>
+    <string name="error_no_signed_fitness_account">There is no Google Account signed in.</string>
+    <string name="error_failed_to_subscribe_fitness_data">Failed to subscribe Google Fitness data. Check network and grant location-related permissions.</string>
+    <string name="error_auth_password_incorrect">Incorrect password.</string>
+    <string name="error_auth_not_verify">This email is not verified yet.</string>
+    <string name="error_auth_password_code_expired">Password reset link is already expired or invalid.</string>
+    <string name="error_link_expired">The link is already opened or handled.</string>
+    <string name="error_already_participate">Cannot participate in this exp. because you are already participated in other.</string>
+    <string name="error_closed_experiment">Cannot participate in this exp. because this is already closed.</string>
+    <string name="error_wait_for_loading">Data is not fully loaded yet. Please retry after seconds.</string>
+
+    <string name="msg_auth_request_verify_email">Sent a verification link to your email.</string>
+    <string name="msg_auth_request_verify_password">Sent a verification link to your email for password reset.</string>
+    <string name="msg_auth_password_changed">Password changed.</string>
+    <string name="msg_verify_success">Verification success.</string>
+    <string name="msg_set_app_usage">Please allow ABC Platform to access usage data.</string>
+    <string name="msg_set_notification">Please allow ABC Platform to access notifications.</string>
+    <string name="msg_set_google_fitness">Please allow ABC Platform to access your Google Fitness data.</string>
+
+    <string name="error_general_time_range">Start time should be before end time.</string>
+    <string name="error_invalid_content">Check whether valid or non-empty contents entered</string>
+    <string name="error_no_wifi_network_available">Sync is supported only when Wifi is enabled.</string>
+    <string name="error_general_no_corresponding_entity">No corresponding data.</string>
+    <string name="error_invalid_survey_format">Invalid survey format.</string>
+    <string name="error_empty_survey">There is no survey included in this experiment.</string>
+    <string name="error_invalid_url_format">Invalid URL.</string>
+
+    <string name="error_runtime_permission_denied">Experiment is abnormally progressed due to denial of some permissions.</string>
+    <string name="error_runtime_app_usage_denied">Experiment is abnormally progressed due to denial of usage data access.</string>
+    <string name="error_runtime_notification_denied">Experiment is abnormally progressed due to denial of notification access.</string>
+    <string name="error_runtime_google_fitness_denied">Experiment is abnormally progressed due to denial of Google Fitness access.</string>
+    <string name="error_permission_denied">Some required permissions are not granted.</string>
+    <string name="error_app_usage_denied">Access to app usage data is denied.</string>
+    <string name="error_notification_denied">Access to notification is denied</string>
+    <string name="error_google_fitness_denied">Access to Google Fitness is denied.</string>
+
+    <string name="msg_general_sync">Sync in background&#8230;</string>
+    <string name="msg_start_experiment">Start experiment</string>
+    <string name="msg_general_exit_app">Please press back again to exit</string>
+    <string name="msg_general_complete_save">Save complete</string>
+
+    <string name="activity_title_sign_up">Sign Up</string>
+    <string name="activity_title_password_reset">Password Reset</string>
+    <string name="activity_title_password_code_verify">New Password</string>
+    <string name="activity_title_main">@string/app_name</string>
+    <string name="activity_title_survey_question">Answer to a Survey</string>
+    <string name="activity_title_experiment_participation">Participation</string>
+    <string name="activity_title_experiment_detail">Detail of Experiment</string>
+
+    <string name="menu_header_survey">Survey</string>
+    <string name="menu_header_experiment">Experiment</string>
+
+    <string name="menu_item_surveys_all">Received surveys</string>
+    <string name="menu_item_surveys_unread">Not responded surveys</string>
+    <string name="menu_item_experiments_all">All Experiments</string>
+    <string name="menu_item_experiments_participated">My Experiment</string>
+    <string name="menu_item_logout">Sign-out</string>
+    <string name="menu_item_sync">Sync with Server</string>
+
+    <string name="data_provided_title_traffic_and_event">Data Traffic &amp; Device Event</string>
+    <string name="data_provided_title_location_and_activity">In/Outdoor Location &amp; Activity</string>
+    <string name="data_provided_title_content_provider">Content Providers</string>
+    <string name="data_provided_title_ambient_sound">Ambient Sound</string>
+    <string name="data_provided_title_app_usage">App Usage Data</string>
+    <string name="data_provided_title_notification">Notification</string>
+    <string name="data_provided_title_fitness">Google Fitness</string>
+
+    <string name="data_provided_desc_traffic_and_event">Tracks network data usage and general device event (e.g., screen on/off, battery changes).</string>
+    <string name="data_provided_desc_location_and_activity">Tracks in/outdoor location and physical activity using WiFi and GPS.</string>
+    <string name="data_provided_desc_content_provider">Tracks call logs, SMSes, and the number of pictures/videos taken.</string>
+    <string name="data_provided_desc_ambient_sound">Tracks ambient sound/noise to understand environmental characteristics.</string>
+    <string name="data_provided_desc_app_usage">Tracks apps you interacts with. It needs additional set-up.</string>
+    <string name="data_provided_desc_notification">Tracks notifications you received. It needs additional set-up.</string>
+    <string name="data_provided_desc_fitness">Tracks physical statuses using Google Fitness. It needs to sync with Google Fitness account.</string>
+
+    <string name="permission_title_general">App permissions</string>
+    <string name="permission_title_notification">Notification access</string>
+    <string name="permission_title_app_usage">App usage data access</string>
+    <string name="permission_title_google_fitness">Google Fitness account access</string>
+
+
+    <string name="status_started">Started</string>
+    <string name="status_running">Running</string>
+    <string name="status_canceled">Canceled</string>
+    <string name="status_aborted">Aborted</string>
+    <string name="status_unknown">Unknown</string>
+    <string name="activity_title_debug">Debug</string>
+    <string name="menu_item_debug">Debug</string>
+    <string name="title_dynamic_feature">Module Title</string>
+    <string name="title_dynamic">ABC Platform</string>
+
+    <!-- JY EDIT -->
+    <string name="accessibility_service_label">KeyTrackingService</string>
+
+</resources>
+

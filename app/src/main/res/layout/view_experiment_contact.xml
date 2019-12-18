@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/itemSpaceHorizontal"
+    android:paddingEnd="@dimen/itemSpaceHorizontal">
+
+    <TextView
+        android:id="@+id/txtExperimenterName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/txtPaddingVertical"
+        android:paddingTop="@dimen/txtPaddingVertical"
+        android:text="최우혁"
+        android:textSize="@dimen/txtSizeMessage" />
+
+    <TextView
+        android:id="@+id/txtExperimenterPhoneNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="phone"
+        android:paddingBottom="@dimen/txtPaddingVertical"
+        android:paddingTop="@dimen/txtPaddingVertical"
+        android:text="+821094146736"
+        android:textSize="@dimen/txtSizeMessage" />
+
+    <TextView
+        android:id="@+id/txtExperimenterEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="email"
+        android:paddingBottom="@dimen/txtPaddingVertical"
+        android:paddingTop="@dimen/txtPaddingVertical"
+        android:text="keltpower0@kaist.ac.kr"
+        android:textSize="@dimen/txtSizeMessage" />
+
+    <TextView
+        android:id="@+id/txtWebSite"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="web"
+        android:paddingBottom="@dimen/txtPaddingVertical"
+        android:paddingTop="@dimen/txtPaddingVertical"
+        android:text="http://asdf.fcas.ssd"
+        android:textColor="@color/colorMessage"
+        android:textSize="@dimen/txtSizeMessage" />
+</LinearLayout>

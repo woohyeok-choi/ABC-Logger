@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="kaist.iclab.abclogger">
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions"/>
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-feature android:name="android.hardware.sensor.light" android:required="true"/>
+
+    <application
+        android:name=".App"
+        android:allowBackup="false"
+        android:fullBackupContent="@xml/backup_descriptor"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="false"
+        android:theme="@style/AppTheme"
+        tools:replace="android:allowBackup,android:supportsRtl">
+
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="CHANNEL_ID_DEFAULT"/>
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_abc_notification" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/colorPrimary" />
+
+        <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
+
+
+        <activity
+            android:name=".foreground.activity.RootActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.Launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="abccampuslife.page.link"/>
+                <data
+                    android:scheme="https"
+                    android:host="abccampuslife.page.link"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".foreground.activity.SignInActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:launchMode="singleTask"
+            android:parentActivityName=".foreground.activity.RootActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".foreground.activity.RootActivity" />
+        </activity>
+
+        <activity
+            android:name=".foreground.activity.SignUpActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:parentActivityName=".foreground.activity.SignInActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".foreground.activity.SignInActivity" />
+
+        </activity>
+
+        <activity
+            android:name=".foreground.activity.PasswordResetActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:parentActivityName=".foreground.activity.SignInActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".foreground.activity.SignInActivity" />
+        </activity>
+
+        <activity
+            android:name=".foreground.activity.PasswordCodeVerificationActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:parentActivityName=".foreground.activity.SignInActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".foreground.activity.SignInActivity" />
+        </activity>
+
+        <activity
+            android:name=".foreground.activity.MainActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
+        </activity>
+
+        <activity
+            android:name=".foreground.activity.SurveyQuestionActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:parentActivityName=".foreground.activity.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".foreground.activity.MainActivity" />
+        </activity>
+
+
+        <activity
+            android:name=".foreground.activity.AvoidSmartManagerActivity"
+            android:excludeFromRecents="true"
+            android:taskAffinity=":avoidSmartManager"
+            android:theme="@style/AppTheme.NoDisplay" />
+
+
+        <activity
+            android:name=".foreground.activity.ExperimentParticipationActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:parentActivityName=".foreground.activity.ExperimentDetailActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".foreground.activity.ExperimentDetailActivity" />
+        </activity>
+        <activity
+            android:name=".foreground.activity.DebugActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <activity
+            android:name=".foreground.activity.ExperimentDetailActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:parentActivityName=".foreground.activity.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".foreground.activity.MainActivity" />
+        </activity>
+
+        <service
+            android:name="kaist.iclab.abclogger.background.collector.NotificationCollector"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <service android:name="kaist.iclab.abclogger.background.CollectorService" />
+
+        <service android:name=".background.SurveyManager$SurveyTriggerService" />
+        <service android:name=".background.SurveyManager$SurveyScheduleService" />
+        <service android:name=".background.SyncManager$SyncService" />
+          <receiver android:name=".background.BootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- SW EDIT -->
+        <provider
+            android:authorities="kaist.iclab.abclogger.data.dataprovider"
+            android:name=".data.DataProvider"
+            android:exported="false" />
+
+        <meta-data android:name="databaseName" android:value="database.sqlite" />
+        <meta-data android:name="databaseVersion" android:value="5" />
+
+        <!-- Accessibility Configure -->
+        <service  android:name=".background.KeyTrackingService" android:label="@string/accessibility_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+    </application>
+</manifest>

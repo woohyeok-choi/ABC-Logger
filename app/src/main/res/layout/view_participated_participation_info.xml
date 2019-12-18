@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <kaist.iclab.abclogger.foreground.view.DefaultItemView
+        android:id="@+id/itemExperimentGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:headerText="@string/label_experiment_group"
+        app:dividerPosition="bottom"/>
+
+    <kaist.iclab.abclogger.foreground.view.DefaultItemView
+        android:id="@+id/itemExperimentSurvey"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:headerText="@string/label_has_survey"
+        app:dividerPosition="bottom"/>
+
+    <kaist.iclab.abclogger.foreground.view.DefaultItemView
+        android:id="@+id/itemName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:headerText="@string/label_name"
+        app:dividerPosition="bottom"/>
+
+
+    <kaist.iclab.abclogger.foreground.view.DefaultItemView
+        android:id="@+id/itemPhoneNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:headerText="@string/label_phone_number"
+        app:dividerPosition="bottom"/>
+
+
+    <kaist.iclab.abclogger.foreground.view.DefaultItemView
+        android:id="@+id/itemAffiliation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:headerText="@string/label_affiliation"
+        app:dividerPosition="bottom"/>
+
+    <kaist.iclab.abclogger.foreground.view.DefaultItemView
+        android:id="@+id/itemGender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:headerText="@string/label_gender"
+        app:dividerPosition="bottom"/>
+
+    <kaist.iclab.abclogger.foreground.view.DefaultItemView
+        android:id="@+id/itemBirthDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:headerText="@string/label_birth_date"
+        app:dividerPosition="bottom"/>
+
+
+
+</LinearLayout>
