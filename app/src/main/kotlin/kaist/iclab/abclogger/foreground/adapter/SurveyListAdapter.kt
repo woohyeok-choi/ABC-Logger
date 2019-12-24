@@ -2,7 +2,6 @@ package kaist.iclab.abclogger.foreground.adapter
 
 import androidx.lifecycle.*
 import androidx.paging.*
-import androidx.fragment.app.Fragment
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.DiffUtil
 import android.view.View
@@ -14,20 +13,19 @@ import kaist.iclab.abclogger.common.type.LoadState
 import kaist.iclab.abclogger.common.EmptyEntityException
 import kaist.iclab.abclogger.common.util.FormatUtils
 import kaist.iclab.abclogger.data.entities.ParticipationEntity
-import kaist.iclab.abclogger.data.entities.SurveyEntity
+import kaist.iclab.abclogger.data.entities.Survey
 import kaist.iclab.abclogger.data.entities.SurveyEntity_
 import kaist.iclab.abclogger.foreground.fragment.SurveyListFragment
 import kaist.iclab.abclogger.foreground.listener.BaseViewHolder
 import kaist.iclab.abclogger.foreground.listener.OnRecyclerViewItemClickListener
 import kaist.iclab.abclogger.foreground.view.SurveyItemView
-import kaist.iclab.abclogger.survey.SurveyTimeoutPolicyType
 import java.util.concurrent.Executors
 
-class SurveyListAdapter : PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
+class SurveyListAdapter : PagedListAdapter<Survey, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
     companion object {
-        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SurveyEntity>() {
-            override fun areItemsTheSame(oldItem: SurveyEntity, newItem: SurveyEntity) = oldItem.id == newItem.id
-            override fun areContentsTheSame(oldItem: SurveyEntity, newItem: SurveyEntity) = oldItem == newItem
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Survey>() {
+            override fun areItemsTheSame(oldItem: Survey, newItem: Survey) = oldItem.id == newItem.id
+            override fun areContentsTheSame(oldItem: Survey, newItem: Survey) = oldItem == newItem
         }
 
         fun getEntityViewModel(fragment: androidx.fragment.app.Fragment, showOnlyUnread: Boolean) : EntityViewModel {
@@ -40,10 +38,10 @@ class SurveyListAdapter : PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewH
         }
     }
 
-    private var listener: OnRecyclerViewItemClickListener<SurveyEntity>? = null
+    private var listener: OnRecyclerViewItemClickListener<Survey>? = null
 
 
-    fun setOnRecyclerViewItemClickListener(onItemClickListener: OnRecyclerViewItemClickListener<SurveyEntity>?) {
+    fun setOnRecyclerViewItemClickListener(onItemClickListener: OnRecyclerViewItemClickListener<Survey>?) {
         listener = onItemClickListener
     }
 
@@ -70,8 +68,8 @@ class SurveyListAdapter : PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewH
         }
     }
 
-    class ViewHolder(surveyItemView: SurveyItemView, onClick: (position: Int, view: View) -> Unit) : BaseViewHolder<SurveyItemView, SurveyEntity>(surveyItemView, onClick) {
-        override fun bindView(data: SurveyEntity) {
+    class ViewHolder(surveyItemView: SurveyItemView, onClick: (position: Int, view: View) -> Unit) : BaseViewHolder<SurveyItemView, Survey>(surveyItemView, onClick) {
+        override fun bindView(data: Survey) {
             view.setTitle(data.title)
             view.setMessage(data.message)
             view.setDeliveredTime(String.format("%s %s",
@@ -85,16 +83,16 @@ class SurveyListAdapter : PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewH
         }
     }
 
-    class EntityDataSource(private val showOnlyUnread: Boolean) : PositionalDataSource<SurveyEntity>() {
-        private val observer = DataObserver<List<SurveyEntity>> { invalidate() }
-        private var query: Query<SurveyEntity>? = null
+    class EntityDataSource(private val showOnlyUnread: Boolean) : PositionalDataSource<Survey>() {
+        private val observer = DataObserver<List<Survey>> { invalidate() }
+        private var query: Query<Survey>? = null
 
         val loadState = MutableLiveData<LoadState>()
         val initialLoadState = MutableLiveData<LoadState>()
 
-        private fun buildQuery(): Query<SurveyEntity> {
+        private fun buildQuery(): Query<Survey> {
             val entity = ParticipationEntity.getParticipatedExperimentFromLocal()
-            val query = App.boxFor<SurveyEntity>().let {
+            val query = App.boxFor<Survey>().let {
                 if (showOnlyUnread) {
                     it.query()
                         .less(SurveyEntity_.timestamp, 0)
@@ -119,7 +117,7 @@ class SurveyListAdapter : PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewH
             return query
         }
 
-        override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<SurveyEntity>) {
+        override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<Survey>) {
             loadState.postValue(LoadState.LOADING)
             try {
                 query = query ?: buildQuery()
@@ -133,7 +131,7 @@ class SurveyListAdapter : PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewH
             }
         }
 
-        override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<SurveyEntity>) {
+        override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<Survey>) {
             initialLoadState.postValue(LoadState.LOADING)
             loadState.postValue(LoadState.LOADING)
             try {
@@ -167,10 +165,10 @@ class SurveyListAdapter : PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewH
             }
         }
 
-        class Factory(private val showOnlyUnread: Boolean) : DataSource.Factory<Int, SurveyEntity> () {
+        class Factory(private val showOnlyUnread: Boolean) : DataSource.Factory<Int, Survey> () {
             val sourceLiveData = MutableLiveData<EntityDataSource>()
 
-            override fun create(): DataSource<Int, SurveyEntity> {
+            override fun create(): DataSource<Int, Survey> {
                 val source = EntityDataSource(showOnlyUnread)
                 sourceLiveData.postValue(source)
                 return source

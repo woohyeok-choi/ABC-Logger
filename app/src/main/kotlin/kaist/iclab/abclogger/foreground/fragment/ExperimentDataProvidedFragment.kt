@@ -9,9 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.common.base.BaseFragment
+import kaist.iclab.abclogger.base.BaseFragment
 import kotlinx.android.synthetic.main.fragment_experiment_base.*
-import kaist.iclab.abclogger.background.collector.*
+import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.common.*
 import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.util.*

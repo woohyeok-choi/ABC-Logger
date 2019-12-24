@@ -7,12 +7,11 @@ import android.os.Bundle
 import com.google.android.material.tabs.TabLayout
 import androidx.preference.DialogPreference
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.widget.TimePicker
 import android.widget.Toast
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.common.base.BasePreferenceDialogFragmentCompat
+import kaist.iclab.abclogger.base.BasePreferenceDialogFragmentCompat
 import kaist.iclab.abclogger.common.type.HourMin
 import kaist.iclab.abclogger.common.type.HourMinRange
 

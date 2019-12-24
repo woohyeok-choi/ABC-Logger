@@ -3,9 +3,8 @@ package kaist.iclab.abclogger.background
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import kaist.iclab.abclogger.background.collector.*
-import kaist.iclab.abclogger.common.base.BaseService
+import kaist.iclab.abclogger.collector.*
+import kaist.iclab.abclogger.base.BaseService
 import kaist.iclab.abclogger.common.util.NotificationUtils
 import kaist.iclab.abclogger.data.entities.LogEntity
 import kaist.iclab.abclogger.data.entities.ParticipationEntity
@@ -26,7 +25,7 @@ class CollectorService: BaseService() {
         super.onCreate()
         collectors = mutableMapOf()
 
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).registerReceiver(SurveyManager.EventReceiver,
+        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).registerReceiver(SurveyCollector.EventReceiver,
             IntentFilter(LocationAndActivityCollector.ACTION_ACTIVITY_TRANSITION_AVAILABLE))
     }
 
@@ -85,8 +84,8 @@ class CollectorService: BaseService() {
             //if(!exists<WeatherCollector>()) put(WeatherCollector( this))
             //LogEntity.log(TAG, "Weather collector")
 
-            if(!exists<BluetoothCollector>()) {
-                put(BluetoothCollector(this))
+            if(!exists<BluetoothCollector2>()) {
+                put(BluetoothCollector2(this))
                 LogEntity.log(TAG, "BluetoothCollector start")
             } else { LogEntity.log(TAG, "BluetoothCollector not start") }
 
@@ -105,7 +104,7 @@ class CollectorService: BaseService() {
 
     override fun onDestroy() {
         stop()
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).unregisterReceiver(SurveyManager.EventReceiver)
+        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).unregisterReceiver(SurveyCollector.EventReceiver)
         LogEntity.log(TAG, "onDestroy()")
         super.onDestroy()
     }

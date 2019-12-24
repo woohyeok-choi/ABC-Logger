@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
-import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
@@ -21,16 +20,13 @@ import kaist.iclab.abclogger.App
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.common.ABCException
 import kaist.iclab.abclogger.common.InvalidContentException
-import kaist.iclab.abclogger.common.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.common.type.LoadState
 import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.util.*
-import kaist.iclab.abclogger.data.entities.SensorEntity
-import kaist.iclab.abclogger.data.entities.SurveyEntity
 import kaist.iclab.abclogger.foreground.dialog.YesNoDialogFragment
 import kaist.iclab.abclogger.foreground.fragment.SurveyListFragment
 import kaist.iclab.abclogger.prefs
-import kaist.iclab.abclogger.survey.Survey
 
 import kaist.iclab.abclogger.survey.SurveyTimeoutPolicyType
 import kotlinx.android.synthetic.main.activity_container_with_toolbar.*
@@ -39,7 +35,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
 class SurveyQuestionActivity: BaseAppCompatActivity(), SensorEventListener {
-    private lateinit var survey: MutableLiveData<Pair<Survey, SurveyEntity>>
+    private lateinit var survey: MutableLiveData<Pair<Survey, kaist.iclab.abclogger.data.entities.Survey>>
     private lateinit var initLoadState: MutableLiveData<LoadState>
     private lateinit var loadState: MutableLiveData<LoadState>
     private lateinit var storeState: MutableLiveData<LoadState>
@@ -67,7 +63,7 @@ class SurveyQuestionActivity: BaseAppCompatActivity(), SensorEventListener {
         val value = p0.values[0]
         val name = p0.sensor.stringType
 
-        val entity = SensorEntity(
+        val entity = kaist.iclab.abclogger.data.entities.Sensor(
                 type = name,
                 firstValue = value,
                 secondValue = accuracy.toFloat(),
@@ -80,7 +76,7 @@ class SurveyQuestionActivity: BaseAppCompatActivity(), SensorEventListener {
             experimentGroup = prefs.participantGroup!!
             isUploaded = false
         }
-        App.boxFor<SensorEntity>().put(entity)
+        App.boxFor<kaist.iclab.abclogger.data.entities.Sensor>().put(entity)
 
     }
 
@@ -129,7 +125,7 @@ class SurveyQuestionActivity: BaseAppCompatActivity(), SensorEventListener {
         }
 
         Tasks.call(Executors.newSingleThreadExecutor(), Callable {
-            val box = App.boxFor<SurveyEntity>()
+            val box = App.boxFor<kaist.iclab.abclogger.data.entities.Survey>()
             var entity = box.get(intent.getLongExtra(EXTRA_SURVEY_ENTITY_ID, 0))
             val survey = Survey.parse(entity.responses)
             if (entity.reactionTime <= 0) {
@@ -307,7 +303,7 @@ class SurveyQuestionActivity: BaseAppCompatActivity(), SensorEventListener {
                     Tasks.call(Executors.newSingleThreadExecutor(), Callable {
                         if(!surveyView.isValid()) throw InvalidContentException()
 
-                        val box = App.boxFor<SurveyEntity>()
+                        val box = App.boxFor<kaist.iclab.abclogger.data.entities.Survey>()
                         var entity = box.get(intent.getLongExtra(EXTRA_SURVEY_ENTITY_ID, 0))
                         val survey = Survey.parse(entity.responses).copy(
                             questions = surveyView.getResponses()
@@ -356,7 +352,7 @@ class SurveyQuestionActivity: BaseAppCompatActivity(), SensorEventListener {
         private val EXTRA_SURVEY_IS_ENABLE_TO_RESPOND = "${SurveyQuestionActivity::class.java}.EXTRA_SURVEY_IS_ENABLE_TO_RESPOND"
         private val EXTRA_SHOW_FROM_SURVEY_LIST = "${SurveyQuestionActivity::class.java}.EXTRA_SHOW_FROM_SURVEY_LIST"
 
-        fun newIntent(context: Context, entity: SurveyEntity, showFromList: Boolean = true) : Intent = Intent(context, SurveyQuestionActivity::class.java)
+        fun newIntent(context: Context, entity: kaist.iclab.abclogger.data.entities.Survey, showFromList: Boolean = true) : Intent = Intent(context, SurveyQuestionActivity::class.java)
             .putExtra(EXTRA_SURVEY_ENTITY_ID, entity.id)
             .putExtra(EXTRA_SURVEY_TITLE, entity.title)
             .putExtra(EXTRA_SURVEY_MESSAGE, entity.message)

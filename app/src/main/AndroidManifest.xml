@@ -173,7 +173,7 @@
         </activity>
 
         <service
-            android:name="kaist.iclab.abclogger.background.collector.NotificationCollector"
+            android:name="kaist.iclab.abclogger.collector.NotificationCollector"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
@@ -183,8 +183,8 @@
 
         <service android:name="kaist.iclab.abclogger.background.CollectorService" />
 
-        <service android:name=".background.SurveyManager$SurveyTriggerService" />
-        <service android:name=".background.SurveyManager$SurveyScheduleService" />
+        <service android:name=".collector.SurveyCollector$SurveyTriggerService" />
+        <service android:name=".collector.SurveyCollector$SurveyScheduleService" />
         <service android:name=".background.SyncManager$SyncService" />
           <receiver android:name=".background.BootReceiver">
             <intent-filter>
@@ -202,7 +202,7 @@
         <meta-data android:name="databaseVersion" android:value="5" />
 
         <!-- Accessibility Configure -->
-        <service  android:name=".background.KeyTrackingService" android:label="@string/accessibility_service_label"
+        <service  android:name=".collector.KeyTrackingService" android:label="@string/accessibility_service_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -212,6 +212,7 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
+        <service android:name=".collector.PhysicalStatusCollector$PhysicalStatusCollectorIntentService" />
 
     </application>
 </manifest>

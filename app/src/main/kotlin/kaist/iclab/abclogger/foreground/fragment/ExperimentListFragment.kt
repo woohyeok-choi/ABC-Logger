@@ -3,21 +3,14 @@ package kaist.iclab.abclogger.foreground.fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.core.app.ActivityOptionsCompat
-import androidx.core.view.ViewCompat
-import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.common.base.BaseFragment
+import kaist.iclab.abclogger.base.BaseFragment
 import kaist.iclab.abclogger.common.type.LoadState
 import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.ABCException
-import kaist.iclab.abclogger.foreground.activity.ExperimentDetailActivity
-import kaist.iclab.abclogger.foreground.activity.MainActivity
 import kaist.iclab.abclogger.foreground.adapter.ExperimentListAdapter
 import kaist.iclab.abclogger.foreground.listener.OnRecyclerViewItemClickListener
 // import kaist.iclab.abc.protos.ExperimentProtos

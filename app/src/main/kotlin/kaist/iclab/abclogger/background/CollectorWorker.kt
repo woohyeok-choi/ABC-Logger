@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import androidx.work.Worker
-import kaist.iclab.abclogger.background.collector.NotificationCollector
+import kaist.iclab.abclogger.collector.NotificationCollector
 import kaist.iclab.abclogger.common.util.WorkerUtils
 
 class CollectorWorker : Worker() {

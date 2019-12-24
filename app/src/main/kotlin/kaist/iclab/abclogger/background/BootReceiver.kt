@@ -7,7 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Handler
 import kaist.iclab.abclogger.App
 import kaist.iclab.abclogger.common.util.Utils
-import kaist.iclab.abclogger.data.entities.DeviceEventEntity
+import kaist.iclab.abclogger.data.entities.DeviceEvent
 import kaist.iclab.abclogger.data.types.DeviceEventType
 import kaist.iclab.abclogger.foreground.activity.AvoidSmartManagerActivity
 import kaist.iclab.abclogger.prefs
@@ -25,14 +25,14 @@ class BootReceiver: BroadcastReceiver() {
             //val experiment = try { ParticipationEntity.getParticipatedExperimentFromLocal() } catch (e: Exception) { null }
             //if(experiment != null) {
             if (prefs.participantSignedIn) {
-                val entity = DeviceEventEntity(DeviceEventType.TURN_ON_DEVICE).apply {
+                val entity = DeviceEvent(DeviceEventType.TURN_ON_DEVICE).apply {
                     timestamp = System.currentTimeMillis()
                     utcOffset = Utils.utcOffsetInHour()
                     subjectEmail = prefs.participantEmail!!
                     experimentUuid = prefs.participantPhoneNumber!!
                     experimentGroup = prefs.participantGroup!!
                 }
-                App.boxFor<DeviceEventEntity>().put( entity )
+                App.boxFor<DeviceEvent>().put( entity )
 
                 /* Boot - SW EDIT */
                 //val gson = GsonBuilder().setPrettyPrinting().create()

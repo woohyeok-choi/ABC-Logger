@@ -7,10 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
-import android.widget.Toast
-import com.google.android.gms.tasks.Continuation
 import com.google.android.gms.tasks.SuccessContinuation
-import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
@@ -18,7 +15,7 @@ import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.common.ABCException
 import kaist.iclab.abclogger.common.InvalidContentException
 import kaist.iclab.abclogger.common.NoNetworkAvailableException
-import kaist.iclab.abclogger.common.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.common.type.LoadState
 import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.util.*

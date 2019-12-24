@@ -2,8 +2,6 @@ package kaist.iclab.abclogger.foreground.activity
 
 import android.app.Activity
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.app.ActivityOptionsCompat
@@ -19,13 +17,9 @@ import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.background.ABCPlatform
 import kaist.iclab.abclogger.common.*
-import kaist.iclab.abclogger.common.base.BaseAppCompatActivity
-import kaist.iclab.abclogger.common.type.HourMin
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.common.type.LoadState
-import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.util.*
-import kaist.iclab.abclogger.communication.GrpcApi
-import kaist.iclab.abclogger.data.PreferenceAccessor
 import kaist.iclab.abclogger.foreground.view.DataView
 //import kaist.iclab.abc.protos.ExperimentProtos
 import kotlinx.android.synthetic.main.activity_container_with_toolbar.*

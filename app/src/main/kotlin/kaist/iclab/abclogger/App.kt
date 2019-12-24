@@ -11,7 +11,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import io.objectbox.BoxStore
 import io.objectbox.kotlin.boxFor
-import kaist.iclab.abclogger.data.entities.MyObjectBox
 import com.crashlytics.android.Crashlytics
 import github.agustarc.koap.Koap
 import io.fabric.sdk.android.Fabric
@@ -71,6 +70,7 @@ class App : Application(){
 
         ObjBox.bind(this)
         Koap.bind(this, SharedPrefs)
+        NotificationUtils.bind(this)
 
         sharedPreference = Prefs(applicationContext)
     }

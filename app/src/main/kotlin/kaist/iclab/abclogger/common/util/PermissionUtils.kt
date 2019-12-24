@@ -4,7 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
-import kaist.iclab.abclogger.background.collector.*
+import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.common.RuntimeAppUsageDeniedException
 import kaist.iclab.abclogger.common.RuntimeNotificationAccessDeniedException
 import kaist.iclab.abclogger.common.RuntimePermissionDeniedException
@@ -30,42 +30,45 @@ object PermissionUtils {
                     listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             ).flatten().toSet()
 
-            if(!PermissionUtils.checkPermissionAtRuntime(context, permission)) throw RuntimePermissionDeniedException(permission.toTypedArray())
-            if(prefs.requiresAppUsage && !AppUsageCollector.checkEnableToCollect(context)) throw RuntimeAppUsageDeniedException()
-            if(prefs.requiresNotification && !NotificationCollector.checkEnableToCollect(context)) throw RuntimeNotificationAccessDeniedException()
+            if (!PermissionUtils.checkPermissionAtRuntime(context, permission)) throw RuntimePermissionDeniedException(permission.toTypedArray())
+            if (prefs.requiresAppUsage && !AppUsageCollector.checkEnableToCollect(context)) throw RuntimeAppUsageDeniedException()
+            if (prefs.requiresNotification && !NotificationCollector.checkEnableToCollect(context)) throw RuntimeNotificationAccessDeniedException()
             //if(entity.requiresGoogleFitness && !GoogleFitnessCollector.checkEnableToCollect(context)) throw RuntimeGoogleFitnessDeniedException()
         }
     }
 
-    fun checkPermissionAtRuntime(context: Context, permissions: Collection<String>) : Boolean {
-        return if(permissions.isEmpty()) {
-            true
-        } else {permissions.all {
-                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-            }
+    fun checkPermissionAtRuntime(
+            context: Context, permissions: Collection<String>
+    ): Boolean = if (permissions.isEmpty()) {
+        true
+    } else {
+        permissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
     }
+}
 
-    fun getPermissionGroupLabels(context: Context) : List<String>? {
-        val pm = context.packageManager
+fun getPermissionGroupLabels(context: Context): List<String>? {
+    val pm = context.packageManager
 
-        val groups = pm.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)?.requestedPermissions?.mapNotNull {permission ->
-            if(ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                return@mapNotNull null
-            }
-
-            try {
-                val permissionInfo = pm.getPermissionInfo(permission, 0)
-                if(permissionInfo?.group != null) {
-                    return@mapNotNull pm.getPermissionGroupInfo(permissionInfo.group, 0).loadLabel(pm).toString()
-                }
-            } catch (e: Exception) { }
+    val groups = pm.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)?.requestedPermissions?.mapNotNull { permission ->
+        if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
             return@mapNotNull null
-        }?.toSet()?.toList()
+        }
 
-        if(groups?.isEmpty() == true)
-            return null
+        try {
+            val permissionInfo = pm.getPermissionInfo(permission, 0)
+            if (permissionInfo?.group != null) {
+                return@mapNotNull pm.getPermissionGroupInfo(permissionInfo.group, 0).loadLabel(pm).toString()
+            }
+        } catch (e: Exception) {
+        }
+        return@mapNotNull null
+    }?.toSet()?.toList()
 
-        return groups
-    }
+    if (groups?.isEmpty() == true)
+        return null
+
+    return groups
+}
 }

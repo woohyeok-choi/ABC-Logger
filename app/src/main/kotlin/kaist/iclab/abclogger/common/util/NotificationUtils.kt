@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
@@ -16,12 +17,17 @@ import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.common.ABCException
-import kaist.iclab.abclogger.data.entities.SurveyEntity
 import kaist.iclab.abclogger.foreground.activity.RootActivity
 import kaist.iclab.abclogger.foreground.activity.SurveyQuestionActivity
 import java.lang.Exception
 
 object NotificationUtils {
+    fun bind(context: Context) {
+
+    }
+
+
+
     const val CHANNEL_ID_SURVEY_DELIVERED = "CHANNEL_ID_SURVEY_DELIVERED"
     const val CHANNEL_ID_SURVEY_REMAINED = "CHANNEL_ID_SURVEY_REMAINED"
     const val CHANNEL_ID_UPLOAD_ON_FOREGROUND = "CHANNEL_ID_UPLOAD_ON_FOREGROUND"
@@ -89,6 +95,7 @@ object NotificationUtils {
                 setShowBadge(false)
                 enableVibration(false)
                 enableLights(false)
+                AudioAttributes.USAGE_ALARM
             }.let { manager.createNotificationChannel(it) }
         }
     }
@@ -105,7 +112,7 @@ object NotificationUtils {
         }
     }
 
-    fun buildNotificationForSurveyDelivered(context: Context, entity: SurveyEntity, number: Int) : Notification {
+    fun buildNotificationForSurveyDelivered(context: Context, entity: Survey, number: Int) : Notification {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) buildChannelForSurveyDelivered(context)
 
         return NotificationCompat.Builder(context, CHANNEL_ID_SURVEY_DELIVERED)
@@ -221,7 +228,7 @@ object NotificationUtils {
             .build()
     }
 
-    fun notifySurveyDelivered(context: Context, entity: SurveyEntity, number: Int) {
+    fun notifySurveyDelivered(context: Context, entity: Survey, number: Int) {
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_SURVEY_DELIVERED, buildNotificationForSurveyDelivered(context, entity, number))
     }
 

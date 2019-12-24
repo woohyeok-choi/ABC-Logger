@@ -5,25 +5,22 @@ import android.os.Bundle
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.util.Pair
 import androidx.core.view.ViewCompat
-import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.common.base.BaseFragment
+import kaist.iclab.abclogger.base.BaseFragment
 import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.ABCException
-import kaist.iclab.abclogger.data.entities.SurveyEntity
+import kaist.iclab.abclogger.data.entities.Survey
 import kaist.iclab.abclogger.foreground.activity.SurveyQuestionActivity
 import kaist.iclab.abclogger.foreground.adapter.SurveyListAdapter
 import kaist.iclab.abclogger.foreground.listener.OnRecyclerViewItemClickListener
 import kaist.iclab.abclogger.foreground.view.SurveyItemView
 import kotlinx.android.synthetic.main.fragment_survey_list.*
 
-class SurveyListFragment : BaseFragment(), OnRecyclerViewItemClickListener<SurveyEntity> {
+class SurveyListFragment : BaseFragment(), OnRecyclerViewItemClickListener<Survey> {
     companion object {
         private val ARG_SHOW_ONLY_UNREAD = "${SurveyListFragment::class.java.canonicalName}.ARG_SHOW_ONLY_UNREAD"
 
@@ -55,7 +52,7 @@ class SurveyListFragment : BaseFragment(), OnRecyclerViewItemClickListener<Surve
         bindView()
     }
 
-    override fun onItemClick(position: Int, item: SurveyEntity?, view: View) {
+    override fun onItemClick(position: Int, item: Survey?, view: View) {
         Log.d(TAG, "onItemClick(item = $item)")
         if(item == null) return
         val bundle = (view as? SurveyItemView)?.let { itemView ->

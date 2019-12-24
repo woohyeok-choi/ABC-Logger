@@ -14,7 +14,6 @@ import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.common.util.FormatUtils
 import kaist.iclab.abclogger.survey.Survey
 import kaist.iclab.abclogger.survey.SurveyQuestion
-import kaist.iclab.abclogger.survey.SurveyQuestionType
 
 class SurveyView(context: Context, attributeSet: AttributeSet?) : LinearLayout(context, attributeSet) {
     constructor(context: Context) : this(context, null)

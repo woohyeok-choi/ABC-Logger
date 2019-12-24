@@ -1,38 +1,28 @@
 package kaist.iclab.abclogger.foreground.activity
 
-import android.app.Activity
-import android.app.ActivityManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import android.content.AsyncQueryHandler
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Environment
 import android.text.TextUtils
-import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import kaist.iclab.abclogger.App
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.background.SyncManager
 import kaist.iclab.abclogger.common.*
-import kaist.iclab.abclogger.common.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.common.type.LoadState
 import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.util.*
-import kaist.iclab.abclogger.data.DataProvider
 import kaist.iclab.abclogger.data.MySQLiteLogger.Companion.exportSQLite
-import kaist.iclab.abclogger.data.MySQLiteLogger.Companion.forceToWriteContentValues
 import kaist.iclab.abclogger.data.entities.ParticipationEntity
 import kaist.iclab.abclogger.prefs
 import kaist.iclab.abclogger.foreground.listener.ErrorWatcher
 import kotlinx.android.synthetic.main.activity_container_without_toolbar.*
 import kotlinx.android.synthetic.main.activity_sign_in.*
-import java.io.File
 
 
 class SignInActivity : BaseAppCompatActivity() {

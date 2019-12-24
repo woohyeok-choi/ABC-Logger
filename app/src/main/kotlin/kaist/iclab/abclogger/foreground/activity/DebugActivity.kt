@@ -3,11 +3,9 @@ package kaist.iclab.abclogger.foreground.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.view.MenuItem
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.background.collector.LocationAndActivityCollector
-import kaist.iclab.abclogger.common.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.data.types.PhysicalActivityTransitionType
 import kotlinx.android.synthetic.main.activity_container_with_toolbar.*
 import kotlinx.android.synthetic.main.activity_debug.*

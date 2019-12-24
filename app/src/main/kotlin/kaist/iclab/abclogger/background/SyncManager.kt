@@ -34,7 +34,7 @@ object SyncManager {
     private const val TWELVE_HOURS_IN_MS: Long = 1000 * 60 * 60 * 12
     private const val SIX_HOURS_IN_MS: Long = 1000 * 60 * 60 * 6
     private const val THREE_HOURS_IN_MS: Long = 1000 * 60 * 60 * 3
-    private const val SERVICE_NAME_ABCLOGGER = "kaist.iclab.abclogger.background.collector.NotificationCollector"
+    private const val SERVICE_NAME_ABCLOGGER = "kaist.iclab.abclogger.collector.NotificationCollector"
     private const val SERVICE_NAME_ABCLOGGER2 = "kaist.iclab.abclogger.background.CollectorService"
     private const val SERVICE_NAME_MSBAND = "iclab.kaist.ac.kr.msband_logger.Service.AccessService"
     private const val SERVICE_NAME_POLAR = "fi.polar.beat.service.ExerciseService"
@@ -86,73 +86,73 @@ object SyncManager {
             uploadLogs(context)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<AppUsageEventEntity>(), AppUsageEventEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<AppUsageEvent>(), AppUsageEventEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<AppUsageStatEntity>(), AppUsageStatEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<AppUsageStat>(), AppUsageStatEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<BatteryEntity>(), BatteryEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Battery>(), BatteryEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<CallLogEntity>(), CallLogEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<CallLog>(), CallLogEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<ConnectivityEntity>(), ConnectivityEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Connectivity>(), ConnectivityEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<DataTrafficEntity>(), DataTrafficEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<DataTraffic>(), DataTrafficEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<DeviceEventEntity>(), DeviceEventEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<DeviceEvent>(), DeviceEventEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<EmotionalStatusEntity>(), EmotionalStatusEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<EmotionalStatus>(), EmotionalStatusEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<InstalledAppEntity>(), InstalledAppEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<InstalledApp>(), InstalledAppEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<LocationEntity>(), LocationEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Location>(), LocationEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<MediaEntity>(), MediaEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Media>(), MediaEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<MessageEntity>(), MessageEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Message>(), MessageEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<NotificationEntity>(), NotificationEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Notification>(), NotificationEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<PhysicalActivityEventEntity>(), PhysicalActivityEventEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<PhysicalActivityEvent>(), PhysicalActivityEventEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<PhysicalStatusEntity>(), PhysicalStatusEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<PhysicalStatus>(), PhysicalStatusEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<PhysicalActivityTransitionEntity>(), PhysicalActivityTransitionEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<PhysicalActivityTransition>(), PhysicalActivityTransitionEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<RecordEntity>(), RecordEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Record>(), RecordEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<SensorEntity>(), SensorEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Sensor>(), SensorEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
             ///*
-            uploadEntity(context, App.boxFor<WeatherEntity>(), WeatherEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Weather>(), WeatherEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
             //*/
 
-            uploadEntity(context, App.boxFor<WifiEntity>(), WifiEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Wifi>(), WifiEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context,unitProgress * (++progress), 100)
 
-            uploadEntity(context, App.boxFor<BluetoothDeviceEntity>(), BluetoothDeviceEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<BluetoothDevice>(), BluetoothDeviceEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context, unitProgress * (++progress), 100)
 
             ///*
-            uploadEntity(context, App.boxFor<SurveyEntity>(), SurveyEntity_.__INSTANCE)
+            uploadEntity(context, App.boxFor<Survey>(), SurveyEntity_.__INSTANCE)
             if(showProgress) NotificationUtils.notifyUploadProgress(context, 0, 0)
             //*/
 
@@ -225,7 +225,7 @@ object SyncManager {
         removeQuery.remove()
     }
 
-    private inline fun <reified T: BaseEntity> uploadEntity(context: Context, box: Box<T>, info: EntityInfo<T>) {
+    private inline fun <reified T: Base> uploadEntity(context: Context, box: Box<T>, info: EntityInfo<T>) {
         /*
         if(!NetworkUtils.isWifiAvailable(context)) {
             throw NoWifiNetworkAvailableException()
@@ -265,7 +265,7 @@ object SyncManager {
                 }
             }
 
-            if(T::class.java == SurveyEntity::class.java) return@runIfAllNotNull
+            if(T::class.java == Survey::class.java) return@runIfAllNotNull
 
             val removeQuery = box.query()
                 .less(timestampProperty, System.currentTimeMillis() - TEN_DAYS_IN_MS)
@@ -274,7 +274,7 @@ object SyncManager {
                 .build()
 
             removeQuery.forEach {
-                if(it is RecordEntity) {
+                if(it is Record) {
                     val file = File(it.path)
                     if(file.exists()) file.delete()
                     /**

@@ -1,10 +1,8 @@
 package kaist.iclab.abclogger.foreground.activity
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.core.app.NotificationManagerCompat
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
@@ -14,7 +12,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.ActionCodeResult
 import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.common.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.common.util.NotificationUtils
 import kaist.iclab.abclogger.prefs
 import java.util.concurrent.Callable

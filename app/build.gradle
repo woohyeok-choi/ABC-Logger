@@ -11,22 +11,16 @@ android {
     packagingOptions {
         exclude 'META-INF/proguard/androidx-annotations.pro'
     }
-    signingConfigs {
-        iclab_abc {
-            keyAlias 'abc'
-            keyPassword 'iclabsystem12!@'
-            //storeFile file('D:\\Workspace\\Projects\\key-store\\abc-iclab-kaist-key-store.jks')
-            //storePassword 'iclabsystem12!@'
-        }
-    }
+
     dexOptions {
         maxProcessCount 6
         javaMaxHeapSize "2g"
     }
+
     compileSdkVersion 29
     defaultConfig {
         applicationId 'kaist.iclab.abclogger'
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 29
         versionCode 42
         versionName "2.1.5.3"
@@ -40,8 +34,6 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            //proguardFile '/Users/CubePenguin/Dropbox/ICLAB/1803 SuggestBot/ABC-Platform-for-Android-master/app/proguard-rules.pro'
-            signingConfig signingConfigs.iclab_abc
         }
         debug {
         }
@@ -70,6 +62,7 @@ dependencies {
      */
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.61"
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.61"
+    implementation 'androidx.core:core-ktx:1.1.0'
 
     //testImplementation "org.jetbrains.kotlin:kotlin-test:${kotlinVersion}"
     //testImplementation "org.jetbrains.kotlin:kotlin-test-junit:${kotlinVersion}"
@@ -80,6 +73,7 @@ dependencies {
     implementation "org.koin:koin-core:2.0.1"
     implementation "org.koin:koin-android:2.0.1"
 
+    implementation 'org.greenrobot:eventbus:3.1.1'
 
     /**
      * Firebase
@@ -109,6 +103,10 @@ dependencies {
     implementation 'androidx.paging:paging-runtime:2.1.0'
     implementation 'androidx.work:work-runtime:2.2.0'
 
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-rc03'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0-rc03'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0-rc03'
+
     /**
      * Google GMS libraries
      */
@@ -127,7 +125,7 @@ dependencies {
     /**
      * Others
      */
-    implementation 'com.beust:klaxon:3.0.1'
+    implementation 'com.beust:klaxon:5.2'
     implementation "br.com.simplepass:loading-button-android:1.14.0"
     implementation "gun0912.ted:tedpermission:2.2.0"
     implementation 'com.github.AgustaRC.koap:koap:1.0.1'

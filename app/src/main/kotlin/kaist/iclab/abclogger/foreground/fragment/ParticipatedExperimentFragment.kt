@@ -10,15 +10,14 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.tasks.Tasks
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.background.collector.*
+import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.common.ABCException
 import kaist.iclab.abclogger.common.NoNetworkAvailableException
 import kaist.iclab.abclogger.common.NoParticipatedExperimentException
-import kaist.iclab.abclogger.common.base.BaseFragment
+import kaist.iclab.abclogger.base.BaseFragment
 import kaist.iclab.abclogger.common.type.LoadState
 import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.util.*
-import kaist.iclab.abclogger.communication.GrpcApi
 import kaist.iclab.abclogger.data.FirestoreAccessor
 import kaist.iclab.abclogger.data.entities.ParticipationEntity
 import kaist.iclab.abclogger.foreground.dialog.SimpleMessageDialogFragment

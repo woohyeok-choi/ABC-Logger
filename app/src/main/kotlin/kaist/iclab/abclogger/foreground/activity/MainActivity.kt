@@ -4,30 +4,26 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.os.Handler
 import com.google.android.material.navigation.NavigationView
-import androidx.fragment.app.Fragment
 import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.ActionBarDrawerToggle
 import android.text.TextUtils
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.background.ABCPlatform
 import kaist.iclab.abclogger.background.SyncManager
-import kaist.iclab.abclogger.background.collector.*
+import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.common.*
 import kaist.iclab.abclogger.data.PreferenceAccessor
-import kaist.iclab.abclogger.common.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.common.util.*
 import kaist.iclab.abclogger.foreground.fragment.*
 import kaist.iclab.abclogger.prefs
@@ -39,7 +35,6 @@ import android.provider.Settings
 import android.widget.Toast
 import kaist.iclab.abclogger.App
 import kaist.iclab.abclogger.data.MySQLiteLogger
-import kaist.iclab.abclogger.data.entities.SensorEntity
 
 
 class MainActivity : BaseAppCompatActivity(),
@@ -64,7 +59,7 @@ class MainActivity : BaseAppCompatActivity(),
         val value = p0.values[0]
         val name = p0.sensor.stringType
 
-        val entity = SensorEntity(
+        val entity = kaist.iclab.abclogger.data.entities.Sensor(
                 type = name,
                 firstValue = value,
                 secondValue = accuracy.toFloat(),
@@ -77,7 +72,7 @@ class MainActivity : BaseAppCompatActivity(),
             experimentGroup = prefs.participantGroup!!
             isUploaded = false
         }
-        App.boxFor<SensorEntity>().put(entity)
+        App.boxFor<kaist.iclab.abclogger.data.entities.Sensor>().put(entity)
 
     }
 
@@ -266,7 +261,7 @@ class MainActivity : BaseAppCompatActivity(),
     /** 접근성 설정 체크하는 함수 **/
     private fun isAccessibilityEnabled(): Boolean {
         var accessibilityEnabled = 0
-        val ACCESSIBILITY_SERVICE_NAME = "kaist.iclab.abclogger.common.base/kaist.iclab.abclogger.common.base.AccessibilityTrackingService"
+        val ACCESSIBILITY_SERVICE_NAME = "kaist.iclab.abclogger.base/kaist.iclab.abclogger.base.AccessibilityTrackingService"
 
         try {
             accessibilityEnabled = Settings.Secure.getInt(this.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED)

@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.common.ABCException
-import kaist.iclab.abclogger.common.base.BaseFragment
+import kaist.iclab.abclogger.base.BaseFragment
 import kaist.iclab.abclogger.common.type.LoadStatus
 import kaist.iclab.abclogger.common.util.*
 import kaist.iclab.abclogger.foreground.activity.ExperimentParticipationActivity
