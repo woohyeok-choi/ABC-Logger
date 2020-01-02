@@ -5,8 +5,8 @@ import com.beust.klaxon.Klaxon
 import com.beust.klaxon.KlaxonException
 import com.beust.klaxon.TypeAdapter
 import com.beust.klaxon.TypeFor
-import kaist.iclab.abclogger.common.EmptySurveyException
-import kaist.iclab.abclogger.common.InvalidSurveyFormatException
+import kaist.iclab.abclogger.EmptySurveyException
+import kaist.iclab.abclogger.InvalidSurveyFormatException
 import kaist.iclab.abclogger.common.type.DayOfWeek
 import java.lang.IllegalArgumentException
 import java.util.*

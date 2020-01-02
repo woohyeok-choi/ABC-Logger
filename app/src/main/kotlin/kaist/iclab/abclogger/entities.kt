@@ -101,8 +101,7 @@ data class LocationEntity(
 
 @Entity
 data class MediaEntity(
-        var mimeType: String = "",
-        var bucketDisplay: String = ""
+        var mimeType: String = ""
 ) : Base()
 
 @Entity
@@ -183,7 +182,10 @@ data class MessageEntity (
 
 @Entity
 data class SensorEntity(
-        var type: String = "",
+        var sensorId: String = "",
+        var sensorName: String = "",
+        var valueDescription: String = "",
+        var valueType: String = "",
         var firstValue: Float = Float.MIN_VALUE,
         var secondValue: Float = Float.MIN_VALUE,
         var thirdValue: Float = Float.MIN_VALUE,
