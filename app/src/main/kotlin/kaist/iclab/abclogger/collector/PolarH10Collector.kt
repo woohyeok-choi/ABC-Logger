@@ -132,11 +132,10 @@ class PolarH10Collector(val context: Context) :
         val deviceIdEditText = EditText(context)
         //deviceIdEditText.setText("4373B624")
         AlertDialog.Builder(context)
-                .setTitle("Your Title")
-                .setMessage("Click yes to exit!")
+                .setTitle("Please type Polar H10 ID")
                 .setView(deviceIdEditText)
                 .setCancelable(false)
-                .setPositiveButton("Yes") { dialog, id -> storeDeviceId(deviceIdEditText.text.toString()) }
+                .setPositiveButton("Done") { dialog, id -> storeDeviceId(deviceIdEditText.text.toString()) }
                 .create().show()
         return null
 
