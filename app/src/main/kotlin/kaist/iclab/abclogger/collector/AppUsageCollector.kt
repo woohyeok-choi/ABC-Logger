@@ -11,11 +11,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import kaist.iclab.abclogger.AppUsageEventEntity
-import kaist.iclab.abclogger.SharedPrefs
+import android.os.Build
 import android.provider.Settings
 import android.os.Process
-
+import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.base.BaseCollector
 
 
 class AppUsageCollector(val context: Context) : BaseCollector {
@@ -36,7 +36,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
             Intent(ACTION_RETRIEVE_APP_USAGE), PendingIntent.FLAG_UPDATE_CURRENT
     )
 
-    private val filter : IntentFilter = IntentFilter().apply {
+    private val filter: IntentFilter = IntentFilter().apply {
         addAction(ACTION_RETRIEVE_APP_USAGE)
     }
 
@@ -59,86 +59,95 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         else -> "NONE"
     }
 
+    private fun handleRetrieveAppUsage() {
+        val timestamp = System.currentTimeMillis()
+
+        if (SharedPrefs.lastAccessTimeAppUsage < 0) {
+            SharedPrefs.lastAccessTimeAppUsage = timestamp
+            return
+        }
+
+        val events = usageStatManager.queryEvents(SharedPrefs.lastAccessTimeAppUsage, timestamp)
+        val event = UsageEvents.Event()
+        val entities = mutableListOf<AppUsageEventEntity>()
+
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
+
+            val entity = AppUsageEventEntity(
+                    name = getApplicationName(packageManager = packageManager, packageName = event.packageName) ?: "",
+                    packageName = event.packageName,
+                    type = eventTypeToString(event.eventType),
+                    isSystemApp = isSystemApp(packageManager = packageManager, packageName = event.packageName),
+                    isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = event.packageName)
+            )
+            entities.add(entity)
+        }
+        putEntity(entities)
+        SharedPrefs.lastAccessTimeAppUsage = timestamp
+    }
+
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action != ACTION_RETRIEVE_APP_USAGE) return
 
-            val timestamp = System.currentTimeMillis()
-
-            if (SharedPrefs.lastAppUsageAccessTime < 0) {
-                SharedPrefs.lastAppUsageAccessTime = timestamp
-                return
-            }
-
-            val events = usageStatManager.queryEvents(SharedPrefs.lastAppUsageAccessTime, timestamp)
-            val event = UsageEvents.Event()
-            val entities = mutableListOf<AppUsageEventEntity>()
-
-            while (events.hasNextEvent()) {
-                events.getNextEvent(event)
-
-                val entity = AppUsageEventEntity(
-                        name = getApplicationName(packageManager = packageManager, packageName = event.packageName)
-                                ?: "",
-                        packageName = event.packageName,
-                        type = eventTypeToString(event.eventType),
-                        isSystemApp = isSystemApp(packageManager = packageManager, packageName = event.packageName),
-                        isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = event.packageName)
-                )
-                entities.add(entity)
-            }
-            putEntity(entities)
-            SharedPrefs.lastAppUsageAccessTime = timestamp
+            handleRetrieveAppUsage()
         }
     }
 
-
     override fun start() {
-        if (!SharedPrefs.isProvidedAppUsage || !checkAvailability()) return
-
         val currentTime = System.currentTimeMillis()
         val threeHour: Long = 1000 * 60 * 60 * 3
 
-        val triggerTime : Long = if(SharedPrefs.lastAppUsageAccessTime < 0 ||
-                SharedPrefs.lastAppUsageAccessTime + threeHour < currentTime) {
+        val triggerTime: Long = if (SharedPrefs.lastAccessTimeAppUsage < 0 ||
+                SharedPrefs.lastAccessTimeAppUsage + threeHour < currentTime) {
             currentTime + 1000 * 5
         } else {
-            SharedPrefs.lastAppUsageAccessTime + threeHour
+            SharedPrefs.lastAccessTimeAppUsage + threeHour
         }
 
         context.registerReceiver(receiver, filter)
 
         alarmManager.cancel(intent)
-        alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                threeHour,
-                intent
-        )
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime, threeHour, intent)
     }
 
     override fun stop() {
-        if (!SharedPrefs.isProvidedAppUsage || !checkAvailability()) return
-
         context.unregisterReceiver(receiver)
 
         alarmManager.cancel(intent)
     }
 
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
+
+    override val requiredPermissions: List<String>
+        get() = listOf(Manifest.permission.PACKAGE_USAGE_STATS)
+
+    override val newIntentForSetUp: Intent?
+        get() = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+
+    override val nameRes: Int?
+        get() = R.string.data_name_app_usage
+
+    override val descriptionRes: Int?
+        get() = R.string.data_desc_app_usage
+
     override fun checkAvailability(): Boolean {
         val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOpsManager.unsafeCheckOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
-        )
+        val mode = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            appOpsManager.checkOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
+            )
+        } else {
+            appOpsManager.unsafeCheckOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
+            )
+        }
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    override fun getRequiredPermissions(): List<String> = listOf(Manifest.permission.PACKAGE_USAGE_STATS)
-
-    override fun newIntentForSetup(): Intent? = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-
     companion object {
-        private const val ACTION_RETRIEVE_APP_USAGE = "kaist.iclab.abclogger.ACTION_RETRIEVE_APP_USAGE"
+        private const val ACTION_RETRIEVE_APP_USAGE = "${BuildConfig.APPLICATION_ID}.ACTION_RETRIEVE_APP_USAGE"
         private const val REQUEST_CODE_APP_USAGE = 0xee
     }
 }

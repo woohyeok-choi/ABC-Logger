@@ -10,14 +10,35 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import kaist.iclab.abclogger.SharedPrefs
-import kaist.iclab.abclogger.common.util.PermissionUtils
+import kaist.iclab.abclogger.Utils
 import kaist.iclab.abclogger.LocationEntity
+import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.fillBaseInfo
 
 class LocationCollector(val context: Context) : BaseCollector {
     private val client : FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    private val receiver : BroadcastReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != ACTION_LOCATION_UPDATE || !LocationResult.hasResult(intent)) return
+
+                LocationResult.extractResult(intent)?.lastLocation?.let { loc ->
+                    LocationEntity(
+                            latitude = loc.latitude,
+                            longitude = loc.longitude,
+                            altitude = loc.altitude,
+                            accuracy = loc.accuracy,
+                            speed = loc.speed
+                    ).fillBaseInfo(timeMillis = loc.time)
+                }?.run {
+                    putEntity(this)
+                }
+            }
+        }
     }
 
     private val intent : PendingIntent = PendingIntent.getBroadcast(
@@ -33,44 +54,34 @@ class LocationCollector(val context: Context) : BaseCollector {
             .setSmallestDisplacement(5.0F)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
-    private val receiver : BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action != ACTION_LOCATION_UPDATE || !LocationResult.hasResult(intent)) return
-
-            LocationResult.extractResult(intent)?.lastLocation?.let { loc ->
-                LocationEntity(
-                        latitude = loc.latitude,
-                        longitude = loc.longitude,
-                        altitude = loc.altitude,
-                        accuracy = loc.accuracy,
-                        speed = loc.speed
-                ).fillBaseInfo(timestamp = loc.time)
-            }?.run {
-               putEntity(this)
-            }
-        }
-    }
-
     override fun start() {
-        if (!SharedPrefs.isProvidedLocation || !checkAvailability()) return
         context.registerReceiver(receiver, filter)
         client.requestLocationUpdates(request, intent)
     }
 
     override fun stop() {
-        if (!SharedPrefs.isProvidedLocation || !checkAvailability()) return
         context.unregisterReceiver(receiver)
         client.removeLocationUpdates(intent)
     }
 
-    override fun checkAvailability(): Boolean = PermissionUtils.checkPermissionAtRuntime(context, getRequiredPermissions())
+    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
 
-    override fun getRequiredPermissions(): List<String> = listOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-    )
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
-    override fun newIntentForSetup(): Intent? = null
+    override val requiredPermissions: List<String>
+        get() = listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
+    override val newIntentForSetUp: Intent?
+        get() = null
+
+    override val nameRes: Int?
+        get() = R.string.data_name_location
+
+    override val descriptionRes: Int?
+        get() = R.string.data_desc_location
 
     companion object {
         private const val ACTION_LOCATION_UPDATE = "kaist.iclab.abclogger.ACTION_LOCATION_UPDATE"

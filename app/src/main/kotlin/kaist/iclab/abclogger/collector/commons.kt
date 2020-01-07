@@ -14,7 +14,12 @@ import kaist.iclab.abclogger.MessageEntity
 import kaist.iclab.abclogger.ObjBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.security.MessageDigest
+import kotlin.math.log10
+import kotlin.math.max
+import kotlin.math.min
 
 fun <T> getRecentContents(contentResolver: ContentResolver,
                           uri: Uri, timeColumn: String, columns: Array<String>,
@@ -54,6 +59,20 @@ fun contactTypeToString(typeInt: Int): String? = when (typeInt) {
     else -> null
 }
 
+fun toHash(input: String, start: Int = 0, end: Int = input.length, algorithm: String = "MD5"): String {
+    val safeStart = max(0, start)
+    val safeEnd = min(input.length, end)
+
+    val subString = input.substring(safeEnd, input.length - 1).toByteArray()
+    val bytes = MessageDigest.getInstance(algorithm).digest(subString)
+    println(input.substring(0, if (safeStart < 1) 0 else safeStart - 1))
+
+    return input.substring(safeStart, safeEnd) + "\$" +
+            bytes.joinToString(separator = "", transform = {
+                it.toInt().and(0xFF).toString(16).padStart(2, '0')
+            })
+}
+
 
 fun <T : Base> T.fillContact(number: String?, contentResolver: ContentResolver): T {
     if (number == null) return this
@@ -85,9 +104,17 @@ fun <T : Base> T.fillContact(number: String?, contentResolver: ContentResolver):
     }
 }
 
+fun countNumDigits(num: Long): Int {
+    return when (num) {
+        in Long.MIN_VALUE until 0 -> -1
+        0L -> 1
+        else -> (log10(num.toDouble()) + 1).toInt()
+    }
+}
+
 fun toMillis(timestamp: Long): Long {
     val curMillis = System.currentTimeMillis()
-    return if (FormatUtils.countNumDigits(timestamp) == FormatUtils.countNumDigits(curMillis)) {
+    return if (countNumDigits(timestamp) == countNumDigits(curMillis)) {
         timestamp
     } else {
         timestamp * 1000
@@ -128,7 +155,7 @@ fun isUpdatedSystemApp(packageManager: PackageManager, packageName: String): Boo
         }
 
 
-inline fun <reified T: Base> putEntity(entity: T?) {
+inline fun <reified T : Base> putEntity(entity: T?) {
     entity?.let { e ->
         GlobalScope.launch(Dispatchers.IO) {
             ObjBox.boxFor<T>().put(e)
@@ -136,10 +163,14 @@ inline fun <reified T: Base> putEntity(entity: T?) {
     }
 }
 
-inline fun <reified T: Base> putEntity(entities: Collection<T>?) {
-    if (entities?.isNotEmpty() == true) {
+inline fun <reified T : Base> putEntitySync(entity: T?) : Long? = entity?.let { e -> ObjBox.boxFor<T>().put(e) }
+
+inline fun <reified T : Base> putEntity(entities: Collection<T>?): Job? {
+    return if (entities?.isNotEmpty() == true) {
         GlobalScope.launch(Dispatchers.IO) {
             ObjBox.boxFor<T>().put(entities)
         }
+    } else {
+        null
     }
 }

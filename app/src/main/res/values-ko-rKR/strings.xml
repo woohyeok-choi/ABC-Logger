@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="noti_text_service_running">실험이 진행중입니다.</string>
+    <string name="ntf_text_service_running">실험이 진행중입니다.</string>
     <string name="noti_title_survey_check">응답하지 않은 설문이 있습니다.</string>
-    <string name="noti_title_service_running">@string/app_name</string>
+    <string name="ntf_title_service_running">@string/app_name</string>
     <string name="noti_text_survey_check">개의 설문을 응답하지 않으셨습니다.</string>
-    <string name="noti_title_sync">동기화</string>
-    <string name="noti_text_sync">동기화 중입니다&#8230;</string>
-    <string name="noti_text_sync_complete">동기화 완료!</string>
-    <string name="noti_text_sync_failed">동기화 실패</string>
+    <string name="ntf_title_sync">동기화</string>
+    <string name="ntf_text_sync">동기화 중입니다&#8230;</string>
+    <string name="ntf_text_sync_complete">동기화 완료!</string>
+    <string name="ntf_text_sync_failed">동기화 실패</string>
 
     <string name="general_experiment_open">모집 중</string>
     <string name="general_experiment_close">모집 종료</string>
@@ -30,15 +30,15 @@
     <string name="general_no_participated_experiment">참여중인 실험 없음</string>
     <string name="general_participating_in_experiment">실험 참여 중&#8230;</string>
     <string name="general_sync_in_progress">동기화 중&#8230;</string>
-    <string name="label_last_sync_time">마지막 동기화 시간</string>
-    <string name="label_free_text">자유롭게 입력해주세요.</string>
-    <string name="label_email">이메일</string>
+    <string name="general_last_sync_time">마지막 동기화 시간</string>
+    <string name="general_free_text">자유롭게 입력해주세요.</string>
+    <string name="general_email">이메일</string>
     <string name="label_password">비밀번호</string>
-    <string name="label_gender">성별</string>
-    <string name="label_birth_date">생년월일</string>
-    <string name="label_phone_number">전화번호</string>
-    <string name="label_affiliation">소속</string>
-    <string name="label_name">성명</string>
+    <string name="general_gender">성별</string>
+    <string name="general_birth_date">생년월일</string>
+    <string name="general_phone_number">전화번호</string>
+    <string name="general_affiliation">소속</string>
+    <string name="general_name">성명</string>
     <string name="label_new_password">새 비밀번호</string>
     <string name="label_email_registered">등록된 이메일 주소</string>
     <string name="label_experiment_group">실험 집단</string>
@@ -79,11 +79,11 @@
     <string name="dialog_message_dropout">실험을 중단하시겠습니까?</string>
     <string name="dialog_title_already_sign_in">이미 접속된 계정 존재</string>
 
-    <string name="format_hour">시간</string>
-    <string name="format_day">일</string>
-    <string name="format_week">주</string>
-    <string name="format_month">개월</string>
-    <string name="format_year">년</string>
+    <string name="general_hour">시간</string>
+    <string name="general_day">일</string>
+    <string name="general_week">주</string>
+    <string name="general_month">개월</string>
+    <string name="general_year">년</string>
     <string name="edt_error_email_invalid">잘못된 이메일 주소입니다.</string>
     <string name="edt_error_password_invalid">비밀번호는 8자 이상이어야 합니다.</string>
     <string name="edt_error_phone_number_invalid">잘못된 전화번호입니다.</string>
@@ -127,7 +127,7 @@
     <string name="error_wait_for_loading">아직 데이터를 다 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</string>
 
     <string name="msg_auth_request_verify_email">인증 메일을 보냈습니다.</string>
-    <string name="msg_auth_request_verify_password">비밀번호 초기화를 위한 인증 메일을 보냈습니다.</string>
+    <string name="msg_sign_in_success">비밀번호 초기화를 위한 인증 메일을 보냈습니다.</string>
     <string name="msg_auth_password_changed">비밀번호가 변경되었습니다.</string>
     <string name="msg_verify_success">인증이 완료되었습니다.</string>
     <string name="msg_set_app_usage">ABC Platform 이 사용 정보에 접근할 수 있도록 허용해주세요.</string>
@@ -152,8 +152,8 @@
     <string name="activity_title_survey_question">설문 응답</string>
     <string name="activity_title_experiment_participation">실험 참여</string>
     <string name="activity_title_experiment_detail">실험 상세 정보</string>
-    <string name="menu_header_survey">설문</string>
-    <string name="menu_header_experiment">실험</string>
+    <string name="menu_bottom_nav_survey">설문</string>
+    <string name="menu_bottom_nav_config">실험</string>
     <string name="menu_item_surveys_all">모든 설문</string>
     <string name="menu_item_surveys_unread">미응답 설문</string>
     <string name="menu_item_experiments_all">모든 실험</string>
@@ -191,4 +191,6 @@
     <string name="general_survey_excluded">설문 제외됨</string>
     <string name="label_optional_info">추가 정보</string>
     <string name="label_data_required">수집 대상 데이터</string>
+    <string name="noti_text_request_bluetooth_on">터치해서 블루투스를 활성화 시켜주세요.</string>
+    <string name="ntf_title_request_bluetooth_on">블루투스가 꺼져있습니다.</string>
 </resources>

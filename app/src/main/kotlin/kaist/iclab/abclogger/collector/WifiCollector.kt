@@ -8,19 +8,34 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.wifi.WifiManager
-import kaist.iclab.abclogger.SharedPrefs
-import kaist.iclab.abclogger.WifiEntity
-import kaist.iclab.abclogger.common.util.PermissionUtils
-import kaist.iclab.abclogger.fillBaseInfo
+import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.base.BaseCollector
 
 class WifiCollector(val context: Context) : BaseCollector {
-
     private val wifiManager: WifiManager by lazy {
         context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     }
 
     private val alarmManager: AlarmManager by lazy {
         context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    }
+
+    private val receiver: BroadcastReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val timestamp = System.currentTimeMillis()
+                wifiManager.scanResults.map { result ->
+                    WifiEntity(
+                            bssid = result.BSSID,
+                            ssid = result.SSID,
+                            frequency = result.frequency,
+                            rssi = result.level
+                    ).fillBaseInfo(timeMillis = timestamp)
+                }.run {
+                    putEntity(this)
+                }
+            }
+        }
     }
 
     private val intent: PendingIntent = PendingIntent.getBroadcast(
@@ -32,22 +47,6 @@ class WifiCollector(val context: Context) : BaseCollector {
         addAction(ACTION_WIFI_SCAN)
     }
 
-    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val timestamp = System.currentTimeMillis()
-            wifiManager.scanResults.map { result ->
-                WifiEntity(
-                        bssid = result.BSSID,
-                        ssid = result.SSID,
-                        frequency = result.frequency,
-                        rssi = result.level
-                ).fillBaseInfo(timestamp = timestamp)
-            }.run {
-                putEntity(this)
-            }
-        }
-    }
-
     override fun start() {
         if (!SharedPrefs.isProvidedWiFi || !checkAvailability()) return
         context.registerReceiver(receiver, filter)
@@ -56,7 +55,7 @@ class WifiCollector(val context: Context) : BaseCollector {
         alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP,
                 System.currentTimeMillis() + 1000,
-                1000 * 60 * 5,
+                5 * 60 * 1000,
                 intent
         )
     }
@@ -67,18 +66,28 @@ class WifiCollector(val context: Context) : BaseCollector {
         alarmManager.cancel(intent)
     }
 
-    override fun checkAvailability(): Boolean = PermissionUtils.checkPermissionAtRuntime(context, getRequiredPermissions())
+    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
 
-    override fun getRequiredPermissions(): List<String> = listOf(
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-    )
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
-    override fun newIntentForSetup(): Intent? = null
+    override val requiredPermissions: List<String>
+        get() = listOf(
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
+    override val newIntentForSetUp: Intent?
+        get() = null
+
+    override val nameRes: Int?
+        get() = R.string.data_name_wifi
+
+    override val descriptionRes: Int?
+        get() = R.string.data_desc_wifi
 
     companion object {
         private const val REQUEST_CODE_WIFI_SCAN = 0xf0
-        private const val ACTION_WIFI_SCAN = "kaist.iclab.abclogger.ACTION_WIFI_SCAN"
+        private const val ACTION_WIFI_SCAN = "${BuildConfig.APPLICATION_ID}.ACTION_WIFI_SCAN"
     }
 }

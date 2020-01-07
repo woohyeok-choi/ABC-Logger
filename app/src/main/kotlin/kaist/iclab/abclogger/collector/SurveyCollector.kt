@@ -1,282 +1,249 @@
 package kaist.iclab.abclogger.collector
 
-//import kaist.iclab.abclogger.data.FirestoreAccessor
+import android.Manifest
 import android.app.AlarmManager
-import android.app.IntentService
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Looper
-import androidx.annotation.WorkerThread
+import android.content.IntentFilter
+import android.text.format.DateUtils
 import androidx.core.app.AlarmManagerCompat
-import android.util.Log
-import kaist.iclab.abclogger.App
-import kaist.iclab.abclogger.common.ABCException
-import kaist.iclab.abclogger.common.NoParticipatedExperimentException
-import kaist.iclab.abclogger.common.util.FormatUtils
-import kaist.iclab.abclogger.common.util.NotificationUtils
-import kaist.iclab.abclogger.common.util.Utils
-import kaist.iclab.abclogger.data.PreferenceAccessor
-import kaist.iclab.abclogger.data.entities.LogEntity
-import kaist.iclab.abclogger.data.entities.ParticipationEntity
-import kaist.iclab.abclogger.data.types.PhysicalActivityTransitionType
-import kaist.iclab.abclogger.prefs
-import kaist.iclab.abclogger.survey.SurveyEventType
-import kaist.iclab.abclogger.survey.SurveyPolicy
-import kaist.iclab.abclogger.survey.SurveyTime
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.TaskStackBuilder
+import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
+import kaist.iclab.abclogger.Survey
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.base.BaseCollector
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.util.*
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
-object SurveyCollector {
-    private val TAG = SurveyCollector::class.java.simpleName
+class SurveyCollector(val context: Context) : BaseCollector {
+    private val receiver: BroadcastReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context?, intent: Intent?) {
+                if (intent?.action != ACTION_SURVEY_TRIGGER) return
 
-    private const val MIN_DELAY_IN_MS : Long = 1000 * 60 * 15
-    private const val MAX_DELAY_IN_MS : Long = 1000 * 60 * 60
+                GlobalScope.launch(Dispatchers.IO) {
+                    val setting = intent.getStringExtra(EXTRA_SURVEY_UUID)?.let { uuid ->
+                        ObjBox.boxFor<SurveySettingEntity>().query().equal(SurveySettingEntity_.uuid, uuid).build().findFirst()
+                    } ?: return@launch
 
-    private const val REQUEST_CODE_ALARM = 0x00ff
-    private const val PERIOD_SURVEY_CHECK_IN_MS = 1000 * 60 * 60 * 6
-
-    private val EXTRA_SURVEY_EVENT_TYPE = "$TAG.EXTRA_SURVEY_EVENT_TYPE"
-
-    class SurveyTriggerService : IntentService(SurveyTriggerService::class.java.name) {
-        override fun onHandleIntent(intent: Intent?) {
-            try {
-                val entity = ParticipationEntity.getParticipationFromLocal()
-                val survey = Survey.parse(entity.survey)    // PARSING TEST
-                val pref = PreferenceAccessor.getInstance(this)
-                val now = System.currentTimeMillis()
-
-                if (pref.lastTimeSurveyChecked < 0) pref.lastTimeSurveyChecked = System.currentTimeMillis()
-
-                if (now - pref.lastTimeSurveyChecked >= PERIOD_SURVEY_CHECK_IN_MS) {
-                    notifyNotRespondedSurvey(this)
-                    pref.lastTimeSurveyChecked = now
-                }
-
-                if (pref.nextSurveyTriggeredAt in 1..now) {
-                    notifySurvey(this, entity, survey)
-                    /*
-                    Tasks.await(
-                        FirestoreAccessor.setOrUpdate(
-                            subjectEmail = entity.subjectEmail,
-                            experimentUuid = entity.experimentUuid,
-                            data = FirestoreAccessor.ExperimentData(lastTimeSurveyTriggered = now)
-                        )
-                    )*/
-                    prefs.lastTimeSurveyTriggered = now
-                }
-                scheduleOnBackground(this, entity, survey)
-            } catch (e: NoParticipatedExperimentException) {
-                cancel(this)
-            } catch (e: ABCException) {
-                cancel(this)
-            } catch (e: Exception) {
-                scheduleWithNothing(this)
-            }
-        }
-    }
-
-    class SurveyScheduleService : IntentService(SurveyScheduleService::class.java.name) {
-        override fun onHandleIntent(intent: Intent?) {
-            val eventTypes = intent?.getStringArrayExtra(EXTRA_SURVEY_EVENT_TYPE)?.mapNotNull {
-                try { SurveyEventType.valueOf(it) } catch (e: Exception) { null }
-            }
-            scheduleOnBackground(this, eventTypes = eventTypes)
-        }
-    }
-
-    val EventReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if(intent.action == LocationAndActivityCollector.ACTION_ACTIVITY_TRANSITION_AVAILABLE) {
-                val eventType = extractTriggerEvent(intent)
-
-                if(eventType != null) {
-                    schedule(context, eventType)
+                    handleTrigger(setting)
+                    scheduleSurvey(context)
                 }
             }
         }
     }
 
-    fun schedule(context: Context, eventTypes: List<SurveyEventType>? = null) {
-        if(Looper.myLooper() == Looper.getMainLooper()) {
-            context.startService(
-                Intent(context, SurveyScheduleService::class.java).apply {
-                    if (eventTypes?.isNotEmpty() == true) putExtra(EXTRA_SURVEY_EVENT_TYPE, eventTypes.map { it.name }.toTypedArray())
-                }
-            )
-        } else {
-            scheduleOnBackground(context, eventTypes = eventTypes)
-        }
+    private val filter = IntentFilter().apply {
+        addAction(ACTION_SURVEY_TRIGGER)
     }
 
-    fun scheduleWithNothing (context: Context) {
-        val alarmManager =  context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pendingIntent = buildPendingIntent(context)
-        val pref = PreferenceAccessor.getInstance(context)
-        alarmManager.cancel(pendingIntent)
-        pref.nextSurveyTriggeredAt = Long.MIN_VALUE
+    private fun handleTrigger(setting: SurveySettingEntity) {
+        val survey = Survey.fromJson<Survey>(setting.json) ?: return
+        val curTime = System.currentTimeMillis()
+        val id = SurveyEntity(
+                title = survey.title,
+                message = survey.message,
+                timeoutPolicy = survey.timeoutPolicy,
+                timeoutSec = survey.timeoutSec,
+                deliveredTime = curTime,
+                json = setting.json
+        ).fillBaseInfo(timeMillis = curTime).run { putEntitySync(this) } ?: return
 
-        AlarmManagerCompat.setExactAndAllowWhileIdle(alarmManager, AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + MIN_DELAY_IN_MS, pendingIntent)
+        val surveyIntent = SurveyResponseActivity.newIntent(context.applicationContext, id, false)
+        val pendingIntent = TaskStackBuilder.create(context)
+                .addNextIntentWithParentStack(surveyIntent)
+                .getPendingIntent(REQUEST_CODE_SURVEY_OPEN, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val notification = Notifications.buildNotification(
+                context = context,
+                channelId = Notifications.CHANNEL_ID_SURVEY,
+                title = survey.title,
+                text = survey.message,
+                subText = DateUtils.formatDateTime(
+                        context, curTime,
+                        DateUtils.FORMAT_NO_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
+                ),
+                intent = pendingIntent
+        )
+
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_SURVEY_DELIVERED, notification)
     }
 
-    @WorkerThread
-    private fun scheduleOnBackground(context: Context, experimentEntity: ParticipationEntity? = null, surveyData: Survey? = null, eventTypes: List<SurveyEventType>? = null) {
-        val pref = PreferenceAccessor.getInstance(context)
-        val now = System.currentTimeMillis()
-        val alarmManager =  context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pendingIntent = buildPendingIntent(context)
-
-        try {
-            pref.nextSurveyTriggeredAt = Long.MIN_VALUE
-
-            val entity = experimentEntity ?: ParticipationEntity.getParticipationFromLocal()
-            val policy = surveyData?.policy ?: Survey.parse(entity.survey).policy
-
-            val participateTime = entity.participateTime
-            Log.d(TAG, entity.survey)
-            /*
-            val lastSurveyTriggeredTime = Tasks.await(
-                FirestoreAccessor.get(
-                    subjectEmail = entity.subjectEmail,
-                    experimentUuid = entity.experimentUuid)
-            )?.lastTimeSurveyTriggered ?: Long.MIN_VALUE
-            */
-            val lastSurveyTriggeredTime = prefs.lastTimeSurveyTriggered
-
-            if(lastSurveyTriggeredTime > 0 && policy.isEventBased()) {
-                if(eventTypes?.intersect(policy.triggerEvents)?.isNotEmpty() == true) pref.lastTimeSurveyTriggerEventOccurs = now
-                if(eventTypes?.intersect(policy.cancelEvents)?.isNotEmpty() == true) pref.lastTimeSurveyCancelEventOccurs = now
+    private fun scheduleSurvey(context: Context, event: ABCEvent? = null) {
+        val updatedSettings = ObjBox.boxFor<SurveySettingEntity>().all.mapNotNull { setting ->
+            Survey.fromJson<Survey>(jsonString = setting.json)?.let { survey -> Pair(survey, setting) }
+        }.mapNotNull { (survey, setting) ->
+            when (survey) {
+                is IntervalBasedSurvey -> updateIntervalBasedSurvey(survey, setting)
+                is ScheduleBasedSurvey -> updateScheduleBasedSurvey(survey, setting)
+                is EventBasedSurvey -> updateEventBasedSurvey(survey, setting, event)
+                else -> null
             }
+        }
 
-            val triggeredAt = deriveTriggerTimeInMs(
-                    policy = policy,
-                    participateTime = participateTime,
-                    lastTriggerEventTime = pref.lastTimeSurveyTriggerEventOccurs,
-                    lastCancelEventTime = pref.lastTimeSurveyCancelEventOccurs,
-                    lastSurveyTriggeredTime = lastSurveyTriggeredTime
-            )
+        ObjBox.boxFor<SurveySettingEntity>().put(updatedSettings)
 
-            pref.nextSurveyTriggeredAt = triggeredAt ?: Long.MIN_VALUE
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-            val actualTriggeredAt = if(triggeredAt == null || triggeredAt - now > MAX_DELAY_IN_MS) {
-                now + MIN_DELAY_IN_MS
+        updatedSettings.forEach { setting ->
+            val pendingIntent = getPendingIntent(setting.id, setting.uuid)
+            if (setting.nextTimeTriggered < 0) {
+                alarmManager.cancel(pendingIntent)
             } else {
-                Math.max(triggeredAt, now + 5000)
+                AlarmManagerCompat.setExactAndAllowWhileIdle(
+                        alarmManager, AlarmManager.RTC_WAKEUP, setting.nextTimeTriggered, pendingIntent
+                )
             }
-            alarmManager.cancel(pendingIntent)
-            AlarmManagerCompat.setExactAndAllowWhileIdle(alarmManager, AlarmManager.RTC_WAKEUP, actualTriggeredAt, pendingIntent)
-
-            LogEntity.log(TAG, "scheduleOnBackground(): " +
-                "participatedTime = ${FormatUtils.formatLogTime(entity.participateTime) ?: "None"}, " +
-                "lastSurveyTriggerTime = ${FormatUtils.formatLogTime(lastSurveyTriggeredTime) ?: "None"}, " +
-                "lastTriggerEventTime = ${FormatUtils.formatLogTime(pref.lastTimeSurveyTriggerEventOccurs) ?: "None"}, " +
-                "lastCancelEventTime = ${FormatUtils.formatLogTime(pref.lastTimeSurveyCancelEventOccurs) ?: "None"}, " +
-                "intendedTriggerAt = ${FormatUtils.formatLogTime(pref.nextSurveyTriggeredAt) ?: "None"}, " +
-                "actualTriggerAt = ${FormatUtils.formatLogTime(actualTriggeredAt) ?: "None"}"
-            )
-        } catch (e: Exception) {
-            alarmManager.cancel(pendingIntent)
-            pref.nextSurveyTriggeredAt = Long.MIN_VALUE
-
-            Log.d(TAG, e.toString())
-
-            LogEntity.log(TAG, "scheduleOnBackground(): canceled because of ${e::class.java.name} = ${e.message}")
         }
     }
 
-    fun cancel(context: Context) {
-        val alarmManager =  context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pendingIntent = buildPendingIntent(context)
-
-        alarmManager.cancel(pendingIntent)
-
-        LogEntity.log(TAG, "cancel()")
-    }
-
-    private fun deriveTriggerTimeInMs(policy: SurveyPolicy,
-                                      participateTime: Long,
-                                      lastSurveyTriggeredTime: Long = Long.MIN_VALUE,
-                                      lastTriggerEventTime: Long = Long.MIN_VALUE,
-                                      lastCancelEventTime: Long = Long.MIN_VALUE) : Long? {
-
-        val isTriggerEventOccurs = lastCancelEventTime <= lastTriggerEventTime && lastTriggerEventTime > 0
-        val isCancelEventOccurs = lastTriggerEventTime < lastCancelEventTime && lastCancelEventTime > 0
-
-        Log.d(TAG, "deriveTriggerTimeInMs(lastSurveyTriggeredTime = $lastSurveyTriggeredTime, lastTriggerEventTime = $lastTriggerEventTime, lastCancelEventTime = $lastCancelEventTime)")
-
-        val triggeredAt = when {
-            lastSurveyTriggeredTime <= 0 -> policy.initialDelay.getTimeInMillisAfterInterval(participateTime)
-            policy.isEventBased() && isTriggerEventOccurs -> policy.minInterval.getTimeInMillisAfterInterval(Math.max(lastTriggerEventTime, lastSurveyTriggeredTime)) +
-                    deriveFlexTimeInMillis(policy.flexInterval)
-            policy.isEventBased() && isCancelEventOccurs -> null
-            else -> policy.minInterval.getTimeInMillisAfterInterval(lastSurveyTriggeredTime) + deriveFlexTimeInMillis(policy.flexInterval)
-        }
-
-        return triggeredAt?.let { policy.getMostRecentTriggerTime(it) }
-    }
-
-    private fun buildPendingIntent(context: Context) = PendingIntent.getService(
-        context,
-            REQUEST_CODE_ALARM,
-        Intent(context, SurveyTriggerService::class.java),
-        PendingIntent.FLAG_CANCEL_CURRENT
+    private fun getPendingIntent(id: Long, uuid: String) = PendingIntent.getBroadcast(
+            context, id.toInt(),
+            Intent(ACTION_SURVEY_TRIGGER).putExtra(EXTRA_SURVEY_UUID, uuid),
+            PendingIntent.FLAG_UPDATE_CURRENT
     )
 
-    private fun notifyNotRespondedSurvey(context: Context) {
-        val now = System.currentTimeMillis()
-        val participationEntity = try { ParticipationEntity.getParticipationFromLocal() } catch (e: Exception) { null } ?: return
+    private fun updateIntervalBasedSurvey(survey: IntervalBasedSurvey, setting: SurveySettingEntity): SurveySettingEntity {
+        val curTime = System.currentTimeMillis()
 
-        val numberNotRepliedEntities = Survey.numberNotRepliedEntities(participationEntity, now)
-        if(numberNotRepliedEntities > 0) {
-            NotificationUtils.notifySurveyRemained(context, numberNotRepliedEntities)
+        val initDelayMs = if (survey.initialDelaySec > 0) {
+            TimeUnit.SECONDS.toMillis(survey.initialDelaySec)
+        } else {
+            0
+        }
+        val intervalMs = if (survey.intervalSec > 0) {
+            TimeUnit.SECONDS.toMillis(survey.intervalSec)
+        } else {
+            0
+        }
+        val flexMs = if (survey.flexIntervalSec > 0) {
+            TimeUnit.SECONDS.toMillis(Random.nextLong(survey.flexIntervalSec))
+        } else {
+            0
+        }
+
+        return when {
+            curTime < SharedPrefs.participationTime + initDelayMs -> setting.copy(
+                    nextTimeTriggered = SharedPrefs.participationTime + initDelayMs
+            )
+            curTime <= setting.nextTimeTriggered -> setting
+            else -> setting.copy(
+                    nextTimeTriggered = setting.lastTimeTriggered + intervalMs + flexMs
+            )
         }
     }
 
-    private fun notifySurvey(context: Context, entity: ParticipationEntity, survey: Survey) {
-
-        val box = App.boxFor<kaist.iclab.abclogger.data.entities.Survey>()
-        var surveyEntity = kaist.iclab.abclogger.data.entities.Survey(
-                title = survey.title,
-                message = survey.message ?: "",
-                timeoutPolicy = survey.policy.timeoutPolicyType,
-                timeout = survey.policy.timeout,
-                responses = entity.survey
-        )
-        val entityId = box.put(surveyEntity)
-
-        surveyEntity = surveyEntity.copy(
-            deliveredTime = System.currentTimeMillis()
-        ).apply {
-            id = entityId
-            utcOffset = Utils.utcOffsetInHour()
-            experimentUuid = entity.experimentUuid
-            experimentGroup = entity.experimentGroup
-            subjectEmail = entity.subjectEmail
-            isUploaded = false
+    private fun updateEventBasedSurvey(survey: EventBasedSurvey,
+                                       setting: SurveySettingEntity,
+                                       event: ABCEvent? = null): SurveySettingEntity {
+        val intervalMs = if (survey.delayAfterTriggerEventSec > 0) {
+            TimeUnit.SECONDS.toMillis(survey.delayAfterTriggerEventSec)
+        } else {
+            0
         }
-        box.put(surveyEntity)
-        Log.d(TAG, "Box.put(" +
-            "timestamp = ${surveyEntity.timestamp}, subjectEmail = ${surveyEntity.subjectEmail}, experimentUuid = ${surveyEntity.experimentUuid}, " +
-            "experimentGroup = ${surveyEntity.experimentGroup}, entity = $surveyEntity)")
+        val flexMs = if (survey.flexDelayAfterTriggerEventSec > 0) {
+            TimeUnit.SECONDS.toMillis(Random.nextLong(survey.flexDelayAfterTriggerEventSec))
+        } else {
+            0
+        }
 
-        NotificationUtils.notifySurveyDelivered(
-            context = context,
-            entity = surveyEntity,
-            number = Survey.numberNotRepliedEntities(entity, System.currentTimeMillis())
-        )
-
-        LogEntity.log(TAG, "notifySurvey()")
-    }
-
-    private fun extractTriggerEvent(intent: Intent) : List<SurveyEventType>? {
-        return intent.getStringArrayExtra(LocationAndActivityCollector.EXTRA_ACTIVITY_TRANSITIONS).mapNotNull {
-            try { PhysicalActivityTransitionType.valueOf(it) } catch (e: Exception) {null }
+        return when (event?.eventType) {
+            in survey.triggerEvents -> setting.copy(
+                    nextTimeTriggered = event?.timestamp?.plus(intervalMs + flexMs) ?: -1
+            )
+            in survey.cancelEvents -> setting.copy(
+                    nextTimeTriggered = -1
+            )
+            else -> setting
         }
     }
 
-    private fun deriveFlexTimeInMillis(flex: SurveyTime) : Long {
-        val random = Random(System.currentTimeMillis())
-        val flexMillis = flex.toMillis()
-        return if(flexMillis > 0) random.nextInt(flexMillis.toInt()).toLong() else 0
+    private fun updateScheduleBasedSurvey(survey: ScheduleBasedSurvey, setting: SurveySettingEntity): SurveySettingEntity {
+        val curTime = System.currentTimeMillis()
+        val calendar = GregorianCalendar.getInstance(TimeZone.getDefault()).apply {
+            timeInMillis = curTime
+        }
+        val curDate = calendar.time
+
+        val nextTimeTriggered = survey.schedules.mapNotNull { schedule ->
+            (0..Int.MAX_VALUE step 7).firstNotNullResult { day ->
+                val triggerCalendar = calendar.apply {
+                    set(GregorianCalendar.DAY_OF_WEEK, schedule.dayOfWeek.id)
+                    set(GregorianCalendar.HOUR_OF_DAY, schedule.hour)
+                    set(GregorianCalendar.MINUTE, schedule.minute)
+                    set(GregorianCalendar.SECOND, 0)
+                    set(GregorianCalendar.MILLISECOND, 0)
+
+                    add(GregorianCalendar.DAY_OF_YEAR, day)
+                }
+                val triggerDate = triggerCalendar.time
+
+                return@firstNotNullResult if (triggerDate.after(curDate)) {
+                    triggerDate.time
+                } else {
+                    null
+                }
+            }
+        }.min()
+
+        return if (nextTimeTriggered != null) {
+            setting.copy(nextTimeTriggered = nextTimeTriggered)
+        } else {
+            setting.copy(nextTimeTriggered = -1)
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onEvent(event: ABCEvent) {
+        GlobalScope.launch(Dispatchers.IO) { scheduleSurvey(context, event) }
+    }
+
+    override fun start() {
+        ABCEvent.register(this)
+        context.registerReceiver(receiver, filter)
+    }
+
+    override fun stop() {
+        ABCEvent.unregister(this)
+        context.unregisterReceiver(receiver)
+    }
+
+    override fun checkAvailability(): Boolean = ObjBox.boxFor<SurveySettingEntity>().count() > 0L
+
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
+
+
+    override val requiredPermissions: List<String>
+        get() = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+
+    override val newIntentForSetUp: Intent?
+        get() = Intent(context, SurveySettingActivity::class.java)
+
+    override val nameRes: Int?
+        get() = R.string.data_name_survey
+
+    override val descriptionRes: Int?
+        get() = R.string.data_desc_survey
+
+    companion object {
+        private const val EXTRA_SURVEY_UUID = "${BuildConfig.APPLICATION_ID}.EXTRA_SURVEY_UUID"
+        private const val ACTION_SURVEY_TRIGGER = "${BuildConfig.APPLICATION_ID}.ACTION_SURVEY_TRIGGER"
+        private const val REQUEST_CODE_SURVEY_OPEN = 0xdd
+        private const val NOTIFICATION_ID_SURVEY_DELIVERED = 0x05
+    }
+
+
+    class SurveySettingActivity : BaseAppCompatActivity() {
+
     }
 }

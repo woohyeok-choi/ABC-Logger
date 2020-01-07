@@ -3,7 +3,6 @@ package kaist.iclab.abclogger.collector
 import android.Manifest
 import android.app.AlarmManager
 import android.app.IntentService
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -16,9 +15,9 @@ import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.tasks.Tasks
-import kaist.iclab.abclogger.PhysicalStatusEntity
-import kaist.iclab.abclogger.SharedPrefs
-import kaist.iclab.abclogger.fillBaseInfo
+import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.base.BaseCollector
 import java.util.concurrent.TimeUnit
 
 class PhysicalStatusCollector(val context: Context) : BaseCollector {
@@ -49,11 +48,11 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         override fun onHandleIntent(intent: Intent?) {
             val account = GoogleSignIn.getLastSignedInAccount(this) ?: return
 
-            val lastTime = SharedPrefs.lastPhysicalStatusAccessTime
+            val lastTime = SharedPrefs.lastAccessTimePhysicalStatus
             val currentTime = System.currentTimeMillis()
 
             if (lastTime < 0) {
-                SharedPrefs.lastPhysicalStatusAccessTime = currentTime
+                SharedPrefs.lastAccessTimePhysicalStatus = currentTime
                 return
             }
 
@@ -79,7 +78,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
                                 startTime = dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                                 endTime = dataPoint.getEndTime(TimeUnit.MILLISECONDS),
                                 value = dataPoint.getValue(Field.FIELD_STEPS).asFloat()
-                        ).fillBaseInfo(timestamp = dataPoint.getTimestamp(TimeUnit.MILLISECONDS))
+                        ).fillBaseInfo(timeMillis = dataPoint.getTimestamp(TimeUnit.MILLISECONDS))
                     }
                 }?.flatten()
             }.flatten().run { putEntity(this) }
@@ -87,14 +86,10 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
     }
 
     override fun start() {
-        if (!SharedPrefs.isProvidedPhysicalStatus || !checkAvailability()) return
-
         GoogleSignIn.getLastSignedInAccount(context)?.let { account ->
             val client = Fitness.getRecordingClient(context, account)
-
             Tasks.whenAll(dataTypes.map { dataType -> client.subscribe(dataType) })
         }?.addOnSuccessListener {
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP)
 
         }?.addOnFailureListener {
 
@@ -102,21 +97,37 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
     }
 
     override fun stop() {
-        if (!SharedPrefs.isProvidedPhysicalStatus || !checkAvailability()) return
-
 
     }
 
-    override fun checkAvailability(): Boolean =
-            GoogleSignIn.getLastSignedInAccount(context)?.let { account ->
-                GoogleSignIn.hasPermissions(account, fitnessOptions)
-            } ?: false
+    override fun checkAvailability(): Boolean {
+        val isAccountAvailable = GoogleSignIn.getLastSignedInAccount(context)?.let { account ->
+            GoogleSignIn.hasPermissions(account, fitnessOptions)
+        } ?: false
 
-    override fun getRequiredPermissions(): List<String> = listOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-    )
+        val isPermissionAvailable = Utils.checkPermissionAtRuntime(context, requiredPermissions)
 
-    override fun newIntentForSetup(): Intent? = GoogleSignIn.getClient(context, signInOptions).signInIntent
+        return isAccountAvailable && isPermissionAvailable
+    }
 
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
+
+    override val requiredPermissions: List<String>
+        get() = listOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+    override val newIntentForSetUp: Intent?
+        get() = Intent(context, PhysicalStatusSettingActivity::class.java)
+
+    override val nameRes: Int?
+        get() = R.string.data_name_physical_status
+
+    override val descriptionRes: Int?
+        get() = R.string.data_desc_physical_status
+
+    class PhysicalStatusSettingActivity : BaseAppCompatActivity() {
+
+    }
 }

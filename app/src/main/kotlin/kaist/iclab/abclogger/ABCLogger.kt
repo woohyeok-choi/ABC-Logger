@@ -1,7 +1,9 @@
 package kaist.iclab.abclogger
 
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import github.agustarc.koap.Koap
 import kaist.iclab.abclogger.base.BaseService
 
 class ABCLogger : BaseService() {
@@ -20,5 +22,13 @@ class ABCLogger : BaseService() {
 
     override fun onDestroy() {
         super.onDestroy()
+    }
+
+    companion object {
+        fun bind(context: Context) {
+            ObjBox.bind(context)
+            Koap.bind(context, SharedPrefs, ExternalDevicePrefs)
+            Notifications.bind(context)
+        }
     }
 }

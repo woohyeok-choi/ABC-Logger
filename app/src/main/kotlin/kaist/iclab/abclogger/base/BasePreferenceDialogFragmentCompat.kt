@@ -12,7 +12,7 @@ import android.view.ViewGroup
 abstract class BasePreferenceDialogFragmentCompat : PreferenceDialogFragmentCompat() {
     protected val TAG : String = javaClass.simpleName
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         Log.d(TAG, "onAttach()")
     }

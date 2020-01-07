@@ -9,6 +9,7 @@ import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.base.BaseCollector
 
 class NotificationCollector : NotificationListenerService(), BaseCollector {
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -16,7 +17,11 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
         if (!SharedPrefs.isProvidedNotification || !checkAvailability()) return
 
         try {
-            sbn?.run { store(this, true) }
+            sbn?.run {
+                store(this, true)
+                ABCEvent.post(postTime, ABCEvent.NOTIFICATION_POSTED)
+            }
+
         } catch (e: Exception) {
 
         }
@@ -27,7 +32,10 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
         if (!SharedPrefs.isProvidedNotification || !checkAvailability()) return
 
         try {
-            sbn?.run { store(this, false) }
+            sbn?.run {
+                store(this, false)
+                ABCEvent.post(postTime, ABCEvent.NOTIFICATION_REMOVED)
+            }
         } catch (e: Exception) {
 
         }
@@ -79,7 +87,7 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
                 sound = sound,
                 lightColor = lightColor,
                 isRemoved = isPosted
-        ).fillBaseInfo(timestamp = postTime).run {
+        ).fillBaseInfo(timeMillis = postTime).run {
             putEntity(this)
         }
     }
@@ -93,7 +101,20 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
                     contentResolver, "enabled_notification_listeners"
             )?.contains(packageName) == true
 
-    override fun getRequiredPermissions(): List<String> = listOf()
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
-    override fun newIntentForSetup(): Intent? = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+
+    override val requiredPermissions: List<String>
+        get() = listOf()
+
+    override val newIntentForSetUp: Intent?
+        get() = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+
+    override val nameRes: Int?
+        get() = R.string.data_name_notification
+
+    override val descriptionRes: Int?
+        get() = R.string.data_desc_notification
+
+
 }

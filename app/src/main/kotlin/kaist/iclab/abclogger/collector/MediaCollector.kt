@@ -6,10 +6,8 @@ import android.content.Intent
 import android.database.ContentObserver
 import android.os.Handler
 import android.provider.MediaStore
-import kaist.iclab.abclogger.SharedPrefs
-import kaist.iclab.abclogger.common.util.PermissionUtils
-import kaist.iclab.abclogger.MediaEntity
-import kaist.iclab.abclogger.fillBaseInfo
+import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.base.BaseCollector
 
 class MediaCollector (val context: Context) : BaseCollector {
 
@@ -22,26 +20,24 @@ class MediaCollector (val context: Context) : BaseCollector {
                 getRecentContents(
                         contentResolver = context.contentResolver,
                         uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI,
-                        timeColumn = MediaStore.Images.ImageColumns.DATE_TAKEN,
+                        timeColumn = MediaStore.Images.ImageColumns.DATE_ADDED,
                         columns = arrayOf(
-                                MediaStore.Images.ImageColumns.DATE_TAKEN,
-                                MediaStore.Images.ImageColumns.MIME_TYPE,
-                                MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME
+                                MediaStore.Images.ImageColumns.DATE_ADDED,
+                                MediaStore.Images.ImageColumns.MIME_TYPE
                         ),
-                        lastTime = SharedPrefs.lastInternalPhotoAccessTime
+                        lastTime = SharedPrefs.lastAccessTimeInternalPhoto
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     timestamps.add(timestamp)
 
                     MediaEntity(
-                            mimeType = cursor.getString(1) ?: "image/*",
-                            bucketDisplay = cursor.getString(2)
+                            mimeType = cursor.getString(1) ?: "image/*"
                     ).fillBaseInfo(toMillis(timestamp = timestamp))
                 }?.run {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastInternalPhotoAccessTime = timestamps.max() ?: SharedPrefs.lastInternalPhotoAccessTime
+                SharedPrefs.lastAccessTimeInternalPhoto = timestamps.max() ?: SharedPrefs.lastAccessTimeInternalPhoto
             }
         }
     }
@@ -51,30 +47,28 @@ class MediaCollector (val context: Context) : BaseCollector {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
                 val timestamps = mutableListOf<Long>()
-
+                MediaStore.MediaColumns.DATE_ADDED
                 getRecentContents(
                         contentResolver = context.contentResolver,
                         uri = MediaStore.Video.Media.INTERNAL_CONTENT_URI,
-                        timeColumn =  MediaStore.Video.VideoColumns.DATE_TAKEN,
+                        timeColumn =  MediaStore.Video.VideoColumns.DATE_ADDED,
                         columns = arrayOf(
-                                MediaStore.Video.VideoColumns.DATE_TAKEN,
-                                MediaStore.Video.VideoColumns.MIME_TYPE,
-                                MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME
+                                MediaStore.Video.VideoColumns.DATE_ADDED,
+                                MediaStore.Video.VideoColumns.MIME_TYPE
                         ),
-                        lastTime = SharedPrefs.lastInternalVideoAccessTime
+                        lastTime = SharedPrefs.lastAccessTimeInternalVideo
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     timestamps.add(timestamp)
 
                     MediaEntity(
-                            mimeType = cursor.getString(1) ?: "video/*",
-                            bucketDisplay = cursor.getString(2)
+                            mimeType = cursor.getString(1) ?: "video/*"
                     ).fillBaseInfo(toMillis(timestamp = timestamp))
                 }?.run {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastInternalVideoAccessTime = timestamps.max() ?: SharedPrefs.lastInternalVideoAccessTime
+                SharedPrefs.lastAccessTimeInternalVideo = timestamps.max() ?: SharedPrefs.lastAccessTimeInternalVideo
             }
         }
     }
@@ -89,26 +83,24 @@ class MediaCollector (val context: Context) : BaseCollector {
                 getRecentContents(
                         contentResolver = context.contentResolver,
                         uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        timeColumn = MediaStore.Images.ImageColumns.DATE_TAKEN,
+                        timeColumn = MediaStore.Images.ImageColumns.DATE_ADDED,
                         columns = arrayOf(
-                                MediaStore.Images.ImageColumns.DATE_TAKEN,
-                                MediaStore.Images.ImageColumns.MIME_TYPE,
-                                MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME
+                                MediaStore.Images.ImageColumns.DATE_ADDED,
+                                MediaStore.Images.ImageColumns.MIME_TYPE
                         ),
-                        lastTime = SharedPrefs.lastExternalPhotoAccessTime
+                        lastTime = SharedPrefs.lastAccessTimeExternalPhoto
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     timestamps.add(timestamp)
 
                     MediaEntity(
-                            mimeType = cursor.getString(1) ?: "image/*",
-                            bucketDisplay = cursor.getString(2)
+                            mimeType = cursor.getString(1) ?: "image/*"
                     ).fillBaseInfo(toMillis(timestamp = timestamp))
                 }?.run {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastExternalPhotoAccessTime = timestamps.max() ?: SharedPrefs.lastExternalPhotoAccessTime
+                SharedPrefs.lastAccessTimeExternalPhoto = timestamps.max() ?: SharedPrefs.lastAccessTimeExternalPhoto
             }
         }
     }
@@ -122,32 +114,28 @@ class MediaCollector (val context: Context) : BaseCollector {
                 getRecentContents(
                         contentResolver = context.contentResolver,
                         uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                        timeColumn =  MediaStore.Video.VideoColumns.DATE_TAKEN,
+                        timeColumn =  MediaStore.Video.VideoColumns.DATE_ADDED,
                         columns = arrayOf(
-                                MediaStore.Video.VideoColumns.DATE_TAKEN,
-                                MediaStore.Video.VideoColumns.MIME_TYPE,
-                                MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME
+                                MediaStore.Video.VideoColumns.DATE_ADDED,
+                                MediaStore.Video.VideoColumns.MIME_TYPE
                         ),
-                        lastTime = SharedPrefs.lastExternalVideoAccessTime
+                        lastTime = SharedPrefs.lastAccessTimeExternalVideo
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     timestamps.add(timestamp)
 
                     MediaEntity(
-                            mimeType = cursor.getString(1) ?: "video/*",
-                            bucketDisplay = cursor.getString(2)
+                            mimeType = cursor.getString(1) ?: "video/*"
                     ).fillBaseInfo(toMillis(timestamp = timestamp))
                 }?.run {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastExternalVideoAccessTime = timestamps.max() ?: SharedPrefs.lastExternalVideoAccessTime
+                SharedPrefs.lastAccessTimeExternalVideo = timestamps.max() ?: SharedPrefs.lastAccessTimeExternalVideo
             }
         }
     }
     override fun start() {
-        if(!SharedPrefs.isProvidedMediaGeneration || !checkAvailability()) return
-
         context.contentResolver.registerContentObserver(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalPhotoObserver)
         context.contentResolver.registerContentObserver(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true, internalVideoObserver)
         context.contentResolver.registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, externalPhotoObserver)
@@ -155,17 +143,25 @@ class MediaCollector (val context: Context) : BaseCollector {
     }
 
     override fun stop() {
-        if(!SharedPrefs.isProvidedMediaGeneration || !checkAvailability()) return
-
         context.contentResolver.unregisterContentObserver(internalPhotoObserver)
         context.contentResolver.unregisterContentObserver(internalVideoObserver)
         context.contentResolver.unregisterContentObserver(externalPhotoObserver)
         context.contentResolver.unregisterContentObserver(externalVideoObserver)
     }
 
-    override fun checkAvailability(): Boolean = PermissionUtils.checkPermissionAtRuntime(context, getRequiredPermissions())
+    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
 
-    override fun getRequiredPermissions(): List<String> = listOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
-    override fun newIntentForSetup(): Intent? = null
+    override val requiredPermissions: List<String>
+        get() = listOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+
+    override val newIntentForSetUp: Intent?
+        get() = null
+
+    override val nameRes: Int?
+        get() = R.string.data_name_media
+
+    override val descriptionRes: Int?
+        get() = R.string.data_desc_media
 }

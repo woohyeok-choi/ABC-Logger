@@ -44,13 +44,13 @@
 
         <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="CHANNEL_ID_DEFAULT"/>
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_abc_notification" />
-        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/colorPrimary" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/color_primary" />
 
         <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
 
 
         <activity
-            android:name=".foreground.activity.RootActivity"
+            android:name=".ui.main.RootActivity"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.Launcher">
             <intent-filter>
@@ -73,104 +73,107 @@
         </activity>
 
         <activity
-            android:name=".foreground.activity.SignInActivity"
+            android:name=".ui.main.SignInActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:launchMode="singleTask"
-            android:parentActivityName=".foreground.activity.RootActivity"
+            android:parentActivityName=".ui.main.RootActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".foreground.activity.RootActivity" />
+                android:value=".ui.main.RootActivity" />
         </activity>
 
         <activity
-            android:name=".foreground.activity.SignUpActivity"
+            android:name=".ui.activity.SignUpActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".foreground.activity.SignInActivity"
+            android:parentActivityName=".ui.main.SignInActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".foreground.activity.SignInActivity" />
+                android:value=".ui.main.SignInActivity" />
 
         </activity>
 
         <activity
-            android:name=".foreground.activity.PasswordResetActivity"
+            android:name=".ui.activity.PasswordResetActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".foreground.activity.SignInActivity"
+            android:parentActivityName=".ui.main.SignInActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".foreground.activity.SignInActivity" />
+                android:value=".ui.main.SignInActivity" />
         </activity>
 
         <activity
-            android:name=".foreground.activity.PasswordCodeVerificationActivity"
+            android:name=".ui.activity.PasswordCodeVerificationActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".foreground.activity.SignInActivity"
+            android:parentActivityName=".ui.main.SignInActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".foreground.activity.SignInActivity" />
+                android:value=".ui.main.SignInActivity" />
         </activity>
 
         <activity
-            android:name=".foreground.activity.MainActivity"
+            android:name=".ui.main.MainActivity"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" >
         </activity>
 
         <activity
-            android:name=".foreground.activity.SurveyQuestionActivity"
+            android:name=".ui.survey.question.SurveyResponseActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".foreground.activity.MainActivity"
+            android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".foreground.activity.MainActivity" />
+                android:value=".ui.main.MainActivity" />
         </activity>
 
 
         <activity
-            android:name=".foreground.activity.AvoidSmartManagerActivity"
+            android:name=".ui.AvoidSmartManagerActivity"
             android:excludeFromRecents="true"
             android:taskAffinity=":avoidSmartManager"
             android:theme="@style/AppTheme.NoDisplay" />
 
 
         <activity
-            android:name=".foreground.activity.ExperimentParticipationActivity"
+            android:name=".ui.activity.ExperimentParticipationActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".foreground.activity.ExperimentDetailActivity"
+            android:parentActivityName=".ui.activity.ExperimentDetailActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".foreground.activity.ExperimentDetailActivity" />
+                android:value=".ui.activity.ExperimentDetailActivity" />
         </activity>
         <activity
-            android:name=".foreground.activity.DebugActivity"
+            android:name=".ui.activity.DebugActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"/>
 
         <activity
-            android:name=".foreground.activity.ExperimentDetailActivity"
+            android:name=".ui.activity.ExperimentDetailActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".foreground.activity.MainActivity"
+            android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".foreground.activity.MainActivity" />
+                android:value=".ui.main.MainActivity" />
         </activity>
+        <activity android:name=".collector.PhysicalStatusCollector$PhysicalStatusSettingActivity" />
+        <activity android:name=".collector.PolarH10Collector$PolarH10SettingActivity" />
+        <activity android:name=".collector.SurveyCollector$SurveySettingActivity" />
 
         <service
             android:name="kaist.iclab.abclogger.collector.NotificationCollector"
@@ -185,8 +188,8 @@
 
         <service android:name=".collector.SurveyCollector$SurveyTriggerService" />
         <service android:name=".collector.SurveyCollector$SurveyScheduleService" />
-        <service android:name=".background.SyncManager$SyncService" />
-          <receiver android:name=".background.BootReceiver">
+        <service android:name=".sync.SyncManager$SyncService" />
+          <receiver android:name=".BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

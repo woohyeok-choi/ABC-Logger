@@ -2,5 +2,5 @@
 <resources>
     <string name="db_name" translatable="false">abc-object-box</string>
     <string name="app_name" translatable="false">ABC Logger</string>
-    <string name="app_description" translatable="false">Collect in-situ data &amp; Conduct surveys</string>
+    <string name="app_description" translatable="false">For the collection of a variety of smartphone data</string>
 </resources>

@@ -1,8 +1,6 @@
 package kaist.iclab.abclogger.common.util
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.os.Build
 import com.google.android.material.textfield.TextInputLayout
 import android.text.TextUtils
@@ -61,9 +59,9 @@ object FormatUtils {
 
     fun formatDurationInHour (context: Context, durationInHour: Long): String {
         return when(durationInHour) {
-                in 0 until 24 -> " $durationInHour ${context.getString(R.string.format_hour)}"
-                in 24 until 24 * 7 -> " ${durationInHour / 24} ${context.getString(R.string.format_day)}"
-                else -> " ${durationInHour / 24 / 7 } ${context.getString(R.string.format_week)}"
+                in 0 until 24 -> " $durationInHour ${context.getString(R.string.general_hour)}"
+                in 24 until 24 * 7 -> " ${durationInHour / 24} ${context.getString(R.string.general_day)}"
+                else -> " ${durationInHour / 24 / 7 } ${context.getString(R.string.general_week)}"
         }
     }
 

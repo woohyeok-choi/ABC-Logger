@@ -1,31 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="txtSizeLargeTitle">32sp</dimen>
-    <dimen name="txtSizeMediumTitle">20sp</dimen>
-    <dimen name="txtSizeTitle">16sp</dimen>
-    <dimen name="txtSizeMessage">14sp</dimen>
-    <dimen name="txtSizeSmallText">12sp</dimen>
+    <dimen name="section_horizontal_margin">12dp</dimen>
+    <dimen name="section_vertical_margin">8dp</dimen>
 
-    <dimen name="containerPaddingVertical">56dp</dimen>
-    <dimen name="subContainerBottomMargin">48dp</dimen>
+    <dimen name="text_title_size">48sp</dimen>
+    <dimen name="text_sub_title_size">14sp</dimen>
 
-    <dimen name="itemSpaceVertical">16dp</dimen>
-    <dimen name="itemSpaceHorizontal">24dp</dimen>
+    <dimen name="txt_size_title_large">32sp</dimen>
+    <dimen name="txt_size_title_medium">20sp</dimen>
+    <dimen name="txt_size_title_small">16sp</dimen>
+    <dimen name="txt_size_message">14sp</dimen>
+    <dimen name="txt_size_small_text">12sp</dimen>
+    <dimen name="item_space_horizontal">24dp</dimen>
 
-    <dimen name="editTextMarginVertical">8dp</dimen>
-
-    <dimen name="smallDialogMarginVertical">24dp</dimen>
-    <dimen name="smallDialogMarginHorizontal">24dp</dimen>
-    <dimen name="circularBarPadding">6dp</dimen>
-
-    <dimen name="cardViewOuterPadding">6dp</dimen>
-
-    <dimen name="txtPaddingVertical">2dp</dimen>
-    <dimen name="lineSpacing">6dp</dimen>
-    <dimen name="dotPaddingHorizontal">6dp</dimen>
-
-    <dimen name="btnSpaceTop">24dp</dimen>
-    <dimen name="btnSpaceBottom">84dp</dimen>
-    <dimen name="spaceBetweenTwoButtons">64dp</dimen>
+    <dimen name="cardview_outer_padding">6dp</dimen>
 
 </resources>

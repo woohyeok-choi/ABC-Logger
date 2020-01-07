@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <item android:title="@string/menu_header_survey">
+
+
+    <item android:title="@string/menu_bottom_nav_survey">
         <menu>
             <group
                 android:checkableBehavior="single">
@@ -21,7 +23,7 @@
         </menu>
     </item>
 
-    <item android:title="@string/menu_header_experiment">
+    <item android:title="@string/menu_bottom_nav_config">
         <menu>
             <group
                 android:checkableBehavior="single">
@@ -36,23 +38,4 @@
             </group>
         </menu>
     </item>
-
-    <group android:checkableBehavior="all">
-        <item
-            android:id="@+id/menuSync"
-            android:checkable="false"
-            android:title="@string/menu_item_sync"
-            android:icon="@drawable/baseline_sync_black_24"/>
-        <item
-            android:id="@+id/menuLogOut"
-            android:checkable="false"
-            android:title="@string/menu_item_logout"
-            android:icon="@drawable/baseline_exit_to_app_black_24"/>
-    </group>
-
-    <item
-        android:id="@+id/menuDebug"
-        android:checkable="false"
-        android:title="@string/menu_item_debug"
-        android:icon="@drawable/baseline_error_black_24"/>
 </menu>

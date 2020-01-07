@@ -1,9 +1,11 @@
 package kaist.iclab.abclogger
 
+import android.os.Build
 import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import kaist.iclab.abclogger.survey.SurveyTimeoutPolicyType
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.Transient
 import java.util.*
 
 @BaseEntity
@@ -13,15 +15,17 @@ abstract class Base(
         var utcOffset: Float = Float.MIN_VALUE,
         var subjectEmail: String = "",
         var participationTime: Long = -1,
-        var isUploaded: Boolean = false
+        var deviceInfo: String = "",
+        @Index var isUploaded: Boolean = false
 )
 
-fun <T : Base> T.fillBaseInfo(timestamp: Long): T {
-    this.timestamp = timestamp
-    this.utcOffset = TimeZone.getDefault().rawOffset.toFloat() / (1000 * 60 * 60)
-    this.subjectEmail = SharedPrefs.subjectEmail
-    this.participationTime = SharedPrefs.participationTime
-    this.isUploaded = false
+fun <T : Base> T.fillBaseInfo(timeMillis: Long): T {
+    timestamp = timeMillis
+    utcOffset = TimeZone.getDefault().rawOffset.toFloat() / (1000 * 60 * 60)
+    subjectEmail = SharedPrefs.subjectEmail
+    participationTime = SharedPrefs.participationTime
+    deviceInfo = "${Build.MANUFACTURER}-${Build.MODEL}-${Build.VERSION.RELEASE}"
+    isUploaded = false
 
     return this
 }
@@ -50,7 +54,7 @@ data class BatteryEntity(
 data class BluetoothEntity(
         var deviceName: String = "",
         var address: String = "",
-        var rssi: Int = Int.MIN_VALUE,
+        var rssi: Int = Int.MIN_VALUE
 ) : Base()
 
 @Entity
@@ -122,7 +126,7 @@ data class NotificationEntity(
 @Entity
 data class PhysicalActivityTransitionEntity(
         var type: String = "",
-        var isEntered: Boolean = true
+        var isEntered: Boolean = false
 ) : Base()
 
 @Entity
@@ -144,12 +148,13 @@ data class SurveyEntity(
         var title: String = "",
         var message: String = "",
         var timeoutPolicy: String = "",
-        var timeoutSec: Long = Long.MIN_VALUE
+        var timeoutSec: Long = Long.MIN_VALUE,
         var deliveredTime: Long = Long.MIN_VALUE,
         var reactionTime: Long = Long.MIN_VALUE,
         var firstQuestionTime: Long = Long.MIN_VALUE,
         var responseTime: Long = Long.MIN_VALUE,
-        var json: String = ""
+        var json: String = "",
+        @Transient var isResponded: Boolean = responseTime > 0
 ) : Base()
 
 @Entity
@@ -191,3 +196,13 @@ data class SensorEntity(
         var thirdValue: Float = Float.MIN_VALUE,
         var fourthValue: Float = Float.MIN_VALUE
 ) : Base()
+
+@Entity
+data class SurveySettingEntity(
+        @Id var id: Long = 0,
+        @Index var uuid: String = "",
+        var url: String = "",
+        var json: String = "",
+        var lastTimeTriggered: Long = -1,
+        var nextTimeTriggered: Long = -1
+)

@@ -2,13 +2,12 @@ package kaist.iclab.abclogger.collector
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import kaist.iclab.abclogger.common.type.KeyObject
-import kaist.iclab.abclogger.common.util.AnalyzeHangeul
-import kaist.iclab.abclogger.data.MySQLiteLogger
+import kaist.iclab.abclogger.base.BaseCollector
 import java.util.*
 
 class KeyTrackingService : AccessibilityService(), BaseCollector {
@@ -186,10 +185,10 @@ class KeyTrackingService : AccessibilityService(), BaseCollector {
 
         //Log.w("AccessibilityService", "현재 문자열: $currentStr")
         //Log.w("AccessibilityService", "Total 문자열: $totalStr")
-        val decomposeCurrentStr = AnalyzeHangeul.hangulToJaso(currentStr)
+        val decomposeCurrentStr = hangulToJaso(currentStr)
         //Log.w("AccessibilityService", "Current 문자 분해: $decomposeCurrentStr")
 
-        val decomposeTotalStr = AnalyzeHangeul.hangulToJaso(totalStr)
+        val decomposeTotalStr = hangulToJaso(totalStr)
         //Log.w("AccessibilityService", "Total 문자 분해: $decomposeTotalStr")
 
         /* 사용자가 새로운 키를 입력한 경우 */
@@ -225,7 +224,6 @@ class KeyTrackingService : AccessibilityService(), BaseCollector {
                     /*서버에 저장*/
                     /**서버에 저장 */
                     val jsonEntity: String = "{\"InputTime\":"+value.eventTime+", \"AppName\":\""+value.appName+"\", \"keyType\":\""+value.inputType+"\", \"keyDistance\":"+ value.keyDistance +"}"
-                    MySQLiteLogger.writeStringData(applicationContext, "AccessibilityLog", System.currentTimeMillis(), jsonEntity)
 
                     prevPosX = value.posX
                     prevPosY = value.posY
@@ -286,7 +284,6 @@ class KeyTrackingService : AccessibilityService(), BaseCollector {
     }
 
 
-
     fun getAppNameByPackageName(context: Context, packageName: String): String {
         val pm = context.packageManager
         return try {
@@ -298,4 +295,300 @@ class KeyTrackingService : AccessibilityService(), BaseCollector {
     }
 
 
+    class KeyObject(var _appName: String, var _inputChar: String, isChunjin: Boolean) {
+        private val c_key = arrayOf("l", "ㆍ", "ㅡ", "backspace", "ㄱ", "ㅋ", "ㄴ", "ㄹ", "ㄷ", "ㅌ", "ㅂ", "ㅍ", "ㅅ", "ㅎ", "ㅈ", "ㅊ", ".", "?", "!", "ㅇ", "ㅁ", " ", "@", "ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "ㅐ", "ㅔ", "ㅒ", "ㅖ", "ㅙ", "ㅞ", "ㅘ", "ㅝ", "ㅚ", "ㅟ", "ㅢ")
+
+        private val c_coordinateX = floatArrayOf(1f, 2f, 3f, 4f, 1f, 1f, 2f, 2f, 3f, 3f, 1f, 1f, 2f, 2f, 3f, 3f, 4f, 4f, 4f, 2f, 2f, 3f, 4f, 2f, 2f, 1f, 1f, 3f, 3f, 2f, 2f, 3f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 2f, 1f, 1f, 1f, 1f)
+
+        private val c_coordinateY = floatArrayOf(1f, 1f, 1f, 1f, 2f, 2f, 2f, 2f, 2f, 2f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 4f, 4f, 4f, 4f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f)
+
+        private val q_kor_key = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "ㅂ", "ㅈ", "ㄷ", "ㄱ", "ㅅ", "ㅛ", "ㅕ", "ㅑ", "ㅐ", "ㅔ", "ㅃ", "ㅉ", "ㄸ", "ㄲ", "ㅆ", "ㅒ", "ㅖ", "ㅁ", "ㄴ", "ㅇ", "ㄹ", "ㅎ", "ㅗ", "ㅓ", "ㅏ", "ㅣ", "ㅋ", "ㅌ", "ㅊ", "ㅍ", "ㅠ", "ㅜ", "ㅡ", "backspace", "@", " ", ".")
+
+        private val q_eng_key = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "z", "x", "c", "v", "b", "n", "m", "backspace", "@", " ", ".")
+
+        private val q_kor_coordinateX = floatArrayOf(1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 1f, 2f, 3f, 4f, 5f, 8f, 9f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f, 3f, 6f, 8.5f)
+
+        private val q_kor_coordinateY = floatArrayOf(1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 4f, 4f, 4f, 4f, 4f, 4f, 4f, 4f, 5f, 5f, 5f)
+
+
+        private val q_eng_coordinateX = floatArrayOf(1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f, 3f, 6f, 8.5f)
+
+        private val q_eng_coordinateY = floatArrayOf(1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 3f, 4f, 4f, 4f, 4f, 4f, 4f, 4f, 4f, 5f, 5f, 5f)
+
+
+        var posX: Float = 0.toFloat()
+        var posY: Float = 0.toFloat()
+        var eventTime: Long = 0
+        var inputType: String
+        var appName: String
+        var keyDistance: String = ""
+        var inputChar: String
+
+
+        init {
+            this.appName = _appName
+            this.inputChar = _inputChar
+            this.inputType = getInputCharType(_inputChar)
+            this.eventTime = System.currentTimeMillis()
+            this.posX = findPositionX(_inputChar, isChunjin)
+            this.posY = findPositionY(_inputChar, isChunjin)
+        }
+
+
+        fun setupChunjin(isChunjin: Boolean) {
+            this.posX = findPositionX(this.inputChar, isChunjin)
+            this.posY = findPositionY(this.inputChar, isChunjin)
+        }
+
+
+        private fun findPositionX(ch: String, chunjinFlag: Boolean): Float {
+            if (this.inputType == "H") {
+                if (chunjinFlag) {
+                    for (i in c_key.indices) {
+                        if (c_key[i] == ch)
+                            return c_coordinateX[i]
+                    }
+                } else {
+                    for (i in q_kor_key.indices) {
+                        if (q_kor_key[i] == ch)
+                            return q_kor_coordinateX[i]
+                    }
+                }
+            } else if (this.inputType == "E") {
+                for (i in q_eng_key.indices) {
+                    if (q_eng_key[i] == ch)
+                        return q_eng_coordinateX[i]
+                }
+            }
+            return 0f
+        }
+
+        private fun findPositionY(ch: String, chunjinFlag: Boolean): Float {
+            if (this.inputType == "H") {
+                if (chunjinFlag) {
+                    for (i in c_key.indices) {
+                        if (c_key[i] == ch)
+                            return c_coordinateY[i]
+                    }
+                } else {
+                    for (i in q_kor_key.indices) {
+                        if (q_kor_key[i] == ch)
+                            return q_kor_coordinateY[i]
+                    }
+                }
+            } else if (this.inputType == "E") {
+                for (i in q_eng_key.indices) {
+                    if (q_eng_key[i] == ch)
+                        return q_eng_coordinateY[i]
+                }
+            }
+
+            return 0f
+        }
+
+        fun getInputCharType(str: String): String {
+            return if (str.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*".toRegex()))
+                "H"
+            else if (str.matches("^[a-zA-Z]*$".toRegex()))
+                "E"
+            else if (str.matches("^[0-9]*$".toRegex()))
+                "N"
+            else
+                "S"
+        }
+
+
+    }
+
+    // ㄱ             ㄲ            ㄴ               ㄷ            ㄸ             ㄹ
+    // ㅁ             ㅂ            ㅃ               ㅅ            ㅆ             ㅇ
+    // ㅈ             ㅉ           ㅊ                ㅋ            ㅌ              ㅍ      ㅎ
+    internal val ChoSung = charArrayOf(0x3131.toChar(), 0x3132.toChar(), 0x3134.toChar(), 0x3137.toChar(), 0x3138.toChar(), 0x3139.toChar(), 0x3141.toChar(), 0x3142.toChar(), 0x3143.toChar(), 0x3145.toChar(), 0x3146.toChar(), 0x3147.toChar(), 0x3148.toChar(), 0x3149.toChar(), 0x314a.toChar(), 0x314b.toChar(), 0x314c.toChar(), 0x314d.toChar(), 0x314e.toChar())
+
+    internal val ChoSungEng = arrayOf("r", "R", "s", "e", "E", "f", "a", "q", "Q", "t", "T", "d", "w", "W", "c", "z", "x", "v", "g")
+
+    // ㅏ            ㅐ             ㅑ             ㅒ            ㅓ             ㅔ
+    // ㅕ            ㅖ              ㅗ           ㅘ            ㅙ              ㅚ
+    // ㅛ            ㅜ              ㅝ           ㅞ             ㅟ             ㅠ
+    // ㅡ           ㅢ              ㅣ
+    internal val JwungSung = charArrayOf(0x314f.toChar(), 0x3150.toChar(), 0x3151.toChar(), 0x3152.toChar(), 0x3153.toChar(), 0x3154.toChar(), 0x3155.toChar(), 0x3156.toChar(), 0x3157.toChar(), 0x3158.toChar(), 0x3159.toChar(), 0x315a.toChar(), 0x315b.toChar(), 0x315c.toChar(), 0x315d.toChar(), 0x315e.toChar(), 0x315f.toChar(), 0x3160.toChar(), 0x3161.toChar(), 0x3162.toChar(), 0x3163.toChar())
+
+    internal val JwungSungEng = arrayOf("k", "o", "i", "O", "j", "p", "u", "P", "h", "hk", "ho", "hl", "y", "n", "nj", "np", "nl", "b", "m", "ml", "l")
+
+    //         ㄱ            ㄲ             ㄳ            ㄴ              ㄵ
+    // ㄶ             ㄷ            ㄹ             ㄺ            ㄻ              ㄼ
+    // ㄽ             ㄾ            ㄿ              ㅀ            ㅁ             ㅂ
+    // ㅄ            ㅅ             ㅆ             ㅇ            ㅈ             ㅊ
+    // ㅋ            ㅌ            ㅍ              ㅎ
+    internal val JongSung = charArrayOf(0.toChar(), 0x3131.toChar(), 0x3132.toChar(), 0x3133.toChar(), 0x3134.toChar(), 0x3135.toChar(), 0x3136.toChar(), 0x3137.toChar(), 0x3139.toChar(), 0x313a.toChar(), 0x313b.toChar(), 0x313c.toChar(), 0x313d.toChar(), 0x313e.toChar(), 0x313f.toChar(), 0x3140.toChar(), 0x3141.toChar(), 0x3142.toChar(), 0x3144.toChar(), 0x3145.toChar(), 0x3146.toChar(), 0x3147.toChar(), 0x3148.toChar(), 0x314a.toChar(), 0x314b.toChar(), 0x314c.toChar(), 0x314d.toChar(), 0x314e.toChar())
+
+    internal val JongSungEng = arrayOf("", "r", "R", "rt", "s", "sw", "sg", "e", "f", "fr", "fa", "fq", "ft", "fx", "fv", "fg", "a", "q", "qt", "t", "T", "d", "w", "c", "z", "x", "v", "g")
+
+
+    fun hangulToJaso(s: String): String {
+
+        var a: Int
+        var b: Int
+        var c: Int // 자소 버퍼: 초성/중성/종성 순
+        var result = ""
+
+        for (i in 0 until s.length) {
+            val ch = s[i]
+
+            if (ch.toInt() >= 0xAC00 && ch.toInt() <= 0xD7A3) { // "AC00:가" ~ "D7A3:힣" 에 속한 글자면 분해
+                c = ch.toInt() - 0xAC00
+                a = c / (21 * 28)
+                c = c % (21 * 28)
+                b = c / 28
+                c = c % 28
+
+                result = result + ChoSung[a] + JwungSung[b]
+                if (c != 0) result = result + JongSung[c] // c가 0이 아니면, 즉 받침이 있으면
+            } else {
+                result = result + ch
+            }
+        }
+        return result
+    }
+
+
+    /**
+     * 한글기준의 문자열을 입력받아서 한글의 경우에는 영타기준으로 변경한다.
+     * @param s 한글/영문/특수문자가 합쳐진 문자열
+     * @return 영타기준으로 변경된 문자열값
+     */
+    fun convertToEnglish(s: String): String {
+        // *****************************************
+        // 0xAC00 + ( (초성순서 * 21) + 중성순서 ) * 28 + 종성순서 = 한글유니코드값
+        // ( (초성순서 * 21) + 중성순서 ) * 28 + 종성순서 = 순수한글코드
+        // 순수한글코드 % 28 = 종성
+        // ( (순수한글코드 - 종성) / 28 ) % 21 = 중성
+        // ( ( ( 순수한글코드 - 종성) / 28) - 중성) ) / 21 = 초성
+        // *******************************************
+
+        var a: Int
+        var b: Int
+        var c: Int // 자소 버퍼: 초성/중성/종성 순
+        var result = ""
+
+        for (i in 0 until s.length) {
+            val ch = s[i]
+
+            if (ch.toInt() >= 0xAC00 && ch.toInt() <= 0xD7A3) { // "AC00:가" ~ "D7A3:힣" 에 속한 글자면 분해
+                c = ch.toInt() - 0xAC00
+                a = c / (21 * 28)
+                c = c % (21 * 28)
+                b = c / 28
+                c = c % 28
+
+                result = result + ChoSungEng[a] + JwungSungEng[b]
+
+                if (c != 0) result = result + JongSungEng[c] // c가 0이 아니면, 즉 받침이 있으면
+            } else {
+                result = result + ch
+            }
+        }
+
+        return result
+    }
+
+    /*
+     * 완성되지 않은 한글의 경우 영문 변환이 제대로 되지 않는다.
+     * 잘못된 글자인 경우에도 영문으로 변환이 가능하도록 추가적으로 처리하는 함수
+     * 글자가 초성, 중성, 종성을 구성하는 글자 배열을 루프돌면서 같은글자가 있는지
+     * 확인한 후 해당 영문으로 변환함.
+     */
+    fun convertToEnglishforSingleChar(s: String): String {
+        var result = ""
+        var temp: String? = null
+
+        for (i in 0 until s.length) {
+            val ch = s[i]
+
+            if (ch.toInt() >= 0x3131 && ch.toInt() <= 0x3163) {
+                temp = findChoSung(ch)
+                if (temp != null) {
+                    result = result + temp
+                } else {
+                    temp = findJwungSung(ch)
+                    if (temp != null) {
+                        result = result + temp
+                    } else {
+                        temp = findJongSung(ch)
+                        if (temp != null) {
+                            result = result + temp
+                        } else {
+                            result = result + ch
+                        }
+                    }
+                }
+            } else {
+                result = result + ch
+            }
+
+        }
+
+        return result
+    }
+
+    private fun findChoSung(c: Char): String? {
+        var result: String? = null
+        for (i in ChoSung.indices) {
+            if (ChoSung[i] == c) {
+                result = ChoSungEng[i]
+                break
+            }
+        }
+        return result
+    }
+
+    private fun findJwungSung(c: Char): String? {
+        var result: String? = null
+        for (i in JwungSung.indices) {
+            if (JwungSung[i] == c) {
+                result = JwungSungEng[i]
+                break
+            }
+        }
+        return result
+    }
+
+    private fun findJongSung(c: Char): String? {
+        var result: String? = null
+        for (i in JongSung.indices) {
+            if (JongSung[i] == c) {
+                result = JongSungEng[i]
+                break
+            }
+        }
+        return result
+    }
+
+    override fun start() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun stop() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun checkAvailability(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override val requiredPermissions: List<String>
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    override val newIntentForSetUp: Intent?
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    override val descriptionRes: Int?
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    override val nameRes: Int?
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }
