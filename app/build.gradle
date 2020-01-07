@@ -119,9 +119,40 @@ dependencies {
     /**
      * Moshi for jsonify
      */
+<<<<<<< HEAD
     implementation "com.squareup.moshi:moshi:1.9.2"
     implementation "com.squareup.moshi:moshi-kotlin:1.9.2"
     implementation "com.squareup.moshi:moshi-adapters:1.9.2"
+=======
+    implementation 'com.github.madrapps:asyncquery:1.0.1'
+
+    //ok
+    implementation "io.objectbox:objectbox-kotlin:2.0.0"
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    /**
+     * Polar H10 API
+     */
+    implementation files('libs/polar-ble-sdk.aar')
+    implementation files('libs/polar-protobuf-release.aar')
+    implementation group: 'commons-io', name: 'commons-io', version: '2.4'
+    implementation 'com.google.protobuf:protobuf-java:3.1.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+
+
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.6.0"
+    }
+
+    plugins {
+        javalite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+        }
+>>>>>>> master
 
     implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
 
