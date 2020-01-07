@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.foreground.dialog
+package kaist.iclab.abclogger.ui.dialog
 
 import android.app.Dialog
 import androidx.lifecycle.MutableLiveData
@@ -20,9 +20,9 @@ import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.ABCException
 import kaist.iclab.abclogger.common.type.LoadState
 import kaist.iclab.abclogger.common.type.LoadStatus
-import kaist.iclab.abclogger.communication.HttpApi
+import kaist.iclab.abclogger.sync.HttpApi
 import kaist.iclab.abclogger.data.entities.ParticipationEntity
-import kaist.iclab.abclogger.foreground.view.SurveyView
+import kaist.iclab.abclogger.ui.view.SurveyView
 import kaist.iclab.abclogger.Survey
 import kotlinx.android.synthetic.main.fragment_survey_preview_dialog.*
 import java.util.concurrent.Callable
@@ -56,11 +56,11 @@ class SurveyPreviewDialogFragment: androidx.fragment.app.DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         loadState.observe(this, Observer {
-            progressBar.visibility = if(it?.status == LoadStatus.RUNNING) View.VISIBLE else View.OVER_SCROLL_ALWAYS
-            txtError.visibility = if(it?.status == LoadStatus.FAILED) View.VISIBLE else View.GONE
-            scrollView.visibility = if(it?.status == LoadStatus.SUCCESS) View.VISIBLE else View.GONE
+            progress_bar.visibility = if(it?.status == LoadStatus.RUNNING) View.VISIBLE else View.OVER_SCROLL_ALWAYS
+            txt_error.visibility = if(it?.status == LoadStatus.FAILED) View.VISIBLE else View.GONE
+            scroll_view.visibility = if(it?.status == LoadStatus.SUCCESS) View.VISIBLE else View.GONE
 
-            if(it?.error != null) txtError.setText(
+            if(it?.error != null) txt_error.setText(
                 if(it.error is ABCException) {
                     it.error.getErrorStringRes()
                 } else {
@@ -115,9 +115,9 @@ class SurveyPreviewDialogFragment: androidx.fragment.app.DialogFragment() {
     override fun onStart() {
         super.onStart()
 
-        val progressBar = dialog.findViewById<ProgressBar>(R.id.progressBar)
-        val txtError = dialog.findViewById<TextView>(R.id.txtError)
-        val scrollView = dialog.findViewById<NestedScrollView>(R.id.scrollView)
+        val progressBar = dialog.findViewById<ProgressBar>(R.id.progress_bar)
+        val txtError = dialog.findViewById<TextView>(R.id.txt_error)
+        val scrollView = dialog.findViewById<NestedScrollView>(R.id.scroll_view)
         val surveyView = dialog.findViewById<SurveyView>(R.id.surveyView)
 
         surveyView.setShowProgressBar(false)

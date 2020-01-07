@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.foreground.listener
+package kaist.iclab.abclogger.ui.listener
 
 import android.view.View
 

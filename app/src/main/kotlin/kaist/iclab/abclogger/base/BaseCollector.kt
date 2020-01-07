@@ -1,8 +1,7 @@
-package kaist.iclab.abclogger.collector
+package kaist.iclab.abclogger.base
 
 import android.content.Intent
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+
 
 /**
  * Default interface for daata collector
@@ -24,6 +23,12 @@ interface BaseCollector {
     fun checkAvailability() : Boolean
 
     /**
+     * Some setting-related activities returns result code and intent containing some data.
+     * Implement this method if it needs to handle those activity results.
+     */
+    fun handleActivityResult(resultCode: Int, intent: Intent?)
+
+    /**
      * List of permissions (Manifest.permissions.XXX) for this collector.
      */
     val requiredPermissions : List<String>
@@ -38,6 +43,4 @@ interface BaseCollector {
     val nameRes: Int?
 
     val descriptionRes: Int?
-
-    val statusString : LiveData<String>
 }

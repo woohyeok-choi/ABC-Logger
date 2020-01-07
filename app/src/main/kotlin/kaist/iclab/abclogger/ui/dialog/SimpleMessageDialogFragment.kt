@@ -1,8 +1,7 @@
-package kaist.iclab.abclogger.foreground.dialog
+package kaist.iclab.abclogger.ui.dialog
 
 import android.app.Dialog
 import android.os.Bundle
-import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AlertDialog
 import kaist.iclab.abclogger.R
 
