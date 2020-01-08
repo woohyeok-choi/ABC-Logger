@@ -1,17 +1,13 @@
 package kaist.iclab.abclogger.collector
 
 import android.content.ContentResolver
-import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
 import android.provider.ContactsContract
-import kaist.iclab.abclogger.common.util.FormatUtils
-import kaist.iclab.abclogger.Base
-import kaist.iclab.abclogger.CallLogEntity
-import kaist.iclab.abclogger.MessageEntity
-import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.base.BaseCollector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -172,5 +168,69 @@ inline fun <reified T : Base> putEntity(entities: Collection<T>?): Job? {
         }
     } else {
         null
+    }
+}
+
+fun <T : BaseCollector> T.isStarted() =
+        when (this) {
+            is ActivityCollector -> SharedPrefs.isProvidedActivity
+            is AppUsageCollector -> SharedPrefs.isProvidedAppUsage
+            is BatteryCollector -> SharedPrefs.isProvidedBattery
+            is BluetoothCollector -> SharedPrefs.isProvidedBluetooth
+            is CallLogCollector -> SharedPrefs.isProvidedCallLog
+            is DataTrafficCollector -> SharedPrefs.isProvidedDataTraffic
+            is DeviceEventCollector -> SharedPrefs.isProvidedDeviceEvent
+            is InstalledAppCollector -> SharedPrefs.isProvidedInstallApp
+            is KeyTrackingService -> SharedPrefs.isProvidedKeyStrokes
+            is LocationCollector -> SharedPrefs.isProvidedLocation
+            is MediaCollector -> SharedPrefs.isProvidedMediaGeneration
+            is MessageCollector -> SharedPrefs.isProvidedMessage
+            is NotificationCollector -> SharedPrefs.isProvidedNotification
+            is PhysicalStatusCollector -> SharedPrefs.isProvidedPhysicalStatus
+            is PolarH10Collector -> SharedPrefs.isProvidedPolarH10
+            is SurveyCollector -> SharedPrefs.isProvidedSurvey
+            is WifiCollector -> SharedPrefs.isProvidedWiFi
+            else -> null
+        }
+
+fun <T: BaseCollector> T.start(
+        error: ((requestStarted: Boolean, throwable: Throwable) -> Unit)? = null
+) = handleState(true, error)
+
+fun <T: BaseCollector> T.stop(
+        error: ((requestStarted: Boolean, throwable: Throwable) -> Unit)? = null
+) = handleState(false, error)
+
+private fun <T: BaseCollector> T.handleState(
+        state: Boolean,
+        error: ((requestStarted: Boolean, throwable: Throwable) -> Unit)? = null
+) {
+    when (this) {
+        is ActivityCollector -> SharedPrefs.isProvidedActivity = state
+        is AppUsageCollector -> SharedPrefs.isProvidedAppUsage = state
+        is BatteryCollector -> SharedPrefs.isProvidedBattery = state
+        is BluetoothCollector -> SharedPrefs.isProvidedBluetooth = state
+        is CallLogCollector -> SharedPrefs.isProvidedCallLog = state
+        is DataTrafficCollector -> SharedPrefs.isProvidedDataTraffic = state
+        is DeviceEventCollector -> SharedPrefs.isProvidedDeviceEvent = state
+        is InstalledAppCollector -> SharedPrefs.isProvidedInstallApp = state
+        is KeyTrackingService -> SharedPrefs.isProvidedKeyStrokes = state
+        is LocationCollector -> SharedPrefs.isProvidedLocation = state
+        is MediaCollector -> SharedPrefs.isProvidedMediaGeneration = state
+        is MessageCollector -> SharedPrefs.isProvidedMessage = state
+        is NotificationCollector -> SharedPrefs.isProvidedNotification = state
+        is PhysicalStatusCollector -> SharedPrefs.isProvidedPhysicalStatus = state
+        is PolarH10Collector -> SharedPrefs.isProvidedPolarH10 = state
+        is SurveyCollector -> SharedPrefs.isProvidedSurvey = state
+        is WifiCollector -> SharedPrefs.isProvidedWiFi = state
+    }
+    try {
+        if (state) {
+            onStart()
+        } else {
+            onStop()
+        }
+    } catch (e: Exception) {
+        error?.invoke(state, e)
     }
 }

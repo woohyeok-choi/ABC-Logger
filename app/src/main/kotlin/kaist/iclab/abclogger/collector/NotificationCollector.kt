@@ -92,9 +92,9 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
         }
     }
 
-    override fun start() { }
+    override fun onStart() { }
 
-    override fun stop() { }
+    override fun onStop() { }
 
     override fun checkAvailability(): Boolean =
             Settings.Secure.getString(
@@ -102,7 +102,6 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
             )?.contains(packageName) == true
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
-
 
     override val requiredPermissions: List<String>
         get() = listOf()

@@ -3,6 +3,9 @@ package kaist.iclab.abclogger
 import github.agustarc.koap.PreferenceHolder
 import github.agustarc.koap.delegator.*
 import github.agustarc.koap.inferType
+import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.*
+
 
 object SharedPrefs : PreferenceHolder(name = "abc-logger-pref") {
     var isProvidedCallLog: Boolean by ReadWriteBoolean(default = false)
@@ -21,7 +24,7 @@ object SharedPrefs : PreferenceHolder(name = "abc-logger-pref") {
     var isProvidedInstallApp: Boolean by ReadWriteBoolean(default = false)
     var isProvidedPhysicalStatus: Boolean by ReadWriteBoolean(default = false)
     var isProvidedSurvey: Boolean by ReadWriteBoolean(default = false)
-    var isProvidedPolarH10 : Boolean by ReadWriteBoolean(default = false)
+    var isProvidedPolarH10: Boolean by ReadWriteBoolean(default = false)
 
     var statusCallLog: String by ReadWriteString()
     var statusMessage: String by ReadWriteString()

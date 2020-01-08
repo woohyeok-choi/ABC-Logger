@@ -1,9 +1,257 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/section_vertical_space"
+                    android:paddingRight="@dimen/section_vertical_space"
+                    android:paddingTop="@dimen/section_vertical_space"
+                    android:text="General"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_title_small" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/section_vertical_space">
+
+                    <TextView
+                        android:id="@+id/txt_user_name_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="User Name"
+                        android:textColor="@color/color_title"
+                        android:textSize="@dimen/txt_size_title_medium"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/txt_user_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Woohyeok Choi"
+                        android:textColor="@color/color_message"
+                        android:textSize="@dimen/txt_size_message"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/txt_user_name_label" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <kaist.iclab.abclogger.ui.HorizontalDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/section_vertical_space">
+
+                    <TextView
+                        android:id="@+id/txt_user_email_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Email"
+                        android:textColor="@color/color_title"
+                        android:textSize="@dimen/txt_size_title_medium"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/txt_user_email"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="keltpower0@gmail.com"
+                        android:textColor="@color/color_message"
+                        android:textSize="@dimen/txt_size_message"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/txt_user_email_label" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <kaist.iclab.abclogger.ui.HorizontalDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layout_sync"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/section_vertical_space">
+
+                    <TextView
+                        android:id="@+id/txt_sync_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="동기화"
+                        android:textColor="@color/color_title"
+                        android:textSize="@dimen/txt_size_title_medium"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/txt_sync"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="마지막 동기화: 2009년 10월 20일"
+                        android:textColor="@color/color_message"
+                        android:textSize="@dimen/txt_size_message"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/txt_sync_label" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <kaist.iclab.abclogger.ui.HorizontalDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/section_vertical_space">
+
+                    <TextView
+                        android:id="@+id/txt_storage_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="수집된 데이터 용량"
+                        android:textColor="@color/color_title"
+                        android:textSize="@dimen/txt_size_title_medium"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/txt_storage"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="3GB / 5GB"
+                        android:textColor="@color/color_message"
+                        android:textSize="@dimen/txt_size_message"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/txt_storage_label" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/section_vertical_space"
+                    android:paddingRight="@dimen/section_vertical_space"
+                    android:paddingTop="@dimen/section_vertical_space"
+                    android:text="Data"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_title_small" />
+
+                <LinearLayout
+                    android:id="@+id/layout_data"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/section_vertical_space"
+                    android:paddingRight="@dimen/section_vertical_space"
+                    android:paddingTop="@dimen/section_vertical_space"
+                    android:text="Others"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_title_small" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layout_flush"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/section_vertical_space">
+
+                    <TextView
+                        android:id="@+id/txt_flush_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="데이터 비우기"
+                        android:textColor="@color/color_title"
+                        android:textSize="@dimen/txt_size_title_medium"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/txt_flush"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="수집된 데이터를 모두 삭제합니다."
+                        android:textColor="@color/color_message"
+                        android:textSize="@dimen/txt_size_message"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/txt_flush_label" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <kaist.iclab.abclogger.ui.HorizontalDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layout_logout"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/section_vertical_space">
+
+                    <TextView
+                        android:id="@+id/txt_logout_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="로그아웃"
+                        android:textColor="@color/color_title"
+                        android:textSize="@dimen/txt_size_title_medium"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/txt_logout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="데이터 제공을 중단하고 로그아웃 합니다."
+                        android:textColor="@color/color_message"
+                        android:textSize="@dimen/txt_size_message"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/txt_logout_label" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 
-</LinearLayout>
+</FrameLayout>

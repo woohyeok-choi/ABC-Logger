@@ -72,11 +72,11 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun start() {
+    override fun onStart() {
         telephonyManager.listen(dataListener, PhoneStateListener.LISTEN_DATA_ACTIVITY)
     }
 
-    override fun stop() {
+    override fun onStop() {
         telephonyManager.listen(dataListener, PhoneStateListener.LISTEN_NONE)
     }
 

@@ -25,6 +25,8 @@ android {
         versionCode 42
         versionName "2.1.5.3"
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
+        buildConfigField("String", "DB_NAME", "abc-logger")
+        buildConfigField("Long", "DB_MAX_SIZE", "3145728")
         // buildConfigField("String", "SERVER_ADDRESS", "\"abc.kaist.ac.kr:50051\"")
     }
     buildTypes {
@@ -66,6 +68,8 @@ dependencies {
      */
     implementation "org.koin:koin-core:2.0.1"
     implementation "org.koin:koin-android:2.0.1"
+    implementation "org.koin:koin-androidx-viewmodel:2.0.1"
+
     implementation 'org.greenrobot:eventbus:3.1.1'
 
     /**
@@ -94,7 +98,6 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.work:work-runtime:2.2.0'
-    implementation 'com.google.android.material:material:1.0.0'
 
     /**
      * Google GMS libraries
@@ -109,7 +112,7 @@ dependencies {
      * Others
      */
     implementation "br.com.simplepass:loading-button-android:2.1.1"
-    implementation "gun0912.ted:tedpermission:2.2.2"
+    implementation "gun0912.ted:tedpermission-rx2:2.2.3"
 
     implementation 'com.github.AgustaRC.koap:koap:1.0.1'
     implementation "com.github.AgustaRC.koap:koap-gson-serializer:1.0.1"
@@ -119,43 +122,19 @@ dependencies {
     /**
      * Moshi for jsonify
      */
-<<<<<<< HEAD
     implementation "com.squareup.moshi:moshi:1.9.2"
     implementation "com.squareup.moshi:moshi-kotlin:1.9.2"
     implementation "com.squareup.moshi:moshi-adapters:1.9.2"
-=======
-    implementation 'com.github.madrapps:asyncquery:1.0.1'
 
-    //ok
-    implementation "io.objectbox:objectbox-kotlin:2.0.0"
+    implementation "io.objectbox:objectbox-kotlin:2.3.4"
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     /**
      * Polar H10 API
      */
-    implementation files('libs/polar-ble-sdk.aar')
-    implementation files('libs/polar-protobuf-release.aar')
-    implementation group: 'commons-io', name: 'commons-io', version: '2.4'
-    implementation 'com.google.protobuf:protobuf-java:3.1.0'
+    implementation 'commons-io:commons-io:2.4'
+    implementation 'com.google.protobuf:protobuf-java:3.4.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
-
-
-}
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.6.0"
-    }
-
-    plugins {
-        javalite {
-            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
-        }
->>>>>>> master
-
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
-
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
+    implementation 'com.google.android.material:material:1.0.0'
 }

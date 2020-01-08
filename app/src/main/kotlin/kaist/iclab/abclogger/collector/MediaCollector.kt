@@ -135,14 +135,14 @@ class MediaCollector (val context: Context) : BaseCollector {
             }
         }
     }
-    override fun start() {
+    override fun onStart() {
         context.contentResolver.registerContentObserver(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalPhotoObserver)
         context.contentResolver.registerContentObserver(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true, internalVideoObserver)
         context.contentResolver.registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, externalPhotoObserver)
         context.contentResolver.registerContentObserver(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, externalVideoObserver)
     }
 
-    override fun stop() {
+    override fun onStop() {
         context.contentResolver.unregisterContentObserver(internalPhotoObserver)
         context.contentResolver.unregisterContentObserver(internalVideoObserver)
         context.contentResolver.unregisterContentObserver(externalPhotoObserver)

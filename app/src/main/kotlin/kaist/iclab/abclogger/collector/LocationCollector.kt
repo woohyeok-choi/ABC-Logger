@@ -54,12 +54,12 @@ class LocationCollector(val context: Context) : BaseCollector {
             .setSmallestDisplacement(5.0F)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
-    override fun start() {
+    override fun onStart() {
         context.registerReceiver(receiver, filter)
         client.requestLocationUpdates(request, intent)
     }
 
-    override fun stop() {
+    override fun onStop() {
         context.unregisterReceiver(receiver)
         client.removeLocationUpdates(intent)
     }

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.wifi.WifiManager
+import android.provider.Settings
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
 
@@ -24,16 +25,18 @@ class WifiCollector(val context: Context) : BaseCollector {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val timestamp = System.currentTimeMillis()
-                wifiManager.scanResults.map { result ->
-                    WifiEntity(
-                            bssid = result.BSSID,
-                            ssid = result.SSID,
-                            frequency = result.frequency,
-                            rssi = result.level
-                    ).fillBaseInfo(timeMillis = timestamp)
-                }.run {
-                    putEntity(this)
-                }
+                try {
+                    wifiManager.scanResults.map { result ->
+                        WifiEntity(
+                                bssid = result.BSSID,
+                                ssid = result.SSID,
+                                frequency = result.frequency,
+                                rssi = result.level
+                        ).fillBaseInfo(timeMillis = timestamp)
+                    }.run {
+                        putEntity(this)
+                    }
+                } catch (e: SecurityException) { }
             }
         }
     }
@@ -45,10 +48,10 @@ class WifiCollector(val context: Context) : BaseCollector {
 
     private val filter = IntentFilter().apply {
         addAction(ACTION_WIFI_SCAN)
+        addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
     }
 
-    override fun start() {
-        if (!SharedPrefs.isProvidedWiFi || !checkAvailability()) return
+    override fun onStart() {
         context.registerReceiver(receiver, filter)
 
         alarmManager.cancel(intent)
@@ -60,9 +63,8 @@ class WifiCollector(val context: Context) : BaseCollector {
         )
     }
 
-    override fun stop() {
+    override fun onStop() {
         context.unregisterReceiver(receiver)
-
         alarmManager.cancel(intent)
     }
 
@@ -78,7 +80,7 @@ class WifiCollector(val context: Context) : BaseCollector {
         )
 
     override val newIntentForSetUp: Intent?
-        get() = null
+        get() = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     override val nameRes: Int?
         get() = R.string.data_name_wifi

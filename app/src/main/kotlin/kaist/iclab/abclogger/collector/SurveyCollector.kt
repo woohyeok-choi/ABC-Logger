@@ -208,12 +208,12 @@ class SurveyCollector(val context: Context) : BaseCollector {
         GlobalScope.launch(Dispatchers.IO) { scheduleSurvey(context, event) }
     }
 
-    override fun start() {
+    override fun onStart() {
         ABCEvent.register(this)
         context.registerReceiver(receiver, filter)
     }
 
-    override fun stop() {
+    override fun onStop() {
         ABCEvent.unregister(this)
         context.unregisterReceiver(receiver)
     }
@@ -221,7 +221,6 @@ class SurveyCollector(val context: Context) : BaseCollector {
     override fun checkAvailability(): Boolean = ObjBox.boxFor<SurveySettingEntity>().count() > 0L
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
-
 
     override val requiredPermissions: List<String>
         get() = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -241,7 +240,6 @@ class SurveyCollector(val context: Context) : BaseCollector {
         private const val REQUEST_CODE_SURVEY_OPEN = 0xdd
         private const val NOTIFICATION_ID_SURVEY_DELIVERED = 0x05
     }
-
 
     class SurveySettingActivity : BaseAppCompatActivity() {
 

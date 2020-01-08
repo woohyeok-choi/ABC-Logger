@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import kaist.iclab.abclogger.BatteryEntity
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.SharedPrefs
 import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.fillBaseInfo
 
@@ -56,12 +57,15 @@ class BatteryCollector (val context: Context) : BaseCollector {
         addAction(Intent.ACTION_BATTERY_CHANGED)
     }
 
+    override fun onStart() {
+        SharedPrefs.isProvidedBattery = true
 
-    override fun start() {
         context.registerReceiver(receiver, filter)
     }
 
-    override fun stop() {
+    override fun onStop() {
+        SharedPrefs.isProvidedBattery = false
+
         context.unregisterReceiver(receiver)
     }
 

@@ -1,12 +1,10 @@
 package kaist.iclab.abclogger.collector
 
 import android.Manifest
-<<<<<<< HEAD
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
-import androidx.appcompat.app.AppCompatActivity
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kaist.iclab.abclogger.*
@@ -141,6 +139,14 @@ class PolarH10Collector(val context: Context) : BaseCollector {
                     Battery: ${ExternalDevicePrefs.polarH10BatteryLevel}
                     Exception: ${ExternalDevicePrefs.polarH10Exception}
                 """.trimIndent()
+        }
+
+    override fun onStart() {
+
+    }
+
+    override fun onStop() {
+
     }
 
     override fun checkAvailability(): Boolean =

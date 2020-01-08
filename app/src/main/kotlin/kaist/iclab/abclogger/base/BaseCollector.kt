@@ -8,17 +8,18 @@ import android.content.Intent
  */
 interface BaseCollector {
     /**
-     * Start a given collector
+     * Define operations when a user requests for starting this collector
      */
-    fun start()
+    fun onStart()
 
     /**
-     * Stop a given collector
+     * Define operations when a user requests for stopping this collector
      */
-    fun stop()
+    fun onStop()
 
     /**
-     * Check whether a given collector can operate (e.g., permissions)
+     * Check whether a given collector can operate (e.g., permissions).
+     * If not available (even after started), it will be stopped.
      */
     fun checkAvailability() : Boolean
 

@@ -14,6 +14,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.os.Process
+import androidx.core.app.AppOpsManagerCompat
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
 
@@ -95,7 +96,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun start() {
+    override fun onStart() {
         val currentTime = System.currentTimeMillis()
         val threeHour: Long = 1000 * 60 * 60 * 3
 
@@ -112,7 +113,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime, threeHour, intent)
     }
 
-    override fun stop() {
+    override fun onStop() {
         context.unregisterReceiver(receiver)
 
         alarmManager.cancel(intent)
@@ -134,7 +135,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
 
     override fun checkAvailability(): Boolean {
         val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             appOpsManager.checkOpNoThrow(
                     AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
             )
@@ -142,8 +143,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
             appOpsManager.unsafeCheckOpNoThrow(
                     AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
             )
-        }
-        return mode == AppOpsManager.MODE_ALLOWED
+        } == AppOpsManager.MODE_ALLOWED
     }
 
     companion object {

@@ -109,12 +109,12 @@ class MessageCollector(val context: Context) : BaseCollector {
         else -> "UNDEFINED"
     }
 
-    override fun start() {
+    override fun onStart() {
         context.contentResolver.registerContentObserver(Telephony.Sms.CONTENT_URI, true, smsObserver)
         context.contentResolver.registerContentObserver(Telephony.Mms.CONTENT_URI, true, mmsObserver)
     }
 
-    override fun stop() {
+    override fun onStop() {
         context.contentResolver.unregisterContentObserver(smsObserver)
         context.contentResolver.unregisterContentObserver(mmsObserver)
     }

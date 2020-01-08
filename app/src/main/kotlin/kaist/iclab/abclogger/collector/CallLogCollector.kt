@@ -73,11 +73,11 @@ class CallLogCollector(val context: Context) : BaseCollector {
         else -> ""
     }
 
-    override fun start() {
+    override fun onStart() {
         context.contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogObserver)
     }
 
-    override fun stop() {
+    override fun onStop() {
         context.contentResolver.unregisterContentObserver(callLogObserver)
     }
 

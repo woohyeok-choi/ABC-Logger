@@ -564,11 +564,11 @@ class KeyTrackingService : AccessibilityService(), BaseCollector {
         return result
     }
 
-    override fun start() {
+    override fun onStart() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun stop() {
+    override fun onStop() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

@@ -1,14 +1,15 @@
 package kaist.iclab.abclogger.collector
 
 import android.Manifest
-import android.app.Activity
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.location.LocationManager
 import android.os.Build
 import android.os.SystemClock
+import android.provider.Settings
 import com.google.android.gms.location.*
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.R
@@ -105,7 +106,7 @@ class ActivityCollector(val context: Context) : BaseCollector {
     }.flatten().let { ActivityTransitionRequest(it) }
 
     private fun handleActivityUpdate(intent: Intent) {
-        if(!ActivityRecognitionResult.hasResult(intent)) return
+        if (!ActivityRecognitionResult.hasResult(intent)) return
         val result = ActivityRecognitionResult.extractResult(intent) ?: return
 
         result.probableActivities?.map { detectedActivity ->
@@ -119,7 +120,7 @@ class ActivityCollector(val context: Context) : BaseCollector {
     }
 
     private fun handleActivityTransitionUpdate(intent: Intent) {
-        if(!ActivityTransitionResult.hasResult(intent)) return
+        if (!ActivityTransitionResult.hasResult(intent)) return
 
         val elapsedTimeNano = SystemClock.elapsedRealtimeNanos()
         val curTime = System.currentTimeMillis()
@@ -143,24 +144,31 @@ class ActivityCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun start() {
+    override fun onStart() {
         context.registerReceiver(receiver, filter)
 
         client.requestActivityUpdates(1000 * 15, activityIntent)
         client.requestActivityTransitionUpdates(transitionRequest, activityTransitionIntent)
     }
 
-    override fun stop() {
-
+    override fun onStop() {
         context.unregisterReceiver(receiver)
 
         client.removeActivityUpdates(activityIntent)
         client.removeActivityTransitionUpdates(activityTransitionIntent)
     }
 
-    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+    override fun checkAvailability(): Boolean {
+        val isPermitted = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+        val isLocationEnabled = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            Settings.Secure.getInt(context.contentResolver, Settings.Secure.LOCATION_MODE) != Settings.Secure.LOCATION_MODE_OFF
+        } else {
+            (context.getSystemService(Context.LOCATION_SERVICE) as LocationManager).isLocationEnabled
+        }
+        return isPermitted && isLocationEnabled
+    }
 
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
+    override fun handleActivityResult(resultCode: Int, intent: Intent?) {}
 
     override val requiredPermissions: List<String>
         get() = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
@@ -177,7 +185,7 @@ class ActivityCollector(val context: Context) : BaseCollector {
         }
 
     override val newIntentForSetUp: Intent?
-        get() = null
+        get() = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     override val nameRes: Int?
         get() = R.string.data_name_physical_activity

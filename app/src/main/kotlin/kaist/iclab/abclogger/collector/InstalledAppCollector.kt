@@ -56,7 +56,7 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
         addAction(ACTION_RETRIEVE_PACKAGES)
     }
 
-    override fun start() {
+    override fun onStart() {
         val currentTime = System.currentTimeMillis()
         val halfDayHour : Long = 1000 * 60 * 60 * 12
 
@@ -78,7 +78,7 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
         )
     }
 
-    override fun stop() {
+    override fun onStop() {
         context.unregisterReceiver(receiver)
 
         alarmManager.cancel(intent)

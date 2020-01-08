@@ -111,7 +111,9 @@ class BluetoothCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun start() {
+    override fun onStart() {
+        SharedPrefs.isProvidedBluetooth = true
+
         context.registerReceiver(receiver, filter)
 
         val curTime = System.currentTimeMillis()
@@ -120,7 +122,8 @@ class BluetoothCollector(val context: Context) : BaseCollector {
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, curTime + 5000, 5 * 60 * 1000, intent)
     }
 
-    override fun stop() {
+    override fun onStop() {
+        SharedPrefs.isProvidedBluetooth
         context.unregisterReceiver(receiver)
 
         alarmManager.cancel(intent)

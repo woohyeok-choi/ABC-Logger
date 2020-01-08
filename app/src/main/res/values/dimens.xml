@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="section_horizontal_margin">12dp</dimen>
-    <dimen name="section_vertical_margin">8dp</dimen>
+    <dimen name="section_vertical_space">8dp</dimen>
 
     <dimen name="text_title_size">48sp</dimen>
     <dimen name="text_sub_title_size">14sp</dimen>

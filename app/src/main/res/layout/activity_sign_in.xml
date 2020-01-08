@@ -23,7 +23,7 @@
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/section_vertical_margin"
+        android:layout_marginBottom="@dimen/section_vertical_space"
         android:gravity="center_horizontal"
         android:text="@string/app_description"
         android:textColor="@android:color/white"

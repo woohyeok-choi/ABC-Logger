@@ -85,7 +85,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun start() {
+    override fun onStart() {
         GoogleSignIn.getLastSignedInAccount(context)?.let { account ->
             val client = Fitness.getRecordingClient(context, account)
             Tasks.whenAll(dataTypes.map { dataType -> client.subscribe(dataType) })
@@ -96,7 +96,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun stop() {
+    override fun onStop() {
 
     }
 

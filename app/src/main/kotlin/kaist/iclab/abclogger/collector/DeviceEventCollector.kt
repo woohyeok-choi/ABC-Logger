@@ -116,11 +116,11 @@ class DeviceEventCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun start() {
+    override fun onStart() {
         context.registerReceiver(receiver, filter)
     }
 
-    override fun stop() {
+    override fun onStop() {
         context.unregisterReceiver(receiver)
     }
 
