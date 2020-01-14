@@ -166,12 +166,6 @@ class PolarH10Collector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = Intent(context, PolarH10SettingActivity::class.java)
 
-    override val nameRes: Int?
-        get() = R.string.data_name_polar_h10
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_polar_h10
-
 
     class PolarH10SettingActivity : BaseAppCompatActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {

@@ -79,9 +79,4 @@ class BatteryCollector (val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = null
 
-    override val nameRes: Int?
-        get() = R.string.data_name_battery
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_battery
 }

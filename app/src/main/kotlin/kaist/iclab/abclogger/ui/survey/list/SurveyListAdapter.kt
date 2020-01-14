@@ -1,194 +1,69 @@
 package kaist.iclab.abclogger.ui.survey.list
 
-import androidx.lifecycle.*
-import androidx.paging.*
-import androidx.core.view.ViewCompat
-import androidx.recyclerview.widget.DiffUtil
-import android.view.View
+import android.view.LayoutInflater
 import android.view.ViewGroup
-import io.objectbox.query.Query
-import io.objectbox.reactive.DataObserver
-import kaist.iclab.abclogger.App
-import kaist.iclab.abclogger.common.type.LoadState
-import kaist.iclab.abclogger.EmptyEntityException
-import kaist.iclab.abclogger.common.util.FormatUtils
-import kaist.iclab.abclogger.data.entities.ParticipationEntity
-import kaist.iclab.abclogger.data.entities.Survey
-import kaist.iclab.abclogger.data.entities.SurveyEntity_
-import kaist.iclab.abclogger.ui.listener.BaseViewHolder
-import kaist.iclab.abclogger.ui.listener.OnRecyclerViewItemClickListener
-import kaist.iclab.abclogger.ui.view.SurveyItemView
-import java.util.concurrent.Executors
+import androidx.core.view.ViewCompat
+import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingUtil
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import kaist.iclab.abclogger.BR
+import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.SurveyEntity
+import kaist.iclab.abclogger.databinding.SurveyListItemBinding
 
-class SurveyListAdapter : PagedListAdapter<Survey, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
-    companion object {
-        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Survey>() {
-            override fun areItemsTheSame(oldItem: Survey, newItem: Survey) = oldItem.id == newItem.id
-            override fun areContentsTheSame(oldItem: Survey, newItem: Survey) = oldItem == newItem
-        }
+class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
+    var onItemClick : ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null
 
-        fun getEntityViewModel(fragment: androidx.fragment.app.Fragment, showOnlyUnread: Boolean) : EntityViewModel {
-            return ViewModelProviders.of(fragment, object : ViewModelProvider.Factory {
-                @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                    return EntityViewModel(showOnlyUnread) as? T ?: throw IllegalArgumentException()
-                }
-            }).get(EntityViewModel::class.java)
-        }
-    }
-
-    private var listener: OnRecyclerViewItemClickListener<Survey>? = null
-
-
-    fun setOnRecyclerViewItemClickListener(onItemClickListener: OnRecyclerViewItemClickListener<Survey>?) {
-        listener = onItemClickListener
-    }
-
-    override fun getItemId(position: Int): Long {
-        return getItem(position)?.id ?: -1
-    }
+    override fun getItemId(position: Int): Long = getItem(position)?.id ?: -1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(SurveyItemView(parent.context)) { position, view ->
-            listener?.onItemClick(position, getItem(position), view)
-        }
+        val binding : SurveyListItemBinding = DataBindingUtil.inflate(
+                LayoutInflater.from(parent.context), R.layout.survey_list_item, parent,false
+        )
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val entity = getItem(position)
-        if(entity == null) {
-            holder.clearView()
-        } else {
-            holder.bindView(entity)
+        val item = getItem(position) ?: return
 
-            ViewCompat.setTransitionName(holder.view.getTitleView(), "${SurveyListFragment.PREFIX_TITLE_VIEW}_${entity.id}")
-            ViewCompat.setTransitionName(holder.view.getMessageView(), "${SurveyListFragment.PREFIX_MESSAGE_VIEW}_${entity.id}")
-            ViewCompat.setTransitionName(holder.view.getDeliveredTimeView(), "${SurveyListFragment.PREFIX_DELIVERED_TIME_VIEW}_${entity.id}")
+        holder.binding.entity = item
+        holder.binding.isAvailable = item.isAvailable()
+
+        holder.setOnClick {
+            onItemClick?.invoke(item, holder.binding)
+        }
+
+        ViewCompat.setTransitionName(
+                holder.binding.txtHeader,
+                "${PREFIX_TITLE_VIEW}_${item.id}"
+        )
+        ViewCompat.setTransitionName(
+                holder.binding.txtMessage,
+                "${PREFIX_MESSAGE_VIEW}_${item.id}"
+        )
+        ViewCompat.setTransitionName(
+                holder.binding.txtDeliveredTime,
+                "${PREFIX_DELIVERED_TIME_VIEW}_${item.id}"
+        )
+    }
+
+    class ViewHolder (val binding: SurveyListItemBinding): RecyclerView.ViewHolder(binding.root) {
+        fun setOnClick(onClick: (() -> Unit)? = null) {
+            itemView.setOnClickListener { onClick?.invoke() }
         }
     }
 
-    class ViewHolder(surveyItemView: SurveyItemView, onClick: (position: Int, view: View) -> Unit) : BaseViewHolder<SurveyItemView, Survey>(surveyItemView, onClick) {
-        override fun bindView(data: Survey) {
-            view.setTitle(data.title)
-            view.setMessage(data.message)
-            view.setDeliveredTime(String.format("%s %s",
-                FormatUtils.formatSameDay(view.context, data.deliveredTime, System.currentTimeMillis()),
-                FormatUtils.formatTimeBefore(data.deliveredTime, System.currentTimeMillis())?.let {"($it)"} ?: ""))
-            view.setValidItem(data.isEnableToResponed(System.currentTimeMillis()))
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SurveyEntity>() {
+            override fun areItemsTheSame(oldItem: SurveyEntity, newItem: SurveyEntity): Boolean = oldItem.id == newItem.id
+
+            override fun areContentsTheSame(oldItem: SurveyEntity, newItem: SurveyEntity): Boolean = oldItem == newItem
         }
 
-        override fun clearView() {
-            view.clearView()
-        }
-    }
-
-    class EntityDataSource(private val showOnlyUnread: Boolean) : PositionalDataSource<Survey>() {
-        private val observer = DataObserver<List<Survey>> { invalidate() }
-        private var query: Query<Survey>? = null
-
-        val loadState = MutableLiveData<LoadState>()
-        val initialLoadState = MutableLiveData<LoadState>()
-
-        private fun buildQuery(): Query<Survey> {
-            val entity = ParticipationEntity.getParticipatedExperimentFromLocal()
-            val query = App.boxFor<Survey>().let {
-                if (showOnlyUnread) {
-                    it.query()
-                        .less(SurveyEntity_.timestamp, 0)
-                        .and()
-                        .equal(SurveyEntity_.subjectEmail, entity.subjectEmail)
-                        .and()
-                        .equal(SurveyEntity_.experimentUuid, entity.experimentUuid)
-                        .greater(SurveyEntity_.deliveredTime, entity.participateTime)
-                        .orderDesc(SurveyEntity_.deliveredTime)
-                        .build()
-                } else {
-                    it.query()
-                        .equal(SurveyEntity_.subjectEmail, entity.subjectEmail)
-                        .and()
-                        .equal(SurveyEntity_.experimentUuid, entity.experimentUuid)
-                        .greater(SurveyEntity_.deliveredTime, entity.participateTime)
-                        .orderDesc(SurveyEntity_.deliveredTime)
-                        .build()
-                }
-            }
-            query.subscribe().onlyChanges().weak().observer(observer)
-            return query
-        }
-
-        override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<Survey>) {
-            loadState.postValue(LoadState.LOADING)
-            try {
-                query = query ?: buildQuery()
-                query?.let {
-                    val list = it.find(params.startPosition.toLong(), params.loadSize.toLong())
-                    callback.onResult(list)
-                }
-                loadState.postValue(LoadState.LOADED)
-            } catch (e: Exception) {
-                loadState.postValue(LoadState.ERROR(e))
-            }
-        }
-
-        override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<Survey>) {
-            initialLoadState.postValue(LoadState.LOADING)
-            loadState.postValue(LoadState.LOADING)
-            try {
-                query = query ?: buildQuery()
-
-                query?.let {
-                    val totalCount = it.count().toInt()
-                    if (totalCount == 0) {
-                        callback.onResult(listOf(), 0, 0)
-                        loadState.postValue(LoadState.ERROR(EmptyEntityException()))
-                        return
-                    }
-
-                    val position = computeInitialLoadPosition(params, totalCount)
-                    val loadSize = computeInitialLoadSize(params, position, totalCount)
-
-                    val list = it.find(position.toLong(), loadSize.toLong())
-
-                    if (list.size == loadSize) {
-                        callback.onResult(list, position, totalCount)
-                    } else {
-                        invalidate()
-                    }
-                    initialLoadState.postValue(LoadState.LOADED)
-                    loadState.postValue(LoadState.LOADED)
-                }
-
-            } catch (e: Exception) {
-                initialLoadState.postValue(LoadState.ERROR(e))
-                loadState.postValue(LoadState.ERROR(e))
-            }
-        }
-
-        class Factory(private val showOnlyUnread: Boolean) : DataSource.Factory<Int, Survey> () {
-            val sourceLiveData = MutableLiveData<EntityDataSource>()
-
-            override fun create(): DataSource<Int, Survey> {
-                val source = EntityDataSource(showOnlyUnread)
-                sourceLiveData.postValue(source)
-                return source
-            }
-        }
-    }
-
-    class EntityViewModel(showOnlyUnread: Boolean) : ViewModel() {
-        private val factory = EntityDataSource.Factory(showOnlyUnread)
-
-        val pagedList = LivePagedListBuilder(factory,
-            PagedList.Config.Builder()
-            .setInitialLoadSizeHint(20)
-            .setPageSize(10)
-            .setPrefetchDistance(10)
-            .build())
-            .setFetchExecutor(Executors.newCachedThreadPool()).build()
-
-        fun refresh() = factory.sourceLiveData.value?.invalidate()
-
-        val loadState : LiveData<LoadState> = Transformations.switchMap(factory.sourceLiveData) { it.loadState }
-        val initialLoadState : LiveData<LoadState> = Transformations.switchMap(factory.sourceLiveData) { it.initialLoadState }
+        const val PREFIX_TITLE_VIEW = "TITLE_VIEW"
+        const val PREFIX_MESSAGE_VIEW = "MESSAGE_VIEW"
+        const val PREFIX_DELIVERED_TIME_VIEW = "DELIVERED_TIME_VIEW"
     }
 }

@@ -89,10 +89,4 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
     override fun checkAvailability(): Boolean = true
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
-
-    override val nameRes: Int?
-        get() = R.string.data_name_traffic
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_traffic
 }

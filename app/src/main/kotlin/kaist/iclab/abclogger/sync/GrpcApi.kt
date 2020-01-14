@@ -1,11 +1,9 @@
 package kaist.iclab.abclogger.sync
 
-import io.grpc.ManagedChannel
 
 // import kaist.iclab.abc.protos.*
 
 object GrpcApi {
-    private var channel: ManagedChannel? = null
 }
 /*
 object GrpcApi {

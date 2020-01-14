@@ -1,12 +1,14 @@
 package kaist.iclab.abclogger
 
 import android.os.Build
+import com.google.firebase.auth.FirebaseAuth
 import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.Transient
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @BaseEntity
 abstract class Base(
@@ -22,7 +24,7 @@ abstract class Base(
 fun <T : Base> T.fillBaseInfo(timeMillis: Long): T {
     timestamp = timeMillis
     utcOffset = TimeZone.getDefault().rawOffset.toFloat() / (1000 * 60 * 60)
-    subjectEmail = SharedPrefs.subjectEmail
+    subjectEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
     participationTime = SharedPrefs.participationTime
     deviceInfo = "${Build.MANUFACTURER}-${Build.MODEL}-${Build.VERSION.RELEASE}"
     isUploaded = false
@@ -95,6 +97,16 @@ data class InstalledAppEntity(
 ) : Base()
 
 @Entity
+data class KeyTrackEntity(
+        var name: String = "",
+        var packageName: String = "",
+        var isSystemApp: Boolean = false,
+        var isUpdatedSystemApp: Boolean = false,
+        var distance : Float = 0.0F,
+        var timeTaken : Long = 0
+) : Base()
+
+@Entity
 data class LocationEntity(
         var latitude: Double = Double.MIN_VALUE,
         var longitude: Double = Double.MIN_VALUE,
@@ -138,8 +150,8 @@ data class PhysicalActivityEntity(
 @Entity
 data class PhysicalStatusEntity(
         var type: String = "",
-        var startTime: Long = Long.MIN_VALUE,
-        var endTime: Long = Long.MIN_VALUE,
+        var startTime: Long = 0,
+        var endTime: Long = 0,
         var value: Float = Float.MIN_VALUE
 ) : Base()
 
@@ -148,23 +160,23 @@ data class SurveyEntity(
         var title: String = "",
         var message: String = "",
         var timeoutPolicy: String = "",
-        var timeoutSec: Long = Long.MIN_VALUE,
-        var deliveredTime: Long = Long.MIN_VALUE,
-        var reactionTime: Long = Long.MIN_VALUE,
-        var firstQuestionTime: Long = Long.MIN_VALUE,
-        var responseTime: Long = Long.MIN_VALUE,
+        var timeoutSec: Long = 0,
+        var deliveredTime: Long = 0,
+        var reactionTime: Long = 0,
+        var responseTime: Long = 0,
         var json: String = "",
         @Transient var isResponded: Boolean = responseTime > 0
-) : Base()
+) : Base() {
+    fun isAnswered() : Boolean = responseTime > 0
 
-@Entity
-data class RecordEntity(
-        var sampleRate: Int = Int.MIN_VALUE,
-        var channelMask: String = "",
-        var encoding: String = "",
-        var path: String = "",
-        var duration: Long = Long.MIN_VALUE
-) : Base()
+    fun isExpired() : Boolean = timeoutPolicy == Survey.TIMEOUT_DISABLED &&
+            System.currentTimeMillis() > deliveredTime + TimeUnit.SECONDS.toMillis(timeoutSec)
+
+    fun isAvailable() : Boolean = !isAnswered() && !isExpired()
+
+    fun showAltText() : Boolean = timeoutPolicy == Survey.TIMEOUT_ALT_TEXT &&
+            System.currentTimeMillis() > deliveredTime + TimeUnit.SECONDS.toMillis(timeoutSec)
+}
 
 @Entity
 data class WifiEntity(

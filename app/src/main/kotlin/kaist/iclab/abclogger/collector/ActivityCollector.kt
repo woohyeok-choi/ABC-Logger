@@ -62,8 +62,7 @@ class ActivityCollector(val context: Context) : BaseCollector {
             override fun onReceive(context: Context?, intent: Intent?) = when (intent?.action) {
                 ACTION_ACTIVITY_UPDATE -> handleActivityUpdate(intent)
                 ACTION_ACTIVITY_TRANSITION_UPDATE -> handleActivityTransitionUpdate(intent)
-                else -> {
-                }
+                else -> { }
             }
         }
     }
@@ -187,11 +186,6 @@ class ActivityCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
-    override val nameRes: Int?
-        get() = R.string.data_name_physical_activity
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_physical_activity
 
     companion object {
         private const val REQUEST_CODE_ACTIVITY_TRANSITION_UPDATE = 0xf1

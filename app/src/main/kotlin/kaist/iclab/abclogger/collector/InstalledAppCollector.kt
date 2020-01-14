@@ -7,11 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import kaist.iclab.abclogger.InstalledAppEntity
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.SharedPrefs
+import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.fillBaseInfo
 
 class InstalledAppCollector (val context: Context) : BaseCollector {
     private val packageManager: PackageManager by lazy { context.applicationContext.packageManager }
@@ -94,14 +91,9 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = null
 
-    override val nameRes: Int?
-        get() = R.string.data_name_installed_app
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_installed_app
 
     companion object {
-        private const val ACTION_RETRIEVE_PACKAGES = "kaist.iclab.abclogger.ACTION_RETRIEVE_PACKAGES"
+        private const val ACTION_RETRIEVE_PACKAGES = "${BuildConfig.APPLICATION_ID}.ACTION_RETRIEVE_PACKAGES"
         private const val REQUEST_CODE_RETRIEVE_PACKAGES = 0xef
     }
 }

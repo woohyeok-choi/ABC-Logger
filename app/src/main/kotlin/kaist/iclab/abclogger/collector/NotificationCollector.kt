@@ -108,12 +108,4 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
 
     override val newIntentForSetUp: Intent?
         get() = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-
-    override val nameRes: Int?
-        get() = R.string.data_name_notification
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_notification
-
-
 }

@@ -25,10 +25,6 @@ class ABCLogger : BaseService() {
     }
 
     companion object {
-        fun bind(context: Context) {
-            ObjBox.bind(context)
-            Koap.bind(context, SharedPrefs, ExternalDevicePrefs)
-            Notifications.bind(context)
-        }
+
     }
 }

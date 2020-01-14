@@ -10,4 +10,5 @@
     <color name="color_blue">#4285f4</color>
     <color name="color_message">#7a7a7a</color>
     <color name="color_disabled">#dbdbdb</color>
+    <color name="color_white_alpha">#33DBDBDB</color>
 </resources>

@@ -1,25 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/txt_error"
+    <data>
+        <import type="kaist.iclab.abclogger.Utils"/>
+        <import type="kaist.iclab.abclogger.ui.Status"/>
+
+        <import type="android.view.View"/>
+        <variable
+            name="viewModel"
+            type="kaist.iclab.abclogger.ui.survey.question.SurveyResponseViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingStart="@dimen/item_space_horizontal"
-        android:paddingEnd="@dimen/item_space_horizontal"
-        android:gravity="center_vertical|center_horizontal"
-        android:textSize="@dimen/txt_size_message"
-        android:visibility="gone" />
+        tools:context=".ui.survey.question.SurveyResponseActivity">
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scroll_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-    </androidx.core.widget.NestedScrollView>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" >
 
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.core.widget.ContentLoadingProgressBar
+                    android:id="@+id/load_progress_bar"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:indeterminate="true"
+                    android:paddingStart="@dimen/item_space_horizontal"
+                    android:paddingEnd="@dimen/item_space_horizontal" />
+
+                <androidx.core.widget.ContentLoadingProgressBar
+                    android:id="@+id/store_progress_bar"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/color_white_alpha"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:indeterminate="true"
+                    android:paddingStart="@dimen/item_space_horizontal"
+                    android:paddingEnd="@dimen/item_space_horizontal" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="@{viewModel.loadStatus == Status.STATE_SUCCESS ? View.VISIBLE : View.GONE}">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?android:selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="@dimen/item_default_padding">
+
+                        <TextView
+                            android:id="@+id/txt_header"
+                            isBold="@{viewModel.loadEntity.available}"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:text="@{viewModel.loadEntity.title}"
+                            android:textColor="@{viewModel.loadEntity.available ? @color/color_title : @color/color_message}"
+                            android:textSize="@dimen/txt_size_title_small"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/txt_message"
+                            isBold="@{viewModel.loadEntity.available}"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:text="@{viewModel.loadEntity.message}"
+                            android:textColor="@color/color_message"
+                            android:textSize="@dimen/txt_size_text"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/txt_header" />
+
+                        <TextView
+                            android:id="@+id/txt_delivered_time"
+                            isBold="@{viewModel.loadEntity.available}"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="@{Utils.formatSameDayTimeYear(context, viewModel.loadEntity.deliveredTime, System.currentTimeMillis())}"
+                            android:textColor="@{viewModel.loadEntity.available ? @color/color_blue : @color/color_message}"
+                            android:textSize="@dimen/txt_size_text_small"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/txt_header"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                        isAvailable="@{viewModel.loadEntity.available}"
+                        showAltText="@{viewModel.loadEntity.showAltText()}"
+                        questions="@{viewModel.loadSurvey.questions}"/>
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/tool_bar"
+                android:layout_width="match_parent"
+                android:layout_height="?actionBarSize"
+                android:background="@color/color_primary"
+                android:elevation="4dp"
+                android:theme="@style/AppTheme.ActionBar"
+                app:layout_scrollFlags="scroll|enterAlways" />
+        </com.google.android.material.appbar.AppBarLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

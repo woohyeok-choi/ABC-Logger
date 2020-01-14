@@ -127,12 +127,6 @@ class AppUsageCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
 
-    override val nameRes: Int?
-        get() = R.string.data_name_app_usage
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_app_usage
-
     override fun checkAvailability(): Boolean {
         val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {

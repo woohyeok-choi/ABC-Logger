@@ -3,8 +3,7 @@ package kaist.iclab.abclogger.ui.main
 import android.os.Bundle
 import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
-import kaist.iclab.abclogger.ui.main.MainActivity
-import kaist.iclab.abclogger.ui.main.SignInActivity
+import kaist.iclab.abclogger.startActivity
 
 class RootActivity: BaseAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,10 +12,10 @@ class RootActivity: BaseAppCompatActivity() {
         val currentUser = FirebaseAuth.getInstance().currentUser
 
         if (currentUser != null) {
-            startActivity(MainActivity.newIntent(this))
+            startActivity<MainActivity>()
             finish()
         } else {
-            startActivity(SignInActivity.newIntent(this))
+            startActivity<SignInActivity>()
             finish()
         }
     }

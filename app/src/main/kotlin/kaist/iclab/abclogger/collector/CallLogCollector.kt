@@ -94,9 +94,4 @@ class CallLogCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = null
 
-    override val nameRes: Int?
-        get() = R.string.data_name_call_log
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_call_log
 }

@@ -5,6 +5,7 @@
     <string name="general_week">week(s)</string>
     <string name="general_month">month(s)</string>
     <string name="general_year">year(s)</string>
+    <string name="general_etc">Etc.</string>
 
     <string name="general_last_sync_time">Last sync time</string>
     <string name="general_free_text">Freely type it.</string>
@@ -19,6 +20,24 @@
     <string name="general_gender_female">Female</string>
     <string name="general_loading">Loading&#8230;</string>
     <string name="general_survey_instruction">(Questions marked as * must be answered.)</string>
+    <string name="general_asterisk" translatable="false">(*) </string>
+
+    <string name="config_category_general">General</string>
+    <string name="config_category_collector">Collector</string>
+    <string name="config_category_others">Others</string>
+
+    <string name="config_title_user_name">User name</string>
+    <string name="config_title_upload_setting">Upload setting</string>
+    <string name="config_desc_upload_setting">Data should be uploaded only when non-metered network is connected.</string>
+    <string name="config_title_email">Email</string>
+    <string name="config_title_sync">Sync</string>
+    <string name="config_title_size_of_data">Local data size</string>
+    <string name="config_title_flush_data">Flush local data</string>
+    <string name="config_desc_flush_data">Remove all data in a local database.</string>
+    <string name="config_title_logout">Logout</string>
+    <string name="config_desc_logout">Remove all data, stop data collection, and logout.</string>
+
+    <string name="activity_title_survey_response">Response</string>
 
     <string name="btn_sign_in">Sign in</string>
     <string name="btn_participate">Participate</string>
@@ -38,6 +57,13 @@
     <string name="error_firebase_auth_invalid_user">This account was disabled.</string>
     <string name="error_firebase_auth_invalid_credential">Credential was expired.</string>
     <string name="error_firebase_auth_collision">This account already exists.</string>
+    <string name="error_empty_survey">There is no survey.</string>
+    <string name="error_invalid_survey_format">Invalid survey format.</string>
+    <string name="error_invalid_entity_id">There is no matched survey.</string>
+    <string name="error_permission_denied">Some permissions are denied.</string>
+    
+    <string name="dialog_title_permission_request">Permission request</string>
+    <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
 
     <string name="msg_sign_in_success">Welcome</string>
     <string name="msg_auth_password_changed">Password changed.</string>
@@ -53,18 +79,11 @@
 
     <string name="menu_bottom_nav_survey">Surveys</string>
     <string name="menu_bottom_nav_config">Config</string>
+    <string name="menu_survey_question_save">Save</string>
 
-    <string name="menu_item_surveys_all">Received surveys</string>
-    <string name="menu_item_surveys_unread">Not responded surveys</string>
-    <string name="menu_item_experiments_all">All Experiments</string>
-    <string name="menu_item_experiments_participated">My Experiment</string>
-    <string name="menu_item_logout">Sign-out</string>
-    <string name="menu_item_sync">Sync with Server</string>
 
     <string name="data_name_physical_activity">Physical Activity</string>
     <string name="data_desc_physical_activity">It collects a history of physical activities</string>
-    <string name="data_name_ambient_sound">Ambient Sound</string>
-    <string name="data_desc_ambient_sound">It collects ambient sound (e.g., background noise).</string>
     <string name="data_name_app_usage">App Usage</string>
     <string name="data_desc_app_usage">It collects which app is used.</string>
     <string name="data_name_battery">Battery Usage</string>

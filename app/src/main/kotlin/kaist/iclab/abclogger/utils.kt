@@ -1,15 +1,14 @@
 package kaist.iclab.abclogger
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.*
-import android.os.Build
-import android.os.Environment
+import android.os.*
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.Button
@@ -18,16 +17,21 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.work.Constraints
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.Worker
 import com.google.android.material.snackbar.Snackbar
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
-import java.util.ArrayList
+import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.math.log10
-
+import java.io.Serializable
 
 
 object Utils {
-
 
     /**
      * TODO
@@ -57,24 +61,6 @@ object Utils {
                 }
             }
 
-    fun showSnackBar(view: View, messageRes: Int, showAlways: Boolean = false, actionRes: Int? = null, action: (() -> Unit)? = null) {
-        var snackBar = Snackbar.make(view, messageRes, if(showAlways) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG)
-        if(actionRes != null) {
-            snackBar = snackBar.setAction(actionRes) {
-                action?.invoke()
-            }
-        }
-        snackBar.show()
-    }
-
-    fun showToast(context: Context?, messageRes: Int, isShort: Boolean = true) {
-        Toast.makeText(context, messageRes, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
-    }
-
-    fun showToast(context: Context?, message: String, isShort: Boolean = true) {
-        Toast.makeText(context, message, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
-    }
-
     fun join(vararg texts: String?, separator: String = " ") = texts.filterNotNull().joinToString(separator = separator)
 
     fun fillButton(button: Button, isEnabled: Boolean, stringRes: Int? = null) {
@@ -86,12 +72,6 @@ object Utils {
             button.text = button.context.getString(stringRes)
         }
     }
-
-    /**
-     * TODO
-     * will be moved to ObjBox control
-     */
-    fun isExternalStorageAvailable() : Boolean = Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
 
     fun showPermissionDialog(context: Context, permissions: Array<String>, granted: (() -> Unit)? = null, denied: (() -> Unit)? = null) {
         TedPermission.with(context)
@@ -106,6 +86,71 @@ object Utils {
                     }
                 }).check()
     }
+
+    @JvmStatic
+    fun formatSameDayTimeYear(context: Context, then: Long, now: Long) : String {
+        val thenCal = GregorianCalendar.getInstance().apply {
+            timeInMillis = then
+        }
+        val nowCal = GregorianCalendar.getInstance().apply {
+            timeInMillis = now
+        }
+
+        val isSameDay = thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR) &&
+                thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH) &&
+                thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)
+
+        val isSameYear = thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
+
+        return when {
+            isSameDay -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_TIME)
+            isSameYear -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_DATE)
+            else -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_YEAR)
+        }
+    }
+}
+
+fun Context.showSnackBar(view: View,
+                         messageRes: Int,
+                         showAlways: Boolean = false,
+                         actionRes: Int? = null,
+                         action: (() -> Unit)? = null
+) {
+
+    var snackBar = Snackbar.make(view, messageRes, if(showAlways) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG)
+    if(actionRes != null) {
+        snackBar = snackBar.setAction(actionRes) { action?.invoke() }
+    }
+    snackBar.show()
+}
+
+fun Fragment.showSnackBar(view: View,
+                          messageRes: Int,
+                          showAlways: Boolean = false,
+                          actionRes: Int? = null,
+                          action: (() -> Unit)? = null
+) {
+   var snackBar = Snackbar.make(view, messageRes, if(showAlways) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG)
+    if(actionRes != null) {
+        snackBar = snackBar.setAction(actionRes) { action?.invoke() }
+    }
+    snackBar.show()
+}
+
+fun Context.showToast(messageRes: Int, isShort: Boolean = true) {
+    Toast.makeText(this, messageRes, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+}
+
+fun Context.showToast(message: String, isShort: Boolean = true) {
+    Toast.makeText(this, message, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+}
+
+fun Fragment.showToast(messageRes: Int, isShort: Boolean) {
+    Toast.makeText(requireContext(), messageRes, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+}
+
+fun Fragment.showToast(message: String, isShort: Boolean) {
+    Toast.makeText(requireContext(), message, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
 
 inline fun <T, R : Any> Iterable<T>.firstNotNullResult(transform: (T) -> R?): R? {
@@ -122,4 +167,136 @@ inline fun <T> Array<T>.sumByLong(selector: (T) -> Long): Long {
         sum += selector(element)
     }
     return sum
+}
+
+inline fun <reified T : Activity> Context.startActivity(vararg params: Pair<String, Any?>, options: Bundle? = null) {
+    val intent = Intent(this, T::class.java)
+    fillIntentWithArguments(intent, params)
+    startActivity(intent, options)
+}
+
+inline fun <reified T : Activity> Context.startService(vararg params: Pair<String, Any?>) {
+    val intent = Intent(this, T::class.java)
+    fillIntentWithArguments(intent, params)
+    startService(intent)
+}
+
+inline fun <reified T : Activity> Context.startForegroundService(vararg params: Pair<String, Any?>) {
+    val intent = Intent(this, T::class.java)
+    fillIntentWithArguments(intent, params)
+    startForegroundService(intent)
+}
+
+inline fun <reified T : Activity> Activity.startActivityForResult(requestCode: Int, options: Bundle? = null,
+                                                                  vararg params: Pair<String, Any?>) {
+    val intent = Intent(this, T::class.java)
+    fillIntentWithArguments(intent, params)
+    startActivityForResult(intent, requestCode, options)
+}
+
+inline fun <reified T : Activity> Fragment.startActivity(vararg params: Pair<String, Any?>, options: Bundle? = null) {
+    val intent = Intent(requireContext(), T::class.java)
+    fillIntentWithArguments(intent, params)
+    startActivity(intent, options)
+}
+
+inline fun <reified T : Activity> Fragment.startActivityForResult(requestCode: Int, options: Bundle? = null,
+                                                                  vararg params: Pair<String, Any?>) {
+    val intent = Intent(requireContext(), T::class.java)
+    fillIntentWithArguments(intent, params)
+    startActivityForResult(intent, requestCode, options)
+}
+
+inline fun <reified T : Any> Context.intentFor(vararg params: Pair<String, Any?>) : Intent {
+    val intent = Intent(this, T::class.java)
+    fillIntentWithArguments(intent, params)
+    return intent
+}
+
+fun extraIntentFor(vararg params: Pair<String, Any?>) : Intent {
+    val intent = Intent()
+    fillIntentWithArguments(intent, params)
+    return intent
+}
+
+fun Context.checkWhitelist() : Boolean {
+    val manager = getSystemService(Context.POWER_SERVICE) as PowerManager
+    return manager.isIgnoringBatteryOptimizations(packageName)
+}
+
+fun Context.sendBroadcast(action: String, vararg params: Pair<String, Any?>) {
+    val intent = Intent(action)
+    fillIntentWithArguments(intent, params)
+    sendBroadcast(intent)
+}
+
+fun Fragment.fillArguments(vararg params: Pair<String, Any?>) : Fragment {
+    val bundle = Bundle()
+    fillBundleWithArguments(bundle, params)
+    arguments = Bundle()
+    return this
+}
+
+fun fillIntentWithArguments(intent: Intent, params: Array<out Pair<String, Any?>>) =
+    params.forEach { (key, value) ->
+        when (value) {
+            null -> intent.putExtra(key, null as Serializable?)
+            is Int -> intent.putExtra(key, value)
+            is Long -> intent.putExtra(key, value)
+            is CharSequence -> intent.putExtra(key, value)
+            is String -> intent.putExtra(key, value)
+            is Float -> intent.putExtra(key, value)
+            is Double -> intent.putExtra(key, value)
+            is Char -> intent.putExtra(key, value)
+            is Short -> intent.putExtra(key, value)
+            is Boolean -> intent.putExtra(key, value)
+            is Serializable -> intent.putExtra(key, value)
+            is Bundle -> intent.putExtra(key, value)
+            is Parcelable -> intent.putExtra(key, value)
+            is Array<*> -> when {
+                value.isArrayOf<CharSequence>() -> intent.putExtra(key, value)
+                value.isArrayOf<String>() -> intent.putExtra(key, value)
+                value.isArrayOf<Parcelable>() -> intent.putExtra(key, value)
+            }
+            is IntArray -> intent.putExtra(key, value)
+            is LongArray -> intent.putExtra(key, value)
+            is FloatArray -> intent.putExtra(key, value)
+            is DoubleArray -> intent.putExtra(key, value)
+            is CharArray -> intent.putExtra(key, value)
+            is ShortArray -> intent.putExtra(key, value)
+            is BooleanArray -> intent.putExtra(key, value)
+        }
+    }
+
+@Suppress("UNCHECKED_CAST")
+fun fillBundleWithArguments(bundle: Bundle, params: Array<out Pair<String, Any?>>) {
+    params.forEach { (key, value) ->
+        when (value) {
+            null -> bundle.putSerializable(key, null as Serializable?)
+            is Int -> bundle.putInt(key, value)
+            is Long -> bundle.putLong(key, value)
+            is CharSequence -> bundle.putCharSequence(key, value)
+            is String -> bundle.putString(key, value)
+            is Float -> bundle.putFloat(key, value)
+            is Double -> bundle.putDouble(key, value)
+            is Char -> bundle.putChar(key, value)
+            is Short -> bundle.putShort(key, value)
+            is Boolean -> bundle.putBoolean(key, value)
+            is Serializable -> bundle.putSerializable(key, value)
+            is Bundle -> bundle.putBundle(key, value)
+            is Parcelable -> bundle.putParcelable(key, value)
+            is Array<*> -> when {
+                value.isArrayOf<CharSequence>() -> bundle.putCharSequenceArray(key, value as Array<CharSequence>)
+                value.isArrayOf<String>() -> bundle.putStringArray(key, value as Array<String>)
+                value.isArrayOf<Parcelable>() -> bundle.putParcelableArray(key, value as Array<Parcelable>)
+            }
+            is IntArray -> bundle.putIntArray(key, value)
+            is LongArray -> bundle.putLongArray(key, value)
+            is FloatArray -> bundle.putFloatArray(key, value)
+            is DoubleArray -> bundle.putDoubleArray(key, value)
+            is CharArray -> bundle.putCharArray(key, value)
+            is ShortArray -> bundle.putShortArray(key, value)
+            is BooleanArray -> bundle.putBooleanArray(key, value)
+        }
+    }
 }

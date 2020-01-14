@@ -12,10 +12,10 @@ import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
 import kaist.iclab.abclogger.Survey
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -59,7 +59,10 @@ class SurveyCollector(val context: Context) : BaseCollector {
                 json = setting.json
         ).fillBaseInfo(timeMillis = curTime).run { putEntitySync(this) } ?: return
 
-        val surveyIntent = SurveyResponseActivity.newIntent(context.applicationContext, id, false)
+        val surveyIntent = context.intentFor<SurveyResponseActivity>(
+                SurveyResponseActivity.EXTRA_SURVEY_ENTITY_ID to id,
+                SurveyResponseActivity.EXTRA_SHOW_FROM_LIST to false
+        )
         val pendingIntent = TaskStackBuilder.create(context)
                 .addNextIntentWithParentStack(surveyIntent)
                 .getPendingIntent(REQUEST_CODE_SURVEY_OPEN, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -227,12 +230,6 @@ class SurveyCollector(val context: Context) : BaseCollector {
 
     override val newIntentForSetUp: Intent?
         get() = Intent(context, SurveySettingActivity::class.java)
-
-    override val nameRes: Int?
-        get() = R.string.data_name_survey
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_survey
 
     companion object {
         private const val EXTRA_SURVEY_UUID = "${BuildConfig.APPLICATION_ID}.EXTRA_SURVEY_UUID"

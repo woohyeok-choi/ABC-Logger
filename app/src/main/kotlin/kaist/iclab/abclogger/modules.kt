@@ -2,6 +2,7 @@ package kaist.iclab.abclogger
 
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.ui.config.ConfigViewModel
+import kaist.iclab.abclogger.ui.survey.list.SurveyListViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -22,8 +23,14 @@ val collectorModule = module {
     single(createdAtStart = false) { PolarH10Collector(androidContext()) }
     single(createdAtStart = false) { SurveyCollector(androidContext()) }
     single(createdAtStart = false) { WifiCollector(androidContext()) }
+    single(createdAtStart = false) {
+        ABC(get(), get(), get(), get(), get(), get(), get(), get(), get(),
+                get(), get(), get(), get(), get(), get(), get(), get()
+        )
+    }
 }
 
 val viewModelModules = module {
-    viewModel { ConfigViewModel(androidContext()) }
+    viewModel { ConfigViewModel(androidContext(), get()) }
+    viewModel { SurveyListViewModel() }
 }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View"/>
+
+        <variable
+            name="question"
+            type="kaist.iclab.abclogger.SurveyQuestion" />
+
+        <variable
+            name="showAltText"
+            type="Boolean" />
+
+        <variable
+            name="isAvailable"
+            type="Boolean" />
+    </data>
+
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="@dimen/cardview_elevation">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/item_default_padding">
+
+            <TextView
+                android:id="@+id/txt_should_answer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/general_asterisk"
+                android:visibility="@{question.shouldAnswer ? View.VISIBLE : View.GONE}"
+                android:textSize="@dimen/txt_size_text"
+                isBold="@{isAvailable}"
+                android:textColor="@{isAvailable ? @color/color_title : @color/color_message}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/txt_message"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:singleLine="false"
+                android:text="@{showAltText ? question.altText : question.text}"
+                android:textSize="@dimen/txt_size_text"
+                isBold="@{isAvailable}"
+                android:textColor="@{isAvailable ? @color/color_title : @color/color_message}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/txt_should_answer"/>
+
+            <kaist.iclab.abclogger.ui.survey.question.SliderView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/txt_message"
+                app:layout_constraintStart_toStartOf="parent"
+                options="@{question.options}"
+                responses="@={question.responses}"
+                isAvailable="@{isAvailable}"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</layout>

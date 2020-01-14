@@ -121,12 +121,6 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = Intent(context, PhysicalStatusSettingActivity::class.java)
 
-    override val nameRes: Int?
-        get() = R.string.data_name_physical_status
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_physical_status
-
     class PhysicalStatusSettingActivity : BaseAppCompatActivity() {
 
     }

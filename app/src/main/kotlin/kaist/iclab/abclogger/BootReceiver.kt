@@ -29,7 +29,6 @@ class BootReceiver : BroadcastReceiver() {
 
         }
 
-        SyncManager.sync(true)
 
         try {
             context.packageManager.getPackageInfo(PACKAGE_NAME_SMART_MANAGER, PackageManager.GET_META_DATA)

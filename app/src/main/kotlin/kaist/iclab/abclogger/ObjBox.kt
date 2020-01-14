@@ -1,10 +1,10 @@
 package kaist.iclab.abclogger
 
 import android.content.Context
-import android.os.Environment
 import io.objectbox.BoxStore
 import io.objectbox.kotlin.boxFor
 import java.io.File
+
 
 object ObjBox {
     lateinit var boxStore : BoxStore
@@ -23,7 +23,11 @@ object ObjBox {
         return dbDir.listFiles()?.sumByLong { it.length() } ?: 0
     }
 
-    fun maxSize() = BuildConfig.DB_MAX_SIZE
+    fun maxSizeInBytes() = BuildConfig.DB_MAX_SIZE * 1000L
 
     inline fun <reified T> boxFor() = boxStore.boxFor<T>()
+
+    private fun toReadableFileSize(bytes: Long) {
+
+    }
 }

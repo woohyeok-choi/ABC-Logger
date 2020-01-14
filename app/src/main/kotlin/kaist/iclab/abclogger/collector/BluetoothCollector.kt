@@ -145,12 +145,6 @@ class BluetoothCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-    override val nameRes: Int?
-        get() = R.string.data_name_bluetooth
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_bluetooth
-
     companion object {
         private const val ACTION_BLUETOOTH_SCAN = "${BuildConfig.APPLICATION_ID}.ACTION_BLUETOOTH_SCAN"
         private const val REQUEST_CODE_BLUETOOTH_SCAN = 0xdd

@@ -82,12 +82,6 @@ class WifiCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
-    override val nameRes: Int?
-        get() = R.string.data_name_wifi
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_wifi
-
     companion object {
         private const val REQUEST_CODE_WIFI_SCAN = 0xf0
         private const val ACTION_WIFI_SCAN = "${BuildConfig.APPLICATION_ID}.ACTION_WIFI_SCAN"

@@ -986,7 +986,7 @@
     },
     {
       "id": "18:3557270381724515909",
-      "lastPropertyId": "5:3052418939326466090",
+      "lastPropertyId": "6:6906453677297140545",
       "name": "SurveySettingEntity",
       "properties": [
         {
@@ -1009,6 +1009,10 @@
         {
           "id": "5:3052418939326466090",
           "name": "nextTimeTriggered"
+        },
+        {
+          "id": "6:6906453677297140545",
+          "name": "url"
         }
       ],
       "relations": []

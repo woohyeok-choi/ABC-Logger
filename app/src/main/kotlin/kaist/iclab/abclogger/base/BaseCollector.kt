@@ -4,7 +4,7 @@ import android.content.Intent
 
 
 /**
- * Default interface for daata collector
+ * Default interface for data collector
  */
 interface BaseCollector {
     /**
@@ -41,7 +41,4 @@ interface BaseCollector {
      */
     val newIntentForSetUp: Intent?
 
-    val nameRes: Int?
-
-    val descriptionRes: Int?
 }

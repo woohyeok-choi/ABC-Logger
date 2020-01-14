@@ -7,6 +7,8 @@ import androidx.work.WorkManager
 import com.crashlytics.android.Crashlytics
 import github.agustarc.koap.Koap
 import io.fabric.sdk.android.Fabric
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 
 class App : Application(){

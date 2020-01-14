@@ -1,13 +1,10 @@
 package kaist.iclab.abclogger
 
-import android.text.TextUtils
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
-import java.lang.IllegalArgumentException
 import java.util.*
-import kotlin.reflect.KClass
 
 enum class DayOfWeek(val id: Int) {
     NONE(-1),
@@ -45,13 +42,23 @@ data class Schedule(val dayOfWeek: DayOfWeek, val hour: Int, val minute: Int)
 
 data class SurveyQuestion(
         val type: String,
-        val shouldAnswers: Boolean = true,
+        val shouldAnswer: Boolean = true,
         val showEtc: Boolean = false,
         val text: String,
-        val options: Array<Any>? = arrayOf(),
-        val altText: String? = "",
-        var response: Array<String> = arrayOf()
+        val altText: String = "",
+        val options: Array<String> = arrayOf(),
+        var responses: Array<String> = arrayOf()
 ) {
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + shouldAnswer.hashCode()
+        result = 31 * result + text.hashCode()
+        result = 31 * result + (options.contentHashCode())
+        result = 31 * result + (responses.contentHashCode())
+        result = 31 * result + (altText.hashCode())
+        return result
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -59,26 +66,14 @@ data class SurveyQuestion(
         other as SurveyQuestion
 
         if (type != other.type) return false
-        if (shouldAnswers != other.shouldAnswers) return false
+        if (shouldAnswer != other.shouldAnswer) return false
+        if (showEtc != other.showEtc) return false
         if (text != other.text) return false
-        if (options != null) {
-            if (other.options == null) return false
-            if (!options.contentEquals(other.options)) return false
-        } else if (other.options != null) return false
         if (altText != other.altText) return false
-        if (!response.contentEquals(other.response)) return false
+        if (!options.contentEquals(other.options)) return false
+        if (!responses.contentEquals(other.responses)) return false
 
         return true
-    }
-
-    override fun hashCode(): Int {
-        var result = type.hashCode()
-        result = 31 * result + shouldAnswers.hashCode()
-        result = 31 * result + text.hashCode()
-        result = 31 * result + (options?.contentHashCode() ?: 0)
-        result = 31 * result + (altText?.hashCode() ?: 0)
-        result = 31 * result + response.contentHashCode()
-        return result
     }
 }
 
@@ -89,19 +84,17 @@ open class Survey(
         open val instruction: String = "",
         open val timeoutSec: Long = -1,
         open val timeoutPolicy: String = "",
-        open val questions: Array<SurveyQuestion> = arrayOf()
+        open var questions: Array<SurveyQuestion> = arrayOf()
 ) {
-
     companion object {
-        const val TIMEOUT_ALT_TEXT = "TIMEOUT_ALT_TEXT"
-        const val TIMEOUT_DISABLED = "TIMEOUT_DISABLED"
-        const val TIMEOUT_NONE = "TIMEOUT_NONE"
+        const val TIMEOUT_ALT_TEXT = "ALT_TEXT"
+        const val TIMEOUT_DISABLED = "DISABLED"
+        const val TIMEOUT_NONE = "NONE"
 
-        const val QUESTION_FREE_TEXT = "QUESTION_FREE_TEXT"
-        const val QUESTION_RADIO_BUTTON = "QUESTION_RADIO_BUTTON"
-        const val QUESTION_CHECK_BOX = "QUESTION_CHECK_BOX"
-        const val QUESTION_RADIO_BUTTON_HORIZONTAL = "QUESTION_RADIO_BUTTON_HORIZONTAL"
-        const val QUESTION_SLIDER = "QUESTION_SLIDER"
+        const val QUESTION_FREE_TEXT = "FREE_TEXT"
+        const val QUESTION_RADIO_BUTTON = "RADIO_BUTTON"
+        const val QUESTION_CHECK_BOX = "CHECK_BOX"
+        const val QUESTION_SLIDER = "SLIDER"
 
         private val moshi by lazy {
             Moshi.Builder().add(
@@ -124,7 +117,7 @@ data class IntervalBasedSurvey(
         override val instruction: String,
         override val timeoutSec: Long,
         override val timeoutPolicy: String,
-        override val questions: Array<SurveyQuestion>,
+        override var questions: Array<SurveyQuestion>,
         val initialDelaySec: Long = -1,
         val intervalSec: Long = -1,
         val flexIntervalSec: Long = -1,
@@ -184,7 +177,7 @@ data class EventBasedSurvey(
         override val instruction: String,
         override val timeoutSec: Long,
         override val timeoutPolicy: String,
-        override val questions: Array<SurveyQuestion>,
+        override var questions: Array<SurveyQuestion>,
         val triggerEvents: Set<String> = setOf(),
         val cancelEvents: Set<String> = setOf(),
         val delayAfterTriggerEventSec: Long = -1,
@@ -248,7 +241,7 @@ data class ScheduleBasedSurvey(
         override val instruction: String,
         override val timeoutSec: Long,
         override val timeoutPolicy: String,
-        override val questions: Array<SurveyQuestion>,
+        override var questions: Array<SurveyQuestion>,
         val schedules: List<Schedule> = listOf()
 ) : Survey("schedule", title, message, instruction, timeoutSec, timeoutPolicy, questions) {
 

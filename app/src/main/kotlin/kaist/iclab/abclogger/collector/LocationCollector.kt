@@ -77,12 +77,6 @@ class LocationCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = null
 
-    override val nameRes: Int?
-        get() = R.string.data_name_location
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_location
-
     companion object {
         private const val ACTION_LOCATION_UPDATE = "kaist.iclab.abclogger.ACTION_LOCATION_UPDATE"
         private const val REQUEST_CODE_LOCATION_UPDATE = 0xff

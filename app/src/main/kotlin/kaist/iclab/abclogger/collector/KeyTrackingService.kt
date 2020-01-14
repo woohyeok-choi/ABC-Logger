@@ -582,12 +582,6 @@ class KeyTrackingService : AccessibilityService(), BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
-    override val descriptionRes: Int?
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-
-    override val nameRes: Int?
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-
     override fun handleActivityResult(resultCode: Int, intent: Intent?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }

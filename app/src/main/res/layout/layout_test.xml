@@ -40,8 +40,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Button"
-        app:layout_constraintRight_toLeftOf="@id/imageButton"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBaseline_toBaselineOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <Switch
         android:id="@+id/switch1"

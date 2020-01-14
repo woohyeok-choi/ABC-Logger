@@ -117,7 +117,6 @@ fun toMillis(timestamp: Long): Long {
     }
 }
 
-
 fun getApplicationName(packageManager: PackageManager, packageName: String): String? =
         try {
             packageManager.getApplicationInfo(
@@ -159,7 +158,8 @@ inline fun <reified T : Base> putEntity(entity: T?) {
     }
 }
 
-inline fun <reified T : Base> putEntitySync(entity: T?) : Long? = entity?.let { e -> ObjBox.boxFor<T>().put(e) }
+inline fun <reified T : Base> putEntitySync(entity: T?): Long? = entity?.let { e -> ObjBox.boxFor<T>().put(e) }
+
 
 inline fun <reified T : Base> putEntity(entities: Collection<T>?): Job? {
     return if (entities?.isNotEmpty() == true) {
@@ -171,7 +171,7 @@ inline fun <reified T : Base> putEntity(entities: Collection<T>?): Job? {
     }
 }
 
-fun <T : BaseCollector> T.isStarted() =
+fun <T : BaseCollector> T.hasStarted() =
         when (this) {
             is ActivityCollector -> SharedPrefs.isProvidedActivity
             is AppUsageCollector -> SharedPrefs.isProvidedAppUsage
@@ -193,44 +193,42 @@ fun <T : BaseCollector> T.isStarted() =
             else -> null
         }
 
-fun <T: BaseCollector> T.start(
-        error: ((requestStarted: Boolean, throwable: Throwable) -> Unit)? = null
-) = handleState(true, error)
 
-fun <T: BaseCollector> T.stop(
-        error: ((requestStarted: Boolean, throwable: Throwable) -> Unit)? = null
-) = handleState(false, error)
+fun <T : BaseCollector> T.start(error: ((collector: T, throwable: Throwable) -> Unit)? = null) = handleState(true, error)
 
-private fun <T: BaseCollector> T.handleState(
+fun <T : BaseCollector> T.stop(error: ((collector: T, throwable: Throwable) -> Unit)? = null) = handleState(false, error)
+
+private fun <T : BaseCollector> T.handleState(
         state: Boolean,
-        error: ((requestStarted: Boolean, throwable: Throwable) -> Unit)? = null
+        error: ((collector: T, throwable: Throwable) -> Unit)? = null
 ) {
-    when (this) {
-        is ActivityCollector -> SharedPrefs.isProvidedActivity = state
-        is AppUsageCollector -> SharedPrefs.isProvidedAppUsage = state
-        is BatteryCollector -> SharedPrefs.isProvidedBattery = state
-        is BluetoothCollector -> SharedPrefs.isProvidedBluetooth = state
-        is CallLogCollector -> SharedPrefs.isProvidedCallLog = state
-        is DataTrafficCollector -> SharedPrefs.isProvidedDataTraffic = state
-        is DeviceEventCollector -> SharedPrefs.isProvidedDeviceEvent = state
-        is InstalledAppCollector -> SharedPrefs.isProvidedInstallApp = state
-        is KeyTrackingService -> SharedPrefs.isProvidedKeyStrokes = state
-        is LocationCollector -> SharedPrefs.isProvidedLocation = state
-        is MediaCollector -> SharedPrefs.isProvidedMediaGeneration = state
-        is MessageCollector -> SharedPrefs.isProvidedMessage = state
-        is NotificationCollector -> SharedPrefs.isProvidedNotification = state
-        is PhysicalStatusCollector -> SharedPrefs.isProvidedPhysicalStatus = state
-        is PolarH10Collector -> SharedPrefs.isProvidedPolarH10 = state
-        is SurveyCollector -> SharedPrefs.isProvidedSurvey = state
-        is WifiCollector -> SharedPrefs.isProvidedWiFi = state
-    }
     try {
         if (state) {
             onStart()
         } else {
             onStop()
         }
+
+        when (this) {
+            is ActivityCollector -> SharedPrefs.isProvidedActivity = state
+            is AppUsageCollector -> SharedPrefs.isProvidedAppUsage = state
+            is BatteryCollector -> SharedPrefs.isProvidedBattery = state
+            is BluetoothCollector -> SharedPrefs.isProvidedBluetooth = state
+            is CallLogCollector -> SharedPrefs.isProvidedCallLog = state
+            is DataTrafficCollector -> SharedPrefs.isProvidedDataTraffic = state
+            is DeviceEventCollector -> SharedPrefs.isProvidedDeviceEvent = state
+            is InstalledAppCollector -> SharedPrefs.isProvidedInstallApp = state
+            is KeyTrackingService -> SharedPrefs.isProvidedKeyStrokes = state
+            is LocationCollector -> SharedPrefs.isProvidedLocation = state
+            is MediaCollector -> SharedPrefs.isProvidedMediaGeneration = state
+            is MessageCollector -> SharedPrefs.isProvidedMessage = state
+            is NotificationCollector -> SharedPrefs.isProvidedNotification = state
+            is PhysicalStatusCollector -> SharedPrefs.isProvidedPhysicalStatus = state
+            is PolarH10Collector -> SharedPrefs.isProvidedPolarH10 = state
+            is SurveyCollector -> SharedPrefs.isProvidedSurvey = state
+            is WifiCollector -> SharedPrefs.isProvidedWiFi = state
+        }
     } catch (e: Exception) {
-        error?.invoke(state, e)
+        error?.invoke(this, e)
     }
 }

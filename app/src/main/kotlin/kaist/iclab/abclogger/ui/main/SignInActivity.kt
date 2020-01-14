@@ -9,7 +9,6 @@ import com.google.firebase.auth.*
 import kaist.iclab.abclogger.Utils
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
-import kotlinx.android.synthetic.main.activity_sign_in.*
 
 class SignInActivity : BaseAppCompatActivity() {
     private fun initListeners() {
@@ -48,7 +47,7 @@ class SignInActivity : BaseAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sign_in)
+        setContentView(R.layout.activity_splash)
 
         initListeners()
     }

@@ -159,9 +159,4 @@ class MediaCollector (val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = null
 
-    override val nameRes: Int?
-        get() = R.string.data_name_media
-
-    override val descriptionRes: Int?
-        get() = R.string.data_desc_media
 }

@@ -1,112 +1,77 @@
 package kaist.iclab.abclogger.ui.survey.list
 
-import androidx.lifecycle.Observer
 import android.os.Bundle
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.util.Pair
 import androidx.core.view.ViewCompat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kaist.iclab.abclogger.R
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseFragment
-import kaist.iclab.abclogger.common.type.LoadStatus
-import kaist.iclab.abclogger.ABCException
-import kaist.iclab.abclogger.data.entities.Survey
-import kaist.iclab.abclogger.ui.listener.OnRecyclerViewItemClickListener
+import kaist.iclab.abclogger.databinding.FragmentSurveyListBinding
+import kaist.iclab.abclogger.databinding.SurveyListItemBinding
 import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
-import kaist.iclab.abclogger.ui.view.SurveyItemView
-import kotlinx.android.synthetic.main.fragment_survey_list.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class SurveyListFragment : BaseFragment(), OnRecyclerViewItemClickListener<Survey> {
-    companion object {
-        private val ARG_SHOW_ONLY_UNREAD = "${SurveyListFragment::class.java.canonicalName}.ARG_SHOW_ONLY_UNREAD"
+class SurveyListFragment : BaseFragment(){
+    private val viewModel : SurveyListViewModel by viewModel()
+    private lateinit var binding: FragmentSurveyListBinding
 
-        const val PREFIX_TITLE_VIEW = "TITLE_VIEW"
-        const val PREFIX_MESSAGE_VIEW = "MESSAGE_VIEW"
-        const val PREFIX_DELIVERED_TIME_VIEW = "DELIVERED_TIME_VIEW"
-
-        fun newInstance(showOnlyUnread: Boolean) = SurveyListFragment().apply {
-            arguments = Bundle().apply {
-                putBoolean(ARG_SHOW_ONLY_UNREAD, showOnlyUnread)
-            }
-        }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(false)
     }
 
-    private lateinit var recyclerViewAdapter: SurveyListAdapter
-    private lateinit var viewModel: SurveyListAdapter.EntityViewModel
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_survey_list, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_survey_list, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupView()
-        setupObserver()
-        setupListener()
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = this
 
-        bindView()
-    }
+        val recyclerViewAdapter = SurveyListAdapter().also { adapter ->
+            adapter.onItemClick = { item: SurveyEntity?, binding: SurveyListItemBinding ->
+                item?.id?.let { entityId ->
+                    val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                            requireActivity(),
+                            Pair.create(binding.txtHeader, ViewCompat.getTransitionName(binding.txtHeader)),
+                            Pair.create(binding.txtMessage, ViewCompat.getTransitionName(binding.txtMessage)),
+                            Pair.create(binding.txtDeliveredTime, ViewCompat.getTransitionName(binding.txtDeliveredTime))
+                    ).toBundle()
 
-    override fun onItemClick(position: Int, item: Survey?, view: View) {
-        Log.d(TAG, "onItemClick(item = $item)")
-        if(item == null) return
-        val bundle = (view as? SurveyItemView)?.let { itemView ->
-            val title = Pair.create(itemView.getTitleView(), ViewCompat.getTransitionName(itemView.getTitleView()) ?: "")
-            val message = Pair.create(itemView.getMessageView(), ViewCompat.getTransitionName(itemView.getMessageView()) ?: "")
-            val deliveredTime = Pair.create(itemView.getDeliveredTimeView(), ViewCompat.getTransitionName(itemView.getDeliveredTimeView()) ?: "")
-            ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), title, message, deliveredTime).toBundle()
+                    startActivity<SurveyResponseActivity>(
+                            SurveyResponseActivity.EXTRA_SHOW_FROM_LIST to true,
+                            SurveyResponseActivity.EXTRA_SURVEY_ENTITY_ID to entityId,
+                            options = bundle
+                    )
+                }
+            }
         }
 
-        startActivity(SurveyResponseActivity.newIntent(requireContext(), item), bundle)
-    }
-
-    private fun setupView() {
-        recyclerViewAdapter = SurveyListAdapter()
-    }
-
-    private fun setupObserver() {
-        viewModel = SurveyListAdapter.getEntityViewModel(this, arguments?.getBoolean(ARG_SHOW_ONLY_UNREAD) == true)
-
-        viewModel.pagedList.observe(this, Observer {
-            if (it != null) {
-                recyclerViewAdapter.submitList(it)
-            }
-        })
-
-        viewModel.initialLoadState.observe(this, Observer {
-            swipe_layout.isRefreshing = it?.status == LoadStatus.RUNNING
-            recycler_view.visibility = if(it?.status == LoadStatus.SUCCESS) View.VISIBLE else View.GONE
-            txt_error.visibility = if(it?.status == LoadStatus.FAILED) View.VISIBLE else View.GONE
-            txt_error.setText(
-                if(it?.error is ABCException) it.error.getErrorStringRes() else R.string.error_general_error
-            )
-        })
-
-        viewModel.loadState.observe(this, Observer {
-            swipe_layout.isRefreshing = it?.status == LoadStatus.RUNNING
-            recycler_view.visibility = if(it?.status == LoadStatus.FAILED) View.GONE else View.VISIBLE
-            txt_error.visibility = if(it?.status == LoadStatus.FAILED) View.VISIBLE else View.GONE
-            txt_error.setText(
-                if(it?.error is ABCException) it.error.getErrorStringRes() else R.string.error_general_error
-            )
-            recyclerViewAdapter.notifyDataSetChanged()
-        })
-    }
-
-    private fun setupListener() {
-        recyclerViewAdapter.setOnRecyclerViewItemClickListener(this)
-        swipe_layout.setOnRefreshListener { viewModel.refresh() }
-    }
-
-    private fun bindView() {
-        recycler_view.apply {
-            addItemDecoration(androidx.recyclerview.widget.DividerItemDecoration(context, androidx.recyclerview.widget.LinearLayoutManager.VERTICAL))
-            itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator()
+        binding.recyclerView.apply {
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+            itemAnimator = DefaultItemAnimator()
             adapter = recyclerViewAdapter
         }
+
+        binding.swipeLayout.setOnRefreshListener { viewModel.refresh() }
+
+        viewModel.entities.observe(this) { data ->
+            if (data != null) recyclerViewAdapter.submitList(data)
+        }
+    }
+
+    companion object {
+        fun newInstance() = SurveyListFragment()
     }
 }
