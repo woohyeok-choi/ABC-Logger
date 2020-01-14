@@ -15,15 +15,14 @@ import androidx.core.view.setPadding
 import androidx.databinding.BindingAdapter
 import kaist.iclab.abclogger.R
 
-class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
+class SimpleSwitchConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
     constructor(context: Context) : this(context, null)
 
     private val headerTextView: TextView
     private val descriptionTextView: TextView
-    private val statusTextView: TextView
     private val switch : Switch
 
-    private var onClick: ((view: DataConfigView, checked: Boolean) -> Unit)? = null
+    private var onClick: ((view: SimpleSwitchConfigView, checked: Boolean) -> Unit)? = null
 
     init {
         val typedValue = TypedValue()
@@ -55,14 +54,6 @@ class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout
             maxLines = 5
         }
 
-        statusTextView = TextView(context).apply {
-            id = View.generateViewId()
-            ellipsize = TextUtils.TruncateAt.END
-            setTextColor(ContextCompat.getColor(context, R.color.color_message))
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-            maxLines = 5
-        }
-
         switch = Switch(context).apply {
             id = View.generateViewId()
             showText = false
@@ -70,7 +61,6 @@ class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout
 
         addView(headerTextView, LayoutParams(0, LayoutParams.WRAP_CONTENT))
         addView(descriptionTextView, LayoutParams(0, LayoutParams.WRAP_CONTENT))
-        addView(statusTextView, LayoutParams(0, LayoutParams.WRAP_CONTENT))
         addView(switch, LayoutParams(0, LayoutParams.WRAP_CONTENT))
 
         ConstraintSet().apply {
@@ -79,9 +69,6 @@ class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout
 
             connect(descriptionTextView.id, ConstraintSet.TOP, headerTextView.id, ConstraintSet.BOTTOM)
             connect(descriptionTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
-
-            connect(statusTextView.id, ConstraintSet.TOP, descriptionTextView.id, ConstraintSet.BOTTOM)
-            connect(statusTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
 
             connect(switch.id, ConstraintSet.BASELINE, ConstraintSet.PARENT_ID, ConstraintSet.BASELINE)
             connect(switch.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
@@ -107,21 +94,11 @@ class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout
     var checked : Boolean
         get() = switch.isChecked
         set(value) { switch.isChecked = value }
-
-    var status : String
-        get() = statusTextView.text.toString()
-        set(value) { statusTextView.text = value }
-
-    fun setError(error: Boolean) =
-        statusTextView.setTextColor(
-                ContextCompat.getColor(context, if (error) R.color.color_accent else R.color.color_blue)
-        )
 }
 
-@BindingAdapter("header", "description", "checked", "error")
-fun setDataConfig(view: DataConfigView, header: String, description: String, checked: Boolean, error: Boolean) {
+@BindingAdapter("header", "description", "checked")
+fun setDataConfig(view: SimpleSwitchConfigView, header: String, description: String, checked: Boolean) {
     view.header = header
     view.description = description
     view.checked = checked
-    view.setError(error)
 }
