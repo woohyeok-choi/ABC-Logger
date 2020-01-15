@@ -11,10 +11,7 @@ import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.SurveyEntity
 import kaist.iclab.abclogger.SurveyEntity_
 import kaist.iclab.abclogger.ui.Status
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class SurveyListViewModel : ViewModel() {
     private val factory = SurveyEntityDataSource.Factory(

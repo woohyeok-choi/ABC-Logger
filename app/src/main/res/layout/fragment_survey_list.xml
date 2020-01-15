@@ -30,7 +30,7 @@
                 android:paddingStart="@dimen/item_space_horizontal"
                 android:paddingEnd="@dimen/item_space_horizontal"
                 android:gravity="center_vertical|center_horizontal"
-                android:visibility="@{viewModel.status.state == Status.STATE_FAILURE ? View.GONE : View.VISIBLE}"
+                android:visibility="@{viewModel.status.state == Status.STATE_FAILURE ? View.VISIBLE : View.GONE}"
                 error="@{viewModel.status.error}"
                 android:textSize="@dimen/txt_size_text"/>
 
@@ -39,6 +39,7 @@
                 android:scrollbars="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:visibility="@{viewModel.status.state == Status.STATE_FAILURE ? View.GONE : View.VISIBLE}"/>
         </FrameLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

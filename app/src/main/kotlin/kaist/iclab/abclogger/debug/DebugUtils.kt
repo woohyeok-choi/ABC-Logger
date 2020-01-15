@@ -1,6 +1,10 @@
 package kaist.iclab.abclogger.debug
 
+import kaist.iclab.abclogger.Survey
+
 object DebugUtils {
+
+
     /*fun generateEntities(context: Context, size: Int) {
         TestUtils.generateBatteryEntities(size)
         TestUtils.generateCallLogEntities(size)

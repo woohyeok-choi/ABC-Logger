@@ -26,6 +26,24 @@ object SharedPrefs : PreferenceHolder(name = "abc-logger-pref") {
     var isProvidedSurvey: Boolean by ReadWriteBoolean(default = false)
     var isProvidedPolarH10: Boolean by ReadWriteBoolean(default = false)
 
+    var statusCallLog: String by ReadWriteString()
+    var statusMessage: String by ReadWriteString()
+    var statusMediaGeneration: String by ReadWriteString()
+    var statusBluetooth: String by ReadWriteString()
+    var statusBattery: String by ReadWriteString()
+    var statusWiFi: String by ReadWriteString()
+    var statusLocation: String by ReadWriteString()
+    var statusActivity: String by ReadWriteString()
+    var statusNotification: String by ReadWriteString()
+    var statusAppUsage: String by ReadWriteString()
+    var statusKeyStrokes: String by ReadWriteString()
+    var statusDeviceEvent: String by ReadWriteString()
+    var statusDataTraffic: String by ReadWriteString()
+    var statusInstallApp: String by ReadWriteString()
+    var statusPhysicalStatus: String by ReadWriteString()
+    var statusSurvey: String by ReadWriteString()
+    var statusPolarH10: String by ReadWriteString()
+
     var participationTime: Long by ReadWriteLong(default = -1)
     var lastTimeDataSync: Long by ReadWriteLong(default = -1)
     var shouldUploadForNonMeteredNetwork: Boolean by ReadWriteBoolean(default = false)
@@ -44,9 +62,7 @@ object SharedPrefs : PreferenceHolder(name = "abc-logger-pref") {
 
 object ExternalDevicePrefs : PreferenceHolder(name = "abc-logger-ext-device-pref") {
     var polarH10DeviceId: String by ReadWriteString()
-    var polarH10Connection: String by ReadWriteString("DISCONNECTED")
+    var polarH10Connection: Int by ReadWriteInt(default = 0)
     var polarH10BatteryLevel: Int by ReadWriteInt(default = -1)
-    var polarH10HrFeatureReady: Boolean by ReadWriteBoolean(default = false)
-    var polarH10EcgFeatureReady: Boolean by ReadWriteBoolean(default = false)
     var polarH10Exception: String by ReadWriteString()
 }

@@ -1,35 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="kaist.iclab.abclogger">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_SMS" />
-
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions"/>
-
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-feature android:name="android.hardware.sensor.light" android:required="true"/>
 
     <application
         android:name=".App"
@@ -42,180 +38,44 @@
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup,android:supportsRtl">
 
-        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="CHANNEL_ID_DEFAULT"/>
-        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_abc_notification" />
-        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/color_primary" />
-
-        <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
-
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
 
         <activity
-            android:name=".ui.main.RootActivity"
-            android:launchMode="singleTask"
-            android:theme="@style/AppTheme.Launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
+            android:name=".ui.splash.SplashActivity"
+            android:theme="@style/AppTheme.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="http"
-                    android:host="abccampuslife.page.link"/>
-                <data
-                    android:scheme="https"
-                    android:host="abccampuslife.page.link"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".ui.main.SignInActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:launchMode="singleTask"
-            android:parentActivityName=".ui.main.RootActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.main.RootActivity" />
-        </activity>
-
-        <activity
-            android:name=".ui.activity.SignUpActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".ui.main.SignInActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.main.SignInActivity" />
-
-        </activity>
-
-        <activity
-            android:name=".ui.activity.PasswordResetActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".ui.main.SignInActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.main.SignInActivity" />
-        </activity>
-
-        <activity
-            android:name=".ui.activity.PasswordCodeVerificationActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".ui.main.SignInActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.main.SignInActivity" />
-        </activity>
-
         <activity
             android:name=".ui.main.MainActivity"
-            android:launchMode="singleTask"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait" >
-        </activity>
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme" />
 
         <activity
             android:name=".ui.survey.question.SurveyResponseActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
             android:parentActivityName=".ui.main.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.main.MainActivity" />
-        </activity>
-
+            android:theme="@style/AppTheme.NoWindow" />
 
         <activity
             android:name=".ui.AvoidSmartManagerActivity"
-            android:excludeFromRecents="true"
-            android:taskAffinity=":avoidSmartManager"
-            android:theme="@style/AppTheme.NoDisplay" />
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-
-        <activity
-            android:name=".ui.activity.ExperimentParticipationActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".ui.activity.ExperimentDetailActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.activity.ExperimentDetailActivity" />
-        </activity>
-        <activity
-            android:name=".ui.activity.DebugActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"/>
-
-        <activity
-            android:name=".ui.activity.ExperimentDetailActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:parentActivityName=".ui.main.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.main.MainActivity" />
-        </activity>
-        <activity android:name=".collector.PhysicalStatusCollector$PhysicalStatusSettingActivity" />
-        <activity android:name=".collector.PolarH10Collector$PolarH10SettingActivity" />
-        <activity android:name=".collector.SurveyCollector$SurveySettingActivity" />
+        <service android:name=".ABCLogger" />
 
         <service
-            android:name="kaist.iclab.abclogger.collector.NotificationCollector"
+            android:name=".collector.NotificationCollector"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-
-        <service android:name="kaist.iclab.abclogger.background.CollectorService" />
-
-        <service android:name=".collector.SurveyCollector$SurveyTriggerService" />
-        <service android:name=".collector.SurveyCollector$SurveyScheduleService" />
-        <service android:name=".sync.SyncManager$SyncService" />
-          <receiver android:name=".BootReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-
-        <!-- SW EDIT -->
-        <provider
-            android:authorities="kaist.iclab.abclogger.data.dataprovider"
-            android:name=".data.DataProvider"
-            android:exported="false" />
-
-        <meta-data android:name="databaseName" android:value="database.sqlite" />
-        <meta-data android:name="databaseVersion" android:value="5" />
-
-        <!-- Accessibility Configure -->
-        <service  android:name=".collector.KeyTrackingService" android:label="@string/accessibility_service_label"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
-        </service>
-        <service android:name=".collector.PhysicalStatusCollector$PhysicalStatusCollectorIntentService" />
-
     </application>
+
 </manifest>

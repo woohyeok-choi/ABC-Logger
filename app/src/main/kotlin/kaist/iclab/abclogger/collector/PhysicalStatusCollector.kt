@@ -5,6 +5,7 @@ import android.app.AlarmManager
 import android.app.IntentService
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.Scopes
@@ -105,7 +106,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
             GoogleSignIn.hasPermissions(account, fitnessOptions)
         } ?: false
 
-        val isPermissionAvailable = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+        val isPermissionAvailable = context.checkPermission(requiredPermissions)
 
         return isAccountAvailable && isPermissionAvailable
     }
@@ -113,10 +114,18 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
-        get() = listOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        )
+        get() = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            listOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        } else {
+            listOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACTIVITY_RECOGNITION
+            )
+        }
 
     override val newIntentForSetUp: Intent?
         get() = Intent(context, PhysicalStatusSettingActivity::class.java)

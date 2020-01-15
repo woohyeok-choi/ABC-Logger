@@ -11,7 +11,7 @@ import android.service.notification.StatusBarNotification
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
 
-class NotificationCollector : NotificationListenerService(), BaseCollector {
+class NotificationCollector(val context: Context) : NotificationListenerService(), BaseCollector {
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
         if (!SharedPrefs.isProvidedNotification || !checkAvailability()) return
@@ -22,9 +22,7 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
                 ABCEvent.post(postTime, ABCEvent.NOTIFICATION_POSTED)
             }
 
-        } catch (e: Exception) {
-
-        }
+        } catch (e: Exception) { }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
@@ -98,8 +96,8 @@ class NotificationCollector : NotificationListenerService(), BaseCollector {
 
     override fun checkAvailability(): Boolean =
             Settings.Secure.getString(
-                    contentResolver, "enabled_notification_listeners"
-            )?.contains(packageName) == true
+                    context.contentResolver, "enabled_notification_listeners"
+            )?.contains(context.packageName) == true
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 

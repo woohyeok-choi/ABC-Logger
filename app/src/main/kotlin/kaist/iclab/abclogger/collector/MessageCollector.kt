@@ -119,7 +119,7 @@ class MessageCollector(val context: Context) : BaseCollector {
         context.contentResolver.unregisterContentObserver(mmsObserver)
     }
 
-    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+    override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 

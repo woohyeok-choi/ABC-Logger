@@ -4,6 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'io.objectbox'
+apply plugin: "androidx.navigation.safeargs.kotlin"
 
 android {
     packagingOptions {
@@ -29,8 +30,8 @@ android {
         versionCode 42
         versionName "2.1.5.3"
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
-        buildConfigField("String", "DB_NAME", "abc-logger")
-        buildConfigField("Long", "DB_MAX_SIZE", "3145728")
+        buildConfigField("String", "DB_NAME", "\"abc-logger\"")
+        buildConfigField("Long", "DB_MAX_SIZE", "3145728L")
         // buildConfigField("String", "SERVER_ADDRESS", "\"abc.kaist.ac.kr:50051\"")
     }
     buildTypes {
@@ -48,6 +49,9 @@ android {
     compileOptions {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
     productFlavors {
     }
@@ -81,6 +85,7 @@ dependencies {
      */
     implementation "com.google.firebase:firebase-auth:19.2.0"
     implementation "com.google.firebase:firebase-core:17.2.1"
+    implementation 'com.google.firebase:firebase-analytics:17.2.1'
     implementation "com.crashlytics.sdk.android:crashlytics:2.10.1"
 
     /**
@@ -96,6 +101,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-core-ktx:2.2.0-rc03"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0-rc03'
     implementation 'androidx.work:work-runtime-ktx:2.2.0'
+    implementation "androidx.navigation:navigation-fragment-ktx:2.1.0"
+    implementation "androidx.navigation:navigation-ui-ktx:2.1.0"
 
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.appcompat:appcompat:1.1.0'

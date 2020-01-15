@@ -60,16 +60,16 @@ class FreeTextView (context: Context, attributeSet: AttributeSet?, defStyleAttr:
 }
 
 @BindingAdapter("isAvailable", "responses")
-fun bind(view: FreeTextView, isAvailable: Boolean, responses: Array<String>) {
-    view.bind(isAvailable, responses)
+fun bind(view: FreeTextView, isAvailable: Boolean?, responses: Array<String>?) {
+    view.bind(isAvailable ?: false, responses ?: arrayOf())
 }
 
 @InverseBindingAdapter(attribute = "responses")
 fun getResponses(view: FreeTextView) : Array<String> = view.getResponses()
 
 @BindingAdapter("responsesAttrChanged")
-fun setListener(view: FreeTextView, responsesAttrChanged: InverseBindingListener) {
-    view.onAttributeChanged = { responsesAttrChanged.onChange() }
+fun setListener(view: FreeTextView, responsesAttrChanged: InverseBindingListener?) {
+    view.onAttributeChanged = { responsesAttrChanged?.onChange() }
 }
 
 

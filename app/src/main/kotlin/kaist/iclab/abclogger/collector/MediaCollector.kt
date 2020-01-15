@@ -149,7 +149,7 @@ class MediaCollector (val context: Context) : BaseCollector {
         context.contentResolver.unregisterContentObserver(externalVideoObserver)
     }
 
-    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+    override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 

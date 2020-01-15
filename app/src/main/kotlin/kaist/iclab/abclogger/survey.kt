@@ -96,12 +96,16 @@ open class Survey(
         const val QUESTION_CHECK_BOX = "CHECK_BOX"
         const val QUESTION_SLIDER = "SLIDER"
 
+        const val TYPE_INTERVAL = "interval"
+        const val TYPE_EVENT = "event"
+        const val TYPE_SCHEDULE = "schedule"
+
         private val moshi by lazy {
             Moshi.Builder().add(
                 PolymorphicJsonAdapterFactory.of(Survey::class.java, "type")
-                        .withSubtype(IntervalBasedSurvey::class.java, "interval")
-                        .withSubtype(EventBasedSurvey::class.java, "event")
-                        .withSubtype(ScheduleBasedSurvey::class.java, "schedule")
+                        .withSubtype(IntervalBasedSurvey::class.java, TYPE_INTERVAL)
+                        .withSubtype(EventBasedSurvey::class.java, TYPE_EVENT)
+                        .withSubtype(ScheduleBasedSurvey::class.java, TYPE_SCHEDULE)
             ).add(KotlinJsonAdapterFactory()).build()
         }
 
@@ -126,7 +130,7 @@ data class IntervalBasedSurvey(
         val dailyEndTimeHour: Int = -1,
         val dailyEndTimeMinute: Int = -1,
         val daysOfWeek: List<DayOfWeek> = DayOfWeek.values().toList()
-) : Survey("interval", title, message, instruction, timeoutSec, timeoutPolicy, questions) {
+) : Survey(TYPE_INTERVAL, title, message, instruction, timeoutSec, timeoutPolicy, questions) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -187,7 +191,7 @@ data class EventBasedSurvey(
         val dailyEndTimeHour: Int = -1,
         val dailyEndTimeMinute: Int = -1,
         val daysOfWeek: List<DayOfWeek> = DayOfWeek.values().toList()
-) : Survey("event", title, message, instruction, timeoutSec, timeoutPolicy, questions) {
+) : Survey(TYPE_EVENT, title, message, instruction, timeoutSec, timeoutPolicy, questions) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -243,7 +247,7 @@ data class ScheduleBasedSurvey(
         override val timeoutPolicy: String,
         override var questions: Array<SurveyQuestion>,
         val schedules: List<Schedule> = listOf()
-) : Survey("schedule", title, message, instruction, timeoutSec, timeoutPolicy, questions) {
+) : Survey(TYPE_SCHEDULE, title, message, instruction, timeoutSec, timeoutPolicy, questions) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

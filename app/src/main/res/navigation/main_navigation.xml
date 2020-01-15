@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/navigation_survey_list">
+
+    <fragment
+        android:id="@+id/navigation_survey_list"
+        android:name="kaist.iclab.abclogger.ui.survey.list.SurveyListFragment"
+        android:label="@string/title_survey_list"
+        tools:layout="@layout/fragment_survey_list">
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_config"
+        android:name="kaist.iclab.abclogger.ui.config.ConfigFragment"
+        android:label="@string/title_config"
+        tools:layout="@layout/fragment_config"/>
+
+</navigation>

@@ -11,14 +11,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import androidx.core.app.AlarmManagerCompat
 import androidx.lifecycle.MutableLiveData
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
 import kotlinx.coroutines.*
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BluetoothCollector(val context: Context) : BaseCollector {
-    private val bluetoothAdapter: BluetoothAdapter by lazy {
+    private val bluetoothAdapter: BluetoothAdapter? by lazy {
         BluetoothAdapter.getDefaultAdapter()
     }
 
@@ -104,33 +106,37 @@ class BluetoothCollector(val context: Context) : BaseCollector {
     }
 
     private fun handleBluetoothScanRequest() {
-        if (bluetoothAdapter.isDiscovering) bluetoothAdapter.cancelDiscovery()
+        if (bluetoothAdapter?.isDiscovering == true) bluetoothAdapter?.cancelDiscovery()
 
-        if (!bluetoothAdapter.isDiscovering && bluetoothAdapter.isEnabled) {
-            bluetoothAdapter.startDiscovery()
+        if (bluetoothAdapter?.isDiscovering == false && bluetoothAdapter?.isEnabled == true) {
+            bluetoothAdapter?.startDiscovery()
         }
+
+        scheduleAlarm()
+    }
+
+    private fun scheduleAlarm() {
+        val curTime = System.currentTimeMillis()
+        AlarmManagerCompat.setAndAllowWhileIdle(
+                alarmManager, AlarmManager.RTC_WAKEUP, curTime + TimeUnit.MINUTES.toMillis(10), intent
+        )
     }
 
     override fun onStart() {
-        SharedPrefs.isProvidedBluetooth = true
-
         context.registerReceiver(receiver, filter)
-
-        val curTime = System.currentTimeMillis()
-
         alarmManager.cancel(intent)
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, curTime + 5000, 5 * 60 * 1000, intent)
+
+        scheduleAlarm()
     }
 
     override fun onStop() {
-        SharedPrefs.isProvidedBluetooth
         context.unregisterReceiver(receiver)
 
         alarmManager.cancel(intent)
     }
 
     override fun checkAvailability(): Boolean =
-            bluetoothAdapter.isEnabled && Utils.checkPermissionAtRuntime(context, requiredPermissions)
+            bluetoothAdapter?.isEnabled == true && context.checkPermission(requiredPermissions)
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 

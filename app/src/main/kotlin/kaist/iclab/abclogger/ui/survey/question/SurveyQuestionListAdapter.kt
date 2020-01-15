@@ -14,13 +14,18 @@ import kaist.iclab.abclogger.databinding.QuestionFreeTextItemBinding
 import kaist.iclab.abclogger.databinding.QuestionRadioButtonItemBinding
 import kaist.iclab.abclogger.databinding.QuestionSliderItemBinding
 
-class SurveyQuestionListAdapter(private val isAvailable: Boolean,
-                                private val showAltText: Boolean) : RecyclerView.Adapter<SurveyQuestionListAdapter.ViewHolder>() {
-    var questions: Array<SurveyQuestion> = arrayOf()
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
+class SurveyQuestionListAdapter : RecyclerView.Adapter<SurveyQuestionListAdapter.ViewHolder>() {
+    private var questions: Array<SurveyQuestion> = arrayOf()
+    private var isAvailable: Boolean = true
+    private var showAltText: Boolean = false
+
+    fun bindData(questions: Array<SurveyQuestion>, isAvailable: Boolean, showAltText: Boolean) {
+        this.questions = questions
+        this.isAvailable = isAvailable
+        this.showAltText = showAltText
+
+        notifyDataSetChanged()
+    }
 
     override fun getItemViewType(position: Int): Int =
             when (questions.getOrNull(position)?.type) {
@@ -53,7 +58,6 @@ class SurveyQuestionListAdapter(private val isAvailable: Boolean,
                         )
                 )
             }
-
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) =
             holder.onBind(
@@ -111,12 +115,5 @@ class SurveyQuestionListAdapter(private val isAvailable: Boolean,
         private const val QUESTION_RADIO_BUTTON = 1
         private const val QUESTION_CHECK_BOX = 2
         private const val QUESTION_SLIDER = 3
-
-        @BindingAdapter("isAvailable", "showAltText", "questions")
-        fun setRecylcerViewAdapter(view: RecyclerView, isAvailable: Boolean, showAltText: Boolean, questions: Array<SurveyQuestion>) {
-            val adapter = SurveyQuestionListAdapter(isAvailable, showAltText)
-            adapter.questions = questions
-            view.adapter = adapter
-        }
     }
 }

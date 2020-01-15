@@ -11,9 +11,10 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
-import androidx.core.view.setPadding
 import androidx.databinding.BindingAdapter
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.setHorizontalPadding
+import kaist.iclab.abclogger.setVerticalPadding
 
 class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
     constructor(context: Context) : this(context, null)
@@ -33,8 +34,9 @@ class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout
         } else {
             setBackgroundColor(typedValue.data)
         }
+        setHorizontalPadding(resources.getDimensionPixelSize(R.dimen.item_default_horizontal_padding))
+        setVerticalPadding(resources.getDimensionPixelSize(R.dimen.item_default_vertical_padding))
 
-        setPadding(resources.getDimensionPixelSize(R.dimen.item_default_padding))
         isClickable = true
         isFocusable = true
 
@@ -74,18 +76,23 @@ class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout
         addView(switch, LayoutParams(0, LayoutParams.WRAP_CONTENT))
 
         ConstraintSet().apply {
+            clone(this@DataConfigView)
             connect(headerTextView.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
             connect(headerTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+            connect(headerTextView.id, ConstraintSet.END, switch.id, ConstraintSet.START)
 
             connect(descriptionTextView.id, ConstraintSet.TOP, headerTextView.id, ConstraintSet.BOTTOM)
             connect(descriptionTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+            connect(descriptionTextView.id, ConstraintSet.END, switch.id, ConstraintSet.START)
 
             connect(statusTextView.id, ConstraintSet.TOP, descriptionTextView.id, ConstraintSet.BOTTOM)
             connect(statusTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+            connect(statusTextView.id, ConstraintSet.END, switch.id, ConstraintSet.START)
 
-            connect(switch.id, ConstraintSet.BASELINE, ConstraintSet.PARENT_ID, ConstraintSet.BASELINE)
+            connect(switch.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+            connect(switch.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
             connect(switch.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
-        }.let { setConstraintSet(it) }
+        }.applyTo(this)
 
         setOnClickListener {
             switch.toggle()
@@ -112,16 +119,18 @@ class DataConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout
         get() = statusTextView.text.toString()
         set(value) { statusTextView.text = value }
 
-    fun setError(error: Boolean) =
+    fun setAvailable(isAvailable: Boolean) =
         statusTextView.setTextColor(
-                ContextCompat.getColor(context, if (error) R.color.color_accent else R.color.color_blue)
+                ContextCompat.getColor(context, if (isAvailable) R.color.color_blue else R.color.color_accent)
         )
 }
 
-@BindingAdapter("header", "description", "checked", "error")
-fun setDataConfig(view: DataConfigView, header: String, description: String, checked: Boolean, error: Boolean) {
-    view.header = header
-    view.description = description
-    view.checked = checked
-    view.setError(error)
+@BindingAdapter("header", "description", "checked", "status", "isAvailable")
+fun setDataConfig(view: DataConfigView, header: String?, description: String?, checked: Boolean?,
+                  status: String?, isAvailable: Boolean?) {
+    view.header = header ?: ""
+    view.description = description ?: ""
+    view.checked = checked ?: false
+    view.status = status ?: ""
+    view.setAvailable(isAvailable ?: false)
 }

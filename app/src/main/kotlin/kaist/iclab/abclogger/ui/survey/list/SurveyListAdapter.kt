@@ -12,6 +12,9 @@ import kaist.iclab.abclogger.BR
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.SurveyEntity
 import kaist.iclab.abclogger.databinding.SurveyListItemBinding
+import kaist.iclab.abclogger.ui.survey.sharedViewNameForDeliveredTime
+import kaist.iclab.abclogger.ui.survey.sharedViewNameForMessage
+import kaist.iclab.abclogger.ui.survey.sharedViewNameForTitle
 
 class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
     var onItemClick : ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null
@@ -37,15 +40,15 @@ class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHo
 
         ViewCompat.setTransitionName(
                 holder.binding.txtHeader,
-                "${PREFIX_TITLE_VIEW}_${item.id}"
+                sharedViewNameForTitle(item.id)
         )
         ViewCompat.setTransitionName(
                 holder.binding.txtMessage,
-                "${PREFIX_MESSAGE_VIEW}_${item.id}"
+                sharedViewNameForMessage(item.id)
         )
         ViewCompat.setTransitionName(
                 holder.binding.txtDeliveredTime,
-                "${PREFIX_DELIVERED_TIME_VIEW}_${item.id}"
+                sharedViewNameForDeliveredTime(item.id)
         )
     }
 

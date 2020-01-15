@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_bottom_nav_survey_list"
+        android:id="@+id/navigation_survey_list"
         android:icon="@drawable/baseline_dynamic_feed_24"
-        android:title="@string/menu_bottom_nav_survey"/>
+        android:title="@string/title_survey_list"/>
 
     <item
-        android:id="@+id/menu_bottom_nav_config"
+        android:id="@+id/navigation_config"
         android:icon="@drawable/baseline_settings_applications_24"
-        android:title="@string/menu_bottom_nav_config"/>
+        android:title="@string/title_config"/>
 </menu>

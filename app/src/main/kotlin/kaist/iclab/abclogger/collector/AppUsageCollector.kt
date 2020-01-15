@@ -122,7 +122,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
-        get() = listOf(Manifest.permission.PACKAGE_USAGE_STATS)
+        get() = listOf()
 
     override val newIntentForSetUp: Intent?
         get() = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)

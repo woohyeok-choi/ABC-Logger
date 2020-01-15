@@ -58,14 +58,10 @@ class BatteryCollector (val context: Context) : BaseCollector {
     }
 
     override fun onStart() {
-        SharedPrefs.isProvidedBattery = true
-
         context.registerReceiver(receiver, filter)
     }
 
     override fun onStop() {
-        SharedPrefs.isProvidedBattery = false
-
         context.unregisterReceiver(receiver)
     }
 

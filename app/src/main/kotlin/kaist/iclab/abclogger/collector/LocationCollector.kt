@@ -10,11 +10,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import kaist.iclab.abclogger.Utils
-import kaist.iclab.abclogger.LocationEntity
-import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.fillBaseInfo
 
 class LocationCollector(val context: Context) : BaseCollector {
     private val client : FusedLocationProviderClient by lazy {
@@ -64,7 +61,7 @@ class LocationCollector(val context: Context) : BaseCollector {
         client.removeLocationUpdates(intent)
     }
 
-    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+    override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <data>
+
         <variable
             name="viewModel"
             type="kaist.iclab.abclogger.ui.config.ConfigViewModel" />
@@ -16,355 +18,378 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- General Config -->
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/item_default_padding"
-                android:paddingTop="@dimen/item_default_padding"
-                android:paddingRight="@dimen/item_default_padding"
-                android:text="@string/config_category_general"
-                android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_title_small" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                    description="@{viewModel.userName}"
-                    header="@{@string/config_title_user_name}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                <!-- General Config -->
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
-
-                <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                    description="@{viewModel.email}"
-                    header="@{@string/config_title_email}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
-
-                <kaist.iclab.abclogger.ui.config.SimpleSwitchConfigView
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    header="@{@string/config_title_upload_setting}"
-                    description="@{@string/config_desc_upload_setting}"
-                    checked="@{viewModel.shouldUploadForNonMeteredNetwork}"/>
+                    android:paddingLeft="@dimen/item_default_horizontal_padding"
+                    android:paddingRight="@dimen/item_default_horizontal_padding"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:text="@string/config_category_general"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_title_small" />
 
-                <kaist.iclab.abclogger.ui.Divider
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-                <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                    description="@{viewModel.lastSyncTime}"
-                    header="@{@string/config_title_sync}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
+                        description="@{viewModel.userName}"
+                        header="@{@string/config_title_user_name}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                    description="@{viewModel.sizeOfDb}"
-                    header="@{@string/config_title_size_of_data}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
+                        description="@{viewModel.email}"
+                        header="@{@string/config_title_email}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
+
+                    <kaist.iclab.abclogger.ui.config.SimpleSwitchConfigView
+                        checked="@{viewModel.shouldUploadForNonMeteredNetwork}"
+                        description="@{@string/config_desc_upload_setting}"
+                        header="@{@string/config_title_upload_setting}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
+
+                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
+                        description="@{viewModel.lastSyncTime}"
+                        header="@{@string/config_title_sync}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
+
+                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
+                        description="@{viewModel.sizeOfDb}"
+                        header="@{@string/config_title_size_of_data}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
-        </LinearLayout>
-
-        <!-- Data Configuration -->
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/item_default_padding"
-                android:paddingTop="@dimen/item_default_padding"
-                android:paddingRight="@dimen/item_default_padding"
-                android:text="@string/config_category_collector"
-                android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_title_small" />
+            <!-- Data Configuration -->
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Activity -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusActivity.hasStarted}"
-                    description="@{@string/data_desc_physical_activity}"
-                    error="@{viewModel.statusActivity.available}"
-                    header="@{@string/data_name_physical_activity}"
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/item_default_horizontal_padding"
+                    android:paddingRight="@dimen/item_default_horizontal_padding"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:text="@string/config_category_collector"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_title_small" />
 
-                <kaist.iclab.abclogger.ui.Divider
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-                <!-- App usage -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusAppUsage.hasStarted}"
-                    description="@{@string/data_desc_app_usage}"
-                    error="@{viewModel.statusAppUsage.available}"
-                    header="@{@string/data_name_app_usage}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Activity -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusActivity.hasStarted}"
+                        description="@{@string/data_desc_physical_activity}"
+                        isAvailable="@{viewModel.statusActivity.available}"
+                        header="@{@string/data_name_physical_activity}"
+                        status="@{viewModel.statusActivity.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Battery -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusBattery.hasStarted}"
-                    description="@{@string/data_desc_battery}"
-                    error="@{viewModel.statusBattery.available}"
-                    header="@{@string/data_name_battery}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- App usage -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusAppUsage.hasStarted}"
+                        description="@{@string/data_desc_app_usage}"
+                        isAvailable="@{viewModel.statusAppUsage.available}"
+                        header="@{@string/data_name_app_usage}"
+                        status="@{viewModel.statusAppUsage.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Bluetooth -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusBluetooth.hasStarted}"
-                    description="@{@string/data_desc_bluetooth}"
-                    error="@{viewModel.statusBluetooth.available}"
-                    header="@{@string/data_name_bluetooth}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Battery -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusBattery.hasStarted}"
+                        description="@{@string/data_desc_battery}"
+                        isAvailable="@{viewModel.statusBattery.available}"
+                        header="@{@string/data_name_battery}"
+                        status="@{viewModel.statusBattery.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Call log -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusCallLog.hasStarted}"
-                    description="@{@string/data_desc_call_log}"
-                    error="@{viewModel.statusCallLog.available}"
-                    header="@{@string/data_name_call_log}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Bluetooth -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusBluetooth.hasStarted}"
+                        description="@{@string/data_desc_bluetooth}"
+                        isAvailable="@{viewModel.statusBluetooth.available}"
+                        header="@{@string/data_name_bluetooth}"
+                        status="@{viewModel.statusBluetooth.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Data traffic -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusDataTraffic.hasStarted}"
-                    description="@{@string/data_desc_traffic}"
-                    error="@{viewModel.statusDataTraffic.available}"
-                    header="@{@string/data_name_traffic}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Call log -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusCallLog.hasStarted}"
+                        description="@{@string/data_desc_call_log}"
+                        isAvailable="@{viewModel.statusCallLog.available}"
+                        header="@{@string/data_name_call_log}"
+                        status="@{viewModel.statusCallLog.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Device event -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusDeviceEvent.hasStarted}"
-                    description="@{@string/data_desc_device_event}"
-                    error="@{viewModel.statusDeviceEvent.available}"
-                    header="@{@string/data_name_device_event}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Data traffic -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusDataTraffic.hasStarted}"
+                        description="@{@string/data_desc_traffic}"
+                        isAvailable="@{viewModel.statusDataTraffic.available}"
+                        header="@{@string/data_name_traffic}"
+                        status="@{viewModel.statusDataTraffic.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Installed app -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusInstalledApp.hasStarted}"
-                    description="@{@string/data_desc_installed_app}"
-                    error="@{viewModel.statusInstalledApp.available}"
-                    header="@{@string/data_name_installed_app}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Device event -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusDeviceEvent.hasStarted}"
+                        description="@{@string/data_desc_device_event}"
+                        isAvailable="@{viewModel.statusDeviceEvent.available}"
+                        header="@{@string/data_name_device_event}"
+                        status="@{viewModel.statusDeviceEvent.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Key track -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusKeyTracking.hasStarted}"
-                    description="@{@string/data_desc_key_track}"
-                    error="@{viewModel.statusKeyTracking.available}"
-                    header="@{@string/data_name_key_track}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Installed app -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusInstalledApp.hasStarted}"
+                        description="@{@string/data_desc_installed_app}"
+                        isAvailable="@{viewModel.statusInstalledApp.available}"
+                        header="@{@string/data_name_installed_app}"
+                        status="@{viewModel.statusInstalledApp.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Location -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusLocation.hasStarted}"
-                    description="@{@string/data_desc_location}"
-                    error="@{viewModel.statusLocation.available}"
-                    header="@{@string/data_name_location}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Key track -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusKeyTracking.hasStarted}"
+                        description="@{@string/data_desc_key_track}"
+                        isAvailable="@{viewModel.statusKeyTracking.available}"
+                        header="@{@string/data_name_key_track}"
+                        status="@{viewModel.statusKeyTracking.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Media -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusMedia.hasStarted}"
-                    description="@{@string/data_desc_media}"
-                    error="@{viewModel.statusMedia.available}"
-                    header="@{@string/data_name_media}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Location -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusLocation.hasStarted}"
+                        description="@{@string/data_desc_location}"
+                        isAvailable="@{viewModel.statusLocation.available}"
+                        header="@{@string/data_name_location}"
+                        status="@{viewModel.statusLocation.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Message -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusMessage.hasStarted}"
-                    description="@{@string/data_desc_message}"
-                    error="@{viewModel.statusMessage.available}"
-                    header="@{@string/data_name_message}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Media -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusMedia.hasStarted}"
+                        description="@{@string/data_desc_media}"
+                        isAvailable="@{viewModel.statusMedia.available}"
+                        header="@{@string/data_name_media}"
+                        status="@{viewModel.statusMedia.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Notification -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusNotification.hasStarted}"
-                    description="@{@string/data_desc_notification}"
-                    error="@{viewModel.statusNotification.available}"
-                    header="@{@string/data_name_notification}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Message -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusMessage.hasStarted}"
+                        description="@{@string/data_desc_message}"
+                        isAvailable="@{viewModel.statusMessage.available}"
+                        header="@{@string/data_name_message}"
+                        status="@{viewModel.statusMessage.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Physical status -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusPhysicalStatus.hasStarted}"
-                    description="@{@string/data_desc_physical_status}"
-                    error="@{viewModel.statusPhysicalStatus.available}"
-                    header="@{@string/data_name_physical_status}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Notification -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusNotification.hasStarted}"
+                        description="@{@string/data_desc_notification}"
+                        isAvailable="@{viewModel.statusNotification.available}"
+                        header="@{@string/data_name_notification}"
+                        status="@{viewModel.statusNotification.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Polar H10 -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusPolarH10.hasStarted}"
-                    description="@{@string/data_desc_polar_h10}"
-                    error="@{viewModel.statusPolarH10.available}"
-                    header="@{@string/data_name_polar_h10}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Physical status -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusPhysicalStatus.hasStarted}"
+                        description="@{@string/data_desc_physical_status}"
+                        isAvailable="@{viewModel.statusPhysicalStatus.available}"
+                        header="@{@string/data_name_physical_status}"
+                        status="@{viewModel.statusPhysicalStatus.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Survey -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusSurvey.hasStarted}"
-                    description="@{@string/data_desc_survey}"
-                    error="@{viewModel.statusSurvey.available}"
-                    header="@{@string/data_name_survey}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Polar H10 -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusPolarH10.hasStarted}"
+                        description="@{@string/data_desc_polar_h10}"
+                        isAvailable="@{viewModel.statusPolarH10.available}"
+                        header="@{@string/data_name_polar_h10}"
+                        status="@{viewModel.statusPolarH10.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <kaist.iclab.abclogger.ui.Divider
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
 
-                <!-- Physical status -->
-                <kaist.iclab.abclogger.ui.config.DataConfigView
-                    checked="@{viewModel.statusWifi.hasStarted}"
-                    description="@{@string/data_desc_wifi}"
-                    error="@{viewModel.statusWifi.available}"
-                    header="@{@string/data_name_wifi}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <!-- Survey -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusSurvey.hasStarted}"
+                        description="@{@string/data_desc_survey}"
+                        isAvailable="@{viewModel.statusSurvey.available}"
+                        header="@{@string/data_name_survey}"
+                        status="@{viewModel.statusSurvey.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
+
+                    <!-- Physical status -->
+                    <kaist.iclab.abclogger.ui.config.DataConfigView
+                        checked="@{viewModel.statusWifi.hasStarted}"
+                        description="@{@string/data_desc_wifi}"
+                        isAvailable="@{viewModel.statusWifi.available}"
+                        header="@{@string/data_name_wifi}"
+                        status="@{viewModel.statusWifi.status}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+
             </LinearLayout>
 
-
-        </LinearLayout>
-
-        <!-- Others -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/item_default_padding"
-                android:paddingTop="@dimen/item_default_padding"
-                android:paddingRight="@dimen/item_default_padding"
-                android:text="@string/config_category_others"
-                android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_title_small" />
-
+            <!-- Others -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                    description="@{@string/config_desc_flush_data}"
-                    header="@{@string/config_title_flush_data}"
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/item_default_horizontal_padding"
+                    android:paddingRight="@dimen/item_default_horizontal_padding"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:text="@string/config_category_others"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_title_small" />
 
-                <kaist.iclab.abclogger.ui.Divider
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="1dp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-                <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                    description="@{@string/config_desc_logout}"
-                    header="@{@string/config_title_logout}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
+                        description="@{@string/config_desc_flush_data}"
+                        header="@{@string/config_title_flush_data}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <kaist.iclab.abclogger.ui.Divider
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" />
+
+                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
+                        description="@{@string/config_desc_logout}"
+                        header="@{@string/config_title_logout}"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
             </LinearLayout>
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </layout>

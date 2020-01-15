@@ -15,6 +15,7 @@ import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.Survey
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.ui.main.MainActivity
 import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -59,9 +60,12 @@ class SurveyCollector(val context: Context) : BaseCollector {
                 json = setting.json
         ).fillBaseInfo(timeMillis = curTime).run { putEntitySync(this) } ?: return
 
-        val surveyIntent = context.intentFor<SurveyResponseActivity>(
-                SurveyResponseActivity.EXTRA_SURVEY_ENTITY_ID to id,
-                SurveyResponseActivity.EXTRA_SHOW_FROM_LIST to false
+        val surveyIntent = context.intentFor<MainActivity>(
+                SurveyResponseActivity.EXTRA_ENTITY_ID to id,
+                SurveyResponseActivity.EXTRA_SHOW_FROM_LIST to false,
+                SurveyResponseActivity.EXTRA_SURVEY_TITLE to survey.title,
+                SurveyResponseActivity.EXTRA_SURVEY_MESSAGE to survey.message,
+                SurveyResponseActivity.EXTRA_SURVEY_DELIVERED_TIME to curTime
         )
         val pendingIntent = TaskStackBuilder.create(context)
                 .addNextIntentWithParentStack(surveyIntent)
@@ -221,7 +225,7 @@ class SurveyCollector(val context: Context) : BaseCollector {
         context.unregisterReceiver(receiver)
     }
 
-    override fun checkAvailability(): Boolean = ObjBox.boxFor<SurveySettingEntity>().count() > 0L
+    override fun checkAvailability(): Boolean = ObjBox.boxFor<SurveySettingEntity>().count() > 0L && context.checkPermission(requiredPermissions)
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 

@@ -565,24 +565,19 @@ class KeyTrackingService : AccessibilityService(), BaseCollector {
     }
 
     override fun onStart() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onStop() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun checkAvailability(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun checkAvailability(): Boolean = false
 
     override val requiredPermissions: List<String>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = listOf()
 
     override val newIntentForSetUp: Intent?
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = null
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

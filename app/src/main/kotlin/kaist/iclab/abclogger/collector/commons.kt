@@ -193,6 +193,28 @@ fun <T : BaseCollector> T.hasStarted() =
             else -> null
         }
 
+fun <T : BaseCollector> T.status() =
+        when (this) {
+            is ActivityCollector -> SharedPrefs.statusActivity
+            is AppUsageCollector -> SharedPrefs.statusAppUsage
+            is BatteryCollector -> SharedPrefs.statusBattery
+            is BluetoothCollector -> SharedPrefs.statusBluetooth
+            is CallLogCollector -> SharedPrefs.statusCallLog
+            is DataTrafficCollector -> SharedPrefs.statusDataTraffic
+            is DeviceEventCollector -> SharedPrefs.statusDeviceEvent
+            is InstalledAppCollector -> SharedPrefs.statusInstallApp
+            is KeyTrackingService -> SharedPrefs.statusKeyStrokes
+            is LocationCollector -> SharedPrefs.statusLocation
+            is MediaCollector -> SharedPrefs.statusMediaGeneration
+            is MessageCollector -> SharedPrefs.statusMessage
+            is NotificationCollector -> SharedPrefs.statusNotification
+            is PhysicalStatusCollector -> SharedPrefs.statusPhysicalStatus
+            is PolarH10Collector -> SharedPrefs.statusPolarH10
+            is SurveyCollector -> SharedPrefs.statusSurvey
+            is WifiCollector -> SharedPrefs.statusWiFi
+            else -> null
+        }
+
 
 fun <T : BaseCollector> T.start(error: ((collector: T, throwable: Throwable) -> Unit)? = null) = handleState(true, error)
 

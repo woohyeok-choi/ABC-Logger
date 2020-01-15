@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 
-abstract class BaseAppCompatActivity: AppCompatActivity() {
+open class BaseAppCompatActivity: AppCompatActivity() {
     protected val TAG: String = javaClass.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {

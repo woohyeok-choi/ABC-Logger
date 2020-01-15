@@ -57,6 +57,8 @@ class ABC(activityCollector: ActivityCollector,
 
     inline fun <reified T : BaseCollector> isAvailable() = collectorMaps[T::class.java]?.checkAvailability() ?: false
 
+    inline fun <reified T: BaseCollector> status() = collectorMaps[T::class.java]?.status() ?: ""
+
     inline fun <reified T : BaseCollector> getRequiredPermissions() = collectorMaps[T::class.java]?.requiredPermissions ?: listOf()
 
     inline fun <reified T : BaseCollector> getSetupIntent() = collectorMaps[T::class.java]?.newIntentForSetUp

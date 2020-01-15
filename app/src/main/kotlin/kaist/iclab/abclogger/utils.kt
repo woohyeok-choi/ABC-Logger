@@ -52,23 +52,12 @@ object Utils {
         )
     }
 
-    fun checkPermissionAtRuntime(context: Context, permissions: Collection<String>): Boolean =
-            if (permissions.isEmpty()) {
-                true
-            } else {
-                permissions.all { permission ->
-                    ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-                }
-            }
-
-    fun join(vararg texts: String?, separator: String = " ") = texts.filterNotNull().joinToString(separator = separator)
-
     fun fillButton(button: Button, isEnabled: Boolean, stringRes: Int? = null) {
         button.isEnabled = isEnabled
         button.setBackgroundColor(
-                ContextCompat.getColor(button.context, if(isEnabled) R.color.color_button else R.color.color_disabled)
+                ContextCompat.getColor(button.context, if (isEnabled) R.color.color_button else R.color.color_disabled)
         )
-        if(stringRes != null) {
+        if (stringRes != null) {
             button.text = button.context.getString(stringRes)
         }
     }
@@ -88,7 +77,7 @@ object Utils {
     }
 
     @JvmStatic
-    fun formatSameDayTimeYear(context: Context, then: Long, now: Long) : String {
+    fun formatSameDayTimeYear(context: Context, then: Long, now: Long): String {
         val thenCal = GregorianCalendar.getInstance().apply {
             timeInMillis = then
         }
@@ -110,6 +99,50 @@ object Utils {
     }
 }
 
+inline fun <reified T> Context.checkServiceRunning(): Boolean {
+    val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+
+    val className = T::class.java.name
+    for (service in manager.getRunningServices(Integer.MAX_VALUE)) { // Deprecated 됐다지만 그냥 쓰라신다.
+        if (className == service.service.className) {
+            return true
+        }
+    }
+    return false
+}
+
+fun View.setHorizontalPadding(pixelSize: Int) {
+    val topPadding = paddingTop
+    val bottomPadding = paddingBottom
+    setPadding(pixelSize, topPadding, pixelSize, bottomPadding)
+}
+
+fun View.setVerticalPadding(pixelSize: Int) {
+    val leftPadding = paddingLeft
+    val rightPadding = paddingRight
+    setPadding(leftPadding, paddingLeft, rightPadding, paddingRight)
+}
+
+fun Context.checkServiceRunning(className: String): Boolean {
+    val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+
+    for (service in manager.getRunningServices(Integer.MAX_VALUE)) { // Deprecated 됐다지만 그냥 쓰라신다.
+        if (className == service.service.className) {
+            return true
+        }
+    }
+    return false
+}
+
+fun Context.checkPermission(permissions: Collection<String>): Boolean =
+        if (permissions.isEmpty()) {
+            true
+        } else {
+            permissions.all { permission ->
+                ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+            }
+        }
+
 fun Context.showSnackBar(view: View,
                          messageRes: Int,
                          showAlways: Boolean = false,
@@ -117,8 +150,8 @@ fun Context.showSnackBar(view: View,
                          action: (() -> Unit)? = null
 ) {
 
-    var snackBar = Snackbar.make(view, messageRes, if(showAlways) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG)
-    if(actionRes != null) {
+    var snackBar = Snackbar.make(view, messageRes, if (showAlways) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG)
+    if (actionRes != null) {
         snackBar = snackBar.setAction(actionRes) { action?.invoke() }
     }
     snackBar.show()
@@ -130,27 +163,27 @@ fun Fragment.showSnackBar(view: View,
                           actionRes: Int? = null,
                           action: (() -> Unit)? = null
 ) {
-   var snackBar = Snackbar.make(view, messageRes, if(showAlways) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG)
-    if(actionRes != null) {
+    var snackBar = Snackbar.make(view, messageRes, if (showAlways) Snackbar.LENGTH_INDEFINITE else Snackbar.LENGTH_LONG)
+    if (actionRes != null) {
         snackBar = snackBar.setAction(actionRes) { action?.invoke() }
     }
     snackBar.show()
 }
 
 fun Context.showToast(messageRes: Int, isShort: Boolean = true) {
-    Toast.makeText(this, messageRes, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+    Toast.makeText(this, messageRes, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
 
 fun Context.showToast(message: String, isShort: Boolean = true) {
-    Toast.makeText(this, message, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+    Toast.makeText(this, message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
 
 fun Fragment.showToast(messageRes: Int, isShort: Boolean) {
-    Toast.makeText(requireContext(), messageRes, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+    Toast.makeText(requireContext(), messageRes, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
 
 fun Fragment.showToast(message: String, isShort: Boolean) {
-    Toast.makeText(requireContext(), message, if(isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+    Toast.makeText(requireContext(), message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
 
 inline fun <T, R : Any> Iterable<T>.firstNotNullResult(transform: (T) -> R?): R? {
@@ -200,6 +233,13 @@ inline fun <reified T : Activity> Fragment.startActivity(vararg params: Pair<Str
     startActivity(intent, options)
 }
 
+inline fun <reified T : Activity> Fragment.startActivity(options: Bundle? = null,
+                                                         vararg params: Pair<String, Any?>) {
+    val intent = Intent(requireContext(), T::class.java)
+    fillIntentWithArguments(intent, params)
+    startActivity(intent, options)
+}
+
 inline fun <reified T : Activity> Fragment.startActivityForResult(requestCode: Int, options: Bundle? = null,
                                                                   vararg params: Pair<String, Any?>) {
     val intent = Intent(requireContext(), T::class.java)
@@ -207,19 +247,19 @@ inline fun <reified T : Activity> Fragment.startActivityForResult(requestCode: I
     startActivityForResult(intent, requestCode, options)
 }
 
-inline fun <reified T : Any> Context.intentFor(vararg params: Pair<String, Any?>) : Intent {
+inline fun <reified T : Any> Context.intentFor(vararg params: Pair<String, Any?>): Intent {
     val intent = Intent(this, T::class.java)
     fillIntentWithArguments(intent, params)
     return intent
 }
 
-fun extraIntentFor(vararg params: Pair<String, Any?>) : Intent {
+fun extraIntentFor(vararg params: Pair<String, Any?>): Intent {
     val intent = Intent()
     fillIntentWithArguments(intent, params)
     return intent
 }
 
-fun Context.checkWhitelist() : Boolean {
+fun Context.checkWhitelist(): Boolean {
     val manager = getSystemService(Context.POWER_SERVICE) as PowerManager
     return manager.isIgnoringBatteryOptimizations(packageName)
 }
@@ -230,7 +270,7 @@ fun Context.sendBroadcast(action: String, vararg params: Pair<String, Any?>) {
     sendBroadcast(intent)
 }
 
-fun Fragment.fillArguments(vararg params: Pair<String, Any?>) : Fragment {
+fun Fragment.fillArguments(vararg params: Pair<String, Any?>): Fragment {
     val bundle = Bundle()
     fillBundleWithArguments(bundle, params)
     arguments = Bundle()
@@ -238,35 +278,35 @@ fun Fragment.fillArguments(vararg params: Pair<String, Any?>) : Fragment {
 }
 
 fun fillIntentWithArguments(intent: Intent, params: Array<out Pair<String, Any?>>) =
-    params.forEach { (key, value) ->
-        when (value) {
-            null -> intent.putExtra(key, null as Serializable?)
-            is Int -> intent.putExtra(key, value)
-            is Long -> intent.putExtra(key, value)
-            is CharSequence -> intent.putExtra(key, value)
-            is String -> intent.putExtra(key, value)
-            is Float -> intent.putExtra(key, value)
-            is Double -> intent.putExtra(key, value)
-            is Char -> intent.putExtra(key, value)
-            is Short -> intent.putExtra(key, value)
-            is Boolean -> intent.putExtra(key, value)
-            is Serializable -> intent.putExtra(key, value)
-            is Bundle -> intent.putExtra(key, value)
-            is Parcelable -> intent.putExtra(key, value)
-            is Array<*> -> when {
-                value.isArrayOf<CharSequence>() -> intent.putExtra(key, value)
-                value.isArrayOf<String>() -> intent.putExtra(key, value)
-                value.isArrayOf<Parcelable>() -> intent.putExtra(key, value)
+        params.forEach { (key, value) ->
+            when (value) {
+                null -> intent.putExtra(key, null as Serializable?)
+                is Int -> intent.putExtra(key, value)
+                is Long -> intent.putExtra(key, value)
+                is CharSequence -> intent.putExtra(key, value)
+                is String -> intent.putExtra(key, value)
+                is Float -> intent.putExtra(key, value)
+                is Double -> intent.putExtra(key, value)
+                is Char -> intent.putExtra(key, value)
+                is Short -> intent.putExtra(key, value)
+                is Boolean -> intent.putExtra(key, value)
+                is Serializable -> intent.putExtra(key, value)
+                is Bundle -> intent.putExtra(key, value)
+                is Parcelable -> intent.putExtra(key, value)
+                is Array<*> -> when {
+                    value.isArrayOf<CharSequence>() -> intent.putExtra(key, value)
+                    value.isArrayOf<String>() -> intent.putExtra(key, value)
+                    value.isArrayOf<Parcelable>() -> intent.putExtra(key, value)
+                }
+                is IntArray -> intent.putExtra(key, value)
+                is LongArray -> intent.putExtra(key, value)
+                is FloatArray -> intent.putExtra(key, value)
+                is DoubleArray -> intent.putExtra(key, value)
+                is CharArray -> intent.putExtra(key, value)
+                is ShortArray -> intent.putExtra(key, value)
+                is BooleanArray -> intent.putExtra(key, value)
             }
-            is IntArray -> intent.putExtra(key, value)
-            is LongArray -> intent.putExtra(key, value)
-            is FloatArray -> intent.putExtra(key, value)
-            is DoubleArray -> intent.putExtra(key, value)
-            is CharArray -> intent.putExtra(key, value)
-            is ShortArray -> intent.putExtra(key, value)
-            is BooleanArray -> intent.putExtra(key, value)
         }
-    }
 
 @Suppress("UNCHECKED_CAST")
 fun fillBundleWithArguments(bundle: Bundle, params: Array<out Pair<String, Any?>>) {

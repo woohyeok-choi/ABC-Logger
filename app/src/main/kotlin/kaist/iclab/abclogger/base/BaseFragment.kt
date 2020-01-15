@@ -8,11 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 
-abstract class BaseFragment: Fragment() {
+open class BaseFragment: Fragment() {
     protected val TAG: String = javaClass.simpleName
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        Log.d(TAG, "onCreate()")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

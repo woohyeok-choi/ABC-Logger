@@ -5,8 +5,7 @@
     <string name="general_week">week(s)</string>
     <string name="general_month">month(s)</string>
     <string name="general_year">year(s)</string>
-    <string name="general_etc">Etc.</string>
-
+    <string name="general_etc">Others</string>
     <string name="general_last_sync_time">Last sync time</string>
     <string name="general_free_text">Freely type it.</string>
     <string name="general_email">Email</string>
@@ -21,6 +20,13 @@
     <string name="general_loading">Loading&#8230;</string>
     <string name="general_survey_instruction">(Questions marked as * must be answered.)</string>
     <string name="general_asterisk" translatable="false">(*) </string>
+    <string name="general_close">Dismiss</string>
+    <string name="general_undo">Undo</string>
+    <string name="general_none">None</string>
+    <string name="general_permit">Permitted</string>
+    <string name="general_deny">Denied</string>
+    <string name="general_unavailable">Unavailable</string>
+    <string name="general_available">Available</string>
 
     <string name="config_category_general">General</string>
     <string name="config_category_collector">Collector</string>
@@ -61,7 +67,8 @@
     <string name="error_invalid_survey_format">Invalid survey format.</string>
     <string name="error_invalid_entity_id">There is no matched survey.</string>
     <string name="error_permission_denied">Some permissions are denied.</string>
-    
+    <string name="error_not_white_listed">Request for whitelist is denied.</string>
+
     <string name="dialog_title_permission_request">Permission request</string>
     <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
 
@@ -71,14 +78,21 @@
     <string name="msg_set_app_usage">Please allow ABC Platform to access usage data.</string>
     <string name="msg_set_notification">Please allow ABC Platform to access notifications.</string>
     <string name="msg_set_google_fitness">Please allow ABC Platform to access your Google Fitness data.</string>
+    <string name="msg_permission_setting_required">Some permissions are denied. Please grant permissions in setting.</string>
+    <string name="msg_back_twice_exit">Press back again to exit.</string>
+    <string name="msg_save_complete">The response is saved.</string>
+
+    <string name="dialog_title_save_immutable">Save</string>
+    <string name="dialog_message_save_immutable">You cannot edit responses after saving them.</string>
 
 
     <string name="activity_title_sign_up">Sign Up</string>
     <string name="activity_title_main">@string/app_name</string>
     <string name="activity_title_survey_question">Answer to a Survey</string>
 
-    <string name="menu_bottom_nav_survey">Surveys</string>
-    <string name="menu_bottom_nav_config">Config</string>
+    <string name="title_survey_list">Surveys</string>
+    <string name="title_config">Config</string>
+    <string name="title_survey_response">Response</string>
     <string name="menu_survey_question_save">Save</string>
 
 
@@ -123,12 +137,12 @@
     <string name="permission_title_google_fitness">Google Fitness account access</string>
 
 
-
     <string name="activity_title_debug">Debug</string>
     <string name="menu_item_debug">Debug</string>
 
     <!-- JY EDIT -->
     <string name="accessibility_service_label">KeyTrackingService</string>
+    <string name="title_activity_main2">Main2Activity</string>
 
 </resources>
 

@@ -970,10 +970,6 @@
           "name": "reactionTime"
         },
         {
-          "id": "14:1683179073586285052",
-          "name": "firstQuestionTime"
-        },
-        {
           "id": "15:2832421301879032596",
           "name": "responseTime"
         },
@@ -1079,7 +1075,9 @@
   "modelVersionParserMinimum": 4,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    1683179073586285052
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

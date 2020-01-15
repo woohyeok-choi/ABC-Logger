@@ -124,7 +124,7 @@ class DeviceEventCollector(val context: Context) : BaseCollector {
         context.unregisterReceiver(receiver)
     }
 
-    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+    override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
@@ -132,7 +132,7 @@ class DeviceEventCollector(val context: Context) : BaseCollector {
         get() = listOf(
                 Manifest.permission.RECEIVE_BOOT_COMPLETED,
                 Manifest.permission.READ_PHONE_STATE,
-                BluetoothAdapter.ACTION_STATE_CHANGED
+                Manifest.permission.BLUETOOTH
         )
 
     override val newIntentForSetUp: Intent?

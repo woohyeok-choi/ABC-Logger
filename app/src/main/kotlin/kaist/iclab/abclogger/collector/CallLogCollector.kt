@@ -14,7 +14,6 @@ class CallLogCollector(val context: Context) : BaseCollector {
         object : ContentObserver(Handler()) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-
                 val timestamps = mutableListOf<Long>()
 
                 getRecentContents(
@@ -81,7 +80,7 @@ class CallLogCollector(val context: Context) : BaseCollector {
         context.contentResolver.unregisterContentObserver(callLogObserver)
     }
 
-    override fun checkAvailability(): Boolean = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+    override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 

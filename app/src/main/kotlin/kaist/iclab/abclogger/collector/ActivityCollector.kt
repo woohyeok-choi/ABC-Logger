@@ -12,7 +12,6 @@ import android.os.SystemClock
 import android.provider.Settings
 import com.google.android.gms.location.*
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseCollector
 
 class ActivityCollector(val context: Context) : BaseCollector {
@@ -158,7 +157,7 @@ class ActivityCollector(val context: Context) : BaseCollector {
     }
 
     override fun checkAvailability(): Boolean {
-        val isPermitted = Utils.checkPermissionAtRuntime(context, requiredPermissions)
+        val isPermitted = context.checkPermission(requiredPermissions)
         val isLocationEnabled = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             Settings.Secure.getInt(context.contentResolver, Settings.Secure.LOCATION_MODE) != Settings.Secure.LOCATION_MODE_OFF
         } else {

@@ -6,57 +6,21 @@
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_accent</item>
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="android:windowActivityTransitions">true</item>
     </style>
 
-    <style name="AppTheme.NoDisplay" parent="AppTheme">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowNoTitle">true</item>
-
-        <item name="android:windowIsFloating">true</item>
-        <item name="android:backgroundDimEnabled">false</item>
-
-        <item name="android:colorBackgroundCacheHint">@null</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation</item>
-        <item name="android:windowFullscreen">true</item>
-    </style>
-
-
-    <style name="AppTheme.NoActionBar" parent="AppTheme">
+    <style name="AppTheme.NoWindow" parent="AppTheme">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="android:windowActivityTransitions">true</item>
-    </style>
-
-    <style name="AppTheme.Launcher" parent="AppTheme.NoActionBar">
-        <item name="android:windowBackground">@drawable/launcher_screen</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="ABCSubSectionHeader" parent="android:Widget.Holo.Light.TextView">
-        <item name="android:drawableBottom">@drawable/sub_section_header</item>
-        <item name="android:drawablePadding">4dp</item>
-        <item name="android:layout_marginTop">8dp</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="android:textColor">@color/color_primary</item>
+
+    <style name="AppTheme.Splash" parent="AppTheme.NoWindow">
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
-    <style name="AppTheme.ActionBar" parent="AppTheme">
-        <item name="android:textColorPrimary">@android:color/white</item>
-    </style>
-
-    <style name="ABCSpinner" parent="android:Widget.Holo.DropDownItem.Spinner">
-        <item name="android:textSize">@dimen/txt_size_title_small</item>
-        <item name="android:gravity">center</item>
-    </style>
-
-    <style name="AppTheme.WhiteProgress">
-        <item name="colorAccent">@android:color/white</item>
-    </style>
 </resources>

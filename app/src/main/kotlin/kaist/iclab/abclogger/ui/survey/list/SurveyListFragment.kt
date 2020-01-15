@@ -1,14 +1,14 @@
 package kaist.iclab.abclogger.ui.survey.list
 
+import android.app.ActivityOptions
 import android.os.Bundle
-import androidx.core.app.ActivityOptionsCompat
-import androidx.core.util.Pair
-import androidx.core.view.ViewCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ActivityOptionsCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +17,11 @@ import kaist.iclab.abclogger.base.BaseFragment
 import kaist.iclab.abclogger.databinding.FragmentSurveyListBinding
 import kaist.iclab.abclogger.databinding.SurveyListItemBinding
 import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
+import kaist.iclab.abclogger.ui.survey.sharedViewNameForDeliveredTime
+import kaist.iclab.abclogger.ui.survey.sharedViewNameForMessage
+import kaist.iclab.abclogger.ui.survey.sharedViewNameForTitle
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import androidx.core.util.Pair as UtilPair
 
 class SurveyListFragment : BaseFragment(){
     private val viewModel : SurveyListViewModel by viewModel()
@@ -42,17 +46,20 @@ class SurveyListFragment : BaseFragment(){
         val recyclerViewAdapter = SurveyListAdapter().also { adapter ->
             adapter.onItemClick = { item: SurveyEntity?, binding: SurveyListItemBinding ->
                 item?.id?.let { entityId ->
-                    val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                             requireActivity(),
-                            Pair.create(binding.txtHeader, ViewCompat.getTransitionName(binding.txtHeader)),
-                            Pair.create(binding.txtMessage, ViewCompat.getTransitionName(binding.txtMessage)),
-                            Pair.create(binding.txtDeliveredTime, ViewCompat.getTransitionName(binding.txtDeliveredTime))
+                            UtilPair.create(binding.txtHeader, sharedViewNameForTitle(entityId)),
+                            UtilPair.create(binding.txtMessage, sharedViewNameForMessage(entityId)),
+                            UtilPair.create(binding.txtDeliveredTime, sharedViewNameForDeliveredTime(entityId))
                     ).toBundle()
 
                     startActivity<SurveyResponseActivity>(
+                            SurveyResponseActivity.EXTRA_ENTITY_ID to entityId,
                             SurveyResponseActivity.EXTRA_SHOW_FROM_LIST to true,
-                            SurveyResponseActivity.EXTRA_SURVEY_ENTITY_ID to entityId,
-                            options = bundle
+                            SurveyResponseActivity.EXTRA_SURVEY_TITLE to item.title,
+                            SurveyResponseActivity.EXTRA_SURVEY_MESSAGE to item.message,
+                            SurveyResponseActivity.EXTRA_SURVEY_DELIVERED_TIME to item.deliveredTime,
+                            options = options
                     )
                 }
             }
@@ -69,9 +76,5 @@ class SurveyListFragment : BaseFragment(){
         viewModel.entities.observe(this) { data ->
             if (data != null) recyclerViewAdapter.submitList(data)
         }
-    }
-
-    companion object {
-        fun newInstance() = SurveyListFragment()
     }
 }

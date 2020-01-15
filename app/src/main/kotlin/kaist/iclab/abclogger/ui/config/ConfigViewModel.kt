@@ -18,14 +18,13 @@ class ConfigViewModel(
         val context: Context,
         val abc: ABC
 ) : ViewModel() {
-    data class DataStatus(val isAvailable: Boolean, val hasStarted: Boolean)
+    data class DataStatus(val isAvailable: Boolean, val hasStarted: Boolean, val status: String? = null)
 
     val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
     val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
     val lastSyncTime = MutableLiveData<String>()
     val shouldUploadForNonMeteredNetwork = MutableLiveData<Boolean>()
     val sizeOfDb = MutableLiveData<String>()
-
 
     val statusActivity = MutableLiveData<DataStatus>()
     val statusAppUsage = MutableLiveData<DataStatus>()
@@ -45,17 +44,31 @@ class ConfigViewModel(
     val statusSurvey = MutableLiveData<DataStatus>()
     val statusWifi = MutableLiveData<DataStatus>()
 
-    inline fun <reified T : BaseCollector> updateStatus(liveData: MutableLiveData<DataStatus>) {
-        liveData.postValue(DataStatus(abc.isAvailable<T>(), abc.hasStarted<T>()))
+    private inline fun <reified T : BaseCollector> updateStatus(liveData: MutableLiveData<DataStatus>) {
+        val isAvailable = abc.isAvailable<T>()
+        val hasStarted = abc.hasStarted<T>()
+        val prefix = context.getString(if(isAvailable) { R.string.general_available } else R.string.general_unavailable)
+        val message = abc.status<T>()
+
+        liveData.postValue(
+                DataStatus(isAvailable, hasStarted, listOf(prefix, message).filter { it.isNotBlank() }.joinToString(": "))
+        )
     }
 
     fun load() = viewModelScope.launch(Dispatchers.IO) {
-        lastSyncTime.value = String.format("%s: %s",
-                context.getString(R.string.general_last_sync_time),
-                DateUtils.formatDateTime(context, SharedPrefs.lastTimeDataSync, DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+        lastSyncTime.postValue(if (SharedPrefs.lastTimeDataSync > 0) {
+            String.format("%s: %s",
+                    context.getString(R.string.general_last_sync_time),
+                    DateUtils.formatDateTime(context, SharedPrefs.lastTimeDataSync, DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+            )
+        } else {
+            context.getString(R.string.general_none)
+        })
+
+        sizeOfDb.postValue(
+                "${Formatter.formatFileSize(context, ObjBox.size(context))} / ${Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())}"
         )
-        sizeOfDb.value = "${Formatter.formatFileSize(context, ObjBox.size(context))} / ${Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())}"
-        shouldUploadForNonMeteredNetwork.value = SharedPrefs.shouldUploadForNonMeteredNetwork
+        shouldUploadForNonMeteredNetwork.postValue(SharedPrefs.shouldUploadForNonMeteredNetwork)
 
         updateStatus<ActivityCollector>(statusActivity)
         updateStatus<AppUsageCollector>(statusAppUsage)

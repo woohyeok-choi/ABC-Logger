@@ -6,7 +6,6 @@ import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
-import android.widget.Switch
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -14,8 +13,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import androidx.databinding.BindingAdapter
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.setHorizontalPadding
+import kaist.iclab.abclogger.setVerticalPadding
 
-class SimpleConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
+class SimpleConfigView (context: Context, attrs: AttributeSet?, styleRes: Int) : ConstraintLayout(context, attrs, styleRes) {
+
+    constructor(context: Context, attrs: AttributeSet?): this(context, attrs, 0)
+    constructor(context: Context): this(context, null, 0)
     private val headerTextView: TextView
     private val descriptionTextView: TextView
 
@@ -28,7 +32,8 @@ class SimpleConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayo
             setBackgroundColor(typedValue.data)
         }
 
-        setPadding(resources.getDimensionPixelSize(R.dimen.item_default_padding))
+        setHorizontalPadding(resources.getDimensionPixelSize(R.dimen.item_default_horizontal_padding))
+        setVerticalPadding(resources.getDimensionPixelSize(R.dimen.item_default_vertical_padding))
         isClickable = true
         isFocusable = true
 
@@ -49,17 +54,17 @@ class SimpleConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayo
             maxLines = 5
         }
 
-
         addView(headerTextView, LayoutParams(0, LayoutParams.WRAP_CONTENT))
         addView(descriptionTextView, LayoutParams(0, LayoutParams.WRAP_CONTENT))
 
         ConstraintSet().apply {
+            clone(this@SimpleConfigView)
             connect(headerTextView.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
             connect(headerTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
 
             connect(descriptionTextView.id, ConstraintSet.TOP, headerTextView.id, ConstraintSet.BOTTOM)
             connect(descriptionTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
-        }.let { setConstraintSet(it) }
+        }.applyTo(this)
 
         setOnClickListener { onClick?.invoke(this) }
     }
@@ -68,15 +73,19 @@ class SimpleConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayo
 
     var header : String
         get() = headerTextView.text.toString()
-        set(value) { headerTextView.text = value }
+        set(value) {
+            headerTextView.text = value
+        }
 
     var description : String
         get() = descriptionTextView.text.toString()
-        set(value) { descriptionTextView.text = value }
+        set(value) {
+            descriptionTextView.text = value
+        }
 }
 
 @BindingAdapter("header", "description")
-fun setSimpleConfig(view: SimpleConfigView, header: String, description: String) {
-    view.header = header
-    view.description = description
+fun setSimpleConfig(view: SimpleConfigView, header: String?, description: String?) {
+    view.header = header ?: ""
+    view.description = description ?: ""
 }

@@ -58,13 +58,14 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : LinearLayout(con
             addView(etcEditText, ConstraintLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
 
             ConstraintSet().also { constraint ->
+                constraint.clone(this)
                 constraint.connect(etcCheckBox.id, ConstraintSet.BASELINE, ConstraintSet.PARENT_ID, ConstraintSet.BASELINE)
                 constraint.connect(etcCheckBox.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
 
                 constraint.connect(etcEditText.id, ConstraintSet.BASELINE, etcCheckBox.id, ConstraintSet.BASELINE)
                 constraint.connect(etcEditText.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
                 constraint.connect(etcEditText.id, ConstraintSet.START, etcCheckBox.id, ConstraintSet.END)
-            }
+            }.applyTo(this)
             visibility = if(showEtc) View.VISIBLE else View.GONE
         }.let { layout ->
             addView(layout, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
@@ -105,14 +106,14 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : LinearLayout(con
 }
 
 @BindingAdapter("options", "showEtc", "isAvailable", "responses")
-fun bind(view: CheckBoxesView, options: Array<String>, showEtc: Boolean, isAvailable: Boolean, responses: Array<String>) {
-    view.bind(options, showEtc, isAvailable, responses)
+fun bind(view: CheckBoxesView, options: Array<String>?, showEtc: Boolean?, isAvailable: Boolean?, responses: Array<String>?) {
+    view.bind(options ?: arrayOf(), showEtc ?: false, isAvailable ?: false, responses ?: arrayOf())
 }
 
 @InverseBindingAdapter(attribute = "responses")
 fun getResponses(view: CheckBoxesView) : Array<String> = view.getResponse()
 
 @BindingAdapter("responsesAttrChanged")
-fun setListener(view: CheckBoxesView, responseAttrChanged: InverseBindingListener) {
-    view.onAttributeChanged = { responseAttrChanged.onChange()}
+fun setListener(view: CheckBoxesView, responseAttrChanged: InverseBindingListener?) {
+    view.onAttributeChanged = { responseAttrChanged?.onChange()}
 }

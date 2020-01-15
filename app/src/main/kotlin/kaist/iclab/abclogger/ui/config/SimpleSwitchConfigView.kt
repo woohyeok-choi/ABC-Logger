@@ -14,6 +14,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import androidx.databinding.BindingAdapter
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.setHorizontalPadding
+import kaist.iclab.abclogger.setVerticalPadding
 
 class SimpleSwitchConfigView (context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
     constructor(context: Context) : this(context, null)
@@ -33,7 +35,8 @@ class SimpleSwitchConfigView (context: Context, attrs: AttributeSet?) : Constrai
             setBackgroundColor(typedValue.data)
         }
 
-        setPadding(resources.getDimensionPixelSize(R.dimen.item_default_padding))
+        setHorizontalPadding(resources.getDimensionPixelSize(R.dimen.item_default_horizontal_padding))
+        setVerticalPadding(resources.getDimensionPixelSize(R.dimen.item_default_vertical_padding))
         isClickable = true
         isFocusable = true
 
@@ -64,15 +67,19 @@ class SimpleSwitchConfigView (context: Context, attrs: AttributeSet?) : Constrai
         addView(switch, LayoutParams(0, LayoutParams.WRAP_CONTENT))
 
         ConstraintSet().apply {
+            clone(this@SimpleSwitchConfigView)
             connect(headerTextView.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
             connect(headerTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+            connect(headerTextView.id, ConstraintSet.END, switch.id, ConstraintSet.START)
 
             connect(descriptionTextView.id, ConstraintSet.TOP, headerTextView.id, ConstraintSet.BOTTOM)
             connect(descriptionTextView.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+            connect(descriptionTextView.id, ConstraintSet.END, switch.id, ConstraintSet.START)
 
-            connect(switch.id, ConstraintSet.BASELINE, ConstraintSet.PARENT_ID, ConstraintSet.BASELINE)
+            connect(switch.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+            connect(switch.id, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
             connect(switch.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
-        }.let { setConstraintSet(it) }
+        }.applyTo(this)
 
         setOnClickListener {
             switch.toggle()
@@ -97,8 +104,8 @@ class SimpleSwitchConfigView (context: Context, attrs: AttributeSet?) : Constrai
 }
 
 @BindingAdapter("header", "description", "checked")
-fun setDataConfig(view: SimpleSwitchConfigView, header: String, description: String, checked: Boolean) {
-    view.header = header
-    view.description = description
-    view.checked = checked
+fun setDataConfig(view: SimpleSwitchConfigView, header: String?, description: String?, checked: Boolean?) {
+    view.header = header ?: ""
+    view.description = description ?: ""
+    view.checked = checked ?: false
 }

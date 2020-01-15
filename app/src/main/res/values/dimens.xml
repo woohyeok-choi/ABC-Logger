@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="section_horizontal_margin">12dp</dimen>
-    <dimen name="item_default_padding">8dp</dimen>
+    <dimen name="item_default_vertical_padding">8dp</dimen>
+    <dimen name="item_default_horizontal_padding">12dp</dimen>
 
     <dimen name="text_title_size">48sp</dimen>
     <dimen name="text_sub_title_size">14sp</dimen>
@@ -17,5 +18,6 @@
     <dimen name="cardview_elevation">2dp</dimen>
 
     <dimen name="space_btw_signin_btn">24dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 
 </resources>
