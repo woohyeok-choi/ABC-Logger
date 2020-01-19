@@ -33,14 +33,14 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
         super.onCreate(savedInstanceState)
         closeOptionsMenu()
 
+        reactionTime = System.currentTimeMillis()
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_survey_response)
+
         setSupportActionBar(tool_bar)
         supportActionBar?.apply {
             title = getString(R.string.title_survey_response)
             setDisplayHomeAsUpEnabled(true)
         }
-
-        reactionTime = System.currentTimeMillis()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_survey_response)
 
         val recyclerViewAdapter = SurveyQuestionListAdapter()
 
@@ -117,7 +117,7 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.activity_survey_question, menu)
+        menuInflater.inflate(R.menu.menu_activity_survey_question, menu)
         return true
     }
 
@@ -134,7 +134,6 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
                     if (isYes) viewModel.store(entityId, reactionTime, System.currentTimeMillis())
                 }
             }.show(supportFragmentManager, TAG)
-
             true
         }
         else -> super.onOptionsItemSelected(item)

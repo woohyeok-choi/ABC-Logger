@@ -51,7 +51,7 @@ fun <T : Base> T.fillBaseInfo(timeMillis: Long): T {
     timestamp = timeMillis
     utcOffset = TimeZone.getDefault().rawOffset.toFloat() / (1000 * 60 * 60)
     subjectEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
-    participationTime = SharedPrefs.participationTime
+    participationTime = GeneralPrefs.participationTime
     deviceInfo = "${Build.MANUFACTURER}-${Build.MODEL}-${Build.VERSION.RELEASE}"
     isUploaded = false
 
@@ -129,7 +129,12 @@ data class KeyTrackEntity(
         var isSystemApp: Boolean = false,
         var isUpdatedSystemApp: Boolean = false,
         var distance : Float = 0.0F,
-        var timeTaken : Long = 0
+        var timeTaken : Long = 0,
+        var keyboardType: String = "",
+        var prevKey: String = "",
+        var currentKey: String = "",
+        var prevKeyType: String = "",
+        var currentKeyType: String = ""
 ) : Base()
 
 @Entity

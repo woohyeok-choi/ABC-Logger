@@ -13,7 +13,7 @@ val collectorModules = module {
     single(createdAtStart = false) { AppUsageCollector(androidContext()) }
     single(createdAtStart = false) { BatteryCollector(androidContext()) }
     single(createdAtStart = false) { BluetoothCollector(androidContext()) }
-    single(createdAtStart = false) { KeyTrackingService() }
+    single(createdAtStart = false) { KeyLogCollector(androidContext()) }
     single(createdAtStart = false) { CallLogCollector(androidContext()) }
     single(createdAtStart = false) { DataTrafficCollector(androidContext()) }
     single(createdAtStart = false) { DeviceEventCollector(androidContext()) }
@@ -37,4 +37,5 @@ val viewModelModules = module {
     viewModel { ConfigViewModel(androidContext(), get()) }
     viewModel { SurveyListViewModel() }
     viewModel { SurveyResponseViewModel() }
+    viewModel { PolarH10Collector.PolarViewModel(androidContext()) }
 }

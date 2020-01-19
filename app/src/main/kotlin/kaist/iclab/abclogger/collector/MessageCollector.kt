@@ -21,7 +21,7 @@ class MessageCollector(val context: Context) : BaseCollector {
                 getRecentContents(
                         contentResolver = context.contentResolver,
                         uri = Telephony.Sms.CONTENT_URI,
-                        lastTime = SharedPrefs.lastAccessTimeSms,
+                        lastTime = CollectorPrefs.lastAccessTimeSms,
                         timeColumn = Telephony.Sms.DATE,
                         columns = arrayOf(
                                 Telephony.Sms.DATE,
@@ -45,7 +45,7 @@ class MessageCollector(val context: Context) : BaseCollector {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastAccessTimeSms = timestamps.max() ?: SharedPrefs.lastAccessTimeSms
+                CollectorPrefs.lastAccessTimeSms = timestamps.max() ?: CollectorPrefs.lastAccessTimeSms
             }
         }
     }
@@ -59,7 +59,7 @@ class MessageCollector(val context: Context) : BaseCollector {
                 getRecentContents(
                         contentResolver = context.contentResolver,
                         uri = Telephony.Mms.CONTENT_URI,
-                        lastTime = SharedPrefs.lastAccessTimeMms,
+                        lastTime = CollectorPrefs.lastAccessTimeMms,
                         timeColumn = Telephony.Mms.DATE,
                         columns = arrayOf(
                                 Telephony.Mms.DATE,
@@ -83,7 +83,7 @@ class MessageCollector(val context: Context) : BaseCollector {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastAccessTimeMms = timestamps.max() ?: SharedPrefs.lastAccessTimeMms
+                CollectorPrefs.lastAccessTimeMms = timestamps.max() ?: CollectorPrefs.lastAccessTimeMms
             }
         }
     }

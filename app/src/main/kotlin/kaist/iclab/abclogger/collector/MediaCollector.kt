@@ -25,7 +25,7 @@ class MediaCollector (val context: Context) : BaseCollector {
                                 MediaStore.Images.ImageColumns.DATE_ADDED,
                                 MediaStore.Images.ImageColumns.MIME_TYPE
                         ),
-                        lastTime = SharedPrefs.lastAccessTimeInternalPhoto
+                        lastTime = CollectorPrefs.lastAccessTimeInternalPhoto
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     timestamps.add(timestamp)
@@ -37,7 +37,7 @@ class MediaCollector (val context: Context) : BaseCollector {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastAccessTimeInternalPhoto = timestamps.max() ?: SharedPrefs.lastAccessTimeInternalPhoto
+                CollectorPrefs.lastAccessTimeInternalPhoto = timestamps.max() ?: CollectorPrefs.lastAccessTimeInternalPhoto
             }
         }
     }
@@ -56,7 +56,7 @@ class MediaCollector (val context: Context) : BaseCollector {
                                 MediaStore.Video.VideoColumns.DATE_ADDED,
                                 MediaStore.Video.VideoColumns.MIME_TYPE
                         ),
-                        lastTime = SharedPrefs.lastAccessTimeInternalVideo
+                        lastTime = CollectorPrefs.lastAccessTimeInternalVideo
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     timestamps.add(timestamp)
@@ -68,7 +68,7 @@ class MediaCollector (val context: Context) : BaseCollector {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastAccessTimeInternalVideo = timestamps.max() ?: SharedPrefs.lastAccessTimeInternalVideo
+                CollectorPrefs.lastAccessTimeInternalVideo = timestamps.max() ?: CollectorPrefs.lastAccessTimeInternalVideo
             }
         }
     }
@@ -88,7 +88,7 @@ class MediaCollector (val context: Context) : BaseCollector {
                                 MediaStore.Images.ImageColumns.DATE_ADDED,
                                 MediaStore.Images.ImageColumns.MIME_TYPE
                         ),
-                        lastTime = SharedPrefs.lastAccessTimeExternalPhoto
+                        lastTime = CollectorPrefs.lastAccessTimeExternalPhoto
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     timestamps.add(timestamp)
@@ -100,7 +100,7 @@ class MediaCollector (val context: Context) : BaseCollector {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastAccessTimeExternalPhoto = timestamps.max() ?: SharedPrefs.lastAccessTimeExternalPhoto
+                CollectorPrefs.lastAccessTimeExternalPhoto = timestamps.max() ?: CollectorPrefs.lastAccessTimeExternalPhoto
             }
         }
     }
@@ -119,7 +119,7 @@ class MediaCollector (val context: Context) : BaseCollector {
                                 MediaStore.Video.VideoColumns.DATE_ADDED,
                                 MediaStore.Video.VideoColumns.MIME_TYPE
                         ),
-                        lastTime = SharedPrefs.lastAccessTimeExternalVideo
+                        lastTime = CollectorPrefs.lastAccessTimeExternalVideo
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     timestamps.add(timestamp)
@@ -131,7 +131,7 @@ class MediaCollector (val context: Context) : BaseCollector {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastAccessTimeExternalVideo = timestamps.max() ?: SharedPrefs.lastAccessTimeExternalVideo
+                CollectorPrefs.lastAccessTimeExternalVideo = timestamps.max() ?: CollectorPrefs.lastAccessTimeExternalVideo
             }
         }
     }

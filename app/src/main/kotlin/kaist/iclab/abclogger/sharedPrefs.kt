@@ -7,7 +7,13 @@ import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.collector.*
 
 
-object SharedPrefs : PreferenceHolder(name = "abc-logger-pref") {
+object GeneralPrefs : PreferenceHolder(name = "abc-logger-pref") {
+    var participationTime: Long by ReadWriteLong(default = -1)
+    var lastTimeDataSync: Long by ReadWriteLong(default = -1)
+    var shouldUploadForNonMeteredNetwork: Boolean by ReadWriteBoolean(default = false)
+}
+
+object CollectorPrefs : PreferenceHolder(name = "abc-logger-collector-pref") {
     var isProvidedCallLog: Boolean by ReadWriteBoolean(default = false)
     var isProvidedMessage: Boolean by ReadWriteBoolean(default = false)
     var isProvidedMediaGeneration: Boolean by ReadWriteBoolean(default = false)
@@ -44,10 +50,6 @@ object SharedPrefs : PreferenceHolder(name = "abc-logger-pref") {
     var statusSurvey: String by ReadWriteString()
     var statusPolarH10: String by ReadWriteString()
 
-    var participationTime: Long by ReadWriteLong(default = -1)
-    var lastTimeDataSync: Long by ReadWriteLong(default = -1)
-    var shouldUploadForNonMeteredNetwork: Boolean by ReadWriteBoolean(default = false)
-
     var lastAccessTimeSms: Long by ReadWriteLong(default = -1)
     var lastAccessTimeMms: Long by ReadWriteLong(default = -1)
     var lastAccessTimeCallLog: Long by ReadWriteLong(default = -1)
@@ -58,11 +60,12 @@ object SharedPrefs : PreferenceHolder(name = "abc-logger-pref") {
     var lastAccessTimeInstalledApp: Long by ReadWriteLong(default = -1)
     var lastAccessTimeAppUsage: Long by ReadWriteLong(default = -1)
     var lastAccessTimePhysicalStatus: Long by ReadWriteLong(default = -1)
+
+    var softKeyboardType: String by ReadWriteString()
 }
 
-object ExternalDevicePrefs : PreferenceHolder(name = "abc-logger-ext-device-pref") {
+object ExternalDevicePrefs : PreferenceHolder(name = "abc-logger-device-pref") {
     var polarH10DeviceId: String by ReadWriteString()
     var polarH10Connection: Int by ReadWriteInt(default = 0)
     var polarH10BatteryLevel: Int by ReadWriteInt(default = -1)
-    var polarH10Exception: String by ReadWriteString()
 }

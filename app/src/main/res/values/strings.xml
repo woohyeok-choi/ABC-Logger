@@ -27,6 +27,10 @@
     <string name="general_deny">Denied</string>
     <string name="general_unavailable">Unavailable</string>
     <string name="general_available">Available</string>
+    <string name="general_touch_to_set">Touch to set</string>
+    <string name="general_connected">Connected</string>
+    <string name="general_disconnected">Disconnected</string>
+    <string name="general_connecting">Connecting</string>
 
     <string name="config_category_general">General</string>
     <string name="config_category_collector">Collector</string>
@@ -93,8 +97,9 @@
     <string name="title_survey_list">Surveys</string>
     <string name="title_config">Config</string>
     <string name="title_survey_response">Response</string>
-    <string name="menu_survey_question_save">Save</string>
 
+    <string name="menu_item_survey_question_save">Save</string>
+    <string name="menu_item_setting_save">Save</string>
 
     <string name="data_name_physical_activity">Physical Activity</string>
     <string name="data_desc_physical_activity">It collects a history of physical activities</string>
@@ -136,13 +141,25 @@
     <string name="permission_title_app_usage">App usage data access</string>
     <string name="permission_title_google_fitness">Google Fitness account access</string>
 
+    <!-- Here, define strings for setting activity of each collector -->
 
-    <string name="activity_title_debug">Debug</string>
-    <string name="menu_item_debug">Debug</string>
+    <string name="setting_key_log_collector_instruction_keyboard_type">Select a type of your soft-keyboard for Korean.</string>
+    <string name="setting_key_log_collector_chunjiin">Chun-ji-in</string>
+    <string name="setting_key_log_collector_qwerty">Qwerty</string>
+    <string name="setting_key_log_collector_others">Others</string>
+    <string name="setting_key_log_collector_instruction_accessibility">Allow this app to use accessibility service.</string>
 
-    <!-- JY EDIT -->
-    <string name="accessibility_service_label">KeyTrackingService</string>
-    <string name="title_activity_main2">Main2Activity</string>
-
+    <string name="setting_polar_h10_collector_instruction_device_id">Enter a device ID to connect.</string>
+    <string name="setting_polar_h10_collector_connect">Touch to connect</string>
+    <string name="setting_polar_h10_collector_connect_hint">Device ID</string>
+    <string name="setting_polar_h10_collector_instruction_state">State</string>
+    <string name="setting_polar_h10_collector_connection_state">Connection</string>
+    <string name="setting_polar_h10_collector_battery">Battery</string>
+    <string name="setting_polar_h10_collector_heart_rate">Heart rate</string>
+    <string name="setting_polar_h10_collector_ecg">ECG</string>
+    <string name="setting_survey_collector_instruction">Survey URLs</string>
+    <string name="setting_survey_collector_preview">Preview</string>
+    <string name="setting_survey_collector_url_hint">Enter a survey URL.</string>
+    <string name="setting_survey_collector_url_error">Invalid URL.</string>
 </resources>
 

@@ -64,9 +64,5 @@ class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHo
 
             override fun areContentsTheSame(oldItem: SurveyEntity, newItem: SurveyEntity): Boolean = oldItem == newItem
         }
-
-        const val PREFIX_TITLE_VIEW = "TITLE_VIEW"
-        const val PREFIX_MESSAGE_VIEW = "MESSAGE_VIEW"
-        const val PREFIX_DELIVERED_TIME_VIEW = "DELIVERED_TIME_VIEW"
     }
 }

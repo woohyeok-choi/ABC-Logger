@@ -75,8 +75,7 @@ class LocationCollector(val context: Context) : BaseCollector {
         get() = null
 
     companion object {
-        private const val ACTION_LOCATION_UPDATE = "kaist.iclab.abclogger.ACTION_LOCATION_UPDATE"
+        private const val ACTION_LOCATION_UPDATE = "${BuildConfig.APPLICATION_ID}.ACTION_LOCATION_UPDATE"
         private const val REQUEST_CODE_LOCATION_UPDATE = 0xff
-
     }
 }

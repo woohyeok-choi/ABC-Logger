@@ -1,6 +1,5 @@
 package kaist.iclab.abclogger.collector
 
-import android.Manifest
 import android.app.AlarmManager
 import android.app.AppOpsManager
 import android.app.PendingIntent
@@ -14,7 +13,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.os.Process
-import androidx.core.app.AppOpsManagerCompat
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
 
@@ -63,12 +61,12 @@ class AppUsageCollector(val context: Context) : BaseCollector {
     private fun handleRetrieveAppUsage() {
         val timestamp = System.currentTimeMillis()
 
-        if (SharedPrefs.lastAccessTimeAppUsage < 0) {
-            SharedPrefs.lastAccessTimeAppUsage = timestamp
+        if (CollectorPrefs.lastAccessTimeAppUsage < 0) {
+            CollectorPrefs.lastAccessTimeAppUsage = timestamp
             return
         }
 
-        val events = usageStatManager.queryEvents(SharedPrefs.lastAccessTimeAppUsage, timestamp)
+        val events = usageStatManager.queryEvents(CollectorPrefs.lastAccessTimeAppUsage, timestamp)
         val event = UsageEvents.Event()
         val entities = mutableListOf<AppUsageEventEntity>()
 
@@ -85,7 +83,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
             entities.add(entity)
         }
         putEntity(entities)
-        SharedPrefs.lastAccessTimeAppUsage = timestamp
+        CollectorPrefs.lastAccessTimeAppUsage = timestamp
     }
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -100,11 +98,11 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         val currentTime = System.currentTimeMillis()
         val threeHour: Long = 1000 * 60 * 60 * 3
 
-        val triggerTime: Long = if (SharedPrefs.lastAccessTimeAppUsage < 0 ||
-                SharedPrefs.lastAccessTimeAppUsage + threeHour < currentTime) {
+        val triggerTime: Long = if (CollectorPrefs.lastAccessTimeAppUsage < 0 ||
+                CollectorPrefs.lastAccessTimeAppUsage + threeHour < currentTime) {
             currentTime + 1000 * 5
         } else {
-            SharedPrefs.lastAccessTimeAppUsage + threeHour
+            CollectorPrefs.lastAccessTimeAppUsage + threeHour
         }
 
         context.registerReceiver(receiver, filter)

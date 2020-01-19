@@ -6,8 +6,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import kaist.iclab.abclogger.BatteryEntity
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.SharedPrefs
 import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.fillBaseInfo
 

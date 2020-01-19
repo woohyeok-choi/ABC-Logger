@@ -2,9 +2,11 @@ package kaist.iclab.abclogger.collector
 
 import android.Manifest
 import android.app.AlarmManager
-import android.app.IntentService
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -19,6 +21,9 @@ import com.google.android.gms.tasks.Tasks
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.base.BaseCollector
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class PhysicalStatusCollector(val context: Context) : BaseCollector {
@@ -41,69 +46,113 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
 
     private val signInOptions: GoogleSignInOptions =
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestEmail()
+                    .requestIdToken(context.getString(R.string.default_web_client_id))
                     .requestScopes(Scope(Scopes.FITNESS_ACTIVITY_READ), Scope(Scopes.FITNESS_LOCATION_READ_WRITE))
                     .addExtension(fitnessOptions).build()
 
-    class PhysicalStatusCollectorIntentService : IntentService(PhysicalStatusCollectorIntentService::class.java.name) {
-        override fun onHandleIntent(intent: Intent?) {
-            val account = GoogleSignIn.getLastSignedInAccount(this) ?: return
+    private val intent = PendingIntent.getBroadcast(context, REQUEST_CODE_PHYSICAL_STATUS_UPDATE, Intent(ACTION_UPDATE_PHYSICAL_STATUS), PendingIntent.FLAG_UPDATE_CURRENT)
+    
+    private val filter = IntentFilter().apply {
+        addAction(ACTION_UPDATE_PHYSICAL_STATUS)
+    }
 
-            val lastTime = SharedPrefs.lastAccessTimePhysicalStatus
-            val currentTime = System.currentTimeMillis()
-
-            if (lastTime < 0) {
-                SharedPrefs.lastAccessTimePhysicalStatus = currentTime
-                return
+    private val receiver : BroadcastReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != ACTION_UPDATE_PHYSICAL_STATUS) return
+                GlobalScope.launch(Dispatchers.IO) {
+                    putEntitySync(getPhysicalStatusEntities())
+                }
             }
+        }
+    }
 
-            val request = DataReadRequest.Builder()
-                    .setTimeRange(lastTime, currentTime, TimeUnit.MILLISECONDS)
-                    .bucketByTime(15, TimeUnit.SECONDS)
-                    .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-                    .aggregate(DataType.TYPE_CALORIES_EXPENDED, DataType.AGGREGATE_CALORIES_EXPENDED)
-                    .aggregate(DataType.TYPE_DISTANCE_DELTA, DataType.AGGREGATE_DISTANCE_DELTA)
-                    .build()
+    private fun getPhysicalStatusEntities() : List<PhysicalStatusEntity> {
+        val account = GoogleSignIn.getLastSignedInAccount(context) ?: return listOf()
+        val lastTime = CollectorPrefs.lastAccessTimePhysicalStatus
+        val currentTime = System.currentTimeMillis()
 
-            val client = Fitness.getHistoryClient(this, account) ?: return
-            val response = Tasks.await(client.readData(request)) ?: return
+        if (lastTime < 0) return listOf()
 
-            response.buckets.mapNotNull { bucket ->
-                bucket?.dataSets?.mapNotNull { dataSet ->
-                    dataSet?.dataPoints?.mapNotNull { dataPoint ->
-                        dataPoint.dataType.fields.forEach {
-                            it.name
-                        }
+        val request = DataReadRequest.Builder()
+                .setTimeRange(lastTime, currentTime, TimeUnit.MILLISECONDS)
+                .bucketByTime(30, TimeUnit.SECONDS)
+                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+                .aggregate(DataType.TYPE_CALORIES_EXPENDED, DataType.AGGREGATE_CALORIES_EXPENDED)
+                .aggregate(DataType.TYPE_DISTANCE_DELTA, DataType.AGGREGATE_DISTANCE_DELTA)
+                .build()
+
+        val client = Fitness.getHistoryClient(context, account) ?: return listOf()
+        val response = Tasks.await(client.readData(request)) ?: return listOf()
+
+        CollectorPrefs.lastAccessTimePhysicalStatus = currentTime
+
+        return response.buckets.mapNotNull { bucket ->
+            bucket?.dataSets?.mapNotNull { dataSet ->
+                dataSet?.dataPoints?.mapNotNull { dataPoint ->
+                    when(dataPoint.dataType) {
+                        DataType.TYPE_STEP_COUNT_DELTA -> Field.FIELD_STEPS
+                        DataType.TYPE_CALORIES_EXPENDED -> Field.FIELD_CALORIES
+                        DataType.TYPE_DISTANCE_DELTA -> Field.FIELD_DISTANCE
+                        else -> null
+                    }?.let { field ->
                         PhysicalStatusEntity(
                                 type = dataPoint.dataType.name,
                                 startTime = dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                                 endTime = dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                value = dataPoint.getValue(Field.FIELD_STEPS).asFloat()
+                                value = dataPoint.getValue(field).asFloat()
                         ).fillBaseInfo(timeMillis = dataPoint.getTimestamp(TimeUnit.MILLISECONDS))
                     }
-                }?.flatten()
-            }.flatten().run { putEntity(this) }
-        }
+                }
+            }?.flatten()
+        }.flatten()
     }
 
     override fun onStart() {
+        val currentTime = System.currentTimeMillis()
+        val threeHour : Long = TimeUnit.HOURS.toMillis(3)
+
+        val triggerTime : Long = if(CollectorPrefs.lastAccessTimePhysicalStatus < 0 ||
+                CollectorPrefs.lastAccessTimePhysicalStatus + threeHour < currentTime) {
+            currentTime + 1000 * 5
+        } else {
+            CollectorPrefs.lastAccessTimePhysicalStatus + threeHour
+        }
+
+        alarmManager.cancel(intent)
+
         GoogleSignIn.getLastSignedInAccount(context)?.let { account ->
             val client = Fitness.getRecordingClient(context, account)
             Tasks.whenAll(dataTypes.map { dataType -> client.subscribe(dataType) })
         }?.addOnSuccessListener {
+            CollectorPrefs.statusPhysicalStatus = ""
 
-        }?.addOnFailureListener {
+            context.registerReceiver(receiver, filter)
+            alarmManager.setRepeating(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    threeHour,
+                    intent
+                    )
 
+        }?.addOnFailureListener { exception ->
+            CollectorPrefs.statusPhysicalStatus = exception.message ?: ""
+            AppLog.ee(exception)
         }
     }
 
     override fun onStop() {
-
+        context.unregisterReceiver(receiver)
+        alarmManager.cancel(intent)
     }
 
     override fun checkAvailability(): Boolean {
         val isAccountAvailable = GoogleSignIn.getLastSignedInAccount(context)?.let { account ->
-            GoogleSignIn.hasPermissions(account, fitnessOptions)
+            GoogleSignIn.hasPermissions(account, fitnessOptions) &&
+                    GoogleSignIn.hasPermissions(account,
+                            Scope(Scopes.FITNESS_ACTIVITY_READ),
+                            Scope(Scopes.FITNESS_LOCATION_READ_WRITE)
+                    )
         } ?: false
 
         val isPermissionAvailable = context.checkPermission(requiredPermissions)
@@ -128,9 +177,10 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         }
 
     override val newIntentForSetUp: Intent?
-        get() = Intent(context, PhysicalStatusSettingActivity::class.java)
+        get() = GoogleSignIn.getClient(context, signInOptions).signInIntent
 
-    class PhysicalStatusSettingActivity : BaseAppCompatActivity() {
-
+    companion object {
+        const val ACTION_UPDATE_PHYSICAL_STATUS = "${BuildConfig.APPLICATION_ID}.ACTION_UPDATE_PHYSICAL_STATUS"
+        private const val REQUEST_CODE_PHYSICAL_STATUS_UPDATE = 0x03
     }
 }

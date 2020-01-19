@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
+import java.util.concurrent.TimeUnit
 
 class InstalledAppCollector (val context: Context) : BaseCollector {
     private val packageManager: PackageManager by lazy { context.applicationContext.packageManager }
@@ -39,7 +40,7 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastAccessTimeInstalledApp = timestamp
+                CollectorPrefs.lastAccessTimeInstalledApp = timestamp
             }
         }
     }
@@ -55,13 +56,13 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
 
     override fun onStart() {
         val currentTime = System.currentTimeMillis()
-        val halfDayHour : Long = 1000 * 60 * 60 * 12
+        val halfDayHour : Long = TimeUnit.HOURS.toMillis(12)
 
-        val triggerTime : Long = if(SharedPrefs.lastAccessTimeInstalledApp < 0 ||
-                SharedPrefs.lastAccessTimeInstalledApp + halfDayHour < currentTime) {
+        val triggerTime : Long = if(CollectorPrefs.lastAccessTimeInstalledApp < 0 ||
+                CollectorPrefs.lastAccessTimeInstalledApp + halfDayHour < currentTime) {
             currentTime + 1000 * 5
         } else {
-            SharedPrefs.lastAccessTimeInstalledApp + halfDayHour
+            CollectorPrefs.lastAccessTimeInstalledApp + halfDayHour
         }
 
         context.registerReceiver(receiver, filter)

@@ -3,9 +3,10 @@ package kaist.iclab.abclogger.ui.dialog
 import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
 import kaist.iclab.abclogger.R
 
-class SimpleMessageDialogFragment: androidx.fragment.app.DialogFragment() {
+class SimpleMessageDialogFragment: DialogFragment() {
     companion object {
         private val ARG_TITLE = "${SimpleMessageDialogFragment::class.java.canonicalName}.ARG_TITLE"
         private val ARG_MESSAGE = "${SimpleMessageDialogFragment::class.java.canonicalName}.ARG_MESSAGE"

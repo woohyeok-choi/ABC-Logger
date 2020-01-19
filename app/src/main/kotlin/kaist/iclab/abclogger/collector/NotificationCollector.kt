@@ -14,7 +14,7 @@ import kaist.iclab.abclogger.base.BaseCollector
 class NotificationCollector(val context: Context) : NotificationListenerService(), BaseCollector {
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
-        if (!SharedPrefs.isProvidedNotification || !checkAvailability()) return
+        if (!CollectorPrefs.isProvidedNotification || !checkAvailability()) return
 
         try {
             sbn?.run {
@@ -27,7 +27,7 @@ class NotificationCollector(val context: Context) : NotificationListenerService(
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         super.onNotificationRemoved(sbn)
-        if (!SharedPrefs.isProvidedNotification || !checkAvailability()) return
+        if (!CollectorPrefs.isProvidedNotification || !checkAvailability()) return
 
         try {
             sbn?.run {

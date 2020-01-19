@@ -137,11 +137,6 @@ class SplashActivity : BaseAppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            REQUEST_CODE_PERMISSION_SETTING -> Log.d(TAG, "permission setting")
-            REQUEST_CODE_WHITE_LIST -> Log.d(TAG, "white list")
-            REQUEST_CODE_GOOGLE_SIGN_IN -> Log.d(TAG, "sigin in")
-        }
 
         when (requestCode) {
             REQUEST_CODE_PERMISSION_SETTING -> permissionSettingSingle.onSuccess(checkPermission(abc.getAllRequiredPermissions()))

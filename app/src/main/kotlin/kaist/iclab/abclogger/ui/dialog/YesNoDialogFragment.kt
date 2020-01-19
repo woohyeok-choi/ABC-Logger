@@ -3,11 +3,13 @@ package kaist.iclab.abclogger.ui.dialog
 import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import kaist.iclab.abclogger.BuildConfig
 
-class YesNoDialogFragment : androidx.fragment.app.DialogFragment() {
+class YesNoDialogFragment : DialogFragment() {
     companion object {
-        private val ARG_TITLE = "${YesNoDialogFragment::class.java.canonicalName}.ARG_TITLE"
-        private val ARG_MESSAGE = "${YesNoDialogFragment::class.java.canonicalName}.ARG_MESSAGE"
+        private const val ARG_TITLE = "${BuildConfig.APPLICATION_ID}.ARG_TITLE"
+        private const val ARG_MESSAGE = "${BuildConfig.APPLICATION_ID}.ARG_MESSAGE"
 
         fun newInstance(title: String, message: String) = YesNoDialogFragment().apply {
             arguments = Bundle().apply {

@@ -56,10 +56,10 @@ class ConfigViewModel(
     }
 
     fun load() = viewModelScope.launch(Dispatchers.IO) {
-        lastSyncTime.postValue(if (SharedPrefs.lastTimeDataSync > 0) {
+        lastSyncTime.postValue(if (GeneralPrefs.lastTimeDataSync > 0) {
             String.format("%s: %s",
                     context.getString(R.string.general_last_sync_time),
-                    DateUtils.formatDateTime(context, SharedPrefs.lastTimeDataSync, DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+                    DateUtils.formatDateTime(context, GeneralPrefs.lastTimeDataSync, DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
             )
         } else {
             context.getString(R.string.general_none)
@@ -68,7 +68,7 @@ class ConfigViewModel(
         sizeOfDb.postValue(
                 "${Formatter.formatFileSize(context, ObjBox.size(context))} / ${Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())}"
         )
-        shouldUploadForNonMeteredNetwork.postValue(SharedPrefs.shouldUploadForNonMeteredNetwork)
+        shouldUploadForNonMeteredNetwork.postValue(GeneralPrefs.shouldUploadForNonMeteredNetwork)
 
         updateStatus<ActivityCollector>(statusActivity)
         updateStatus<AppUsageCollector>(statusAppUsage)
@@ -78,7 +78,7 @@ class ConfigViewModel(
         updateStatus<DataTrafficCollector>(statusDataTraffic)
         updateStatus<DeviceEventCollector>(statusDeviceEvent)
         updateStatus<InstalledAppCollector>(statusInstalledApp)
-        updateStatus<KeyTrackingService>(statusKeyTracking)
+        updateStatus<KeyLogCollector>(statusKeyTracking)
         updateStatus<LocationCollector>(statusLocation)
         updateStatus<MediaCollector>(statusMedia)
         updateStatus<MessageCollector>(statusMessage)
@@ -87,6 +87,10 @@ class ConfigViewModel(
         updateStatus<PolarH10Collector>(statusPolarH10)
         updateStatus<SurveyCollector>(statusSurvey)
         updateStatus<WifiCollector>(statusWifi)
+    }
+
+    fun shouldUploadForNonMeteredNetwork(isEnabled: Boolean) {
+        GeneralPrefs.shouldUploadForNonMeteredNetwork = isEnabled
     }
 
     fun flush() = GlobalScope.launch(Dispatchers.IO) {

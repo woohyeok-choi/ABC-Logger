@@ -117,40 +117,49 @@ fun toMillis(timestamp: Long): Long {
     }
 }
 
-fun getApplicationName(packageManager: PackageManager, packageName: String): String? =
-        try {
-            packageManager.getApplicationInfo(
-                    packageName,
-                    PackageManager.GET_META_DATA
-            ).let {
-                packageManager.getApplicationLabel(it).toString()
-            }
-        } catch (e: Exception) {
-            null
+fun getApplicationName(packageManager: PackageManager, packageName: String?): String? {
+    packageName ?: return null
+
+    return try {
+        packageManager.getApplicationInfo(
+                packageName,
+                PackageManager.GET_META_DATA
+        ).let {
+            packageManager.getApplicationLabel(it).toString()
         }
+    } catch (e: Exception) {
+        null
+    }
+}
 
 
-fun isSystemApp(packageManager: PackageManager, packageName: String): Boolean =
-        try {
-            packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).let {
-                it.flags and ApplicationInfo.FLAG_SYSTEM == ApplicationInfo.FLAG_SYSTEM
-            }
-        } catch (e: Exception) {
-            false
+fun isSystemApp(packageManager: PackageManager, packageName: String?): Boolean {
+    packageName ?: return false
+    return try {
+        packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).let {
+            it.flags and ApplicationInfo.FLAG_SYSTEM == ApplicationInfo.FLAG_SYSTEM
         }
+    } catch (e: Exception) {
+        false
+    }
+}
 
 
-fun isUpdatedSystemApp(packageManager: PackageManager, packageName: String): Boolean =
-        try {
-            packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).let {
-                it.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP == ApplicationInfo.FLAG_UPDATED_SYSTEM_APP
-            }
-        } catch (e: Exception) {
-            false
+fun isUpdatedSystemApp(packageManager: PackageManager, packageName: String?): Boolean {
+    packageName ?: return false
+    return try {
+        packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).let {
+            it.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP == ApplicationInfo.FLAG_UPDATED_SYSTEM_APP
         }
+    } catch (e: Exception) {
+        false
+    }
+}
 
 
 inline fun <reified T : Base> putEntity(entity: T?) {
+    if (BuildConfig.DEBUG) AppLog.d(any = entity)
+
     entity?.let { e ->
         GlobalScope.launch(Dispatchers.IO) {
             ObjBox.boxFor<T>().put(e)
@@ -158,10 +167,22 @@ inline fun <reified T : Base> putEntity(entity: T?) {
     }
 }
 
-inline fun <reified T : Base> putEntitySync(entity: T?): Long? = entity?.let { e -> ObjBox.boxFor<T>().put(e) }
+inline fun <reified T : Base> putEntitySync(entity: T?): Long? {
+    if (BuildConfig.DEBUG) AppLog.d(any = entity)
+
+    return entity?.let { e -> ObjBox.boxFor<T>().put(e) }
+}
+
+inline fun <reified T : Base> putEntitySync(entities: Collection<T>?) {
+    if (BuildConfig.DEBUG) AppLog.d(any = entities)
+
+    if(entities?.isNotEmpty() == true) ObjBox.boxFor<T>().put(entities)
+}
 
 
 inline fun <reified T : Base> putEntity(entities: Collection<T>?): Job? {
+    if (BuildConfig.DEBUG) AppLog.d(any = entities)
+
     return if (entities?.isNotEmpty() == true) {
         GlobalScope.launch(Dispatchers.IO) {
             ObjBox.boxFor<T>().put(entities)
@@ -173,45 +194,45 @@ inline fun <reified T : Base> putEntity(entities: Collection<T>?): Job? {
 
 fun <T : BaseCollector> T.hasStarted() =
         when (this) {
-            is ActivityCollector -> SharedPrefs.isProvidedActivity
-            is AppUsageCollector -> SharedPrefs.isProvidedAppUsage
-            is BatteryCollector -> SharedPrefs.isProvidedBattery
-            is BluetoothCollector -> SharedPrefs.isProvidedBluetooth
-            is CallLogCollector -> SharedPrefs.isProvidedCallLog
-            is DataTrafficCollector -> SharedPrefs.isProvidedDataTraffic
-            is DeviceEventCollector -> SharedPrefs.isProvidedDeviceEvent
-            is InstalledAppCollector -> SharedPrefs.isProvidedInstallApp
-            is KeyTrackingService -> SharedPrefs.isProvidedKeyStrokes
-            is LocationCollector -> SharedPrefs.isProvidedLocation
-            is MediaCollector -> SharedPrefs.isProvidedMediaGeneration
-            is MessageCollector -> SharedPrefs.isProvidedMessage
-            is NotificationCollector -> SharedPrefs.isProvidedNotification
-            is PhysicalStatusCollector -> SharedPrefs.isProvidedPhysicalStatus
-            is PolarH10Collector -> SharedPrefs.isProvidedPolarH10
-            is SurveyCollector -> SharedPrefs.isProvidedSurvey
-            is WifiCollector -> SharedPrefs.isProvidedWiFi
+            is ActivityCollector -> CollectorPrefs.isProvidedActivity
+            is AppUsageCollector -> CollectorPrefs.isProvidedAppUsage
+            is BatteryCollector -> CollectorPrefs.isProvidedBattery
+            is BluetoothCollector -> CollectorPrefs.isProvidedBluetooth
+            is CallLogCollector -> CollectorPrefs.isProvidedCallLog
+            is DataTrafficCollector -> CollectorPrefs.isProvidedDataTraffic
+            is DeviceEventCollector -> CollectorPrefs.isProvidedDeviceEvent
+            is InstalledAppCollector -> CollectorPrefs.isProvidedInstallApp
+            is KeyLogCollector -> CollectorPrefs.isProvidedKeyStrokes
+            is LocationCollector -> CollectorPrefs.isProvidedLocation
+            is MediaCollector -> CollectorPrefs.isProvidedMediaGeneration
+            is MessageCollector -> CollectorPrefs.isProvidedMessage
+            is NotificationCollector -> CollectorPrefs.isProvidedNotification
+            is PhysicalStatusCollector -> CollectorPrefs.isProvidedPhysicalStatus
+            is PolarH10Collector -> CollectorPrefs.isProvidedPolarH10
+            is SurveyCollector -> CollectorPrefs.isProvidedSurvey
+            is WifiCollector -> CollectorPrefs.isProvidedWiFi
             else -> null
         }
 
 fun <T : BaseCollector> T.status() =
         when (this) {
-            is ActivityCollector -> SharedPrefs.statusActivity
-            is AppUsageCollector -> SharedPrefs.statusAppUsage
-            is BatteryCollector -> SharedPrefs.statusBattery
-            is BluetoothCollector -> SharedPrefs.statusBluetooth
-            is CallLogCollector -> SharedPrefs.statusCallLog
-            is DataTrafficCollector -> SharedPrefs.statusDataTraffic
-            is DeviceEventCollector -> SharedPrefs.statusDeviceEvent
-            is InstalledAppCollector -> SharedPrefs.statusInstallApp
-            is KeyTrackingService -> SharedPrefs.statusKeyStrokes
-            is LocationCollector -> SharedPrefs.statusLocation
-            is MediaCollector -> SharedPrefs.statusMediaGeneration
-            is MessageCollector -> SharedPrefs.statusMessage
-            is NotificationCollector -> SharedPrefs.statusNotification
-            is PhysicalStatusCollector -> SharedPrefs.statusPhysicalStatus
-            is PolarH10Collector -> SharedPrefs.statusPolarH10
-            is SurveyCollector -> SharedPrefs.statusSurvey
-            is WifiCollector -> SharedPrefs.statusWiFi
+            is ActivityCollector -> CollectorPrefs.statusActivity
+            is AppUsageCollector -> CollectorPrefs.statusAppUsage
+            is BatteryCollector -> CollectorPrefs.statusBattery
+            is BluetoothCollector -> CollectorPrefs.statusBluetooth
+            is CallLogCollector -> CollectorPrefs.statusCallLog
+            is DataTrafficCollector -> CollectorPrefs.statusDataTraffic
+            is DeviceEventCollector -> CollectorPrefs.statusDeviceEvent
+            is InstalledAppCollector -> CollectorPrefs.statusInstallApp
+            is KeyLogCollector -> CollectorPrefs.statusKeyStrokes
+            is LocationCollector -> CollectorPrefs.statusLocation
+            is MediaCollector -> CollectorPrefs.statusMediaGeneration
+            is MessageCollector -> CollectorPrefs.statusMessage
+            is NotificationCollector -> CollectorPrefs.statusNotification
+            is PhysicalStatusCollector -> CollectorPrefs.statusPhysicalStatus
+            is PolarH10Collector -> CollectorPrefs.statusPolarH10
+            is SurveyCollector -> CollectorPrefs.statusSurvey
+            is WifiCollector -> CollectorPrefs.statusWiFi
             else -> null
         }
 
@@ -232,23 +253,23 @@ private fun <T : BaseCollector> T.handleState(
         }
 
         when (this) {
-            is ActivityCollector -> SharedPrefs.isProvidedActivity = state
-            is AppUsageCollector -> SharedPrefs.isProvidedAppUsage = state
-            is BatteryCollector -> SharedPrefs.isProvidedBattery = state
-            is BluetoothCollector -> SharedPrefs.isProvidedBluetooth = state
-            is CallLogCollector -> SharedPrefs.isProvidedCallLog = state
-            is DataTrafficCollector -> SharedPrefs.isProvidedDataTraffic = state
-            is DeviceEventCollector -> SharedPrefs.isProvidedDeviceEvent = state
-            is InstalledAppCollector -> SharedPrefs.isProvidedInstallApp = state
-            is KeyTrackingService -> SharedPrefs.isProvidedKeyStrokes = state
-            is LocationCollector -> SharedPrefs.isProvidedLocation = state
-            is MediaCollector -> SharedPrefs.isProvidedMediaGeneration = state
-            is MessageCollector -> SharedPrefs.isProvidedMessage = state
-            is NotificationCollector -> SharedPrefs.isProvidedNotification = state
-            is PhysicalStatusCollector -> SharedPrefs.isProvidedPhysicalStatus = state
-            is PolarH10Collector -> SharedPrefs.isProvidedPolarH10 = state
-            is SurveyCollector -> SharedPrefs.isProvidedSurvey = state
-            is WifiCollector -> SharedPrefs.isProvidedWiFi = state
+            is ActivityCollector -> CollectorPrefs.isProvidedActivity = state
+            is AppUsageCollector -> CollectorPrefs.isProvidedAppUsage = state
+            is BatteryCollector -> CollectorPrefs.isProvidedBattery = state
+            is BluetoothCollector -> CollectorPrefs.isProvidedBluetooth = state
+            is CallLogCollector -> CollectorPrefs.isProvidedCallLog = state
+            is DataTrafficCollector -> CollectorPrefs.isProvidedDataTraffic = state
+            is DeviceEventCollector -> CollectorPrefs.isProvidedDeviceEvent = state
+            is InstalledAppCollector -> CollectorPrefs.isProvidedInstallApp = state
+            is KeyLogCollector -> CollectorPrefs.isProvidedKeyStrokes = state
+            is LocationCollector -> CollectorPrefs.isProvidedLocation = state
+            is MediaCollector -> CollectorPrefs.isProvidedMediaGeneration = state
+            is MessageCollector -> CollectorPrefs.isProvidedMessage = state
+            is NotificationCollector -> CollectorPrefs.isProvidedNotification = state
+            is PhysicalStatusCollector -> CollectorPrefs.isProvidedPhysicalStatus = state
+            is PolarH10Collector -> CollectorPrefs.isProvidedPolarH10 = state
+            is SurveyCollector -> CollectorPrefs.isProvidedSurvey = state
+            is WifiCollector -> CollectorPrefs.isProvidedWiFi = state
         }
     } catch (e: Exception) {
         error?.invoke(this, e)

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/item_default_horizontal_padding"
+    android:paddingRight="@dimen/item_default_horizontal_padding">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/item_default_vertical_padding">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/item_default_vertical_padding"
+            android:text="@string/setting_key_log_collector_instruction_keyboard_type"
+            android:textColor="@color/color_message"
+            android:textSize="@dimen/txt_size_text" />
+
+        <RadioGroup
+            android:id="@+id/radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/radio_btn_chunjiin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/setting_key_log_collector_chunjiin"
+                android:textColor="@color/color_title"
+                android:textSize="@dimen/txt_size_text" />
+
+            <RadioButton
+                android:id="@+id/radio_btn_qwerty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/setting_key_log_collector_qwerty"
+                android:textColor="@color/color_title"
+                android:textSize="@dimen/txt_size_text" />
+
+            <RadioButton
+                android:id="@+id/radio_btn_others"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/setting_key_log_collector_others"
+                android:textColor="@color/color_title"
+                android:textSize="@dimen/txt_size_text" />
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/item_default_vertical_padding">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/item_default_vertical_padding"
+            android:text="@string/setting_key_log_collector_instruction_accessibility"
+            android:textColor="@color/color_message"
+            android:textSize="@dimen/txt_size_text" />
+
+        <Button
+            android:id="@+id/btn_accessibility_setting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/color_primary"/>
+    </LinearLayout>
+</LinearLayout>
+

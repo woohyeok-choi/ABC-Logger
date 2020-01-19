@@ -28,7 +28,7 @@ class CallLogCollector(val context: Context) : BaseCollector {
                                 CallLog.Calls.NUMBER_PRESENTATION,
                                 CallLog.Calls.DATA_USAGE
                         ),
-                        lastTime = SharedPrefs.lastAccessTimeCallLog
+                        lastTime = CollectorPrefs.lastAccessTimeCallLog
                 ) { cursor ->
                     val timestamp = cursor.getLong(0)
                     val number = cursor.getString(2)
@@ -48,7 +48,7 @@ class CallLogCollector(val context: Context) : BaseCollector {
                     putEntity(this)
                 }
 
-                SharedPrefs.lastAccessTimeCallLog = timestamps.max() ?: -1
+                CollectorPrefs.lastAccessTimeCallLog = timestamps.max() ?: -1
             }
         }
     }

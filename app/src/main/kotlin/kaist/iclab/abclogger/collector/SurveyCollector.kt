@@ -7,16 +7,38 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Bundle
+import android.text.InputType
 import android.text.format.DateUtils
+import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.URLUtil
+import android.widget.ImageButton
+import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
+import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModel
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.Survey
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.ui.main.MainActivity
 import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
+import kotlinx.android.synthetic.main.activity_setting_base.*
+import kotlinx.android.synthetic.main.layout_test.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -140,8 +162,8 @@ class SurveyCollector(val context: Context) : BaseCollector {
         }
 
         return when {
-            curTime < SharedPrefs.participationTime + initDelayMs -> setting.copy(
-                    nextTimeTriggered = SharedPrefs.participationTime + initDelayMs
+            curTime < GeneralPrefs.participationTime + initDelayMs -> setting.copy(
+                    nextTimeTriggered = GeneralPrefs.participationTime + initDelayMs
             )
             curTime <= setting.nextTimeTriggered -> setting
             else -> setting.copy(
@@ -233,7 +255,7 @@ class SurveyCollector(val context: Context) : BaseCollector {
         get() = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
 
     override val newIntentForSetUp: Intent?
-        get() = Intent(context, SurveySettingActivity::class.java)
+        get() = Intent(context, SettingActivity::class.java)
 
     companion object {
         private const val EXTRA_SURVEY_UUID = "${BuildConfig.APPLICATION_ID}.EXTRA_SURVEY_UUID"
@@ -242,7 +264,93 @@ class SurveyCollector(val context: Context) : BaseCollector {
         private const val NOTIFICATION_ID_SURVEY_DELIVERED = 0x05
     }
 
-    class SurveySettingActivity : BaseAppCompatActivity() {
+    class SettingActivity : BaseSettingActivity() {
+        override val contentLayoutRes: Int
+            get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
+        override val titleStringRes: Int
+            get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+        override fun initializeSetting() {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+
+        override suspend fun generateResultIntent(): Intent {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+
+        class SurveyDownloadItemView(context: Context, attributeSet: AttributeSet?) : ConstraintLayout(context, attributeSet) {
+            constructor(context: Context) : this(context, null)
+
+            var onPreviewButtonClick : ((SurveyDownloadItemView) -> Unit)? = null
+            var onRemoveButtonClick : ((SurveyDownloadItemView) -> Unit)? = null
+            var url : String
+                get() = edtUrl.editText?.text?.toString() ?: ""
+                set(value) {
+                    edtUrl.editText?.setText(value, TextView.BufferType.EDITABLE)
+                }
+
+            private val edtUrl: TextInputLayout = TextInputLayout(context).apply {
+                id = View.generateViewId()
+                hint = context.getString(R.string.setting_survey_collector_url_hint)
+
+                TextInputEditText(context).also { text ->
+                    text.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL
+                    text.setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
+                    text.setTextColor(ContextCompat.getColor(context, R.color.color_message))
+                    text.addTextChangedListener({_, _, _, _ ->}, { charSequence, _, _, _ ->
+                        val isValid = charSequence?.let { URLUtil.isValidUrl(it.toString()) } ?: false
+                        isErrorEnabled = !isValid
+                        imgBtnPreview.isEnabled = !isValid
+                        error = if(!isValid) context.getString(R.string.setting_survey_collector_url_error) else null
+                    }, {})
+                }.let { addView(it) }
+            }
+
+            private val imgBtnRemove : ImageButton = ImageButton(context).apply {
+                id = View.generateViewId()
+                setImageResource(R.drawable.baseline_remove_black_36)
+                setOnClickListener { onRemoveButtonClick?.invoke(this@SurveyDownloadItemView) }
+            }
+
+            private val imgBtnPreview : ImageButton = ImageButton(context).apply {
+                id = View.generateViewId()
+                setImageResource(R.drawable.baseline_pageview_black_36)
+                setOnClickListener { onPreviewButtonClick?.invoke(this@SurveyDownloadItemView) }
+            }
+
+            init {
+                setHorizontalPadding(resources.getDimensionPixelSize(R.dimen.item_default_horizontal_padding))
+                setVerticalPadding(resources.getDimensionPixelSize(R.dimen.item_default_vertical_padding))
+
+                addView(edtUrl, LayoutParams(0, LayoutParams.WRAP_CONTENT))
+                addView(imgBtnRemove, LayoutParams(0, LayoutParams.WRAP_CONTENT))
+                addView(imgBtnPreview, LayoutParams(0, LayoutParams.WRAP_CONTENT))
+
+                ConstraintSet().apply {
+                    clone(this@SurveyDownloadItemView)
+                    connect(edtUrl.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+                    connect(edtUrl.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+                    connect(edtUrl.id, ConstraintSet.END, imgBtnPreview.id, ConstraintSet.START)
+
+                    connect(imgBtnRemove.id, ConstraintSet.TOP, edtUrl.id, ConstraintSet.TOP)
+                    connect(imgBtnRemove.id, ConstraintSet.BOTTOM, edtUrl.id, ConstraintSet.BOTTOM)
+                    connect(imgBtnRemove.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
+
+                    connect(imgBtnPreview.id, ConstraintSet.TOP, edtUrl.id, ConstraintSet.TOP)
+                    connect(imgBtnPreview.id, ConstraintSet.BOTTOM, edtUrl.id, ConstraintSet.BOTTOM)
+                    connect(imgBtnPreview.id, ConstraintSet.END, imgBtnRemove.id, ConstraintSet.START)
+                }.applyTo(this)
+            }
+        }
+    }
+
+
+    class SurveyPreviewViewModel : ViewModel()
+
+    class PreviewDialogFragment : DialogFragment() {
+        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+            return super.onCreateView(inflater, container, savedInstanceState)
+        }
     }
 }

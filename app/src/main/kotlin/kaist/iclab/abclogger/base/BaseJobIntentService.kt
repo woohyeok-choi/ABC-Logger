@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.JobIntentService
 import android.util.Log
+import kaist.iclab.abclogger.AppLog
 
 abstract class BaseJobIntentService : JobIntentService() {
     protected val TAG: String = javaClass.simpleName
@@ -15,11 +16,11 @@ abstract class BaseJobIntentService : JobIntentService() {
     }
 
     override fun onHandleWork(intent: Intent) {
-        Log.d(TAG, "onHandleWork()")
+        AppLog.d(TAG, "onHandleWork()")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "onDestroy()")
+        AppLog.d(TAG, "onDestroy()")
     }
 }
