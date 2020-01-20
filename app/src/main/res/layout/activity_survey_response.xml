@@ -5,25 +5,12 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="kaist.iclab.abclogger.Utils"/>
         <import type="kaist.iclab.abclogger.ui.Status"/>
-
         <import type="android.view.View"/>
         <variable
             name="viewModel"
             type="kaist.iclab.abclogger.ui.survey.question.SurveyResponseViewModel" />
 
-        <variable
-            name="surveyTitle"
-            type="String" />
-
-        <variable
-            name="surveyMessage"
-            type="String" />
-
-        <variable
-            name="surveyDeliveredTime"
-            type="Long" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -85,7 +72,7 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
-                            android:text="@{surveyTitle}"
+                            android:text="@{viewModel.surveyTitle}"
                             android:textColor="@{viewModel.surveySetting.available ? @color/color_title : @color/color_message}"
                             android:textSize="@dimen/txt_size_title_small"
                             app:layout_constraintStart_toStartOf="parent"
@@ -98,7 +85,7 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
-                            android:text="@{surveyMessage}"
+                            android:text="@{viewModel.surveyMessage}"
                             android:textColor="@color/color_message"
                             android:textSize="@dimen/txt_size_text"
                             app:layout_constraintStart_toStartOf="parent"
@@ -109,7 +96,7 @@
                             isBold="@{viewModel.surveySetting.available}"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="@{Utils.formatSameDayTimeYear(context, surveyDeliveredTime, System.currentTimeMillis())}"
+                            timestamp="@{viewModel.surveyDeliveredTime}"
                             android:textColor="@{viewModel.surveySetting.available ? @color/color_blue : @color/color_message}"
                             android:textSize="@dimen/txt_size_text_small"
                             app:layout_constraintEnd_toEndOf="parent"

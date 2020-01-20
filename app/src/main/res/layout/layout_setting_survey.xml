@@ -1,22 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="@dimen/item_default_vertical_padding"
-    android:paddingLeft="@dimen/item_default_horizontal_padding"
-    android:paddingRight="@dimen/item_default_horizontal_padding">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
-        android:id="@+id/txt_survey_setting_instruction"
+    <data>
+        <variable
+            name="viewModel"
+            type="kaist.iclab.abclogger.collector.survey.SurveySettingViewModel" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="@dimen/item_default_vertical_padding"
-        android:text="@string/setting_survey_collector_instruction"
-        android:textColor="@color/color_message"
-        android:textSize="@dimen/txt_size_text" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/item_default_horizontal_padding"
+        android:paddingTop="@dimen/item_default_vertical_padding"
+        android:paddingRight="@dimen/item_default_horizontal_padding">
 
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/load_progress_bar"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:indeterminate="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/store_progress_bar"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:indeterminate="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/txt_survey_setting_instruction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingBottom="@dimen/item_default_vertical_padding"
+            android:text="@string/setting_survey_collector_instruction"
+            android:textColor="@color/color_message"
+            android:textSize="@dimen/txt_size_text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_add_item"/>
+
+        <ImageButton
+            android:id="@+id/btn_add_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:layout_constraintBottom_toBottomOf="@id/txt_survey_setting_instruction"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/txt_survey_setting_instruction"
+            app:srcCompat="@drawable/baseline_add_black_36" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:layout_constraintTop_toBottomOf="@id/btn_add_item"
+            app:layout_constraintStart_toStartOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

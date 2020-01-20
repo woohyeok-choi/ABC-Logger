@@ -22,6 +22,10 @@ import androidx.work.Constraints
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.Worker
+import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.HttpException
+import com.github.kittinunf.fuel.core.awaitResponseResult
+import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.google.android.material.snackbar.Snackbar
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
@@ -30,72 +34,33 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.log10
 import java.io.Serializable
 
+fun isNetworkAvailable(context: Context): Boolean =
+        (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetwork != null
 
-object Utils {
+fun isNonMeteredNetworkAvailable(context: Context): Boolean =
+        (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).run {
+            (getNetworkCapabilities(activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true) ||
+                    (getNetworkCapabilities(activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true)
+        }
 
-    /**
-     * TODO
-     * Will be moved to sync mamanger
-     */
-    fun isNetworkAvailable(context: Context): Boolean =
-            (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetwork != null
-
-    fun isNonMeteredNetworkAvailable(context: Context): Boolean =
-            (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).run {
-                (getNetworkCapabilities(activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true) ||
-                        (getNetworkCapabilities(activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true)
-            }
-
-    fun formatTimeRange(context: Context, startInMillis: Long, endInMillis: Long): String {
-        return DateUtils.formatDateRange(
-                context, startInMillis, endInMillis, DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_NO_YEAR
-        )
+fun formatSameDayTimeYear(context: Context, then: Long, now: Long): String {
+    val thenCal = GregorianCalendar.getInstance().apply {
+        timeInMillis = then
+    }
+    val nowCal = GregorianCalendar.getInstance().apply {
+        timeInMillis = now
     }
 
-    fun fillButton(button: Button, isEnabled: Boolean, stringRes: Int? = null) {
-        button.isEnabled = isEnabled
-        button.setBackgroundColor(
-                ContextCompat.getColor(button.context, if (isEnabled) R.color.color_button else R.color.color_disabled)
-        )
-        if (stringRes != null) {
-            button.text = button.context.getString(stringRes)
-        }
-    }
+    val isSameDay = thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR) &&
+            thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH) &&
+            thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)
 
-    fun showPermissionDialog(context: Context, permissions: Array<String>, granted: (() -> Unit)? = null, denied: (() -> Unit)? = null) {
-        TedPermission.with(context)
-                .setPermissions(*permissions)
-                .setPermissionListener(object : PermissionListener {
-                    override fun onPermissionGranted() {
-                        granted?.invoke()
-                    }
+    val isSameYear = thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
 
-                    override fun onPermissionDenied(deniedPermissions: MutableList<String>?) {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
-                }).check()
-    }
-
-    @JvmStatic
-    fun formatSameDayTimeYear(context: Context, then: Long, now: Long): String {
-        val thenCal = GregorianCalendar.getInstance().apply {
-            timeInMillis = then
-        }
-        val nowCal = GregorianCalendar.getInstance().apply {
-            timeInMillis = now
-        }
-
-        val isSameDay = thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR) &&
-                thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH) &&
-                thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)
-
-        val isSameYear = thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
-
-        return when {
-            isSameDay -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_TIME)
-            isSameYear -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_DATE)
-            else -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_YEAR)
-        }
+    return when {
+        isSameDay -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_TIME)
+        isSameYear -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_DATE)
+        else -> DateUtils.formatDateTime(context, then, DateUtils.FORMAT_SHOW_YEAR)
     }
 }
 
@@ -339,4 +304,12 @@ fun fillBundleWithArguments(bundle: Bundle, params: Array<out Pair<String, Any?>
             is BooleanArray -> bundle.putBooleanArray(key, value)
         }
     }
+}
+
+suspend fun httpGet(url: String, vararg params: Pair<String, Any?>) : String? {
+    val (_, _, result) =     Fuel.get(url, params.toList()).awaitStringResponseResult()
+    val (response, exception) = result
+    if (exception != null) throw HttpRequestException(exception.message)
+
+    return response
 }

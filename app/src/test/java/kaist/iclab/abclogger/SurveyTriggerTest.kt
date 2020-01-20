@@ -1,5 +1,6 @@
 package kaist.iclab.abclogger
 
+import kaist.iclab.abclogger.collector.survey.DayOfWeek
 import kaist.iclab.abclogger.common.type.DayOfWeek
 import kaist.iclab.abclogger.common.type.HourMin
 import kaist.iclab.abclogger.common.type.HourMinRange

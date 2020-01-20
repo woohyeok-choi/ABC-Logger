@@ -63,18 +63,22 @@
     <string name="ntf_text_sync_failed">Sync failed</string>
 
     <string name="error_general">Unknown error occurs.</string>
-    <string name="error_google_api_exception">Error occurs during signing in a Google account.</string>
-    <string name="error_firebase_auth_invalid_user">This account was disabled.</string>
-    <string name="error_firebase_auth_invalid_credential">Credential was expired.</string>
-    <string name="error_firebase_auth_collision">This account already exists.</string>
-    <string name="error_empty_survey">There is no survey.</string>
-    <string name="error_invalid_survey_format">Invalid survey format.</string>
-    <string name="error_invalid_entity_id">There is no matched survey.</string>
-    <string name="error_permission_denied">Some permissions are denied.</string>
-    <string name="error_not_white_listed">Request for whitelist is denied.</string>
+    <string name="error_google_api_exception">Error occurs during signing in a Google account</string>
+    <string name="error_firebase_auth_invalid_user">This account was disabled</string>
+    <string name="error_firebase_auth_invalid_credential">Credential was expired</string>
+    <string name="error_firebase_auth_collision">This account already exists</string>
+    <string name="error_empty_survey">There is no survey</string>
+    <string name="error_invalid_survey_format">Invalid survey format</string>
+    <string name="error_invalid_entity_id">There is no matched survey</string>
+    <string name="error_permission_denied">Some permissions are denied</string>
+    <string name="error_not_white_listed">Request for whitelist is denied</string>
+    <string name="error_http_error">Error occurs during Http connection</string>
+
+
 
     <string name="dialog_title_permission_request">Permission request</string>
     <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
+    <string name="dialog_title_survey_preview">Preview</string>
 
     <string name="msg_sign_in_success">Welcome</string>
     <string name="msg_auth_password_changed">Password changed.</string>

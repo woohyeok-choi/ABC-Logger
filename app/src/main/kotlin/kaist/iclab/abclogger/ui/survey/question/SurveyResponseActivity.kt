@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.activity_survey_response.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SurveyResponseActivity : BaseAppCompatActivity() {
-    private val viewModel : SurveyResponseViewModel by viewModel()
+    private val viewModel: SurveyResponseViewModel by viewModel()
     private lateinit var binding: ActivitySurveyResponseBinding
     private var reactionTime: Long = -1L
 
@@ -45,10 +45,6 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
         val recyclerViewAdapter = SurveyQuestionListAdapter()
 
         binding.viewModel = viewModel
-        binding.surveyTitle = surveyTitle
-        binding.surveyMessage = surveyMessage
-        binding.surveyDeliveredTime = surveyDeliveredTime
-
         binding.lifecycleOwner = this
 
         binding.recyclerView.apply {
@@ -56,7 +52,7 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
         }
 
         viewModel.loadStatus.observe(this) { status ->
-            when(status.state) {
+            when (status.state) {
                 Status.STATE_LOADING -> binding.loadProgressBar.show()
                 Status.STATE_SUCCESS -> {
                     openOptionsMenu()
@@ -65,7 +61,7 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
                 Status.STATE_FAILURE -> {
                     binding.loadProgressBar.hide()
 
-                    if(status.error is ABCException) {
+                    if (status.error is ABCException) {
                         showSnackBar(binding.root, status.error.stringRes)
                     } else {
                         showSnackBar(binding.root, R.string.error_general)
@@ -75,12 +71,12 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
         }
 
         viewModel.storeStatus.observe(this) { status ->
-            when(status.state) {
+            when (status.state) {
                 Status.STATE_LOADING -> binding.storeProgressBar.show()
                 Status.STATE_SUCCESS -> {
                     binding.storeProgressBar.hide()
 
-                    if(showFromList) {
+                    if (showFromList) {
                         supportFinishAfterTransition()
                     } else {
                         finish()
@@ -88,7 +84,7 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
                 }
                 Status.STATE_FAILURE -> {
                     binding.loadProgressBar.hide()
-                    if(status.error is ABCException) {
+                    if (status.error is ABCException) {
                         showSnackBar(binding.root, status.error.stringRes)
                     } else {
                         showSnackBar(binding.root, R.string.error_general)
@@ -110,30 +106,35 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
             ViewCompat.setTransitionName(binding.txtMessage, sharedViewNameForMessage(entityId))
             ViewCompat.setTransitionName(binding.txtDeliveredTime, sharedViewNameForDeliveredTime(entityId))
             window.allowReturnTransitionOverlap = true
-            window.sharedElementEnterTransition.doOnEnd { viewModel.load(entityId) }
+            window.sharedElementEnterTransition.doOnEnd { load() }
         } else {
-            viewModel.load(entityId)
+            load()
         }
     }
+
+    private fun load() = viewModel.load(
+            title = surveyTitle,
+            message = surveyMessage,
+            deliveredTime = surveyDeliveredTime,
+            entityId = entityId
+    )
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_activity_survey_question, menu)
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         android.R.id.home -> {
             true
         }
         R.id.menu_activity_survey_question_save -> {
-            YesNoDialogFragment.newInstance(
+            YesNoDialogFragment.showDialog(
+                    supportFragmentManager,
                     getString(R.string.dialog_title_save_immutable),
-                    getString(R.string.dialog_message_save_immutable)
-            ).apply {
-                setOnDialogOptionSelectedListener { isYes ->
-                    if (isYes) viewModel.store(entityId, reactionTime, System.currentTimeMillis())
-                }
-            }.show(supportFragmentManager, TAG)
+                    getString(R.string.dialog_message_save_immutable)) { isYes ->
+                if (isYes) viewModel.store(entityId, reactionTime, System.currentTimeMillis())
+            }
             true
         }
         else -> super.onOptionsItemSelected(item)

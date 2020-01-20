@@ -1,16 +1,17 @@
 package kaist.iclab.abclogger.base
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.CallSuper
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
+import androidx.lifecycle.ViewModel
 import kaist.iclab.abclogger.R
 import kotlinx.android.synthetic.main.activity_setting_base.*
-import kotlinx.coroutines.*
 
-abstract class BaseSettingActivity : BaseAppCompatActivity() {
+abstract class BaseSettingActivity<T: ViewDataBinding, VM: ViewModel> : BaseAppCompatActivity() {
     @CallSuper
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_activity_survey_question, menu)
@@ -26,10 +27,12 @@ abstract class BaseSettingActivity : BaseAppCompatActivity() {
             title = getString(titleStringRes)
             setDisplayHomeAsUpEnabled(true)
         }
-        layoutInflater.inflate(contentLayoutRes, container, false)?.let { view ->
-            container.addView(view)
-            initializeSetting()
-        }
+
+        dataBinding = DataBindingUtil.inflate(layoutInflater, contentLayoutRes, container, false)
+        dataBinding.lifecycleOwner = this
+
+        container.addView(dataBinding.root)
+        initialize()
     }
 
     @CallSuper
@@ -40,11 +43,7 @@ abstract class BaseSettingActivity : BaseAppCompatActivity() {
             true
         }
         R.id.menu_activity_settings_save -> {
-            MainScope().launch {
-                val intent = async { generateResultIntent() }
-                setResult(Activity.RESULT_OK, intent.await())
-                finish()
-            }
+            onSaveSelected()
             true
         }
         else -> super.onOptionsItemSelected(item)
@@ -52,7 +51,8 @@ abstract class BaseSettingActivity : BaseAppCompatActivity() {
 
     abstract val contentLayoutRes : Int
     abstract val titleStringRes : Int
-    abstract fun initializeSetting()
-    abstract suspend fun generateResultIntent() : Intent
-
+    abstract fun initialize()
+    abstract fun onSaveSelected()
+    abstract val viewModel : VM
+    lateinit var dataBinding : T
 }

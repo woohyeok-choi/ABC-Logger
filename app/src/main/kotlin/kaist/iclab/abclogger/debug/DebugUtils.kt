@@ -1,7 +1,5 @@
 package kaist.iclab.abclogger.debug
 
-import kaist.iclab.abclogger.Survey
-
 object DebugUtils {
 
 

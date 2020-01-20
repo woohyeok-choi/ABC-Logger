@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="kaist.iclab.abclogger.ui.Status"/>
+        <import type="android.view.View"/>
+
+        <variable
+            name="viewModel"
+            type="kaist.iclab.abclogger.collector.survey.SurveyPreviewViewModel" />
+
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.survey.question.SurveyResponseActivity">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" >
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.core.widget.ContentLoadingProgressBar
+                    android:id="@+id/load_progress_bar"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:indeterminate="true"
+                    android:paddingStart="@dimen/item_space_horizontal"
+                    android:paddingEnd="@dimen/item_space_horizontal" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    error="@{viewModel.loadStatus.error}"
+                    android:visibility="@{viewModel.loadStatus.error == null ? View.GONE : View.VISIBLE}"
+                    android:textSize="@dimen/txt_size_title_small"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="@{viewModel.loadStatus.state == Status.STATE_SUCCESS ? View.VISIBLE : View.GONE}">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?android:selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:paddingLeft="@dimen/item_default_horizontal_padding"
+                        android:paddingRight="@dimen/item_default_horizontal_padding"
+                        android:paddingTop="@dimen/item_default_vertical_padding">
+
+                        <TextView
+                            android:id="@+id/txt_header"
+                            isBold="@{true}"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:text="@{viewModel.survey.title}"
+                            android:textColor="@color/color_title"
+                            android:textSize="@dimen/txt_size_title_small"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/txt_message"
+                            isBold="@{true}"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:text="@{viewModel.survey.message}"
+                            android:textColor="@color/color_message"
+                            android:textSize="@dimen/txt_size_text"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/txt_header" />
+
+                        <TextView
+                            android:id="@+id/txt_delivered_time"
+                            isBold="@{true}"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            timestamp="@{System.currentTimeMillis()}"
+                            android:textColor="@color/color_blue"
+                            android:textSize="@dimen/txt_size_text_small"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/txt_header"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

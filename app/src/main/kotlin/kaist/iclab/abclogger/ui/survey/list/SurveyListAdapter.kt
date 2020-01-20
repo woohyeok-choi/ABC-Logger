@@ -3,14 +3,12 @@ package kaist.iclab.abclogger.ui.survey.list
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kaist.iclab.abclogger.BR
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.SurveyEntity
+import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.databinding.SurveyListItemBinding
 import kaist.iclab.abclogger.ui.survey.sharedViewNameForDeliveredTime
 import kaist.iclab.abclogger.ui.survey.sharedViewNameForMessage

@@ -7,7 +7,7 @@
 
         <variable
             name="question"
-            type="kaist.iclab.abclogger.SurveyQuestion" />
+            type="kaist.iclab.abclogger.collector.survey.Survey.Question" />
 
         <variable
             name="showAltText"

@@ -12,16 +12,6 @@ class GeneralException : ABCException() {
         get() = R.string.error_general
 }
 
-class GoogleSignInException : ABCException() {
-    override val stringRes: Int
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-}
-
-class FirebaseAuthFailureException: ABCException() {
-    override val stringRes: Int
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-}
-
 class EmptySurveyException : ABCException() {
     override val stringRes: Int
         get() = R.string.error_empty_survey
@@ -82,3 +72,7 @@ class FirebaseUserCollisionException : ABCException() {
         get() = R.string.error_firebase_auth_collision
 }
 
+class HttpRequestException(message: String?) : ABCException(message) {
+    override val stringRes: Int
+        get() = R.string.error_http_error
+}

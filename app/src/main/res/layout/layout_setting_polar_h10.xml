@@ -1,181 +1,187 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="@dimen/item_default_horizontal_padding"
-    android:paddingRight="@dimen/item_default_horizontal_padding">
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="viewModel"
+            type="kaist.iclab.abclogger.collector.sensor.PolarH10ViewModel" />
+    </data>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingTop="@dimen/item_default_vertical_padding">
+        android:paddingLeft="@dimen/item_default_horizontal_padding"
+        android:paddingRight="@dimen/item_default_horizontal_padding">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/item_default_vertical_padding"
-            android:text="@string/setting_polar_h10_collector_instruction_device_id"
-            android:textColor="@color/color_message"
-            android:textSize="@dimen/txt_size_text" />
+            android:orientation="vertical"
+            android:paddingTop="@dimen/item_default_vertical_padding">
 
-        <EditText
-            android:id="@+id/edt_device_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/setting_polar_h10_collector_connect_hint"
-            android:inputType="text"
-            android:textColor="@color/color_title"
-            android:textSize="@dimen/txt_size_text" />
-
-        <Button
-            android:id="@+id/btn_connect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/setting_polar_h10_collector_connect"
-            android:background="@color/color_primary"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/item_default_vertical_padding">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/item_default_vertical_padding"
-            android:text="@string/setting_polar_h10_collector_instruction_state"
-            android:textColor="@color/color_message"
-            android:textSize="@dimen/txt_size_text" />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <androidx.constraintlayout.widget.Guideline
-                android:layout_width="wrap_content"
+            <TextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/guideline"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent="0.3" />
-
-            <TextView
-                android:id="@+id/txt_label_connection_state"
-                android:text="@string/setting_polar_h10_collector_connection_state"
-                android:textColor="@color/color_title"
-                android:textSize="@dimen/txt_size_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toEndOf="@id/guideline"
-                android:paddingTop="@dimen/item_default_vertical_padding"
                 android:paddingBottom="@dimen/item_default_vertical_padding"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
-
-            <TextView
-                android:id="@+id/txt_connection_state"
-                android:text="@string/setting_polar_h10_collector_connection_state"
+                android:text="@string/setting_polar_h10_collector_instruction_device_id"
                 android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_text"
-                android:gravity="center_horizontal"
-                android:paddingTop="@dimen/item_default_vertical_padding"
-                android:paddingBottom="@dimen/item_default_vertical_padding"
-                app:layout_constraintStart_toEndOf="@id/guideline"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+                android:textSize="@dimen/txt_size_text" />
 
-            <TextView
-                android:id="@+id/txt_label_battery_state"
-                android:text="@string/setting_polar_h10_collector_battery"
+            <EditText
+                android:id="@+id/edt_device_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/setting_polar_h10_collector_connect_hint"
+                android:text="@={viewModel.deviceId}"
+                android:inputType="text"
                 android:textColor="@color/color_title"
-                android:textSize="@dimen/txt_size_text"
-                android:paddingTop="@dimen/item_default_vertical_padding"
-                android:paddingBottom="@dimen/item_default_vertical_padding"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/txt_label_connection_state"
-                app:layout_constraintEnd_toEndOf="@id/guideline"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+                android:textSize="@dimen/txt_size_text" />
+
+            <Button
+                android:id="@+id/btn_connect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/color_primary"
+                android:text="@string/setting_polar_h10_collector_connect" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/item_default_vertical_padding">
 
             <TextView
-                android:id="@+id/txt_battery_state"
-                android:text="@string/setting_polar_h10_collector_connection_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/item_default_vertical_padding"
+                android:text="@string/setting_polar_h10_collector_instruction_state"
                 android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_text"
-                android:gravity="center_horizontal"
-                android:paddingTop="@dimen/item_default_vertical_padding"
-                android:paddingBottom="@dimen/item_default_vertical_padding"
-                app:layout_constraintStart_toEndOf="@id/guideline"
-                app:layout_constraintTop_toBottomOf="@id/txt_connection_state"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+                android:textSize="@dimen/txt_size_text" />
 
-            <TextView
-                android:id="@+id/txt_label_heart_rate"
-                android:text="@string/setting_polar_h10_collector_heart_rate"
-                android:textColor="@color/color_title"
-                android:textSize="@dimen/txt_size_text"
-                android:paddingTop="@dimen/item_default_vertical_padding"
-                android:paddingBottom="@dimen/item_default_vertical_padding"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/txt_label_battery_state"
-                app:layout_constraintEnd_toEndOf="@id/guideline"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/txt_heart_rate"
-                android:text="@string/setting_polar_h10_collector_connection_state"
-                android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_text"
-                android:gravity="center_horizontal"
-                android:paddingTop="@dimen/item_default_vertical_padding"
-                android:paddingBottom="@dimen/item_default_vertical_padding"
-                app:layout_constraintStart_toEndOf="@id/guideline"
-                app:layout_constraintTop_toBottomOf="@id/txt_battery_state"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.3" />
 
-            <TextView
-                android:id="@+id/txt_label_ecg"
-                android:text="@string/setting_polar_h10_collector_ecg"
-                android:textColor="@color/color_title"
-                android:textSize="@dimen/txt_size_text"
-                android:paddingTop="@dimen/item_default_vertical_padding"
-                android:paddingBottom="@dimen/item_default_vertical_padding"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/txt_label_heart_rate"
-                app:layout_constraintEnd_toEndOf="@id/guideline"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/txt_label_connection_state"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@string/setting_polar_h10_collector_connection_state"
+                    android:textColor="@color/color_title"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="@id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/txt_ecg"
-                android:text="@string/setting_polar_h10_collector_connection_state"
-                android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_text"
-                android:gravity="center_horizontal"
-                android:paddingTop="@dimen/item_default_vertical_padding"
-                android:paddingBottom="@dimen/item_default_vertical_padding"
-                app:layout_constraintStart_toEndOf="@id/guideline"
-                app:layout_constraintTop_toBottomOf="@id/txt_heart_rate"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/txt_connection_state"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@{viewModel.state}"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/guideline"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/txt_label_battery_state"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@string/setting_polar_h10_collector_battery"
+                    android:textColor="@color/color_title"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="@id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/txt_label_connection_state" />
 
+                <TextView
+                    android:id="@+id/txt_battery_state"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@{viewModel.battery}"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/guideline"
+                    app:layout_constraintTop_toBottomOf="@id/txt_connection_state" />
+
+                <TextView
+                    android:id="@+id/txt_label_heart_rate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@string/setting_polar_h10_collector_heart_rate"
+                    android:textColor="@color/color_title"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="@id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/txt_label_battery_state" />
+
+                <TextView
+                    android:id="@+id/txt_heart_rate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@{viewModel.heartRate}"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/guideline"
+                    app:layout_constraintTop_toBottomOf="@id/txt_battery_state" />
+
+                <TextView
+                    android:id="@+id/txt_label_ecg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@string/setting_polar_h10_collector_ecg"
+                    android:textColor="@color/color_title"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="@id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/txt_label_heart_rate" />
+
+                <TextView
+                    android:id="@+id/txt_ecg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@{viewModel.ecg}"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/guideline"
+                    app:layout_constraintTop_toBottomOf="@id/txt_heart_rate" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
     </LinearLayout>
-
-
-
-</LinearLayout>
+</layout>

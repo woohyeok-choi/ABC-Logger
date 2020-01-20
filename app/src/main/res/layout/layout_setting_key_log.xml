@@ -1,77 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingLeft="@dimen/item_default_horizontal_padding"
-    android:paddingRight="@dimen/item_default_horizontal_padding">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="viewModel"
+            type="kaist.iclab.abclogger.collector.keylog.KeyLogViewModel" />
+    </data>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingTop="@dimen/item_default_vertical_padding">
+        android:paddingLeft="@dimen/item_default_horizontal_padding"
+        android:paddingRight="@dimen/item_default_horizontal_padding">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/item_default_vertical_padding"
-            android:text="@string/setting_key_log_collector_instruction_keyboard_type"
-            android:textColor="@color/color_message"
-            android:textSize="@dimen/txt_size_text" />
+            android:orientation="vertical"
+            android:paddingTop="@dimen/item_default_vertical_padding">
 
-        <RadioGroup
-            android:id="@+id/radio_group"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/item_default_vertical_padding"
+                android:text="@string/setting_key_log_collector_instruction_keyboard_type"
+                android:textColor="@color/color_message"
+                android:textSize="@dimen/txt_size_text" />
+
+            <RadioGroup
+                android:id="@+id/radio_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checkedButton="@{viewModel.viewId}"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/radio_btn_chunjiin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_key_log_collector_chunjiin"
+                    android:textColor="@color/color_title"
+                    android:textSize="@dimen/txt_size_text" />
+
+                <RadioButton
+                    android:id="@+id/radio_btn_qwerty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_key_log_collector_qwerty"
+                    android:textColor="@color/color_title"
+                    android:textSize="@dimen/txt_size_text" />
+
+                <RadioButton
+                    android:id="@+id/radio_btn_others"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_key_log_collector_others"
+                    android:textColor="@color/color_title"
+                    android:textSize="@dimen/txt_size_text" />
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingTop="@dimen/item_default_vertical_padding">
 
-            <RadioButton
-                android:id="@+id/radio_btn_chunjiin"
+            <TextView
+                android:id="@+id/txt_key_log_setting_instruction"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/setting_key_log_collector_chunjiin"
-                android:textColor="@color/color_title"
-                android:textSize="@dimen/txt_size_text" />
+                android:paddingBottom="@dimen/item_default_vertical_padding"
+                android:text="@string/setting_key_log_collector_instruction_accessibility"
+                android:textColor="@color/color_message"
+                android:textSize="@dimen/txt_size_text"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
 
-            <RadioButton
-                android:id="@+id/radio_btn_qwerty"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/txt_key_log_setting_state"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/setting_key_log_collector_qwerty"
-                android:textColor="@color/color_title"
-                android:textSize="@dimen/txt_size_text" />
+                android:paddingBottom="@dimen/item_default_vertical_padding"
+                android:text="@{viewModel.isAvailable() ? @string/general_available : @string/general_unavailable}"
+                android:textColor="@{viewModel.isAvailable() ? @color/color_blue : @color/color_accent}"
+                android:textSize="@dimen/txt_size_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/guideline"
+                app:layout_constraintBaseline_toBaselineOf="@id/btn_accessibility_setting"/>
 
-            <RadioButton
-                android:id="@+id/radio_btn_others"
-                android:layout_width="match_parent"
+            <Button
+                android:id="@+id/btn_accessibility_setting"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/setting_key_log_collector_others"
-                android:textColor="@color/color_title"
-                android:textSize="@dimen/txt_size_text" />
-        </RadioGroup>
+                android:background="@color/color_primary"
+                android:text="@string/general_touch_to_set"
+                app:layout_constraintStart_toEndOf="@id/txt_key_log_setting_state"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/txt_key_log_setting_instruction"/>
 
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.6" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/item_default_vertical_padding">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/item_default_vertical_padding"
-            android:text="@string/setting_key_log_collector_instruction_accessibility"
-            android:textColor="@color/color_message"
-            android:textSize="@dimen/txt_size_text" />
-
-        <Button
-            android:id="@+id/btn_accessibility_setting"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/color_primary"/>
-    </LinearLayout>
-</LinearLayout>
+</layout>
 

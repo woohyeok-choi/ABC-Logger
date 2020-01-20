@@ -22,7 +22,7 @@ object SyncManager {
     private const val TWELVE_HOURS_IN_MS: Long = 1000 * 60 * 60 * 12
     private const val SIX_HOURS_IN_MS: Long = 1000 * 60 * 60 * 6
     private const val THREE_HOURS_IN_MS: Long = 1000 * 60 * 60 * 3
-    private const val SERVICE_NAME_ABCLOGGER = "kaist.iclab.abclogger.collector.NotificationCollector"
+    private const val SERVICE_NAME_ABCLOGGER = "kaist.iclab.abclogger.collector.notification.NotificationCollector"
     private const val SERVICE_NAME_ABCLOGGER2 = "kaist.iclab.abclogger.background.CollectorService"
     private const val SERVICE_NAME_MSBAND = "iclab.kaist.ac.kr.msband_logger.Service.AccessService"
     private const val SERVICE_NAME_POLAR = "fi.polar.beat.service.ExerciseService"

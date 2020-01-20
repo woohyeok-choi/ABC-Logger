@@ -3,11 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
-        <import type="kaist.iclab.abclogger.Utils"/>
 
         <variable
             name="entity"
-            type="kaist.iclab.abclogger.SurveyEntity"/>
+            type="kaist.iclab.abclogger.collector.survey.SurveyEntity"/>
 
         <variable
             name="isAvailable"
@@ -56,7 +55,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="@dimen/txt_size_text_small"
-            android:text="@{Utils.formatSameDayTimeYear(context, entity.deliveredTime, System.currentTimeMillis())}"
+            timestamp="@{entity.deliveredTime}"
             app:layout_constraintStart_toEndOf="@id/txt_header"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

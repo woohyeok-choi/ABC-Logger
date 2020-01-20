@@ -6,7 +6,7 @@ import androidx.paging.PositionalDataSource
 import io.objectbox.query.Query
 import io.objectbox.reactive.DataObserver
 import kaist.iclab.abclogger.EmptySurveyException
-import kaist.iclab.abclogger.SurveyEntity
+import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

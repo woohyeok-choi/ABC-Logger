@@ -22,3 +22,10 @@ fun setError(view: TextView, error: Exception?) {
 fun isBold(view: TextView, isBold: Boolean) {
     view.setTypeface(null, if(isBold) Typeface.BOLD else Typeface.NORMAL)
 }
+
+@BindingAdapter("timestamp")
+fun setFormattedTime(view: TextView, timestamp: Long?) {
+    timestamp?.let { then ->
+        view.text = formatSameDayTimeYear(view.context, then, System.currentTimeMillis())
+    }
+}

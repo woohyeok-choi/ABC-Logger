@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
-        <variable
-            name="viewModel"
-            type="kaist.iclab.abclogger.ui.survey.list.SurveyListViewModel" />
         <import type="kaist.iclab.abclogger.ui.Status"/>
         <import type="android.view.View"/>
 
+        <variable
+            name="viewModel"
+            type="kaist.iclab.abclogger.ui.survey.list.SurveyListViewModel" />
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

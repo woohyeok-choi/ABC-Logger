@@ -1,6 +1,26 @@
 package kaist.iclab.abclogger
 
-import kaist.iclab.abclogger.collector.*
+import kaist.iclab.abclogger.collector.activity.ActivityCollector
+import kaist.iclab.abclogger.collector.appusage.AppUsageCollector
+import kaist.iclab.abclogger.collector.battery.BatteryCollector
+import kaist.iclab.abclogger.collector.bluetooth.BluetoothCollector
+import kaist.iclab.abclogger.collector.call.CallLogCollector
+import kaist.iclab.abclogger.collector.event.DeviceEventCollector
+import kaist.iclab.abclogger.collector.install.InstalledAppCollector
+import kaist.iclab.abclogger.collector.keylog.KeyLogCollector
+import kaist.iclab.abclogger.collector.keylog.KeyLogViewModel
+import kaist.iclab.abclogger.collector.location.LocationCollector
+import kaist.iclab.abclogger.collector.media.MediaCollector
+import kaist.iclab.abclogger.collector.message.MessageCollector
+import kaist.iclab.abclogger.collector.notification.NotificationCollector
+import kaist.iclab.abclogger.collector.physicalstatus.PhysicalStatusCollector
+import kaist.iclab.abclogger.collector.sensor.PolarH10Collector
+import kaist.iclab.abclogger.collector.sensor.PolarH10ViewModel
+import kaist.iclab.abclogger.collector.survey.SurveyCollector
+import kaist.iclab.abclogger.collector.survey.SurveyPreviewViewModel
+import kaist.iclab.abclogger.collector.survey.SurveySettingViewModel
+import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
+import kaist.iclab.abclogger.collector.wifi.WifiCollector
 import kaist.iclab.abclogger.ui.config.ConfigViewModel
 import kaist.iclab.abclogger.ui.survey.list.SurveyListViewModel
 import kaist.iclab.abclogger.ui.survey.question.SurveyResponseViewModel
@@ -37,5 +57,8 @@ val viewModelModules = module {
     viewModel { ConfigViewModel(androidContext(), get()) }
     viewModel { SurveyListViewModel() }
     viewModel { SurveyResponseViewModel() }
-    viewModel { PolarH10Collector.PolarViewModel(androidContext()) }
+    viewModel { PolarH10ViewModel(androidContext()) }
+    viewModel { SurveySettingViewModel() }
+    viewModel { SurveyPreviewViewModel() }
+    viewModel { KeyLogViewModel(get()) }
 }

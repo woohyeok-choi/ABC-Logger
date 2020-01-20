@@ -3,23 +3,21 @@ package kaist.iclab.abclogger.ui.survey.question
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.Survey
-import kaist.iclab.abclogger.SurveyQuestion
+import kaist.iclab.abclogger.collector.survey.Survey
 import kaist.iclab.abclogger.databinding.QuestionCheckBoxItemBinding
 import kaist.iclab.abclogger.databinding.QuestionFreeTextItemBinding
 import kaist.iclab.abclogger.databinding.QuestionRadioButtonItemBinding
 import kaist.iclab.abclogger.databinding.QuestionSliderItemBinding
 
 class SurveyQuestionListAdapter : RecyclerView.Adapter<SurveyQuestionListAdapter.ViewHolder>() {
-    private var questions: Array<SurveyQuestion> = arrayOf()
+    private var questions: Array<Survey.Question> = arrayOf()
     private var isAvailable: Boolean = true
     private var showAltText: Boolean = false
 
-    fun bindData(questions: Array<SurveyQuestion>, isAvailable: Boolean, showAltText: Boolean) {
+    fun bindData(questions: Array<Survey.Question>, isAvailable: Boolean, showAltText: Boolean) {
         this.questions = questions
         this.isAvailable = isAvailable
         this.showAltText = showAltText
@@ -67,11 +65,11 @@ class SurveyQuestionListAdapter : RecyclerView.Adapter<SurveyQuestionListAdapter
     override fun getItemCount(): Int = questions.size
 
     abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        abstract fun onBind(item: SurveyQuestion? = null, isAvailable: Boolean, showAltText: Boolean)
+        abstract fun onBind(item: Survey.Question? = null, isAvailable: Boolean, showAltText: Boolean)
     }
 
     class FreeTextItemViewHolder(private val binding: QuestionFreeTextItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(item: SurveyQuestion?, isAvailable: Boolean, showAltText: Boolean) {
+        override fun onBind(item: Survey.Question?, isAvailable: Boolean, showAltText: Boolean) {
             item ?: return
 
             binding.isAvailable = isAvailable
@@ -81,7 +79,7 @@ class SurveyQuestionListAdapter : RecyclerView.Adapter<SurveyQuestionListAdapter
     }
 
     class RadioButtonItemViewHolder(private val binding: QuestionRadioButtonItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(item: SurveyQuestion?, isAvailable: Boolean, showAltText: Boolean) {
+        override fun onBind(item: Survey.Question?, isAvailable: Boolean, showAltText: Boolean) {
             item ?: return
 
             binding.isAvailable = isAvailable
@@ -91,7 +89,7 @@ class SurveyQuestionListAdapter : RecyclerView.Adapter<SurveyQuestionListAdapter
     }
 
     class CheckBoxItemViewHolder(private val binding: QuestionCheckBoxItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(item: SurveyQuestion?, isAvailable: Boolean, showAltText: Boolean) {
+        override fun onBind(item: Survey.Question?, isAvailable: Boolean, showAltText: Boolean) {
             item ?: return
 
             binding.isAvailable = isAvailable
@@ -101,7 +99,7 @@ class SurveyQuestionListAdapter : RecyclerView.Adapter<SurveyQuestionListAdapter
     }
 
     class SliderItemViewHolder(private val binding: QuestionSliderItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(item: SurveyQuestion?, isAvailable: Boolean, showAltText: Boolean) {
+        override fun onBind(item: Survey.Question?, isAvailable: Boolean, showAltText: Boolean) {
             item ?: return
 
             binding.isAvailable = isAvailable
