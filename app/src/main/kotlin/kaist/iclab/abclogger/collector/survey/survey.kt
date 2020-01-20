@@ -1,9 +1,8 @@
-package kaist.iclab.abclogger
+package kaist.iclab.abclogger.collector.survey
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-
 import java.util.*
 
 enum class DayOfWeek(val id: Int) {
@@ -40,43 +39,6 @@ enum class DayOfWeek(val id: Int) {
 
 data class Schedule(val dayOfWeek: DayOfWeek, val hour: Int, val minute: Int)
 
-data class SurveyQuestion(
-        val type: String,
-        val shouldAnswer: Boolean = true,
-        val showEtc: Boolean = false,
-        val text: String,
-        val altText: String = "",
-        val options: Array<String> = arrayOf(),
-        var responses: Array<String> = arrayOf()
-) {
-    override fun hashCode(): Int {
-        var result = type.hashCode()
-        result = 31 * result + shouldAnswer.hashCode()
-        result = 31 * result + text.hashCode()
-        result = 31 * result + (options.contentHashCode())
-        result = 31 * result + (responses.contentHashCode())
-        result = 31 * result + (altText.hashCode())
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as SurveyQuestion
-
-        if (type != other.type) return false
-        if (shouldAnswer != other.shouldAnswer) return false
-        if (showEtc != other.showEtc) return false
-        if (text != other.text) return false
-        if (altText != other.altText) return false
-        if (!options.contentEquals(other.options)) return false
-        if (!responses.contentEquals(other.responses)) return false
-
-        return true
-    }
-}
-
 open class Survey(
         val type: String,
         open val title: String = "",
@@ -84,8 +46,45 @@ open class Survey(
         open val instruction: String = "",
         open val timeoutSec: Long = -1,
         open val timeoutPolicy: String = "",
-        open var questions: Array<SurveyQuestion> = arrayOf()
+        open var questions: Array<Question> = arrayOf()
 ) {
+    data class Question(
+            val type: String,
+            val shouldAnswer: Boolean = true,
+            val showEtc: Boolean = false,
+            val text: String,
+            val altText: String = "",
+            val options: Array<String> = arrayOf(),
+            var responses: Array<String> = arrayOf()
+    ) {
+        override fun hashCode(): Int {
+            var result = type.hashCode()
+            result = 31 * result + shouldAnswer.hashCode()
+            result = 31 * result + text.hashCode()
+            result = 31 * result + (options.contentHashCode())
+            result = 31 * result + (responses.contentHashCode())
+            result = 31 * result + (altText.hashCode())
+            return result
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Question
+
+            if (type != other.type) return false
+            if (shouldAnswer != other.shouldAnswer) return false
+            if (showEtc != other.showEtc) return false
+            if (text != other.text) return false
+            if (altText != other.altText) return false
+            if (!options.contentEquals(other.options)) return false
+            if (!responses.contentEquals(other.responses)) return false
+
+            return true
+        }
+    }
+
     companion object {
         const val TIMEOUT_ALT_TEXT = "ALT_TEXT"
         const val TIMEOUT_DISABLED = "DISABLED"
@@ -109,7 +108,7 @@ open class Survey(
             ).add(KotlinJsonAdapterFactory()).build()
         }
 
-        fun <T : Survey> fromJson(jsonString: String) = moshi.adapter(Survey::class.java).fromJson(jsonString)
+        fun fromJson(jsonString: String) = moshi.adapter(Survey::class.java).fromJson(jsonString)
     }
 
     fun toJson() = moshi.adapter(Survey::class.java).toJson(this)
@@ -121,7 +120,7 @@ data class IntervalBasedSurvey(
         override val instruction: String,
         override val timeoutSec: Long,
         override val timeoutPolicy: String,
-        override var questions: Array<SurveyQuestion>,
+        override var questions: Array<Question>,
         val initialDelaySec: Long = -1,
         val intervalSec: Long = -1,
         val flexIntervalSec: Long = -1,
@@ -181,7 +180,7 @@ data class EventBasedSurvey(
         override val instruction: String,
         override val timeoutSec: Long,
         override val timeoutPolicy: String,
-        override var questions: Array<SurveyQuestion>,
+        override var questions: Array<Question>,
         val triggerEvents: Set<String> = setOf(),
         val cancelEvents: Set<String> = setOf(),
         val delayAfterTriggerEventSec: Long = -1,
@@ -245,7 +244,7 @@ data class ScheduleBasedSurvey(
         override val instruction: String,
         override val timeoutSec: Long,
         override val timeoutPolicy: String,
-        override var questions: Array<SurveyQuestion>,
+        override var questions: Array<Question>,
         val schedules: List<Schedule> = listOf()
 ) : Survey(TYPE_SCHEDULE, title, message, instruction, timeoutSec, timeoutPolicy, questions) {
 
