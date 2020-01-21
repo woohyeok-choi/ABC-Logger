@@ -11,6 +11,10 @@ import io.objectbox.annotation.Index
 import io.objectbox.annotation.Transient
 import io.objectbox.kotlin.boxFor
 import kaist.iclab.abclogger.collector.MyObjectBox
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
 
@@ -59,6 +63,38 @@ fun <T : Base> T.fillBaseInfo(timeMillis: Long): T {
 }
 
 
+inline fun <reified T : Base> putEntitySync(entity: T?): Long? {
+    if (BuildConfig.DEBUG) AppLog.d(any = entity)
+
+    return entity?.let { e -> ObjBox.boxFor<T>().put(e) }
+}
+
+inline fun <reified T : Base> putEntitySync(entities: Collection<T>?) {
+    if (BuildConfig.DEBUG) AppLog.d(any = entities)
+
+    if(entities?.isNotEmpty() == true) ObjBox.boxFor<T>().put(entities)
+}
+
+inline fun <reified T : Base> putEntity(entity: T?) {
+    if (BuildConfig.DEBUG) AppLog.d(any = entity)
+
+    entity?.let { e ->
+        GlobalScope.launch(Dispatchers.IO) {
+            ObjBox.boxFor<T>().put(e)
+        }
+    }
+}
+
+
+inline fun <reified T : Base> putEntity(entities: Collection<T>?) {
+    if (BuildConfig.DEBUG) AppLog.d(any = entities)
+
+    if (entities?.isNotEmpty() == true) {
+        GlobalScope.launch(Dispatchers.IO) {
+            ObjBox.boxFor<T>().put(entities)
+        }
+    }
+}
 
 
 

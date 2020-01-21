@@ -5,6 +5,7 @@ import androidx.lifecycle.observe
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingSurveyBinding
+import kaist.iclab.abclogger.showToast
 import kaist.iclab.abclogger.ui.Status
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -40,6 +41,10 @@ class SurveySettingActivity : BaseSettingActivity<LayoutSettingSurveyBinding, Su
                     dataBinding.storeProgressBar.hide()
                     setResult(Activity.RESULT_OK)
                     finish()
+                }
+                Status.STATE_FAILURE -> {
+                    dataBinding.storeProgressBar.hide()
+                    showToast(status.error, false)
                 }
                 else -> dataBinding.storeProgressBar.hide()
             }

@@ -6,8 +6,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.collector.putEntity
 import kaist.iclab.abclogger.fillBaseInfo
+import kaist.iclab.abclogger.putEntity
+import kaist.iclab.abclogger.safeRegisterReceiver
+import kaist.iclab.abclogger.safeUnregisterReceiver
 
 class BatteryCollector (val context: Context) : BaseCollector {
     private val receiver : BroadcastReceiver by lazy {
@@ -55,17 +57,15 @@ class BatteryCollector (val context: Context) : BaseCollector {
         addAction(Intent.ACTION_BATTERY_CHANGED)
     }
 
-    override fun onStart() {
-        context.registerReceiver(receiver, filter)
+    override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, filter)
     }
 
-    override fun onStop() {
-        context.unregisterReceiver(receiver)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
     }
 
     override fun checkAvailability(): Boolean = true
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf()

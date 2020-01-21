@@ -1,6 +1,7 @@
 package kaist.iclab.abclogger.collector.sensor
 
 import android.app.Activity
+import kaist.iclab.abclogger.CollectorPrefs
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingPolarH10Binding
@@ -28,10 +29,8 @@ class PolarH10SettingActivity : BaseSettingActivity<LayoutSettingPolarH10Binding
     }
 
     override fun onSaveSelected() {
-        val intent = extraIntentFor(
-                PolarH10Collector.EXTRA_POLAR_H10_DEVICE_ID to viewModel.deviceId
-        )
-        setResult(Activity.RESULT_OK, intent)
+        CollectorPrefs.polarH10DeviceId = viewModel.deviceId.value ?: ""
+        setResult(Activity.RESULT_OK)
         finish()
     }
 }

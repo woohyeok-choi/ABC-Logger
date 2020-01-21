@@ -11,7 +11,7 @@ import android.net.wifi.WifiManager
 import android.provider.Settings
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.collector.putEntity
+import java.util.concurrent.TimeUnit
 
 class WifiCollector(val context: Context) : BaseCollector {
     private val wifiManager: WifiManager by lazy {
@@ -52,26 +52,24 @@ class WifiCollector(val context: Context) : BaseCollector {
         addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         context.registerReceiver(receiver, filter)
 
         alarmManager.cancel(intent)
         alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP,
-                System.currentTimeMillis() + 1000,
-                5 * 60 * 1000,
+                System.currentTimeMillis() + 5000,
+                TimeUnit.MINUTES.toMillis(5),
                 intent
         )
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         context.unregisterReceiver(receiver)
         alarmManager.cancel(intent)
     }
 
     override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf(

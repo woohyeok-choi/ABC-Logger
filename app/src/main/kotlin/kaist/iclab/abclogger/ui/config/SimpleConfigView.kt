@@ -20,6 +20,7 @@ class SimpleConfigView (context: Context, attrs: AttributeSet?, styleRes: Int) :
 
     constructor(context: Context, attrs: AttributeSet?): this(context, attrs, 0)
     constructor(context: Context): this(context, null, 0)
+
     private val headerTextView: TextView
     private val descriptionTextView: TextView
 
@@ -74,18 +75,24 @@ class SimpleConfigView (context: Context, attrs: AttributeSet?, styleRes: Int) :
     var header : String
         get() = headerTextView.text.toString()
         set(value) {
+            headerTextView.visibility = if(value.isBlank()) View.GONE else View.VISIBLE
             headerTextView.text = value
         }
 
     var description : String
         get() = descriptionTextView.text.toString()
         set(value) {
+            descriptionTextView.visibility = if(value.isBlank()) View.GONE else View.VISIBLE
             descriptionTextView.text = value
         }
 }
 
-@BindingAdapter("header", "description")
-fun setSimpleConfig(view: SimpleConfigView, header: String?, description: String?) {
+@BindingAdapter("header")
+fun setSimpleConfigViewHeader(view: SimpleConfigView, header: String?) {
     view.header = header ?: ""
+}
+
+@BindingAdapter("description")
+fun setSimpleConfigDescription(view: SimpleConfigView, description: String?) {
     view.description = description ?: ""
 }

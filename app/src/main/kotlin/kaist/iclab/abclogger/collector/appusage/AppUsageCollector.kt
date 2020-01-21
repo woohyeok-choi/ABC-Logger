@@ -18,8 +18,6 @@ import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.collector.getApplicationName
 import kaist.iclab.abclogger.collector.isSystemApp
 import kaist.iclab.abclogger.collector.isUpdatedSystemApp
-import kaist.iclab.abclogger.collector.putEntity
-
 
 class AppUsageCollector(val context: Context) : BaseCollector {
     private val usageStatManager: UsageStatsManager by lazy {
@@ -99,7 +97,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         val currentTime = System.currentTimeMillis()
         val threeHour: Long = 1000 * 60 * 60 * 3
 
@@ -110,19 +108,17 @@ class AppUsageCollector(val context: Context) : BaseCollector {
             CollectorPrefs.lastAccessTimeAppUsage + threeHour
         }
 
-        context.registerReceiver(receiver, filter)
+        context.safeRegisterReceiver(receiver, filter)
 
         alarmManager.cancel(intent)
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime, threeHour, intent)
     }
 
-    override fun onStop() {
-        context.unregisterReceiver(receiver)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
 
         alarmManager.cancel(intent)
     }
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf()

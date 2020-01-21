@@ -12,7 +12,6 @@ import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.collector.getApplicationName
 import kaist.iclab.abclogger.collector.isSystemApp
 import kaist.iclab.abclogger.collector.isUpdatedSystemApp
-import kaist.iclab.abclogger.collector.putEntity
 import java.util.concurrent.TimeUnit
 
 class InstalledAppCollector (val context: Context) : BaseCollector {
@@ -58,7 +57,7 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
         addAction(ACTION_RETRIEVE_PACKAGES)
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         val currentTime = System.currentTimeMillis()
         val halfDayHour : Long = TimeUnit.HOURS.toMillis(12)
 
@@ -69,7 +68,7 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
             CollectorPrefs.lastAccessTimeInstalledApp + halfDayHour
         }
 
-        context.registerReceiver(receiver, filter)
+        context.safeRegisterReceiver(receiver, filter)
 
         alarmManager.cancel(intent)
         alarmManager.setRepeating(
@@ -80,15 +79,13 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
         )
     }
 
-    override fun onStop() {
-        context.unregisterReceiver(receiver)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
 
         alarmManager.cancel(intent)
     }
 
     override fun checkAvailability(): Boolean = true
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf()

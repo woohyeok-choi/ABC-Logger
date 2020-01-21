@@ -60,12 +60,7 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
                 }
                 Status.STATE_FAILURE -> {
                     binding.loadProgressBar.hide()
-
-                    if (status.error is ABCException) {
-                        showSnackBar(binding.root, status.error.stringRes)
-                    } else {
-                        showSnackBar(binding.root, R.string.error_general)
-                    }
+                    showToast(status.error, false)
                 }
             }
         }

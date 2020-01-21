@@ -47,9 +47,24 @@ val collectorModules = module {
     single(createdAtStart = false) { SurveyCollector(androidContext()) }
     single(createdAtStart = false) { WifiCollector(androidContext()) }
     single(createdAtStart = false) {
-        ABC(get(), get(), get(), get(), get(), get(), get(), get(), get(),
-                get(), get(), get(), get(), get(), get(), get(), get()
-        )
+        ABCLogger(
+                get<ActivityCollector>(),
+                get<AppUsageCollector>(),
+                get<BatteryCollector>(),
+                get<BluetoothCollector>(),
+                get<KeyLogCollector>(),
+                get<CallLogCollector>(),
+                get<DataTrafficCollector>(),
+                get<DeviceEventCollector>(),
+                get<InstalledAppCollector>(),
+                get<LocationCollector>(),
+                get<MediaCollector>(),
+                get<MessageCollector>(),
+                get<NotificationCollector>(),
+                get<PhysicalStatusCollector>(),
+                get<PolarH10Collector>(),
+                get<SurveyCollector>(),
+                get<WifiCollector>())
     }
 }
 

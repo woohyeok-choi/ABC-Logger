@@ -8,8 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.observe
-import kaist.iclab.abclogger.BuildConfig
-import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.databinding.FragmentSurveyPreviewBinding
 import kaist.iclab.abclogger.ui.Status
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -46,7 +45,11 @@ class SurveyPreviewDialogFragment : DialogFragment() {
         viewModel.loadStatus.observe(this) { status ->
             when(status.state) {
                 Status.STATE_LOADING -> dataBinding.loadProgressBar.show()
-                else -> dataBinding.loadProgressBar.hide()
+                Status.STATE_SUCCESS -> dataBinding.loadProgressBar.hide()
+                Status.STATE_FAILURE -> {
+                    dataBinding.loadProgressBar.hide()
+                    showToast(status.error, false)
+                }
             }
         }
 

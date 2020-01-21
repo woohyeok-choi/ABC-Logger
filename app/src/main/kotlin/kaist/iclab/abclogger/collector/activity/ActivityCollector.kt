@@ -13,7 +13,6 @@ import android.provider.Settings
 import com.google.android.gms.location.*
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.collector.putEntity
 
 class ActivityCollector(val context: Context) : BaseCollector {
     private fun activityTypeToString(typeInt: Int) = when (typeInt) {
@@ -143,15 +142,15 @@ class ActivityCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun onStart() {
-        context.registerReceiver(receiver, filter)
+    override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, filter)
 
         client.requestActivityUpdates(1000 * 15, activityIntent)
         client.requestActivityTransitionUpdates(transitionRequest, activityTransitionIntent)
     }
 
-    override fun onStop() {
-        context.unregisterReceiver(receiver)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
 
         client.removeActivityUpdates(activityIntent)
         client.removeActivityTransitionUpdates(activityTransitionIntent)
@@ -166,8 +165,6 @@ class ActivityCollector(val context: Context) : BaseCollector {
         }
         return isPermitted && isLocationEnabled
     }
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) {}
 
     override val requiredPermissions: List<String>
         get() = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {

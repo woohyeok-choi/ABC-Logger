@@ -113,6 +113,7 @@ fun bind(view: CheckBoxesView, options: Array<String>?, showEtc: Boolean?, isAva
 @InverseBindingAdapter(attribute = "responses")
 fun getResponses(view: CheckBoxesView) : Array<String> = view.getResponse()
 
+
 @BindingAdapter("responsesAttrChanged")
 fun setListener(view: CheckBoxesView, responseAttrChanged: InverseBindingListener?) {
     view.onAttributeChanged = { responseAttrChanged?.onChange()}

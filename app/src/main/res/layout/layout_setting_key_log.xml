@@ -85,9 +85,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:paddingBottom="@dimen/item_default_vertical_padding"
-                android:text="@{viewModel.isAvailable() ? @string/general_available : @string/general_unavailable}"
+                android:text="@{viewModel.isAvailable() ? @string/config_msg_available : @string/config_msg_require_setting}"
                 android:textColor="@{viewModel.isAvailable() ? @color/color_blue : @color/color_accent}"
                 android:textSize="@dimen/txt_size_text"
+                android:maxLines="2"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/guideline"
                 app:layout_constraintBaseline_toBaselineOf="@id/btn_accessibility_setting"/>

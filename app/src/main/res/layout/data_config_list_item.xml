@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="hasStarted"
+            type="Boolean" />
+
+        <variable
+            name="name"
+            type="String" />
+
+        <variable
+            name="description"
+            type="String" />
+
+        <variable
+            name="collector"
+            type="kaist.iclab.abclogger.base.BaseCollector" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/item_default_horizontal_padding"
+        android:paddingRight="@dimen/item_default_horizontal_padding"
+        android:paddingTop="@dimen/item_default_vertical_padding"
+        android:paddingBottom="@dimen/item_default_vertical_padding"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:selectableItemBackground">
+
+        <TextView
+            android:id="@+id/txt_header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:textColor="@color/color_message"
+            android:textSize="@dimen/txt_size_title_small"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:text="@{name}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/switch_on_off"/>
+
+        <TextView
+            android:id="@+id/txt_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:textColor="@color/color_message"
+            android:textSize="@dimen/txt_size_text"
+            android:maxLines="5"
+            android:text="@{description}"
+            app:layout_constraintTop_toBottomOf="@id/txt_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/switch_on_off"/>
+
+        <TextView
+            android:id="@+id/txt_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:textSize="@dimen/txt_size_text"
+            android:maxLines="2"
+            android:textColor="@{collector.checkAvailability() ? @color/color_blue : @color/color_accent}"
+            android:text="@{collector.checkAvailability() ? @string/config_msg_available : @string/config_msg_require_setting}"
+            app:layout_constraintTop_toBottomOf="@id/txt_description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/switch_on_off"/>
+
+        <TextView
+            android:id="@+id/txt_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:textColor="@color/color_message"
+            android:textSize="@dimen/txt_size_text"
+            android:maxLines="5"
+            app:layout_constraintTop_toBottomOf="@id/txt_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/switch_on_off"/>
+
+        <Switch
+            android:id="@+id/switch_on_off"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:showText="false"
+            android:checked="@{hasStarted}"
+            android:enabled="@{hasStarted || collector.checkAvailability()}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

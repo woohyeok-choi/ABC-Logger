@@ -31,7 +31,7 @@
                 android:paddingEnd="@dimen/item_space_horizontal"
                 android:gravity="center_vertical|center_horizontal"
                 android:visibility="@{viewModel.status.state == Status.STATE_FAILURE ? View.VISIBLE : View.GONE}"
-                error="@{viewModel.status.error}"
+                android:text="@string/msg_fail_to_load_contents"
                 android:textSize="@dimen/txt_size_text"/>
 
             <androidx.recyclerview.widget.RecyclerView

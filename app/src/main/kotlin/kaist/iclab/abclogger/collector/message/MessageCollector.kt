@@ -110,19 +110,17 @@ class MessageCollector(val context: Context) : BaseCollector {
         else -> "UNDEFINED"
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         context.contentResolver.registerContentObserver(Telephony.Sms.CONTENT_URI, true, smsObserver)
         context.contentResolver.registerContentObserver(Telephony.Mms.CONTENT_URI, true, mmsObserver)
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         context.contentResolver.unregisterContentObserver(smsObserver)
         context.contentResolver.unregisterContentObserver(mmsObserver)
     }
 
     override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf(

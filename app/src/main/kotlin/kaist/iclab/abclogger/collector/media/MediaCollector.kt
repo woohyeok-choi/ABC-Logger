@@ -9,7 +9,6 @@ import android.provider.MediaStore
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.collector.getRecentContents
-import kaist.iclab.abclogger.collector.putEntity
 import kaist.iclab.abclogger.collector.toMillis
 
 class MediaCollector (val context: Context) : BaseCollector {
@@ -138,14 +137,14 @@ class MediaCollector (val context: Context) : BaseCollector {
             }
         }
     }
-    override fun onStart() {
+    override suspend fun onStart() {
         context.contentResolver.registerContentObserver(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalPhotoObserver)
         context.contentResolver.registerContentObserver(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true, internalVideoObserver)
         context.contentResolver.registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, externalPhotoObserver)
         context.contentResolver.registerContentObserver(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, externalVideoObserver)
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         context.contentResolver.unregisterContentObserver(internalPhotoObserver)
         context.contentResolver.unregisterContentObserver(internalVideoObserver)
         context.contentResolver.unregisterContentObserver(externalPhotoObserver)
@@ -153,8 +152,6 @@ class MediaCollector (val context: Context) : BaseCollector {
     }
 
     override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf(Manifest.permission.READ_EXTERNAL_STORAGE)

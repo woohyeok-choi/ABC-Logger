@@ -13,12 +13,11 @@ import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.collector.getApplicationName
 import kaist.iclab.abclogger.collector.isSystemApp
 import kaist.iclab.abclogger.collector.isUpdatedSystemApp
-import kaist.iclab.abclogger.collector.putEntity
 
 class NotificationCollector(val context: Context) : NotificationListenerService(), BaseCollector {
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
-        if (!CollectorPrefs.isProvidedNotification || !checkAvailability()) return
+        if (!CollectorPrefs.hasStartedNotification || !checkAvailability()) return
 
         try {
             sbn?.run {
@@ -31,7 +30,7 @@ class NotificationCollector(val context: Context) : NotificationListenerService(
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         super.onNotificationRemoved(sbn)
-        if (!CollectorPrefs.isProvidedNotification || !checkAvailability()) return
+        if (!CollectorPrefs.hasStartedNotification || !checkAvailability()) return
 
         try {
             sbn?.run {
@@ -95,16 +94,14 @@ class NotificationCollector(val context: Context) : NotificationListenerService(
         }
     }
 
-    override fun onStart() { }
+    override suspend fun onStart() { }
 
-    override fun onStop() { }
+    override suspend fun onStop() { }
 
     override fun checkAvailability(): Boolean =
             Settings.Secure.getString(
                     context.contentResolver, "enabled_notification_listeners"
             )?.contains(context.packageName) == true
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf()

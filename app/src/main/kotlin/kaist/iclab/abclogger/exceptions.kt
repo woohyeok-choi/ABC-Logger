@@ -1,15 +1,25 @@
 package kaist.iclab.abclogger
 
+import android.content.Context
 import com.google.android.gms.common.api.CommonStatusCodes
 
 abstract class ABCException (override val message: String?): Exception(message) {
     constructor() : this(null)
+
     abstract val stringRes : Int
+
+    fun toString(context: Context): String = listOf(
+            context.getString(stringRes), message
+    ).filter { !it.isNullOrEmpty() }.joinToString(separator = ": ")
 }
 
-class GeneralException : ABCException() {
+class UnhandledException(message: String?) : ABCException(message) {
     override val stringRes: Int
         get() = R.string.error_general
+
+    companion object {
+        fun wrap(t : Throwable?) : UnhandledException = UnhandledException(t?.message)
+    }
 }
 
 class EmptySurveyException : ABCException() {
@@ -75,4 +85,9 @@ class FirebaseUserCollisionException : ABCException() {
 class HttpRequestException(message: String?) : ABCException(message) {
     override val stringRes: Int
         get() = R.string.error_http_error
+}
+
+class NoSignedGoogleAccountException: ABCException() {
+    override val stringRes: Int
+        get() = R.string.error_no_signed_google_account
 }

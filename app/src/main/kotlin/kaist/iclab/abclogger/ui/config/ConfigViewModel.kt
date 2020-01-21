@@ -26,52 +26,27 @@ import kaist.iclab.abclogger.collector.sensor.PolarH10Collector
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
 import kaist.iclab.abclogger.collector.wifi.WifiCollector
+import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 class ConfigViewModel(
         val context: Context,
-        val abc: ABC
+        val abcLogger: ABCLogger
 ) : ViewModel() {
-    data class DataStatus(val isAvailable: Boolean, val hasStarted: Boolean, val status: String? = null)
-
     val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
     val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
+    val isAllPermissionGranted = MutableLiveData<Boolean>()
     val lastSyncTime = MutableLiveData<String>()
     val shouldUploadForNonMeteredNetwork = MutableLiveData<Boolean>()
     val sizeOfDb = MutableLiveData<String>()
-
-    val statusActivity = MutableLiveData<DataStatus>()
-    val statusAppUsage = MutableLiveData<DataStatus>()
-    val statusBattery = MutableLiveData<DataStatus>()
-    val statusBluetooth = MutableLiveData<DataStatus>()
-    val statusCallLog = MutableLiveData<DataStatus>()
-    val statusDataTraffic = MutableLiveData<DataStatus>()
-    val statusDeviceEvent = MutableLiveData<DataStatus>()
-    val statusInstalledApp = MutableLiveData<DataStatus>()
-    val statusKeyTracking = MutableLiveData<DataStatus>()
-    val statusLocation = MutableLiveData<DataStatus>()
-    val statusMedia = MutableLiveData<DataStatus>()
-    val statusMessage = MutableLiveData<DataStatus>()
-    val statusNotification = MutableLiveData<DataStatus>()
-    val statusPhysicalStatus = MutableLiveData<DataStatus>()
-    val statusPolarH10 = MutableLiveData<DataStatus>()
-    val statusSurvey = MutableLiveData<DataStatus>()
-    val statusWifi = MutableLiveData<DataStatus>()
-
-    private inline fun <reified T : BaseCollector> updateStatus(liveData: MutableLiveData<DataStatus>) {
-        val isAvailable = abc.isAvailable<T>()
-        val hasStarted = abc.hasStarted<T>()
-        val prefix = context.getString(if(isAvailable) { R.string.general_available } else R.string.general_unavailable)
-        val message = abc.status<T>()
-
-        liveData.postValue(
-                DataStatus(isAvailable, hasStarted, listOf(prefix, message).filter { it.isNotBlank() }.joinToString(": "))
-        )
-    }
+    val collectors = MutableLiveData<ArrayList<BaseCollector>>()
+    val flushStatus = MutableLiveData<Pair<Status, Boolean>>()
 
     fun load() = viewModelScope.launch(Dispatchers.IO) {
+        isAllPermissionGranted.postValue(context.checkPermission(abcLogger.getAllRequiredPermissions()))
         lastSyncTime.postValue(if (GeneralPrefs.lastTimeDataSync > 0) {
             String.format("%s: %s",
                     context.getString(R.string.general_last_sync_time),
@@ -85,35 +60,41 @@ class ConfigViewModel(
                 "${Formatter.formatFileSize(context, ObjBox.size(context))} / ${Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())}"
         )
         shouldUploadForNonMeteredNetwork.postValue(GeneralPrefs.shouldUploadForNonMeteredNetwork)
-
-        updateStatus<ActivityCollector>(statusActivity)
-        updateStatus<AppUsageCollector>(statusAppUsage)
-        updateStatus<BatteryCollector>(statusBattery)
-        updateStatus<BluetoothCollector>(statusBluetooth)
-        updateStatus<CallLogCollector>(statusCallLog)
-        updateStatus<DataTrafficCollector>(statusDataTraffic)
-        updateStatus<DeviceEventCollector>(statusDeviceEvent)
-        updateStatus<InstalledAppCollector>(statusInstalledApp)
-        updateStatus<KeyLogCollector>(statusKeyTracking)
-        updateStatus<LocationCollector>(statusLocation)
-        updateStatus<MediaCollector>(statusMedia)
-        updateStatus<MessageCollector>(statusMessage)
-        updateStatus<NotificationCollector>(statusNotification)
-        updateStatus<PhysicalStatusCollector>(statusPhysicalStatus)
-        updateStatus<PolarH10Collector>(statusPolarH10)
-        updateStatus<SurveyCollector>(statusSurvey)
-        updateStatus<WifiCollector>(statusWifi)
+        collectors.postValue(abcLogger.collectors)
     }
 
-    fun shouldUploadForNonMeteredNetwork(isEnabled: Boolean) {
+    fun setUploadForNonMeteredNetwork(isEnabled: Boolean) {
         GeneralPrefs.shouldUploadForNonMeteredNetwork = isEnabled
     }
 
+    fun requestStart(collector: BaseCollector, onError: ((Throwable) -> Unit)? = null) = viewModelScope.launch {
+        collector.start { _, throwable -> onError?.invoke(throwable) }
+    }
+
+    fun requestStop(collector: BaseCollector, onError: ((Throwable) -> Unit)? = null) = viewModelScope.launch {
+        collector.stop { _, throwable -> onError?.invoke(throwable)}
+    }
+
     fun flush() = GlobalScope.launch(Dispatchers.IO) {
-        ObjBox.boxStore.deleteAllFiles()
+        try {
+            flushStatus.postValue(Status.loading() to false)
+            ObjBox.boxStore.deleteAllFiles()
+            flushStatus.postValue(Status.success() to false)
+        } catch (e: Exception) {
+            flushStatus.postValue(Status.failure(e) to false)
+        }
     }
 
     fun signOut() = GlobalScope.launch(Dispatchers.IO) {
-        ObjBox.boxStore.deleteAllFiles()
+        try {
+            flushStatus.postValue(Status.loading() to true)
+            ObjBox.boxStore.deleteAllFiles()
+            FirebaseAuth.getInstance().signOut()
+            GeneralPrefs.clear()
+            CollectorPrefs.clear()
+            flushStatus.postValue(Status.success() to true)
+        } catch (e: Exception) {
+            flushStatus.postValue(Status.failure(e) to true)
+        }
     }
 }

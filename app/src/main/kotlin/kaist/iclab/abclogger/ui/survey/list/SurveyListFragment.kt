@@ -15,6 +15,7 @@ import kaist.iclab.abclogger.base.BaseFragment
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.databinding.FragmentSurveyListBinding
 import kaist.iclab.abclogger.databinding.SurveyListItemBinding
+import kaist.iclab.abclogger.ui.Status
 import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
 import kaist.iclab.abclogger.ui.survey.sharedViewNameForDeliveredTime
 import kaist.iclab.abclogger.ui.survey.sharedViewNameForMessage
@@ -74,6 +75,10 @@ class SurveyListFragment : BaseFragment(){
 
         viewModel.entities.observe(this) { data ->
             if (data != null) recyclerViewAdapter.submitList(data)
+        }
+
+        viewModel.status.observe(this) { status ->
+            if(status.state == Status.STATE_FAILURE) showToast(status.error, false)
         }
     }
 }

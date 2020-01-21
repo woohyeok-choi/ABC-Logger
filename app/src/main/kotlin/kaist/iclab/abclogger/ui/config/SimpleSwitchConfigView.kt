@@ -24,7 +24,7 @@ class SimpleSwitchConfigView (context: Context, attrs: AttributeSet?) : Constrai
     private val descriptionTextView: TextView
     private val switch : Switch
 
-    private var onClick: ((view: SimpleSwitchConfigView, checked: Boolean) -> Unit)? = null
+    var onClick: ((view: SimpleSwitchConfigView, checked: Boolean) -> Unit)? = null
 
     init {
         val typedValue = TypedValue()
@@ -103,9 +103,17 @@ class SimpleSwitchConfigView (context: Context, attrs: AttributeSet?) : Constrai
         set(value) { switch.isChecked = value }
 }
 
-@BindingAdapter("header", "description", "checked")
-fun setDataConfig(view: SimpleSwitchConfigView, header: String?, description: String?, checked: Boolean?) {
+@BindingAdapter("header")
+fun setSimpleSwitchConfigHeader(view: SimpleSwitchConfigView, header: String?) {
     view.header = header ?: ""
+}
+
+@BindingAdapter("description")
+fun setSimpleSwitchConfigDescription(view: SimpleSwitchConfigView, description: String?) {
     view.description = description ?: ""
+}
+
+@BindingAdapter("checked")
+fun setSimpleSwitchConfigChecked(view: SimpleSwitchConfigView, checked: Boolean?) {
     view.checked = checked ?: false
 }

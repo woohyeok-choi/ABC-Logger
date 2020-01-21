@@ -7,20 +7,14 @@ import android.content.Intent
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import androidx.core.content.ContextCompat
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.collector.getApplicationName
 import kaist.iclab.abclogger.collector.isSystemApp
 import kaist.iclab.abclogger.collector.isUpdatedSystemApp
-import kaist.iclab.abclogger.collector.putEntity
-import kotlinx.android.synthetic.main.layout_setting_key_log.*
-import org.koin.android.ext.android.inject
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.hypot
-
 
 class KeyLogCollector(val context: Context) : AccessibilityService(), BaseCollector {
 
@@ -178,7 +172,7 @@ class KeyLogCollector(val context: Context) : AccessibilityService(), BaseCollec
     override fun onInterrupt() {}
 
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
-        if(!CollectorPrefs.isProvidedKeyStrokes) return
+        if(!CollectorPrefs.hasStartedKeyStrokes) return
         accessibilityEvent.packageName ?: return
         accessibilityEvent.source ?: return
 
@@ -198,9 +192,9 @@ class KeyLogCollector(val context: Context) : AccessibilityService(), BaseCollec
         }
     }
 
-    override fun onStart() { }
+    override suspend fun onStart() { }
 
-    override fun onStop() { }
+    override suspend fun onStop() { }
 
     override fun checkAvailability(): Boolean {
         val serviceName = "${context.packageName}/${KeyLogCollector::class.java.canonicalName}"
@@ -214,11 +208,6 @@ class KeyLogCollector(val context: Context) : AccessibilityService(), BaseCollec
         )?.split(":")?.contains(serviceName) ?: false
 
         return isEnabled && isIncluded && CollectorPrefs.softKeyboardType.isNotEmpty()
-    }
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) {
-        if (resultCode != Activity.RESULT_OK || intent == null) return
-        CollectorPrefs.softKeyboardType = intent.getStringExtra(EXTRA_KEYBOARD_TYPE) ?: ""
     }
 
     override val requiredPermissions: List<String>

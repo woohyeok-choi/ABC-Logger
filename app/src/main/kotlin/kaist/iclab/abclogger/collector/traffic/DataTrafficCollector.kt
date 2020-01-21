@@ -6,8 +6,8 @@ import android.net.TrafficStats
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.collector.putEntity
 import kaist.iclab.abclogger.fillBaseInfo
+import kaist.iclab.abclogger.putEntity
 
 class DataTrafficCollector(val context: Context) : BaseCollector {
     private val telephonyManager: TelephonyManager by lazy {
@@ -71,11 +71,11 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         telephonyManager.listen(dataListener, PhoneStateListener.LISTEN_DATA_ACTIVITY)
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         telephonyManager.listen(dataListener, PhoneStateListener.LISTEN_NONE)
     }
 
@@ -86,6 +86,4 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
         get() = null
 
     override fun checkAvailability(): Boolean = true
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 }

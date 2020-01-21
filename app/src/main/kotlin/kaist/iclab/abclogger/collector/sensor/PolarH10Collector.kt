@@ -5,17 +5,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.text.TextUtils
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.observe
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.base.BaseSettingActivity
-import kaist.iclab.abclogger.collector.putEntity
-import kotlinx.android.synthetic.main.layout_setting_polar_h10.*
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
 import polar.com.sdk.api.PolarBleApiDefaultImpl
@@ -70,10 +63,6 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
         }
     }
 
-    private fun updateStatus() {
-        CollectorPrefs.statusPolarH10 = "Id: ${ExternalDevicePrefs.polarH10DeviceId}; Connected: ${ExternalDevicePrefs.polarH10Connection == POLAR_CONNECTED}; Battery: ${ExternalDevicePrefs.polarH10BatteryLevel}"
-    }
-
     private fun storeHeartRate(identifier: String, data: PolarHrData) {
         val timestamp = System.currentTimeMillis()
         val heartRate = data.hr
@@ -81,7 +70,7 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
         val contactStatusSupported = if (data.contactStatusSupported) 1.0F else 0.0F
 
         SensorEntity(
-                sensorId = ExternalDevicePrefs.polarH10DeviceId,
+                sensorId = CollectorPrefs.polarH10DeviceId,
                 sensorName = "PolarH10",
                 valueType = "HeartRate",
                 valueDescription = "HR/ContactStatus/ContactStatusSupported",
@@ -113,27 +102,23 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
 
     override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
         super.deviceConnected(polarDeviceInfo)
-        ExternalDevicePrefs.polarH10Connection = POLAR_CONNECTED
-        updateStatus()
+        CollectorPrefs.polarH10Connection = POLAR_CONNECTED
     }
 
     override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
         super.deviceConnecting(polarDeviceInfo)
-        ExternalDevicePrefs.polarH10Connection = POLAR_CONNECTING
-        updateStatus()
+        CollectorPrefs.polarH10Connection = POLAR_CONNECTING
     }
 
     override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
         super.deviceDisconnected(polarDeviceInfo)
-        ExternalDevicePrefs.polarH10Connection = POLAR_DISCONNECTED
-        updateStatus()
+        CollectorPrefs.polarH10Connection = POLAR_DISCONNECTED
         disposables.clear()
     }
 
     override fun batteryLevelReceived(identifier: String, level: Int) {
         super.batteryLevelReceived(identifier, level)
-        ExternalDevicePrefs.polarH10BatteryLevel = level
-        updateStatus()
+        CollectorPrefs.polarH10BatteryLevel = level
     }
 
     override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
@@ -141,35 +126,20 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
         storeHeartRate(identifier, data)
     }
 
-    override fun onStart() {
-        try {
-            polarApi.connectToDevice(ExternalDevicePrefs.polarH10DeviceId)
-        } catch (e: PolarInvalidArgument) {
-            ExternalDevicePrefs.polarH10Connection = POLAR_DISCONNECTED
-        }
-        updateStatus()
+    override suspend fun onStart() {
+        disposables.clear()
+        polarApi.setApiCallback(this)
+        polarApi.connectToDevice(CollectorPrefs.polarH10DeviceId)
     }
 
-    override fun onStop() {
-        try {
-            polarApi.disconnectFromDevice(ExternalDevicePrefs.polarH10DeviceId)
-        } catch (e: PolarInvalidArgument) { }
-        polarApi.setApiCallback(null)
+    override suspend fun onStop() {
         disposables.clear()
-        ExternalDevicePrefs.polarH10Connection = POLAR_DISCONNECTED
-        updateStatus()
+        polarApi.setApiCallback(null)
+        polarApi.disconnectFromDevice(CollectorPrefs.polarH10DeviceId)
     }
 
     override fun checkAvailability(): Boolean =
-            !TextUtils.isEmpty(ExternalDevicePrefs.polarH10DeviceId) &&
-                    ExternalDevicePrefs.polarH10Connection == POLAR_CONNECTED &&
-                    context.checkPermission(requiredPermissions)
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) {
-        if (resultCode != Activity.RESULT_OK) return
-
-        ExternalDevicePrefs.polarH10DeviceId = intent?.getStringExtra(EXTRA_POLAR_H10_DEVICE_ID) ?: ""
-    }
+            !TextUtils.isEmpty(CollectorPrefs.polarH10DeviceId) && context.checkPermission(requiredPermissions)
 
     override val requiredPermissions: List<String>
         get() = listOf(

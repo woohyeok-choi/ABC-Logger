@@ -1,9 +1,7 @@
 package kaist.iclab.abclogger
 
 import android.app.*
-import android.content.Context
-import android.content.ContextWrapper
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
@@ -26,6 +24,7 @@ import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.HttpException
 import com.github.kittinunf.fuel.core.awaitResponseResult
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
+import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
@@ -33,6 +32,9 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.log10
 import java.io.Serializable
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 fun isNetworkAvailable(context: Context): Boolean =
         (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetwork != null
@@ -135,21 +137,38 @@ fun Fragment.showSnackBar(view: View,
     snackBar.show()
 }
 
-fun Context.showToast(messageRes: Int, isShort: Boolean = true) {
+fun Context.showToast(messageRes: Int, isShort: Boolean = true) =
     Toast.makeText(this, messageRes, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
-}
 
-fun Context.showToast(message: String, isShort: Boolean = true) {
+
+fun Context.showToast(message: String, isShort: Boolean = true) =
     Toast.makeText(this, message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
-}
 
-fun Fragment.showToast(messageRes: Int, isShort: Boolean) {
+
+fun Fragment.showToast(messageRes: Int, isShort: Boolean = true) =
     Toast.makeText(requireContext(), messageRes, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+
+
+fun Fragment.showToast(message: String, isShort: Boolean = true) =
+    Toast.makeText(requireContext(), message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+
+
+fun Context.showToast(throwable: Throwable?, isShort: Boolean = true) {
+    val msg = when(throwable) {
+        is ABCException -> throwable.toString(this)
+        else -> UnhandledException.wrap(throwable).toString(this)
+    }
+    Toast.makeText(this, msg, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
 
-fun Fragment.showToast(message: String, isShort: Boolean) {
-    Toast.makeText(requireContext(), message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+fun Fragment.showToast(throwable: Throwable?, isShort: Boolean = true) {
+    val msg = when(throwable) {
+        is ABCException -> throwable.toString(requireContext())
+        else -> UnhandledException.wrap(throwable).toString(requireContext())
+    }
+    Toast.makeText(requireContext(), msg, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
+
 
 inline fun <T, R : Any> Iterable<T>.firstNotNullResult(transform: (T) -> R?): R? {
     for (element in this) {
@@ -203,6 +222,15 @@ inline fun <reified T : Activity> Fragment.startActivity(options: Bundle? = null
     val intent = Intent(requireContext(), T::class.java)
     fillIntentWithArguments(intent, params)
     startActivity(intent, options)
+}
+
+fun Fragment.startActivityForResult(action: String, data: Uri?, vararg params: Pair<String, Any?>, requestCode: Int) {
+    val intent = Intent().also {
+        it.action = action
+        it.data = data
+    }
+    fillIntentWithArguments(intent, params)
+    startActivityForResult(intent, requestCode)
 }
 
 inline fun <reified T : Activity> Fragment.startActivityForResult(requestCode: Int, options: Bundle? = null,
@@ -313,3 +341,20 @@ suspend fun httpGet(url: String, vararg params: Pair<String, Any?>) : String? {
 
     return response
 }
+
+suspend fun <T> Task<T>.await(): T {
+    if (isComplete) return if (isSuccessful) result!! else throw exception!!
+    return suspendCoroutine { c ->
+        addOnSuccessListener { c.resume(it) }
+        addOnFailureListener { c.resumeWithException(it) }
+    }
+}
+
+
+fun Context.safeRegisterReceiver(receiver: BroadcastReceiver, filter: IntentFilter) = try {
+    registerReceiver(receiver, filter)
+} catch (e: IllegalArgumentException) { }
+
+fun Context.safeUnregisterReceiver(receiver: BroadcastReceiver) = try {
+    unregisterReceiver(receiver)
+} catch (e: IllegalArgumentException) { }

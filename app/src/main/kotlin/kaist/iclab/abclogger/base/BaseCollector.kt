@@ -8,26 +8,22 @@ import android.content.Intent
  */
 interface BaseCollector {
     /**
-     * Define operations when a user requests for starting this collector
+     * Define operations when a user requests for starting this collector.
+     * This function should be called in non-UI thread.
      */
-    fun onStart()
+    suspend fun onStart()
 
     /**
-     * Define operations when a user requests for stopping this collector
+     * Define operations when a user requests for stopping this collector.
+     * This function should be called in non-UI thread.
      */
-    fun onStop()
+    suspend fun onStop()
 
     /**
      * Check whether a given collector can operate (e.g., permissions).
      * If not available (even after started), it will be stopped.
      */
     fun checkAvailability() : Boolean
-
-    /**
-     * Some setting-related activities returns result code and intent containing some data.
-     * Implement this method if it needs to handle those activity results.
-     */
-    fun handleActivityResult(resultCode: Int, intent: Intent?)
 
     /**
      * List of permissions (Manifest.permissions.XXX) for this collector.

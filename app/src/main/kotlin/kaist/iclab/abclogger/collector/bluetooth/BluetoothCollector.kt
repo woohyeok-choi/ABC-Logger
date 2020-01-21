@@ -14,7 +14,6 @@ import android.content.IntentFilter
 import androidx.core.app.AlarmManagerCompat
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.collector.putEntity
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -122,23 +121,21 @@ class BluetoothCollector(val context: Context) : BaseCollector {
         )
     }
 
-    override fun onStart() {
-        context.registerReceiver(receiver, filter)
+    override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, filter)
         alarmManager.cancel(intent)
 
         scheduleAlarm()
     }
 
-    override fun onStop() {
-        context.unregisterReceiver(receiver)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
 
         alarmManager.cancel(intent)
     }
 
     override fun checkAvailability(): Boolean =
             bluetoothAdapter?.isEnabled == true && context.checkPermission(requiredPermissions)
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf(

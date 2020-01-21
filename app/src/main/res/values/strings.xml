@@ -23,10 +23,9 @@
     <string name="general_close">Dismiss</string>
     <string name="general_undo">Undo</string>
     <string name="general_none">None</string>
-    <string name="general_permit">Permitted</string>
-    <string name="general_deny">Denied</string>
-    <string name="general_unavailable">Unavailable</string>
-    <string name="general_available">Available</string>
+
+    <string name="general_granted">Granted</string>
+    <string name="general_denied">Denied</string>
     <string name="general_touch_to_set">Touch to set</string>
     <string name="general_connected">Connected</string>
     <string name="general_disconnected">Disconnected</string>
@@ -46,8 +45,9 @@
     <string name="config_desc_flush_data">Remove all data in a local database.</string>
     <string name="config_title_logout">Logout</string>
     <string name="config_desc_logout">Remove all data, stop data collection, and logout.</string>
-
-    <string name="activity_title_survey_response">Response</string>
+    <string name="config_title_permission">Permissions</string>
+    <string name="config_msg_available">Available.</string>
+    <string name="config_msg_require_setting">Permission or additional setting required. Touch to grant.</string>
 
     <string name="btn_sign_in">Sign in</string>
     <string name="btn_participate">Participate</string>
@@ -73,7 +73,7 @@
     <string name="error_permission_denied">Some permissions are denied</string>
     <string name="error_not_white_listed">Request for whitelist is denied</string>
     <string name="error_http_error">Error occurs during Http connection</string>
-
+    <string name="error_no_signed_google_account">No signed google account</string>
 
 
     <string name="dialog_title_permission_request">Permission request</string>
@@ -89,16 +89,12 @@
     <string name="msg_permission_setting_required">Some permissions are denied. Please grant permissions in setting.</string>
     <string name="msg_back_twice_exit">Press back again to exit.</string>
     <string name="msg_save_complete">The response is saved.</string>
+    <string name="msg_fail_to_load_contents">Failed to load contents.</string>
 
     <string name="dialog_title_save_immutable">Save</string>
     <string name="dialog_message_save_immutable">You cannot edit responses after saving them.</string>
 
-
-    <string name="activity_title_sign_up">Sign Up</string>
-    <string name="activity_title_main">@string/app_name</string>
-    <string name="activity_title_survey_question">Answer to a Survey</string>
-
-    <string name="title_survey_list">Surveys</string>
+    <string name="title_survey_list">Survey</string>
     <string name="title_config">Config</string>
     <string name="title_survey_response">Response</string>
 
@@ -121,8 +117,8 @@
     <string name="data_desc_device_event">It collects general events on the smartphone</string>
     <string name="data_name_installed_app">Installed App</string>
     <string name="data_desc_installed_app">It collects installed apps on the smartphone.</string>
-    <string name="data_name_key_track">Touch</string>
-    <string name="data_desc_key_track">It collects a speed of touch interactions</string>
+    <string name="data_name_key_log">Touch</string>
+    <string name="data_desc_key_log">It collects a speed of touch interactions</string>
     <string name="data_name_location">Location</string>
     <string name="data_desc_location">It collects locations visited.</string>
     <string name="data_name_media">Media</string>
@@ -146,7 +142,6 @@
     <string name="permission_title_google_fitness">Google Fitness account access</string>
 
     <!-- Here, define strings for setting activity of each collector -->
-
     <string name="setting_key_log_collector_instruction_keyboard_type">Select a type of your soft-keyboard for Korean.</string>
     <string name="setting_key_log_collector_chunjiin">Chun-ji-in</string>
     <string name="setting_key_log_collector_qwerty">Qwerty</string>
@@ -161,6 +156,7 @@
     <string name="setting_polar_h10_collector_battery">Battery</string>
     <string name="setting_polar_h10_collector_heart_rate">Heart rate</string>
     <string name="setting_polar_h10_collector_ecg">ECG</string>
+
     <string name="setting_survey_collector_instruction">Survey URLs</string>
     <string name="setting_survey_collector_preview">Preview</string>
     <string name="setting_survey_collector_url_hint">Enter a survey URL.</string>

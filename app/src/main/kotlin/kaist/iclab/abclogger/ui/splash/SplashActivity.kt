@@ -22,7 +22,7 @@ import org.koin.android.ext.android.inject
 
 
 class SplashActivity : BaseAppCompatActivity() {
-    private val abc: ABC by inject()
+    private val abc: ABCLogger by inject()
 
     private val permissionSettingSingle = SingleSubject.create<Boolean>()
     private val whiteListSingle = SingleSubject.create<Boolean>()
@@ -117,14 +117,7 @@ class SplashActivity : BaseAppCompatActivity() {
                         showToast(message, true)
                         startActivity(Intent(this, MainActivity::class.java))
                     } else {
-                        val message = when (exception) {
-                            is GoogleApiException -> listOfNotNull(
-                                    getString(exception.stringRes), exception.message
-                            ).joinToString(separator = ": ")
-                            is ABCException -> getString(exception.stringRes)
-                            else -> getString(R.string.error_general)
-                        }
-                        showToast(message, true)
+                        showToast(exception, true)
                     }
                     finish()
                 }

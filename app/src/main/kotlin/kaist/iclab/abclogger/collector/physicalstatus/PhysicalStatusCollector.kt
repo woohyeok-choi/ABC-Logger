@@ -11,6 +11,7 @@ import android.os.Build
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -20,14 +21,17 @@ import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.tasks.Tasks
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.collector.putEntitySync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class PhysicalStatusCollector(val context: Context) : BaseCollector {
-    private val alarmManager : AlarmManager by lazy {
+    private val alarmManager: AlarmManager by lazy {
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
 
@@ -51,12 +55,12 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
                     .addExtension(fitnessOptions).build()
 
     private val intent = PendingIntent.getBroadcast(context, REQUEST_CODE_PHYSICAL_STATUS_UPDATE, Intent(ACTION_UPDATE_PHYSICAL_STATUS), PendingIntent.FLAG_UPDATE_CURRENT)
-    
+
     private val filter = IntentFilter().apply {
         addAction(ACTION_UPDATE_PHYSICAL_STATUS)
     }
 
-    private val receiver : BroadcastReceiver by lazy {
+    private val receiver: BroadcastReceiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action != ACTION_UPDATE_PHYSICAL_STATUS) return
@@ -67,7 +71,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         }
     }
 
-    private fun getPhysicalStatusEntities() : List<PhysicalStatusEntity> {
+    private fun getPhysicalStatusEntities(): List<PhysicalStatusEntity> {
         val account = GoogleSignIn.getLastSignedInAccount(context) ?: return listOf()
         val lastTime = CollectorPrefs.lastAccessTimePhysicalStatus
         val currentTime = System.currentTimeMillis()
@@ -90,7 +94,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         return response.buckets.mapNotNull { bucket ->
             bucket?.dataSets?.mapNotNull { dataSet ->
                 dataSet?.dataPoints?.mapNotNull { dataPoint ->
-                    when(dataPoint.dataType) {
+                    when (dataPoint.dataType) {
                         DataType.TYPE_STEP_COUNT_DELTA -> Field.FIELD_STEPS
                         DataType.TYPE_CALORIES_EXPENDED -> Field.FIELD_CALORIES
                         DataType.TYPE_DISTANCE_DELTA -> Field.FIELD_DISTANCE
@@ -108,41 +112,49 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         }.flatten()
     }
 
-    override fun onStart() {
-        val currentTime = System.currentTimeMillis()
-        val threeHour : Long = TimeUnit.HOURS.toMillis(3)
+    override suspend fun onStart() {
+        val account = GoogleSignIn.getLastSignedInAccount(context)
+                ?: throw NoSignedGoogleAccountException()
+        val client = Fitness.getRecordingClient(context, account)
 
-        val triggerTime : Long = if(CollectorPrefs.lastAccessTimePhysicalStatus < 0 ||
+        suspendCoroutine<Void> { continuation ->
+            Tasks.whenAll(
+                    dataTypes.map { type -> client.subscribe(type) }
+            ).addOnSuccessListener { result ->
+                continuation.resume(result)
+            }.addOnFailureListener { exception ->
+                val exc = if (exception is ApiException) {
+                    GoogleApiException(exception.statusCode)
+                } else {
+                    exception
+                }
+                continuation.resumeWithException(exc)
+            }
+        }
+
+        val currentTime = System.currentTimeMillis()
+        val threeHour: Long = TimeUnit.HOURS.toMillis(3)
+
+        val triggerTime: Long = if (CollectorPrefs.lastAccessTimePhysicalStatus < 0 ||
                 CollectorPrefs.lastAccessTimePhysicalStatus + threeHour < currentTime) {
             currentTime + 1000 * 5
         } else {
             CollectorPrefs.lastAccessTimePhysicalStatus + threeHour
         }
 
+        context.safeRegisterReceiver(receiver, filter)
         alarmManager.cancel(intent)
 
-        GoogleSignIn.getLastSignedInAccount(context)?.let { account ->
-            val client = Fitness.getRecordingClient(context, account)
-            Tasks.whenAll(dataTypes.map { dataType -> client.subscribe(dataType) })
-        }?.addOnSuccessListener {
-            CollectorPrefs.statusPhysicalStatus = ""
-
-            context.registerReceiver(receiver, filter)
-            alarmManager.setRepeating(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    threeHour,
-                    intent
-                    )
-
-        }?.addOnFailureListener { exception ->
-            CollectorPrefs.statusPhysicalStatus = exception.message ?: ""
-            AppLog.ee(exception)
-        }
+        alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                threeHour,
+                intent
+        )
     }
 
-    override fun onStop() {
-        context.unregisterReceiver(receiver)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
         alarmManager.cancel(intent)
     }
 
@@ -159,8 +171,6 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
 
         return isAccountAvailable && isPermissionAvailable
     }
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {

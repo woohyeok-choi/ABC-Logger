@@ -73,17 +73,15 @@ class CallLogCollector(val context: Context) : BaseCollector {
         else -> ""
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         context.contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogObserver)
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         context.contentResolver.unregisterContentObserver(callLogObserver)
     }
 
     override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf(

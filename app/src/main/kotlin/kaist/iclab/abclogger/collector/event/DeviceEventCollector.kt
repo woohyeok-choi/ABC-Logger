@@ -12,7 +12,6 @@ import android.provider.Telephony
 import android.telephony.TelephonyManager
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.collector.putEntity
 
 class DeviceEventCollector(val context: Context) : BaseCollector {
     private val powerManager: PowerManager by lazy {
@@ -117,17 +116,15 @@ class DeviceEventCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override fun onStart() {
-        context.registerReceiver(receiver, filter)
+    override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, filter)
     }
 
-    override fun onStop() {
-        context.unregisterReceiver(receiver)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
     }
 
     override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf(

@@ -3,6 +3,7 @@ package kaist.iclab.abclogger.collector.keylog
 import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
+import kaist.iclab.abclogger.CollectorPrefs
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingKeyLogBinding
@@ -16,7 +17,7 @@ class KeyLogSettingActivity : BaseSettingActivity<LayoutSettingKeyLogBinding, Ke
         get() = R.layout.layout_setting_key_log
 
     override val titleStringRes: Int
-        get() = R.string.data_name_key_track
+        get() = R.string.data_name_key_log
 
     override fun onResume() {
         super.onResume()
@@ -24,10 +25,9 @@ class KeyLogSettingActivity : BaseSettingActivity<LayoutSettingKeyLogBinding, Ke
     }
 
     override fun onSaveSelected() {
-        val intent = extraIntentFor(
-                KeyLogCollector.EXTRA_KEYBOARD_TYPE to viewModel.keyType()
-        )
-        setResult(Activity.RESULT_OK, intent)
+        CollectorPrefs.softKeyboardType = viewModel.keyType()
+        setResult(Activity.RESULT_OK)
+        finish()
     }
 
     override fun initialize() {

@@ -14,7 +14,7 @@ class App : Application(){
 
         ObjBox.bind(this)
         Notifications.bind(this)
-        Koap.bind(this, CollectorPrefs, ExternalDevicePrefs)
+        Koap.bind(this, CollectorPrefs, GeneralPrefs)
         startKoin {
             androidLogger()
             androidContext(this@App)

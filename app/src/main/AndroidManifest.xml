@@ -17,7 +17,6 @@
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
@@ -48,10 +47,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ui.main.MainActivity"
             android:screenOrientation="portrait"
@@ -59,16 +58,30 @@
 
         <activity
             android:name=".ui.survey.question.SurveyResponseActivity"
+            android:screenOrientation="portrait"
             android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoWindow" />
 
         <activity
             android:name=".ui.AvoidSmartManagerActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity android:name=".collector.keylog.KeyLogCollector$SettingActivity" />
-        <activity android:name=".collector.sensor.PolarH10Collector$SettingActivity" />
 
-        <service android:name=".ABCLogger" />
+        <activity
+            android:name=".collector.sensor.PolarH10SettingActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".ui.main.MainActivity"
+            android:theme="@style/AppTheme.NoWindow" />
+        <activity
+            android:name=".collector.survey.SurveySettingActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".ui.main.MainActivity"
+            android:theme="@style/AppTheme.NoWindow" />
+
+        <activity
+            android:name=".collector.keylog.KeyLogSettingActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".ui.main.MainActivity"
+            android:theme="@style/AppTheme.NoWindow" />
 
         <service
             android:name=".collector.notification.NotificationCollector"
@@ -78,6 +91,7 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
         <service
             android:name=".collector.keylog.KeyLogCollector"
             android:label="@string/app_name"

@@ -12,7 +12,6 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.collector.putEntity
 
 class LocationCollector(val context: Context) : BaseCollector {
     private val client : FusedLocationProviderClient by lazy {
@@ -52,19 +51,17 @@ class LocationCollector(val context: Context) : BaseCollector {
             .setSmallestDisplacement(5.0F)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
-    override fun onStart() {
-        context.registerReceiver(receiver, filter)
+    override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, filter)
         client.requestLocationUpdates(request, intent)
     }
 
-    override fun onStop() {
-        context.unregisterReceiver(receiver)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
         client.removeLocationUpdates(intent)
     }
 
     override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override fun handleActivityResult(resultCode: Int, intent: Intent?) { }
 
     override val requiredPermissions: List<String>
         get() = listOf(
