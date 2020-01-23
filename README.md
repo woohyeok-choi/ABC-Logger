@@ -3,3 +3,4 @@
 * **DO NOT MERGE THIS BRANCH TO MASTER**
 
 ## ESMs
+* [NGC-1st](https://raw.githubusercontent.com/woohyeok-choi/ABC-Logger/esm/esm-ngc-1.json)
