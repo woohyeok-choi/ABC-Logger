@@ -85,6 +85,10 @@
     <string name="dialog_title_permission_request">Permission request</string>
     <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
     <string name="dialog_title_survey_preview">Preview</string>
+    <string name="dialog_title_flush_data">Flush</string>
+    <string name="dialog_message_flush_data">Do you really want to flush local data?</string>
+    <string name="dialog_title_sign_out">Sign Out</string>
+    <string name="dialog_message_sign_out">If you sign out, local data and preferences will be removed. Do you want it?</string>
 
     <string name="msg_sign_in_success">Welcome</string>
     <string name="msg_auth_password_changed">Password changed.</string>

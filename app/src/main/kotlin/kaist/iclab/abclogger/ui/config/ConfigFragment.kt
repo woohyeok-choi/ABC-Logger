@@ -17,6 +17,7 @@ import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.base.BaseFragment
 import kaist.iclab.abclogger.databinding.FragmentConfigBinding
 import kaist.iclab.abclogger.ui.Status
+import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment
 import kaist.iclab.abclogger.ui.splash.SplashActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -75,11 +76,27 @@ class ConfigFragment : BaseFragment() {
 
         dataBinding.configNetwork.onClick = { _, checked -> viewModel.setUploadForNonMeteredNetwork(checked) }
 
-        dataBinding.configFlushData.onClick = { viewModel.flush() }
+        dataBinding.configFlushData.onClick = {
+            YesNoDialogFragment.showDialog(
+                    requireFragmentManager(),
+                    getString(R.string.dialog_title_flush_data),
+                    getString(R.string.dialog_message_flush_data)
+            ) { isYes -> if (isYes) viewModel.flush() }
+        }
 
-        dataBinding.configLogout.onClick = { viewModel.signOut { isSuccessful ->
-            if(isSuccessful) startActivity<SplashActivity>(flags = Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        } }
+        dataBinding.configLogout.onClick = {
+            YesNoDialogFragment.showDialog(
+                    requireFragmentManager(),
+                    getString(R.string.dialog_title_sign_out),
+                    getString(R.string.dialog_message_sign_out)
+            ) { isYes ->
+                if (isYes) {
+                    viewModel.signOut { isSuccessful ->
+                        if (isSuccessful) startActivity<SplashActivity>(flags = Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    }
+                }
+            }
+        }
 
         dataBinding.configSync.onClick = { viewModel.sync() }
 
@@ -126,5 +143,4 @@ class ConfigFragment : BaseFragment() {
     companion object {
         private const val REQUEST_CODE_SETTING = 0x0f
     }
-
 }

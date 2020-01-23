@@ -76,14 +76,15 @@ class ConfigViewModel(
     fun flush(onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = GlobalScope.launch {
         try {
             flushStatus.postValue(Status.loading())
-            withContext(Dispatchers.IO) {
-                ObjBox.flush(context)
-            }
+
+            ObjBox.flush(context)
+
             flushStatus.postValue(Status.success())
             sizeOfDb.postValue(sizeOfDb())
             onComplete?.invoke(true)
         } catch (e: Exception) {
             flushStatus.postValue(Status.failure(e))
+
             onComplete?.invoke(true)
         }
     }
@@ -92,23 +93,18 @@ class ConfigViewModel(
         try {
             flushStatus.postValue(Status.loading())
 
-            withContext(Dispatchers.IO) {
-                ObjBox.flush(context)
-                GeneralPrefs.clear()
-                CollectorPrefs.clear()
-            }
-
+            ObjBox.flush(context)
+            GeneralPrefs.clear()
+            CollectorPrefs.clear()
             FirebaseAuth.getInstance().signOut()
-                suspendCoroutine<Void> { continuation ->
-                    GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut()
-                            .addOnSuccessListener { continuation.resume(it) }
-                            .addOnFailureListener { continuation.resumeWithException(it) }
-            }
+            GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().toCoroutine()
+
             flushStatus.postValue(Status.success())
             sizeOfDb.postValue(sizeOfDb())
             onComplete?.invoke(true)
         } catch (e: Exception) {
             flushStatus.postValue(Status.failure(e))
+
             onComplete?.invoke(false)
         }
     }
