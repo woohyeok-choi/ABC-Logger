@@ -93,6 +93,7 @@
     <string name="msg_set_notification">Please allow ABC Platform to access notifications.</string>
     <string name="msg_set_google_fitness">Please allow ABC Platform to access your Google Fitness data.</string>
     <string name="msg_permission_setting_required">Some permissions are denied. Please grant permissions in setting.</string>
+    <string name="msg_white_list_required">Please put this app into a whitelist.</string>
     <string name="msg_back_twice_exit">Press back again to exit.</string>
     <string name="msg_save_complete">The response is saved.</string>
     <string name="msg_fail_to_load_contents">Failed to load contents.</string>

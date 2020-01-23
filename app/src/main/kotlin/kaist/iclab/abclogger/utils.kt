@@ -28,14 +28,15 @@ import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
+import io.reactivex.Flowable
 import io.reactivex.Single
+import kotlinx.coroutines.withContext
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.log10
 import java.io.Serializable
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import java.util.concurrent.ThreadLocalRandom
+import kotlin.coroutines.*
 
 fun isNetworkAvailable(context: Context): Boolean =
         (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetwork != null
@@ -139,23 +140,23 @@ fun Fragment.showSnackBar(view: View,
 }
 
 fun Context.showToast(messageRes: Int, isShort: Boolean = true) =
-    Toast.makeText(this, messageRes, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+        Toast.makeText(this, messageRes, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 
 
 fun Context.showToast(message: String, isShort: Boolean = true) =
-    Toast.makeText(this, message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+        Toast.makeText(this, message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 
 
 fun Fragment.showToast(messageRes: Int, isShort: Boolean = true) =
-    Toast.makeText(requireContext(), messageRes, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), messageRes, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 
 
 fun Fragment.showToast(message: String, isShort: Boolean = true) =
-    Toast.makeText(requireContext(), message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), message, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 
 
 fun Context.showToast(throwable: Throwable?, isShort: Boolean = true) {
-    val msg = when(throwable) {
+    val msg = when (throwable) {
         is ABCException -> throwable.toString(this)
         else -> ABCException.wrap(throwable).toString(this)
     }
@@ -163,7 +164,7 @@ fun Context.showToast(throwable: Throwable?, isShort: Boolean = true) {
 }
 
 fun Fragment.showToast(throwable: Throwable?, isShort: Boolean = true) {
-    val msg = when(throwable) {
+    val msg = when (throwable) {
         is ABCException -> throwable.toString(requireContext())
         else -> ABCException.wrap(throwable).toString(requireContext())
     }
@@ -191,7 +192,7 @@ inline fun <reified T : Activity> Context.startActivity(vararg params: Pair<Stri
                                                         options: Bundle? = null,
                                                         flags: Int? = null) {
     val intent = Intent(this, T::class.java).apply {
-        if(flags != null) addFlags(flags)
+        if (flags != null) addFlags(flags)
     }
 
     fillIntentWithArguments(intent, params)
@@ -221,7 +222,7 @@ inline fun <reified T : Activity> Fragment.startActivity(vararg params: Pair<Str
                                                          options: Bundle? = null,
                                                          flags: Int? = null) {
     val intent = Intent(requireContext(), T::class.java).apply {
-        if(flags != null) addFlags(flags)
+        if (flags != null) addFlags(flags)
     }
     fillIntentWithArguments(intent, params)
     startActivity(intent, options)
@@ -256,7 +257,7 @@ fun extraIntentFor(vararg params: Pair<String, Any?>): Intent {
     return intent
 }
 
-fun Context.checkWhitelist(): Boolean {
+fun Context.isWhitelisted(): Boolean {
     val manager = getSystemService(Context.POWER_SERVICE) as PowerManager
     return manager.isIgnoringBatteryOptimizations(packageName)
 }
@@ -338,7 +339,7 @@ fun fillBundleWithArguments(bundle: Bundle, params: Array<out Pair<String, Any?>
     }
 }
 
-suspend fun httpGet(url: String, vararg params: Pair<String, Any?>) : String? {
+suspend fun httpGet(url: String, vararg params: Pair<String, Any?>): String? {
     val (_, _, result) = Fuel.get(url, params.toList()).awaitStringResponseResult()
     val (response, exception) = result
     if (exception != null) throw HttpRequestException(exception.message)
@@ -348,8 +349,34 @@ suspend fun httpGet(url: String, vararg params: Pair<String, Any?>) : String? {
 
 fun Context.safeRegisterReceiver(receiver: BroadcastReceiver, filter: IntentFilter) = try {
     registerReceiver(receiver, filter)
-} catch (e: IllegalArgumentException) { }
+} catch (e: IllegalArgumentException) {
+}
 
 fun Context.safeUnregisterReceiver(receiver: BroadcastReceiver) = try {
     unregisterReceiver(receiver)
-} catch (e: IllegalArgumentException) { }
+} catch (e: IllegalArgumentException) {
+}
+
+suspend fun <T : Any> Single<T>.toCoroutine(context: CoroutineContext = EmptyCoroutineContext, throwable: Throwable? = null) = withContext(context) {
+    suspendCoroutine<T> { continuation ->
+        subscribe { result, exception ->
+            if (exception != null) {
+                continuation.resumeWithException(throwable ?: exception)
+            } else {
+                continuation.resume(result)
+            }
+        }
+    }
+}
+
+suspend fun <T : Any> Task<T?>.toCoroutine(context: CoroutineContext = EmptyCoroutineContext, throwable: Throwable? = null) = withContext(context) {
+    suspendCoroutine<T?> { continuation ->
+        addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                continuation.resume(task.result)
+            } else {
+                continuation.resumeWithException(throwable ?: task.exception ?: Exception())
+            }
+        }
+    }
+}
