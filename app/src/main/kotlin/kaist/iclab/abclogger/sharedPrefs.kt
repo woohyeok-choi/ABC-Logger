@@ -8,6 +8,7 @@ object GeneralPrefs : PreferenceHolder(name = BuildConfig.PREF_NAME_GENERAL) {
     var lastTimeDataSync: Long by ReadWriteLong(default = -1)
     var shouldUploadForNonMeteredNetwork: Boolean by ReadWriteBoolean(default = false)
     var dbVersion : Int by ReadWriteInt(default = 0)
+    var dbSize : Long by ReadWriteLong(default = 0)
 }
 
 object CollectorPrefs : PreferenceHolder(name = BuildConfig.PREF_NAME_COLLECTOR) {

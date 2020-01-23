@@ -15,24 +15,32 @@ import kotlinx.coroutines.launch
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.isSymlink
 import java.io.File
+import java.lang.Exception
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
 
 object ObjBox {
-    val boxStore : AtomicReference<BoxStore> = AtomicReference()
+    val boxStore: AtomicReference<BoxStore> = AtomicReference()
 
-    private fun buildStore(context: Context) : BoxStore {
-        val store = MyObjectBox.builder()
-                .androidContext(context.applicationContext)
-                .maxSizeInKByte(BuildConfig.DB_MAX_SIZE) //3 GB
-                .name("${BuildConfig.DB_NAME}-${GeneralPrefs.dbVersion}")
-                .build()
+    private fun buildStore(context: Context): BoxStore {
+        val store = (1..500).firstNotNullResult { multiple ->
+            try {
+                val tempStore = MyObjectBox.builder()
+                        .androidContext(context.applicationContext)
+                        .maxSizeInKByte(BuildConfig.DB_MAX_SIZE * multiple) //3 GB
+                        .name("${BuildConfig.DB_NAME}-${GeneralPrefs.dbVersion}")
+                        .build()
+                GeneralPrefs.dbSize = BuildConfig.DB_MAX_SIZE * multiple
+                tempStore
+            } catch (e: Exception) {
+                null
+            }
+        } ?: throw RuntimeException("DB size is too large!!")
+
         GeneralPrefs.dbVersion += 1
         return store
     }
-
-    fun boxStore() = boxStore.get()
 
     fun bind(context: Context) {
         boxStore.set(buildStore(context))
@@ -44,7 +52,7 @@ object ObjBox {
         oldStore.deleteAllFiles()
     }
 
-    fun size(context: Context) : Long {
+    fun size(context: Context): Long {
         val baseDir = File(context.filesDir, "objectbox")
         return FileUtils.sizeOfDirectory(baseDir)
     }
@@ -53,33 +61,33 @@ object ObjBox {
 
     inline fun <reified T> boxFor() = boxStore.get()?.boxFor<T>()
 
-    inline fun <reified T : Base> putSync(entity: T?) : Long {
+    inline fun <reified T : Base> putSync(entity: T?): Long {
         entity ?: return -1L
-        if(boxStore.get()?.isClosed != false) return -1
+        if (boxStore.get()?.isClosed != false) return -1
 
         if (BuildConfig.DEBUG) AppLog.d(any = entity)
         return boxFor<T>()?.put(entity) ?: -1
     }
 
     inline fun <reified T : Base> putSync(entities: Collection<T>?) {
-        if(entities.isNullOrEmpty()) return
-        if(boxStore.get()?.isClosed != false) return
+        if (entities.isNullOrEmpty()) return
+        if (boxStore.get()?.isClosed != false) return
 
         if (BuildConfig.DEBUG) AppLog.d(any = entities)
         boxFor<T>()?.put(entities)
     }
 
-    inline fun <reified T : Base> put(entity: T?) = GlobalScope.launch (Dispatchers.IO) {
+    inline fun <reified T : Base> put(entity: T?) = GlobalScope.launch(Dispatchers.IO) {
         entity ?: return@launch
-        if(boxStore.get()?.isClosed != false) return@launch
+        if (boxStore.get()?.isClosed != false) return@launch
 
         if (BuildConfig.DEBUG) AppLog.d(any = entity)
         boxFor<T>()?.put(entity) ?: -1
     }
 
-    inline fun <reified T : Base> put(entities: Collection<T>?) = GlobalScope.launch (Dispatchers.IO) {
-        if(entities.isNullOrEmpty()) return@launch
-        if(boxStore.get()?.isClosed != false) return@launch
+    inline fun <reified T : Base> put(entities: Collection<T>?) = GlobalScope.launch(Dispatchers.IO) {
+        if (entities.isNullOrEmpty()) return@launch
+        if (boxStore.get()?.isClosed != false) return@launch
 
         if (BuildConfig.DEBUG) AppLog.d(any = entities)
         boxFor<T>()?.put(entities)
@@ -97,7 +105,7 @@ abstract class Base(
         @Index var isUploaded: Boolean = false
 )
 
-fun <T : Base> T.fill(timeMillis: Long) : T {
+fun <T : Base> T.fill(timeMillis: Long): T {
     timestamp = timeMillis
     utcOffset = TimeZone.getDefault().rawOffset.toFloat() / (1000 * 60 * 60)
     subjectEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
