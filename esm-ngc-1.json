@@ -16,7 +16,7 @@
     {
       "type": "RADIO_BUTTON",
       "shouldAnswer": true,
-      "showEtc": "false",
+      "showEtc": false,
       "text": "My emotion right before doing this survey could be rated as (-3: very negative ~ +3: very positive)",
       "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
     },
