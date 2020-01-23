@@ -55,12 +55,13 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : LinearLayout(con
 
         ConstraintLayout(context).apply {
             addView(etcCheckBox, ConstraintLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT))
-            addView(etcEditText, ConstraintLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
+            addView(etcEditText, ConstraintLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT))
 
             ConstraintSet().also { constraint ->
                 constraint.clone(this)
-                constraint.connect(etcCheckBox.id, ConstraintSet.BASELINE, ConstraintSet.PARENT_ID, ConstraintSet.BASELINE)
-                constraint.connect(etcCheckBox.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+
+                constraint.connect(etcCheckBox.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+                constraint.connect(etcCheckBox.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
 
                 constraint.connect(etcEditText.id, ConstraintSet.BASELINE, etcCheckBox.id, ConstraintSet.BASELINE)
                 constraint.connect(etcEditText.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)

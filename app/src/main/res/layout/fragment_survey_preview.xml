@@ -5,8 +5,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="kaist.iclab.abclogger.ui.Status"/>
-        <import type="android.view.View"/>
+
+        <import type="kaist.iclab.abclogger.ui.Status" />
+
+        <import type="android.view.View" />
 
         <variable
             name="viewModel"
@@ -16,41 +18,38 @@
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ui.survey.question.SurveyResponseActivity">
+        android:layout_height="match_parent">
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/scroll_view"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" >
+            android:paddingLeft="@dimen/item_default_horizontal_padding"
+            android:paddingRight="@dimen/item_default_horizontal_padding">
 
-            <FrameLayout
+            <androidx.core.widget.ContentLoadingProgressBar
+                android:id="@+id/load_progress_bar"
+                style="?android:attr/progressBarStyleLarge"
+                showToast="@{true}"
+                status="@{viewModel.loadStatus}"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|center_horizontal"
+                android:indeterminate="true" />
 
-                <androidx.core.widget.ContentLoadingProgressBar
-                    android:id="@+id/load_progress_bar"
-                    style="?android:attr/progressBarStyleLarge"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical|center_horizontal"
-                    status="@{viewModel.loadStatus}"
-                    showToast="@{true}"
-                    android:indeterminate="true"
-                    android:paddingStart="@dimen/item_space_horizontal"
-                    android:paddingEnd="@dimen/item_space_horizontal" />
+            <TextView
+                android:id="@+id/txt_error"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="@string/msg_fail_to_load_contents"
+                android:textSize="@dimen/txt_size_text"
+                android:visibility="@{viewModel.loadStatus.state == Status.STATE_FAILURE ? View.VISIBLE : View.GONE}" />
 
-                <TextView
-                    android:id="@+id/txt_error"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingStart="@dimen/item_space_horizontal"
-                    android:paddingEnd="@dimen/item_space_horizontal"
-                    android:gravity="center_vertical|center_horizontal"
-                    android:visibility="@{viewModel.loadStatus.state == Status.STATE_FAILURE ? View.VISIBLE : View.GONE}"
-                    android:text="@string/msg_fail_to_load_contents"
-                    android:textSize="@dimen/txt_size_text"/>
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scroll_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -60,13 +59,7 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?android:selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:paddingLeft="@dimen/item_default_horizontal_padding"
-                        android:paddingRight="@dimen/item_default_horizontal_padding"
-                        android:paddingTop="@dimen/item_default_vertical_padding">
+                        android:layout_height="wrap_content">
 
                         <TextView
                             android:id="@+id/txt_header"
@@ -88,7 +81,7 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
-                            android:text="@{viewModel.title}"
+                            android:text="@{viewModel.message}"
                             android:textColor="@color/color_message"
                             android:textSize="@dimen/txt_size_text"
                             app:layout_constraintStart_toStartOf="parent"
@@ -97,14 +90,38 @@
                         <TextView
                             android:id="@+id/txt_delivered_time"
                             isBold="@{true}"
+                            timestamp="@{System.currentTimeMillis()}"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            timestamp="@{System.currentTimeMillis()}"
                             android:textColor="@color/color_blue"
                             android:textSize="@dimen/txt_size_text_small"
                             app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/txt_header"
+                            app:layout_constraintRight_toRightOf="@id/txt_header"
                             app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/txt_instruction"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:ellipsize="end"
+                            android:maxLines="5"
+                            android:text="@{viewModel.instruction}"
+                            android:textSize="@dimen/txt_size_text_small"
+                            android:textColor="@color/color_message"
+                            app:layout_constraintTop_toBottomOf="@id/txt_message"
+                            app:layout_constraintLeft_toLeftOf="parent" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="5"
+                            android:text="@string/general_survey_instruction"
+                            android:textSize="@dimen/txt_size_text_small"
+                            android:textColor="@color/color_message"
+                            app:layout_constraintTop_toBottomOf="@id/txt_instruction"
+                            app:layout_constraintLeft_toLeftOf="parent" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
@@ -112,9 +129,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
                 </LinearLayout>
-            </FrameLayout>
-        </androidx.core.widget.NestedScrollView>
+            </androidx.core.widget.NestedScrollView>
+        </FrameLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

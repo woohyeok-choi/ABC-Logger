@@ -4,16 +4,15 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.SeekBar
-import android.widget.TextView
+import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.BindingAdapter
 import androidx.databinding.InverseBindingAdapter
 import androidx.databinding.InverseBindingListener
 import kaist.iclab.abclogger.R
+import kotlinx.android.synthetic.main.layout_test.view.*
 import io.techery.progresshint.addition.widget.SeekBar as IndicatorSeekBark
 
 class SliderView (context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
@@ -31,7 +30,11 @@ class SliderView (context: Context, attrs: AttributeSet?) : ConstraintLayout(con
         id = View.generateViewId()
         text = context.getString(R.string.general_etc)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-        setOnCheckedChangeListener { _, _ -> onAttributeChanged?.invoke() }
+        setOnCheckedChangeListener { _, isChecked ->
+            seekBar.isEnabled = !isChecked
+            editText.isEnabled = isChecked
+            onAttributeChanged?.invoke()
+        }
     }
 
     private val editText : EditText = EditText(context).apply {
@@ -39,6 +42,27 @@ class SliderView (context: Context, attrs: AttributeSet?) : ConstraintLayout(con
         setHint(R.string.general_free_text)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
         addTextChangedListener({_, _, _, _ -> }, {_, _, _, _ -> onAttributeChanged?.invoke()}, {})
+    }
+
+    init {
+        addView(seekBar, LayoutParams(0, LayoutParams.WRAP_CONTENT))
+        addView(checkBox, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
+        addView(editText, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
+
+        ConstraintSet().also { constraint ->
+            constraint.clone(this)
+
+            constraint.connect(seekBar.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+            constraint.connect(seekBar.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
+            constraint.connect(seekBar.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
+
+            constraint.connect(checkBox.id, ConstraintSet.TOP, seekBar.id, ConstraintSet.BOTTOM)
+            constraint.connect(checkBox.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
+
+            constraint.connect(editText.id, ConstraintSet.TOP, seekBar.id, ConstraintSet.BOTTOM)
+            constraint.connect(editText.id, ConstraintSet.LEFT, checkBox.id, ConstraintSet.RIGHT)
+            constraint.connect(editText.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
+        }.applyTo(this)
     }
 
     fun init(options: Array<String>, showEtc: Boolean, isAvailable: Boolean) {

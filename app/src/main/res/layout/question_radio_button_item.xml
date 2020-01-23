@@ -43,7 +43,7 @@
                 isBold="@{isAvailable}"
                 android:textColor="@{isAvailable ? @color/color_title : @color/color_message}"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
+                app:layout_constraintLeft_toLeftOf="parent"/>
 
             <TextView
                 android:id="@+id/txt_message"
@@ -55,13 +55,13 @@
                 isBold="@{isAvailable}"
                 android:textColor="@{isAvailable ? @color/color_title : @color/color_message}"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toEndOf="@id/txt_should_answer"/>
+                app:layout_constraintLeft_toRightOf="@id/txt_should_answer"/>
 
             <kaist.iclab.abclogger.ui.survey.question.RadioButtonsView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/txt_message"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
                 options="@{question.options}"
                 showEtc="@{question.showEtc}"
                 responses="@={question.responses}"

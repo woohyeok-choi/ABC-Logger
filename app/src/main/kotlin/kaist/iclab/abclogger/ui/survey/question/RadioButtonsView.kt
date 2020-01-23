@@ -7,81 +7,93 @@ import android.view.View
 import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.view.children
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.BindingAdapter
 import androidx.databinding.InverseBindingAdapter
 import androidx.databinding.InverseBindingListener
 import kaist.iclab.abclogger.R
 
-class RadioButtonsView (context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
+class RadioButtonsView (context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
     constructor(context: Context) : this(context, null)
 
     var onAttributeChanged: (() -> Unit)? = null
 
     private var isBound: Boolean = false
-    private val buttons: MutableList<RadioButton> = mutableListOf()
-    private var etcButton : RadioButton = buildRadioButton(context.getString(R.string.general_etc))
-    private var etcEditText : EditText = EditText(context).apply {
+
+    private val group : LinearLayout = LinearLayout(context).apply {
+        id = View.generateViewId()
+        orientation = LinearLayout.VERTICAL
+    }
+
+    private val optionButtons: MutableList<RadioButton> = mutableListOf()
+
+    private val etcButton : RadioButton = RadioButton(context).apply {
+        id = View.generateViewId()
+        text = context.getString(R.string.general_etc)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
+        setOnCheckedChangeListener(onCheckedChanged)
+    }
+
+    private val etcEditText : EditText = EditText(context).apply {
         id = View.generateViewId()
         setHint(R.string.general_free_text)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
         addTextChangedListener({_, _, _, _ -> }, {_, _, _, _ -> onAttributeChanged?.invoke()}, {})
     }
 
-    init {
-        orientation = VERTICAL
+    private var onCheckedChanged: (CompoundButton, Boolean) -> Unit = { view, isChecked ->
+        (optionButtons + etcButton).forEach { button -> button.isChecked = view == button }
+        etcEditText.isEnabled = etcButton.isChecked
+        onAttributeChanged?.invoke()
     }
 
-    private fun buildRadioButton(label: String = "") : RadioButton = RadioButton(context).apply {
-        id = View.generateViewId()
-        text = label
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-        setOnCheckedChangeListener { buttonView, isChecked ->
-            if(isChecked) {
-                (buttons + etcButton).forEach { button ->
-                    if (button != buttonView) button.isChecked = false
-                }
-                onAttributeChanged?.invoke()
+    init {
+        addView(group, LayoutParams(0, LayoutParams.WRAP_CONTENT))
+        addView(etcButton, LayoutParams(0, LayoutParams.WRAP_CONTENT))
+        addView(etcEditText, LayoutParams(0, LayoutParams.WRAP_CONTENT))
+
+        ConstraintSet().also { constraint ->
+            constraint.connect(group.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+            constraint.connect(group.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
+            constraint.connect(group.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
+
+            constraint.connect(etcButton.id, ConstraintSet.TOP, group.id, ConstraintSet.BOTTOM)
+            constraint.connect(etcButton.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
+
+            constraint.connect(etcEditText.id, ConstraintSet.TOP, group.id, ConstraintSet.BOTTOM)
+            constraint.connect(etcEditText.id, ConstraintSet.LEFT, etcButton.id, ConstraintSet.RIGHT)
+            constraint.connect(etcEditText.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
+        }.applyTo(this)
+    }
+
+    private fun bind(options: Array<String>, showEtc: Boolean, isAvailable: Boolean) {
+        val buttons = options.map { option ->
+            RadioButton(context).apply {
+                id = View.generateViewId()
+                text = option
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
+                setOnCheckedChangeListener(onCheckedChanged)
             }
         }
-    }
+        optionButtons.clear()
+        optionButtons.addAll(buttons)
 
-    private fun init(options: Array<String>, showEtc: Boolean, isAvailable: Boolean) {
-        options.map { option ->
-            buildRadioButton(option).apply { isEnabled = isAvailable }
-        }.let { buttons.addAll(it) }
-
-        buttons.forEach { button ->
-            addView(button, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
+        optionButtons.forEach { button ->
+            group.addView(button, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+            button.isEnabled = isAvailable
         }
 
         etcButton.isEnabled = isAvailable
+        etcButton.visibility = if(showEtc) View.VISIBLE else View.GONE
+
         etcEditText.isEnabled = isAvailable
-
-        ConstraintLayout(context).apply {
-            addView(etcButton, ConstraintLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT))
-            addView(etcEditText, ConstraintLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
-
-            ConstraintSet().also { constraint ->
-                constraint.clone(this)
-                constraint.connect(etcButton.id, ConstraintSet.BASELINE, ConstraintSet.PARENT_ID, ConstraintSet.BASELINE)
-                constraint.connect(etcButton.id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
-
-                constraint.connect(etcEditText.id, ConstraintSet.BASELINE, etcButton.id, ConstraintSet.BASELINE)
-                constraint.connect(etcEditText.id, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
-                constraint.connect(etcEditText.id, ConstraintSet.START, etcButton.id, ConstraintSet.END)
-            }.applyTo(this)
-            visibility = if(showEtc) View.VISIBLE else View.GONE
-        }.let { layout ->
-            addView(layout, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
-        }
+        etcEditText.visibility = if(showEtc) View.VISIBLE else View.GONE
     }
 
     private fun setResponse(responses: Array<String>) {
         if (responses.isEmpty()) return
 
-        val checkedButton = buttons.firstOrNull {
+        val checkedButton = optionButtons.firstOrNull {
             button -> button.text.isNotBlank() && button.text == responses.first()
         } ?: if(etcEditText.text?.isNotBlank() == true && etcEditText.text?.toString() == responses.first()) {
             etcButton
@@ -94,14 +106,14 @@ class RadioButtonsView (context: Context, attrs: AttributeSet?) : LinearLayout(c
 
     fun bind(options: Array<String>, showEtc: Boolean, isAvailable: Boolean, responses: Array<String>) {
         if(!isBound) {
-            init(options, showEtc, isAvailable)
+            bind(options, showEtc, isAvailable)
             isBound = true
         }
         setResponse(responses)
     }
 
     fun getResponse() : Array<String> {
-        val checkedLabel = buttons.firstOrNull {
+        val checkedLabel = optionButtons.firstOrNull {
             button -> button.text.isNotBlank() && button.isChecked
         }?.text ?: if(etcEditText.text?.isNotBlank() == true && etcButton.isChecked) {
             etcEditText.text

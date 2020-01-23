@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SurveyResponseViewModel : ViewModel() {
+    val instruction = MutableLiveData<String>()
     val loadStatus = MutableLiveData<Status>(Status.init())
     val storeStatus = MutableLiveData<Status>(Status.init())
 
@@ -25,6 +26,7 @@ class SurveyResponseViewModel : ViewModel() {
                         ?: throw InvalidEntityIdException()
                 val survey = Survey.fromJson(entity.json)
                         ?: throw InvalidSurveyFormatException()
+                instruction.postValue(survey.instruction)
                 Triple(survey.questions, entity.isAvailable(), entity.showAltText())
             }
             setting.postValue(data)
