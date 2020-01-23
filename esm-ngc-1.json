@@ -1,0 +1,73 @@
+{
+  "type": "INTERVAL",
+  "title": "감정 설문이 도착했습니다",
+  "message": "설문에 응답해주세요",
+  "instruction": "알림 도착 이후 10분 이내의 상황을 기준으로 아래에 응답해주세요",
+  "timeoutSec": "600",
+  "timeoutPolicy": "DISABLED",
+  "initialDelaySec": "600",
+  "intervalSec": "2400",
+  "flexIntervalSec": "1200",
+  "dailyStartTimeHour": "10",
+  "dailyStartTimeMinute": "0",
+  "dailyEndTimeHour": "22",
+  "dailyEndTimeMinute": "0",
+  "questions": [
+    {
+      "type": "RADIO_BUTTON",
+      "shouldAnswer": "true",
+      "showEtc": "false",
+      "text": "My emotion right before doing this survey could be rated as (-3: very negative ~ +3: very positive)",
+      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
+    },
+    {
+      "type": "RADIO_BUTTON",
+      "shouldAnswer": "true",
+      "showEtc": "false",
+      "text": "My emotion right before doing this survey could be rated as (-3: very calm ~ +3: very excited)",
+      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
+    },
+    {
+      "type": "RADIO_BUTTON",
+      "shouldAnswer": "true",
+      "showEtc": "false",
+      "text": "My stress level right before doing this survey could be rated as (-3: not stressed at all ~ +3: very stressed)",
+      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
+    },
+    {
+      "type": "SLIDER",
+      "shouldAnswer": "true",
+      "showEtc": "true",
+      "text": "The emotion that I answered with above has not changed for the past ___ minutes. (0 ~ 60 min; or type \"I'm not sure.\" if you are not sure)",
+      "options": ["0", "60"]
+    },
+    {
+      "type": "RADIO_BUTTON",
+      "shouldAnswer": "true",
+      "showEtc": "false",
+      "text": "My attention level right before doing this survey could be rated as (-3: very bored ~ +3: very engaged)",
+      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
+    },
+    {
+      "type": "RADIO_BUTTON",
+      "shouldAnswer": "true",
+      "showEtc": "false",
+      "text": "Did answering this survey disturb the activity that I was performing before doing it? (-3: did not disturb me at all ~ +3: it was very disturbing)",
+      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
+    },
+    {
+      "type": "RADIO_BUTTON",
+      "shouldAnswer": "true",
+      "showEtc": "false",
+      "text": "How mentally demanding was my activity before doing this survey? (-3: very low ~ +3: very high)",
+      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
+    },
+    {
+      "type": "RADIO_BUTTON",
+      "shouldAnswer": "true",
+      "showEtc": "false",
+      "text": "How have your emotions changed while you've been answering this survey? (-3: I've felt more negative ~ +3: I've felt more positive)",
+      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
+    }
+  ]
+}
