@@ -95,9 +95,9 @@ open class Survey(
         const val QUESTION_CHECK_BOX = "CHECK_BOX"
         const val QUESTION_SLIDER = "SLIDER"
 
-        const val TYPE_INTERVAL = "interval"
-        const val TYPE_EVENT = "event"
-        const val TYPE_SCHEDULE = "schedule"
+        const val TYPE_INTERVAL = "INTERVAL"
+        const val TYPE_EVENT = "EVENT"
+        const val TYPE_SCHEDULE = "SCHEDULE"
 
         private val moshi by lazy {
             Moshi.Builder().add(

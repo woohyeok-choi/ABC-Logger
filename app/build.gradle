@@ -27,8 +27,8 @@ android {
         applicationId 'kaist.iclab.abclogger'
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 1
-        versionName "0.9.0"
+        versionCode 2
+        versionName "0.9.1"
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
         buildConfigField("String", "DB_NAME", "\"abc-logger\"")
         buildConfigField("String", "PREF_NAME_COLLECTOR", "\"abc-logger-collector-pref\"")
