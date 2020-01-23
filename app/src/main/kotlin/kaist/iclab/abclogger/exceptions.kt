@@ -2,8 +2,10 @@ package kaist.iclab.abclogger
 
 import android.content.Context
 import com.github.kittinunf.fuel.core.FuelError
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.Status
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -80,11 +82,16 @@ class GoogleApiException(private val statusCode: Int) : ABCException() {
             CommonStatusCodes.RESOLUTION_REQUIRED -> "Resolution is required."
             CommonStatusCodes.SIGN_IN_REQUIRED -> "Sign-in is required."
             CommonStatusCodes.TIMEOUT -> "Request is timed out."
+            GoogleSignInStatusCodes.SIGN_IN_CANCELLED -> "Sign-in canceled."
+            GoogleSignInStatusCodes.SIGN_IN_CURRENTLY_IN_PROGRESS -> "Sign-in already in progress."
+            GoogleSignInStatusCodes.SIGN_IN_FAILED -> "Sign-in failed. There may be no Google account connected to this device, or Google Play service is outdated."
             else -> null
         }
     override val stringRes: Int
         get() = R.string.error_google_api_exception
 }
+
+
 
 class FirebaseInvalidUserException : ABCException() {
     override val stringRes: Int
@@ -119,4 +126,9 @@ class InvalidUrlException: ABCException() {
 class PolarH10Exception(message: String?): ABCException(message) {
     override val stringRes: Int
         get() = R.string.error_polar_h10
+}
+
+class GooglePlayServiceOutdatedException : ABCException() {
+    override val stringRes: Int
+        get() = R.string.error_require_to_update_google_play_service
 }

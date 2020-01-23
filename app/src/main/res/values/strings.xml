@@ -80,6 +80,7 @@
     <string name="error_invalid_url">Invalid URL</string>
     <string name="error_invalid_value">Contents are not correctly loaded.</string>
     <string name="error_polar_h10">Error occurs on Polar H10</string>
+    <string name="error_require_to_update_google_play_service">Please update Google Play service to use this app</string>
 
     <string name="dialog_title_permission_request">Permission request</string>
     <string name="dialog_message_permission_request">We need some permissions for using this app.</string>

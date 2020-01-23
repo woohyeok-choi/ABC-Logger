@@ -28,6 +28,7 @@ import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
+import io.reactivex.Single
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.log10
