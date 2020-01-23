@@ -34,9 +34,9 @@ class MediaCollector (val context: Context) : BaseCollector {
 
                     MediaEntity(
                             mimeType = cursor.getString(1) ?: "image/*"
-                    ).fillBaseInfo(toMillis(timestamp = timestamp))
+                    ).fill(toMillis(timestamp = timestamp))
                 }?.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
 
                 CollectorPrefs.lastAccessTimeInternalPhoto = timestamps.max() ?: CollectorPrefs.lastAccessTimeInternalPhoto
@@ -65,9 +65,9 @@ class MediaCollector (val context: Context) : BaseCollector {
 
                     MediaEntity(
                             mimeType = cursor.getString(1) ?: "video/*"
-                    ).fillBaseInfo(toMillis(timestamp = timestamp))
+                    ).fill(toMillis(timestamp = timestamp))
                 }?.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
 
                 CollectorPrefs.lastAccessTimeInternalVideo = timestamps.max() ?: CollectorPrefs.lastAccessTimeInternalVideo
@@ -97,9 +97,9 @@ class MediaCollector (val context: Context) : BaseCollector {
 
                     MediaEntity(
                             mimeType = cursor.getString(1) ?: "image/*"
-                    ).fillBaseInfo(toMillis(timestamp = timestamp))
+                    ).fill(toMillis(timestamp = timestamp))
                 }?.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
 
                 CollectorPrefs.lastAccessTimeExternalPhoto = timestamps.max() ?: CollectorPrefs.lastAccessTimeExternalPhoto
@@ -128,9 +128,9 @@ class MediaCollector (val context: Context) : BaseCollector {
 
                     MediaEntity(
                             mimeType = cursor.getString(1) ?: "video/*"
-                    ).fillBaseInfo(toMillis(timestamp = timestamp))
+                    ).fill(toMillis(timestamp = timestamp))
                 }?.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
 
                 CollectorPrefs.lastAccessTimeExternalVideo = timestamps.max() ?: CollectorPrefs.lastAccessTimeExternalVideo

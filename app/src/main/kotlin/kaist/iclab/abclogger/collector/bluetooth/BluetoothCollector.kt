@@ -40,9 +40,7 @@ class BluetoothCollector(val context: Context) : BaseCollector {
                         deviceName = result.device.name ?: "",
                         address = address,
                         rssi = result.rssi
-                ).fillBaseInfo(
-                        timeMillis = System.currentTimeMillis()
-                ).run { putEntity(this) }
+                ).fill(timeMillis = System.currentTimeMillis()).run { ObjBox.put(this) }
             }
         }
     }
@@ -99,9 +97,7 @@ class BluetoothCollector(val context: Context) : BaseCollector {
                 deviceName = device.name,
                 address = device.address,
                 rssi = rssi
-        ).fillBaseInfo(
-                timeMillis = timestamp
-        ).run { putEntity(this) }
+        ).fill(timeMillis = timestamp).run { ObjBox.put(this) }
     }
 
     private fun handleBluetoothScanRequest() {
@@ -146,7 +142,7 @@ class BluetoothCollector(val context: Context) : BaseCollector {
         )
 
     override val newIntentForSetUp: Intent?
-        get() = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        get() = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
 
     companion object {
         private const val ACTION_BLUETOOTH_SCAN = "${BuildConfig.APPLICATION_ID}.ACTION_BLUETOOTH_SCAN"

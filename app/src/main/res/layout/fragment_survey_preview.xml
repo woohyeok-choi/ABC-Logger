@@ -35,9 +35,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical|center_horizontal"
+                    status="@{viewModel.loadStatus}"
+                    showToast="@{true}"
                     android:indeterminate="true"
                     android:paddingStart="@dimen/item_space_horizontal"
                     android:paddingEnd="@dimen/item_space_horizontal" />
+
                 <TextView
                     android:id="@+id/txt_error"
                     android:layout_width="match_parent"
@@ -72,7 +75,7 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
-                            android:text="@{viewModel.survey.title}"
+                            android:text="@{viewModel.title}"
                             android:textColor="@color/color_title"
                             android:textSize="@dimen/txt_size_title_small"
                             app:layout_constraintStart_toStartOf="parent"
@@ -85,7 +88,7 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
-                            android:text="@{viewModel.survey.message}"
+                            android:text="@{viewModel.title}"
                             android:textColor="@color/color_message"
                             android:textSize="@dimen/txt_size_text"
                             app:layout_constraintStart_toStartOf="parent"

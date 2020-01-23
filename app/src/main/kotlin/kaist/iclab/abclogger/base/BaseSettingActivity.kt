@@ -2,6 +2,7 @@ package kaist.iclab.abclogger.base
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.CallSuper
@@ -14,7 +15,7 @@ import kotlinx.android.synthetic.main.activity_setting_base.*
 abstract class BaseSettingActivity<T: ViewDataBinding, VM: ViewModel> : BaseAppCompatActivity() {
     @CallSuper
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_activity_survey_question, menu)
+        menuInflater.inflate(R.menu.menu_activity_settings, menu)
         return true
     }
 
@@ -43,6 +44,7 @@ abstract class BaseSettingActivity<T: ViewDataBinding, VM: ViewModel> : BaseAppC
             true
         }
         R.id.menu_activity_settings_save -> {
+            Log.d("ZXCV", "ZXCVZXCVZXCV")
             onSaveSelected()
             true
         }

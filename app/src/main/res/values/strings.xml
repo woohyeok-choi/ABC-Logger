@@ -56,11 +56,15 @@
     <string name="btn_preview">Preview</string>
 
     <string name="ntf_title_service_running">@string/app_name</string>
-    <string name="ntf_text_service_running">Experiment in progress&#8230;</string>
+    <string name="ntf_text_service_running">Application in progress&#8230;</string>
     <string name="ntf_title_sync">Sync</string>
     <string name="ntf_text_sync">Sync in progress&#8230;</string>
     <string name="ntf_text_sync_complete">Sync complete!</string>
     <string name="ntf_text_sync_failed">Sync failed</string>
+    <string name="ntf_title_flush">Flush local data</string>
+    <string name="ntf_text_flush">Flush in progress&#8230;</string>
+    <string name="ntf_text_flush_complete">Flush complete!</string>
+    <string name="ntf_text_flush_failed">Flush failed</string>
 
     <string name="error_general">Unknown error occurs.</string>
     <string name="error_google_api_exception">Error occurs during signing in a Google account</string>
@@ -74,7 +78,9 @@
     <string name="error_not_white_listed">Request for whitelist is denied</string>
     <string name="error_http_error">Error occurs during Http connection</string>
     <string name="error_no_signed_google_account">No signed google account</string>
-
+    <string name="error_invalid_url">Invalid URL</string>
+    <string name="error_invalid_value">Contents are not correctly loaded.</string>
+    <string name="error_polar_h10">Error occurs on Polar H10</string>
 
     <string name="dialog_title_permission_request">Permission request</string>
     <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
@@ -135,6 +141,8 @@
     <string name="data_desc_survey">It collects in-situ surveys.</string>
     <string name="data_name_wifi">WiFi</string>
     <string name="data_desc_wifi">It collects WiFI APs around a user.</string>
+    <string name="data_name_sensor">Sensor</string>
+    <string name="data_desc_sensor">It collects data from sensors equipped on a smartphone.</string>
 
     <string name="permission_title_general">App permissions</string>
     <string name="permission_title_notification">Notification access</string>
@@ -160,6 +168,5 @@
     <string name="setting_survey_collector_instruction">Survey URLs</string>
     <string name="setting_survey_collector_preview">Preview</string>
     <string name="setting_survey_collector_url_hint">Enter a survey URL.</string>
-    <string name="setting_survey_collector_url_error">Invalid URL.</string>
 </resources>
 

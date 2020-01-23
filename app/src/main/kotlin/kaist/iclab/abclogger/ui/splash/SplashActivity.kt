@@ -91,10 +91,8 @@ class SplashActivity : BaseAppCompatActivity() {
                     if (!isPermitted) throw PermissionDeniedException()
 
                     return@flatMap if (checkWhitelist()) {
-                        Log.d(TAG, "isWhitelested")
                         Single.just<Boolean>(true)
                     } else {
-                        Log.d(TAG, "testWhitelist")
                         requestWhiteList()
 
                         whiteListSingle

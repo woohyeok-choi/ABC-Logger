@@ -5,11 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.fillBaseInfo
-import kaist.iclab.abclogger.putEntity
-import kaist.iclab.abclogger.safeRegisterReceiver
-import kaist.iclab.abclogger.safeUnregisterReceiver
 
 class BatteryCollector (val context: Context) : BaseCollector {
     private val receiver : BroadcastReceiver by lazy {
@@ -44,11 +41,7 @@ class BatteryCollector (val context: Context) : BaseCollector {
                             BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "NOT_CHARGING"
                             else -> "UNKNOWN"
                         }
-                ).fillBaseInfo(
-                        timeMillis = System.currentTimeMillis()
-                ).run {
-                    putEntity(this)
-                }
+                ).fill(timeMillis = System.currentTimeMillis()).run { ObjBox.put(this) }
             }
         }
     }

@@ -64,9 +64,8 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action != ACTION_UPDATE_PHYSICAL_STATUS) return
-                GlobalScope.launch(Dispatchers.IO) {
-                    putEntitySync(getPhysicalStatusEntities())
-                }
+
+                ObjBox.put(getPhysicalStatusEntities())
             }
         }
     }
@@ -105,7 +104,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
                                 startTime = dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                                 endTime = dataPoint.getEndTime(TimeUnit.MILLISECONDS),
                                 value = dataPoint.getValue(field).asFloat()
-                        ).fillBaseInfo(timeMillis = dataPoint.getTimestamp(TimeUnit.MILLISECONDS))
+                        ).fill(timeMillis = dataPoint.getTimestamp(TimeUnit.MILLISECONDS))
                     }
                 }
             }?.flatten()

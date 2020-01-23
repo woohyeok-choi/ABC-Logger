@@ -7,6 +7,19 @@
     <data>
         <import type="kaist.iclab.abclogger.ui.Status"/>
         <import type="android.view.View"/>
+
+        <variable
+            name="title"
+            type="String" />
+
+        <variable
+            name="message"
+            type="String" />
+
+        <variable
+            name="deliveredTime"
+            type="Long" />
+
         <variable
             name="viewModel"
             type="kaist.iclab.abclogger.ui.survey.question.SurveyResponseViewModel" />
@@ -34,6 +47,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical|center_horizontal"
+                    status="@{viewModel.loadStatus}"
+                    showToast="@{true}"
                     android:indeterminate="true"
                     android:paddingStart="@dimen/item_space_horizontal"
                     android:paddingEnd="@dimen/item_space_horizontal" />
@@ -43,6 +58,8 @@
                     style="?android:attr/progressBarStyleLarge"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    status="@{viewModel.storeStatus}"
+                    showToast="@{true}"
                     android:background="@color/color_white_alpha"
                     android:gravity="center_vertical|center_horizontal"
                     android:indeterminate="true"
@@ -59,6 +76,7 @@
                     android:visibility="@{viewModel.loadStatus.state == Status.STATE_FAILURE ? View.VISIBLE : View.GONE}"
                     android:text="@string/msg_fail_to_load_contents"
                     android:textSize="@dimen/txt_size_text"/>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -77,25 +95,25 @@
 
                         <TextView
                             android:id="@+id/txt_header"
-                            isBold="@{viewModel.surveySetting.available}"
+                            isBold="@{viewModel.setting.second}"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
-                            android:text="@{viewModel.surveyTitle}"
-                            android:textColor="@{viewModel.surveySetting.available ? @color/color_title : @color/color_message}"
+                            android:text="@{title}"
+                            android:textColor="@{viewModel.setting.second ? @color/color_title : @color/color_message}"
                             android:textSize="@dimen/txt_size_title_small"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
                             android:id="@+id/txt_message"
-                            isBold="@{viewModel.surveySetting.available}"
+                            isBold="@{viewModel.setting.second}"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
-                            android:text="@{viewModel.surveyMessage}"
+                            android:text="@{message}"
                             android:textColor="@color/color_message"
                             android:textSize="@dimen/txt_size_text"
                             app:layout_constraintStart_toStartOf="parent"
@@ -103,11 +121,11 @@
 
                         <TextView
                             android:id="@+id/txt_delivered_time"
-                            isBold="@{viewModel.surveySetting.available}"
+                            isBold="@{viewModel.setting.second}"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            timestamp="@{viewModel.surveyDeliveredTime}"
-                            android:textColor="@{viewModel.surveySetting.available ? @color/color_blue : @color/color_message}"
+                            timestamp="@{deliveredTime}"
+                            android:textColor="@{viewModel.setting.second ? @color/color_blue : @color/color_message}"
                             android:textSize="@dimen/txt_size_text_small"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@id/txt_header"

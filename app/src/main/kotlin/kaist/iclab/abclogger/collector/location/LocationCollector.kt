@@ -30,9 +30,9 @@ class LocationCollector(val context: Context) : BaseCollector {
                             altitude = loc.altitude,
                             accuracy = loc.accuracy,
                             speed = loc.speed
-                    ).fillBaseInfo(timeMillis = loc.time)
+                    ).fill(timeMillis = loc.time)
                 }?.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
             }
         }

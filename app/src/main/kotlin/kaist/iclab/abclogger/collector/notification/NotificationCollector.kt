@@ -14,83 +14,83 @@ import kaist.iclab.abclogger.collector.getApplicationName
 import kaist.iclab.abclogger.collector.isSystemApp
 import kaist.iclab.abclogger.collector.isUpdatedSystemApp
 
-class NotificationCollector(val context: Context) : NotificationListenerService(), BaseCollector {
-    override fun onNotificationPosted(sbn: StatusBarNotification?) {
-        super.onNotificationPosted(sbn)
-        if (!CollectorPrefs.hasStartedNotification || !checkAvailability()) return
+class NotificationCollector(val context: Context) : BaseCollector {
+    class NotificationCollectorService: NotificationListenerService() {
+        override fun onNotificationPosted(sbn: StatusBarNotification?) {
+            super.onNotificationPosted(sbn)
+            if (!CollectorPrefs.hasStartedNotification) return
 
-        try {
-            sbn?.run {
-                store(this, true)
-                ABCEvent.post(postTime, ABCEvent.NOTIFICATION_POSTED)
-            }
+            try {
+                sbn?.run {
+                    store(this, true)
+                    ABCEvent.post(postTime, ABCEvent.NOTIFICATION_POSTED)
+                }
 
-        } catch (e: Exception) { }
-    }
-
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        super.onNotificationRemoved(sbn)
-        if (!CollectorPrefs.hasStartedNotification || !checkAvailability()) return
-
-        try {
-            sbn?.run {
-                store(this, false)
-                ABCEvent.post(postTime, ABCEvent.NOTIFICATION_REMOVED)
-            }
-        } catch (e: Exception) {
-
-        }
-    }
-
-    private fun visibilityToString (typeInt: Int) = when(typeInt) {
-        Notification.VISIBILITY_PRIVATE -> "PRIVATE"
-        Notification.VISIBILITY_PUBLIC -> "PUBLIC"
-        Notification.VISIBILITY_SECRET -> "SECRET"
-        else -> "UNKNOWN"
-    }
-
-    private fun store(sbn: StatusBarNotification, isPosted: Boolean) {
-        val notification = sbn.notification
-        val postTime = sbn.postTime
-        val packageName = sbn.packageName
-        val title = notification.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
-        val visibility = visibilityToString(notification.visibility)
-        val category = notification.category ?: ""
-
-        val vibrate: String
-        val sound: String
-        val lightColor: String
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            vibrate = notification.vibrate?.joinToString(",") ?: ""
-            sound = notification.sound?.toString() ?: ""
-            lightColor = notification.ledARGB.toString()
-        } else {
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val channel = notification.channelId?.let { channelId ->
-                notificationManager.getNotificationChannel(channelId)
-            }
-
-            vibrate = channel?.vibrationPattern?.joinToString(",") ?: ""
-            sound = channel?.sound?.toString() ?: ""
-            lightColor = channel?.lightColor.toString()
+            } catch (e: Exception) { }
         }
 
-        NotificationEntity(
-                name = getApplicationName(packageManager = packageManager, packageName = packageName)
-                        ?: "",
-                packageName = packageName,
-                isSystemApp = isSystemApp(packageManager = packageManager, packageName = packageName),
-                isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
-                title = title,
-                visibility = visibility,
-                category = category,
-                vibrate = vibrate,
-                sound = sound,
-                lightColor = lightColor,
-                isRemoved = isPosted
-        ).fillBaseInfo(timeMillis = postTime).run {
-            putEntity(this)
+        override fun onNotificationRemoved(sbn: StatusBarNotification?) {
+            super.onNotificationRemoved(sbn)
+            if (!CollectorPrefs.hasStartedNotification) return
+
+            try {
+                sbn?.run {
+                    store(this, false)
+                    ABCEvent.post(postTime, ABCEvent.NOTIFICATION_REMOVED)
+                }
+            } catch (e: Exception) {
+
+            }
+        }
+
+        private fun visibilityToString (typeInt: Int) = when(typeInt) {
+            Notification.VISIBILITY_PRIVATE -> "PRIVATE"
+            Notification.VISIBILITY_PUBLIC -> "PUBLIC"
+            Notification.VISIBILITY_SECRET -> "SECRET"
+            else -> "UNKNOWN"
+        }
+
+        private fun store(sbn: StatusBarNotification, isPosted: Boolean) {
+            val notification = sbn.notification
+            val postTime = sbn.postTime
+            val packageName = sbn.packageName
+            val title = notification.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
+            val visibility = visibilityToString(notification.visibility)
+            val category = notification.category ?: ""
+
+            val vibrate: String
+            val sound: String
+            val lightColor: String
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                vibrate = notification.vibrate?.joinToString(",") ?: ""
+                sound = notification.sound?.toString() ?: ""
+                lightColor = notification.ledARGB.toString()
+            } else {
+                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                val channel = notification.channelId?.let { channelId ->
+                    notificationManager.getNotificationChannel(channelId)
+                }
+
+                vibrate = channel?.vibrationPattern?.joinToString(",") ?: ""
+                sound = channel?.sound?.toString() ?: ""
+                lightColor = channel?.lightColor.toString()
+            }
+
+            NotificationEntity(
+                    name = getApplicationName(packageManager = packageManager, packageName = packageName)
+                            ?: "",
+                    packageName = packageName,
+                    isSystemApp = isSystemApp(packageManager = packageManager, packageName = packageName),
+                    isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
+                    title = title,
+                    visibility = visibility,
+                    category = category,
+                    vibrate = vibrate,
+                    sound = sound,
+                    lightColor = lightColor,
+                    isRemoved = isPosted
+            ).fill(timeMillis = postTime).run { ObjBox.put(this) }
         }
     }
 

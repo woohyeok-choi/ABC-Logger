@@ -41,9 +41,9 @@ class MessageCollector(val context: Context) : BaseCollector {
                     ).fillContact(
                             number = number,
                             contentResolver = context.contentResolver
-                    ).fillBaseInfo(toMillis(timestamp = timestamp))
+                    ).fill(toMillis(timestamp = timestamp))
                 }?.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
 
                 CollectorPrefs.lastAccessTimeSms = timestamps.max() ?: CollectorPrefs.lastAccessTimeSms
@@ -79,9 +79,9 @@ class MessageCollector(val context: Context) : BaseCollector {
                     ).fillContact(
                             number = number,
                             contentResolver = context.contentResolver
-                    ).fillBaseInfo(toMillis(timestamp = timestamp))
+                    ).fill(toMillis(timestamp = timestamp))
                 }?.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
 
                 CollectorPrefs.lastAccessTimeMms = timestamps.max() ?: CollectorPrefs.lastAccessTimeMms

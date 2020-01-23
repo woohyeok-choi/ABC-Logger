@@ -27,10 +27,10 @@ class SurveyCollector(val context: Context) : BaseCollector {
         object : BroadcastReceiver() {
             override fun onReceive(ctx: Context?, intent: Intent?) {
                 if (intent?.action != ACTION_SURVEY_TRIGGER) return
-
+                val box = ObjBox.boxFor<SurveySettingEntity>() ?: return
                 GlobalScope.launch(Dispatchers.IO) {
                     intent.getStringExtra(EXTRA_SURVEY_UUID)?.let { uuid ->
-                        ObjBox.boxFor<SurveySettingEntity>().query().equal(SurveySettingEntity_.uuid, uuid).build().findFirst()
+                        box.query().equal(SurveySettingEntity_.uuid, uuid).build().findFirst()
                     }?.let { setting ->
                         handleTrigger(setting)
                     }
@@ -53,7 +53,8 @@ class SurveyCollector(val context: Context) : BaseCollector {
                 timeoutSec = survey.timeoutSec,
                 deliveredTime = curTime,
                 json = setting.json
-        ).fillBaseInfo(timeMillis = curTime).run { putEntitySync(this) } ?: return
+        ).fill(timeMillis = curTime).run { ObjBox.putSync(this) }
+        if (id < 0) return
 
         val surveyIntent = context.intentFor<SurveyResponseActivity>(
                 SurveyResponseActivity.EXTRA_ENTITY_ID to id,
@@ -66,7 +67,7 @@ class SurveyCollector(val context: Context) : BaseCollector {
                 .addNextIntentWithParentStack(surveyIntent)
                 .getPendingIntent(REQUEST_CODE_SURVEY_OPEN, PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val notification = Notifications.buildNotification(
+        val notification = Notifications.build(
                 context = context,
                 channelId = Notifications.CHANNEL_ID_SURVEY,
                 title = survey.title,
@@ -78,12 +79,12 @@ class SurveyCollector(val context: Context) : BaseCollector {
                 intent = pendingIntent
         )
 
-        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_SURVEY_DELIVERED, notification)
+        NotificationManagerCompat.from(context).notify(Notifications.ID_SURVEY_DELIVERED, notification)
     }
 
     private fun scheduleSurvey(context: Context, event: ABCEvent? = null) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val box = ObjBox.boxFor<SurveySettingEntity>()
+        val box = ObjBox.boxFor<SurveySettingEntity>() ?: return
         val settings = box.all.mapNotNull { setting ->
             Survey.fromJson(jsonString = setting.json)?.let { survey -> Pair(survey, setting) }
         }.mapNotNull { (survey, setting) ->
@@ -113,9 +114,10 @@ class SurveyCollector(val context: Context) : BaseCollector {
     }
 
     private fun cancelSurvey(context: Context) {
+        val box = ObjBox.boxFor<SurveySettingEntity>() ?: return
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        ObjBox.boxFor<SurveySettingEntity>().all?.forEach { entity ->
+        box.all?.forEach { entity ->
             alarmManager.cancel(getPendingIntent(id = entity.id, uuid = entity.uuid))
         }
     }
@@ -234,7 +236,10 @@ class SurveyCollector(val context: Context) : BaseCollector {
         context.safeUnregisterReceiver(receiver)
     }
 
-    override fun checkAvailability(): Boolean = ObjBox.boxFor<SurveySettingEntity>().count() > 0L && context.checkPermission(requiredPermissions)
+    override fun checkAvailability(): Boolean  {
+        val box = ObjBox.boxFor<SurveySettingEntity>() ?: return false
+        return box.count() > 0L && context.checkPermission(requiredPermissions)
+    }
 
     override val requiredPermissions: List<String>
         get() = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -246,6 +251,5 @@ class SurveyCollector(val context: Context) : BaseCollector {
         private const val EXTRA_SURVEY_UUID = "${BuildConfig.APPLICATION_ID}.EXTRA_SURVEY_UUID"
         private const val ACTION_SURVEY_TRIGGER = "${BuildConfig.APPLICATION_ID}.ACTION_SURVEY_TRIGGER"
         private const val REQUEST_CODE_SURVEY_OPEN = 0xdd
-        private const val NOTIFICATION_ID_SURVEY_DELIVERED = 0x05
     }
 }

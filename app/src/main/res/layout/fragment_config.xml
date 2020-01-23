@@ -54,9 +54,9 @@
                     <kaist.iclab.abclogger.ui.config.SimpleConfigView
                         android:id="@+id/config_permission"
                         description="@{viewModel.isAllPermissionGranted() ? @string/general_granted : @string/general_denied}"
-                        header="@{@string/config_title_sync}"
+                        header="@{@string/config_title_permission}"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"/>
 
                     <kaist.iclab.abclogger.ui.config.SimpleSwitchConfigView
                         android:id="@+id/config_network"

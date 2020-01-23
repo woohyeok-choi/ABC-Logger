@@ -15,7 +15,7 @@ data class Status(val state: Int, val error: ABCException? = null) {
         fun success() = Status(STATE_SUCCESS)
         fun failure(t: Throwable? = null) = Status(STATE_FAILURE, when(t) {
             is ABCException -> t
-            else -> UnhandledException.wrap(t)
+            else -> ABCException.wrap(t)
         })
     }
 }

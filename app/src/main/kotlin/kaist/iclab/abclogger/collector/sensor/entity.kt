@@ -5,10 +5,8 @@ import kaist.iclab.abclogger.Base
 
 @Entity
 data class SensorEntity(
-        var sensorId: String = "",
-        var sensorName: String = "",
-        var valueDescription: String = "",
-        var valueType: String = "",
+        var type: String = "",
+        var accuracy: String = "",
         var firstValue: Float = Float.MIN_VALUE,
         var secondValue: Float = Float.MIN_VALUE,
         var thirdValue: Float = Float.MIN_VALUE,

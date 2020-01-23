@@ -8,26 +8,25 @@ import io.objectbox.reactive.DataObserver
 import kaist.iclab.abclogger.EmptySurveyException
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.ui.Status
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
-class SurveyEntityDataSource(private val query: Query<SurveyEntity>,
+class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
                              private val scope: CoroutineScope) : PositionalDataSource<SurveyEntity>() {
     private val observer = DataObserver<List<SurveyEntity>> { invalidate() }
 
     val status = MutableLiveData<Status>(Status.init())
 
     init {
-        query.subscribe().onlyChanges().weak().observer(observer)
+        query?.subscribe()?.onlyChanges()?.weak()?.observer(observer)
     }
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<SurveyEntity>) {
         status.postValue(Status.loading())
-        scope.launch(Dispatchers.IO) {
+
+        scope.launch {
             try {
-                query.find(params.startPosition.toLong(), params.loadSize.toLong()).let { data ->
+                withContext(Dispatchers.IO) {
+                    val data = query?.find(params.startPosition.toLong(), params.loadSize.toLong()) ?: listOf()
                     callback.onResult(data)
                 }
                 status.postValue(Status.success())
@@ -42,20 +41,23 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>,
 
         scope.launch {
             try {
-                val count = query.count().toInt()
-                if (count == 0) {
-                    throw EmptySurveyException()
-                }
-                val position = computeInitialLoadPosition(params, count)
-                val loadSize = computeInitialLoadSize(params, position, count)
+                withContext(Dispatchers.IO) {
+                    val count = query?.count()?.toInt() ?: 0
+                    if (count == 0) {
+                        throw EmptySurveyException()
+                    }
+                    val position = computeInitialLoadPosition(params, count)
+                    val loadSize = computeInitialLoadSize(params, position, count)
 
-                val data = query.find(position.toLong(), loadSize.toLong())
+                    val data = query?.find(position.toLong(), loadSize.toLong()) ?: listOf()
 
-                if (data.size == loadSize) {
-                    callback.onResult(data, position, count)
-                } else {
-                    invalidate()
+                    if (data.size == loadSize) {
+                        callback.onResult(data, position, count)
+                    } else {
+                        invalidate()
+                    }
                 }
+
                 status.postValue(Status.success())
             } catch (e: Exception) {
                 status.postValue(Status.failure(e))
@@ -63,12 +65,14 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>,
         }
     }
 
-    override fun invalidate() {
-        super.invalidate()
-        scope.cancel()
-    }
 
-    class Factory(private val query: Query<SurveyEntity>, private val scope: CoroutineScope) : DataSource.Factory<Int, SurveyEntity>() {
-        override fun create(): DataSource<Int, SurveyEntity> = SurveyEntityDataSource(query, scope)
+    class Factory(private val query: Query<SurveyEntity>?, private val scope: CoroutineScope) : DataSource.Factory<Int, SurveyEntity>() {
+        val source = MutableLiveData<SurveyEntityDataSource>()
+
+        override fun create(): DataSource<Int, SurveyEntity> {
+            val newSource = SurveyEntityDataSource(query, scope)
+            source.postValue(newSource)
+            return newSource
+        }
     }
 }

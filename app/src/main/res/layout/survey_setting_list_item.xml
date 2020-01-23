@@ -1,56 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
-        <import type="android.webkit.URLUtil"/>
         <variable
             name="item"
-            type="kaist.iclab.abclogger.collector.survey.SurveySettingItem"/>
+            type="kaist.iclab.abclogger.collector.survey.SurveySettingEntity"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true">
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/text_input_layout"
+        <EditText
+            android:id="@+id/edit_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:error="@{(URLUtil.isValidUrl(item.url) || item.url.length() == 0) ? null : @string/setting_survey_collector_url_error}"
-            app:errorEnabled="@{(URLUtil.isValidUrl(item.url) == false &amp;&amp; item.url.length() != 0)}"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_remove_item">
+            android:hint="@string/setting_survey_collector_url_hint"
+            android:text="@={item.url}"
+            android:inputType="textUri"
+            app:layout_constraintRight_toLeftOf="@+id/btn_remove_item"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@={item.url}"
-                android:hint="@string/setting_survey_collector_url_hint" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <androidx.appcompat.widget.AppCompatImageButton
+        <ImageButton
             android:id="@+id/btn_remove_item"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            app:layout_constraintEnd_toStartOf="@id/btn_preview"
-            app:layout_constraintBottom_toBottomOf="@id/text_input_layout"
-            tools:src="@drawable/baseline_remove_black_36" />
+            app:layout_constraintBottom_toBottomOf="@id/edit_text"
+            app:layout_constraintRight_toLeftOf="@id/btn_preview"
+            android:src="@drawable/baseline_remove_black_36"/>
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <ImageButton
             android:id="@+id/btn_preview"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            app:layout_constraintLeft_toRightOf="@id/btn_remove_item"
+            app:layout_constraintBottom_toBottomOf="@id/edit_text"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/text_input_layout"
-            tools:src="@drawable/baseline_pageview_black_36" />
-
-
+            app:layout_constraintLeft_toRightOf="@id/btn_remove_item"
+            android:src="@drawable/baseline_pageview_black_36" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

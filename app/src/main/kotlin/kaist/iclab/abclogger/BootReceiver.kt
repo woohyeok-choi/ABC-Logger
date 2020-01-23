@@ -16,29 +16,24 @@ class BootReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        val action = intent.action?.toLowerCase(Locale.getDefault()) ?: return
+        val filters = listOf(
+                "android.intent.action.QUICKBOOT_POWERON",
+                Intent.ACTION_BOOT_COMPLETED
+        ).map { it.toLowerCase(Locale.getDefault()) }
 
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            //val experiment = try { ParticipationEntity.getParticipatedExperimentFromLocal() } catch (e: Exception) { null }
-            //if(experiment != null) {
+        if (action in filters) {
+            try {
+                context.packageManager.getPackageInfo(PACKAGE_NAME_SMART_MANAGER, PackageManager.GET_META_DATA)
 
+                Handler().postDelayed({
+                    context.startActivity(Intent(context, AvoidSmartManagerActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    })
+                }, Random(System.currentTimeMillis()).nextInt(3000).toLong())
+            } catch (e: PackageManager.NameNotFoundException) { }
 
-            /* Boot - SW EDIT */
-            //val gson = GsonBuilder().setPrettyPrinting().create()
-            //val jsonEntity: String = gson.toJson(entity)
-            //MySQLiteLogger.writeStringData(context, entity.javaClass.simpleName, entity.timestamp, jsonEntity)
-
-        }
-
-
-        try {
-            context.packageManager.getPackageInfo(PACKAGE_NAME_SMART_MANAGER, PackageManager.GET_META_DATA)
-
-            Handler().postDelayed({
-                context.startActivity(Intent(context, AvoidSmartManagerActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                })
-            }, Random(System.currentTimeMillis()).nextInt(3000).toLong())
-        } catch (e: PackageManager.NameNotFoundException) {
+            context.startForegroundService<ABCLogger.ABCLoggerService>()
         }
     }
 }

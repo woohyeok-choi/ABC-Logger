@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.collector.sensor
+package kaist.iclab.abclogger.collector.externalsensor.polar
 
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
@@ -12,6 +12,7 @@ import polar.com.sdk.api.PolarBleApiDefaultImpl
 import polar.com.sdk.api.errors.PolarInvalidArgument
 import polar.com.sdk.api.model.PolarDeviceInfo
 import polar.com.sdk.api.model.PolarHrData
+import java.lang.Exception
 
 class PolarH10ViewModel(val context: Context): ViewModel() {
     val deviceId : MutableLiveData<String> = MutableLiveData(CollectorPrefs.polarH10DeviceId)
@@ -78,9 +79,8 @@ class PolarH10ViewModel(val context: Context): ViewModel() {
     fun disconnect() {
         try {
             polarApi.disconnectFromDevice(deviceId.value ?: "")
-        } catch (e: PolarInvalidArgument) { }
-
-        polarApi.setApiCallback(null)
+            polarApi.setApiCallback(null)
+        } catch (e: Exception) { }
         disposables.clear()
     }
 }

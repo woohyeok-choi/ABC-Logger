@@ -14,7 +14,8 @@
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_layout"
-        app:refreshing="@{viewModel.status.state == Status.STATE_LOADING ? true : false}"
+        status="@{viewModel.status}"
+        showToast="@{true}"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">

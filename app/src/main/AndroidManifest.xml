@@ -17,14 +17,14 @@
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission
-        android:name="android.permission.PACKAGE_USAGE_STATS"
-        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:name=".App"
@@ -43,6 +43,7 @@
 
         <activity
             android:name=".ui.splash.SplashActivity"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -67,7 +68,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <activity
-            android:name=".collector.sensor.PolarH10SettingActivity"
+            android:name="kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10SettingActivity"
             android:screenOrientation="portrait"
             android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoWindow" />
@@ -84,7 +85,7 @@
             android:theme="@style/AppTheme.NoWindow" />
 
         <service
-            android:name=".collector.notification.NotificationCollector"
+            android:name=".collector.notification.NotificationCollector$NotificationCollectorService"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
@@ -93,7 +94,7 @@
         </service>
 
         <service
-            android:name=".collector.keylog.KeyLogCollector"
+            android:name=".collector.keylog.KeyLogCollector$KeyLogCollectorService"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
@@ -103,6 +104,19 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
+
+        <service android:name=".ABCLogger$ABCLoggerService" />
+
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

@@ -38,9 +38,9 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
                             isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = info.packageName),
                             firstInstallTime = info.firstInstallTime,
                             lastUpdateTime = info.lastUpdateTime
-                    ).fillBaseInfo(timeMillis = timestamp)
+                    ).fill(timeMillis = timestamp)
                 }.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
 
                 CollectorPrefs.lastAccessTimeInstalledApp = timestamp

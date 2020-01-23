@@ -12,9 +12,9 @@ class App : Application(){
         super.onCreate()
         Log.d(TAG, "onCreate()")
 
+        Koap.bind(this, CollectorPrefs, GeneralPrefs)
         ObjBox.bind(this)
         Notifications.bind(this)
-        Koap.bind(this, CollectorPrefs, GeneralPrefs)
         startKoin {
             androidLogger()
             androidContext(this@App)

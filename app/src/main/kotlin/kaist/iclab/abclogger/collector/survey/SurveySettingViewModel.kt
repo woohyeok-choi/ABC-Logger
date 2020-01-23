@@ -1,9 +1,11 @@
 package kaist.iclab.abclogger.collector.survey
 
+import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kaist.iclab.abclogger.InvalidSurveyFormatException
+import kaist.iclab.abclogger.InvalidUrlException
 import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.httpGet
 import kaist.iclab.abclogger.ui.Status
@@ -15,60 +17,79 @@ import kotlin.collections.ArrayList
 class SurveySettingViewModel : ViewModel() {
     val loadStatus : MutableLiveData<Status> = MutableLiveData(Status.init())
     val storeStatus : MutableLiveData<Status> = MutableLiveData(Status.init())
-    val settingItems : MutableLiveData<ArrayList<SurveySettingItem>> = MutableLiveData()
 
-    fun initLoad() = viewModelScope.launch {
+    /**
+     * settingItems are used only in a way of programs.
+     */
+    val items : MutableLiveData<ArrayList<SurveySettingEntity>> = MutableLiveData()
+
+    private suspend fun download(url: String) : SurveySettingEntity = withContext(Dispatchers.IO) {
+        if (!URLUtil.isValidUrl(url)) throw InvalidUrlException()
+        val json = httpGet(url) ?: throw InvalidSurveyFormatException()
+        Survey.fromJson(json) ?: throw InvalidSurveyFormatException()
+
+        return@withContext SurveySettingEntity(
+                url = url,
+                json = json
+        )
+    }
+
+    fun load() = viewModelScope.launch {
         loadStatus.postValue(Status.loading())
+
         try {
-            ObjBox.boxFor<SurveySettingEntity>().all.map { entity ->
-                SurveySettingItem(entity.url)
-            }.let { items ->
-                if (items.isEmpty()) {
-                    arrayListOf(SurveySettingItem(""))
-                } else {
-                    arrayListOf<SurveySettingItem>().apply { addAll(items) }
+            val entities = withContext(Dispatchers.IO) {
+                arrayListOf<SurveySettingEntity>().apply {
+                    val box = ObjBox.boxFor<SurveySettingEntity>()
+                    if (box == null || box.count() == 0L) {
+                        add(SurveySettingEntity(uuid = UUID.randomUUID().toString()))
+                    } else {
+                        box.all.forEach { entity -> add(entity) }
+                    }
                 }
-            }.let { items ->
-                settingItems.postValue(items)
-                loadStatus.postValue(Status.success())
             }
+            items.postValue(entities)
+            loadStatus.postValue(Status.success())
         } catch (e: Exception) {
             loadStatus.postValue(Status.failure(e))
         }
     }
 
-    fun removeItem(item: SurveySettingItem) = viewModelScope.launch {
-        if(settingItems.value.isNullOrEmpty()) return@launch
-        settingItems.value?.apply { remove(item) }?.let { items -> settingItems.postValue(items) }
+    fun removeItem(entity: SurveySettingEntity) = viewModelScope.launch {
+        if(items.value?.size == 1) return@launch
+
+        items.value?.apply {
+            remove(entity)
+        }?.let { entities ->
+            items.postValue(entities)
+        }
     }
 
     fun addItem() = viewModelScope.launch {
-        settingItems.value?.apply { add(SurveySettingItem("")) }?.let { items -> settingItems.postValue(items) }
+        items.value?.apply {
+            add(SurveySettingEntity(uuid = UUID.randomUUID().toString()))
+        }?.let { entities ->
+            items.postValue(entities)
+        }
     }
 
-    fun store() = viewModelScope.launch {
+    fun store(onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = viewModelScope.launch {
         storeStatus.postValue(Status.loading())
+
         try {
-            settingItems.value?.map { item ->
-                async {
-                    val json = httpGet(item.url) ?: throw InvalidSurveyFormatException()
-
-                    Survey.fromJson(json) ?: throw InvalidSurveyFormatException()
-
-                    SurveySettingEntity(
-                            uuid = UUID.randomUUID().toString(),
-                            url = item.url,
-                            json = json
-                    )
+            items.value?.map { item ->
+                download(item.url)
+            }?.let { entities ->
+                ObjBox.boxFor<SurveySettingEntity>()?.also { box ->
+                    box.removeAll()
+                    box.put(entities)
                 }
-            }?.awaitAll()?.let { entities ->
-                val box = ObjBox.boxFor<SurveySettingEntity>()
-                box.removeAll()
-                box.put(entities)
             }
             storeStatus.postValue(Status.success())
+            onComplete?.invoke(true)
         } catch (e: Exception) {
             storeStatus.postValue(Status.failure(e))
+            onComplete?.invoke(false)
         }
     }
 }

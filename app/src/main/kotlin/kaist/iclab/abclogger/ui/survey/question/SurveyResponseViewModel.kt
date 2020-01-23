@@ -9,61 +9,58 @@ import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SurveyResponseViewModel : ViewModel() {
-    data class SurveySetting(val survey: Survey,
-                             val deliveredTime: Long,
-                             val isAvailable: Boolean,
-                             val showEtc: Boolean
-    )
-
-    val surveyTitle = MutableLiveData<String>()
-    val surveyMessage = MutableLiveData<String>()
-    val surveyDeliveredTime = MutableLiveData<Long>()
-
-    val surveySetting = MutableLiveData<SurveySetting>()
     val loadStatus = MutableLiveData<Status>(Status.init())
     val storeStatus = MutableLiveData<Status>(Status.init())
 
-    fun load(title: String, message: String, deliveredTime: Long, entityId: Long) = viewModelScope.launch {
-        surveyTitle.postValue(title)
-        surveyMessage.postValue(message)
-        surveyDeliveredTime.postValue(deliveredTime)
+    val setting = MutableLiveData<Triple<Array<Survey.Question>, Boolean, Boolean>>()
 
+    fun load(entityId: Long) = viewModelScope.launch {
         loadStatus.postValue(Status.loading())
-
         try {
-            val entity = ObjBox.boxFor<SurveyEntity>().get(entityId)
-                    ?: throw InvalidEntityIdException()
-            val survey = Survey.fromJson(entity.json)
-                    ?: throw InvalidSurveyFormatException()
-            surveySetting.postValue(SurveySetting(survey, entity.deliveredTime, entity.isAvailable(), entity.showAltText()))
-
+            val data = withContext(Dispatchers.IO) {
+                val entity = ObjBox.boxFor<SurveyEntity>()?.get(entityId)
+                        ?: throw InvalidEntityIdException()
+                val survey = Survey.fromJson(entity.json)
+                        ?: throw InvalidSurveyFormatException()
+                Triple(survey.questions, entity.isAvailable(), entity.showAltText())
+            }
+            setting.postValue(data)
             loadStatus.postValue(Status.success())
         } catch (e: Exception) {
             loadStatus.postValue(Status.failure(e))
         }
-
     }
 
-    fun store(entityId: Long, reactionTime: Long, responseTime: Long) {
+    fun store(entityId: Long,
+              reactionTime: Long,
+              responseTime: Long,
+              onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = viewModelScope.launch {
         storeStatus.postValue(Status.loading())
-
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val entity = ObjBox.boxFor<SurveyEntity>().get(entityId)
+        try {
+            withContext(Dispatchers.IO) {
+                val entity = ObjBox.boxFor<SurveyEntity>()?.get(entityId)
                         ?: throw InvalidEntityIdException()
+                val survey = Survey.fromJson(entity.json)
+                        ?: throw InvalidSurveyFormatException()
+                val questions = setting.value?.first
+                survey.questions = questions ?: survey.questions
+
                 entity.reactionTime = reactionTime
                 entity.responseTime = responseTime
+                entity.json = survey.toJson()
 
-                val json = surveySetting.value?.survey?.toJson() ?: return@launch
-                entity.json = json
-
-                ObjBox.boxFor<SurveyEntity>().put(entity)
-                storeStatus.postValue(Status.success())
-            } catch (e: Exception) {
-                storeStatus.postValue(Status.failure(e))
+                ObjBox.boxFor<SurveyEntity>()?.put(entity)
             }
+            storeStatus.postValue(Status.success())
+            onComplete?.invoke(true)
+        } catch (e: Exception) {
+            storeStatus.postValue(Status.failure(e))
+            onComplete?.invoke(false)
         }
     }
+
+
 }

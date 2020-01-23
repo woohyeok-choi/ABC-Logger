@@ -1,6 +1,12 @@
 package kaist.iclab.abclogger
 
+import android.content.Context
+import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorManager
+import android.os.IBinder
 import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.base.BaseService
 import kaist.iclab.abclogger.collector.activity.ActivityCollector
 import kaist.iclab.abclogger.collector.appusage.AppUsageCollector
 import kaist.iclab.abclogger.collector.battery.BatteryCollector
@@ -14,28 +20,69 @@ import kaist.iclab.abclogger.collector.media.MediaCollector
 import kaist.iclab.abclogger.collector.message.MessageCollector
 import kaist.iclab.abclogger.collector.notification.NotificationCollector
 import kaist.iclab.abclogger.collector.physicalstatus.PhysicalStatusCollector
-import kaist.iclab.abclogger.collector.sensor.PolarH10Collector
+import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
+import kaist.iclab.abclogger.collector.sensor.SensorCollector
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
 import kaist.iclab.abclogger.collector.wifi.WifiCollector
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
 class ABCLogger(vararg collector: BaseCollector) {
-    val collectors = arrayListOf(*collector)
+    val collectors = arrayOf(*collector)
     val maps = collectors.associateBy { it::class.java }
 
     suspend fun startAll(
-            error: ((collector: BaseCollector, throwable: Throwable) -> Unit)? = null
-    ) = collectors.forEach { if (it.hasStarted()) it.start(error) }
+            onComplete: ((collector: BaseCollector, throwable: Throwable?) -> Unit)? = null
+    ) = collectors.forEach { if (it.hasStarted()) it.start(onComplete) }
 
     suspend fun stopAll(
-            error: ((collector: BaseCollector, throwable: Throwable) -> Unit)? = null
-    ) = collectors.forEach { if (it.hasStarted()) it.stop(error) }
+            onComplete: ((collector: BaseCollector, throwable: Throwable?) -> Unit)? = null
+    ) = collectors.forEach { if (it.hasStarted()) it.stop(onComplete) }
 
     fun isAllAvailable() = collectors.filter { it.hasStarted() }.all { it.checkAvailability() }
 
+    fun hasAnyStarted() = collectors.any { it.hasStarted() }
+
     fun getAllRequiredPermissions() = collectors.map { it.requiredPermissions }.flatten()
 
-    inline fun <reified T: BaseCollector> get() = maps[T::class.java]
+    inline fun <reified T : BaseCollector> get() = maps[T::class.java]
+
+    class ABCLoggerService : BaseService() {
+        private val abcLogger: ABCLogger by inject()
+
+        override fun onBind(intent: Intent?): IBinder? = null
+
+        override fun onCreate() {
+            GlobalScope.launch(Dispatchers.IO) {
+                abcLogger.startAll()
+            }
+        }
+
+        override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+            val ntf = Notifications.build(
+                    context = this,
+                    channelId = Notifications.CHANNEL_ID_FOREGROUND,
+                    title = getString(R.string.ntf_title_service_running),
+                    text = getString(R.string.ntf_text_service_running)
+            )
+
+            startForeground(Notifications.ID_FOREGROUND, ntf)
+
+            return START_STICKY
+        }
+
+        override fun onDestroy() {
+            super.onDestroy()
+
+            GlobalScope.launch(Dispatchers.IO) {
+                abcLogger.stopAll()
+            }
+        }
+
+    }
 }
 
 fun <T : BaseCollector> T.hasStarted() =
@@ -57,6 +104,7 @@ fun <T : BaseCollector> T.hasStarted() =
             is PolarH10Collector -> CollectorPrefs.hasStartedPolarH10
             is SurveyCollector -> CollectorPrefs.hasStartedSurvey
             is WifiCollector -> CollectorPrefs.hasStartedWiFi
+            is SensorCollector -> CollectorPrefs.hasStartedSensor
             else -> false
         }
 
@@ -79,10 +127,16 @@ fun <T : BaseCollector> T.info() =
             is PolarH10Collector -> "Id: ${CollectorPrefs.polarH10DeviceId}; Connected: ${CollectorPrefs.polarH10Connection == PolarH10Collector.POLAR_CONNECTED}; Battery: ${CollectorPrefs.polarH10BatteryLevel}"
             is SurveyCollector -> CollectorPrefs.infoSurvey
             is WifiCollector -> CollectorPrefs.infoWiFi
+            is SensorCollector -> {
+                val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+                val hasLightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null
+                val hasProximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null
+                "Light Sensor: $hasLightSensor; Proximity: $hasProximity"
+            }
             else -> ""
         }
 
-fun <T : BaseCollector> T.nameRes() = when(this) {
+fun <T : BaseCollector> T.nameRes() = when (this) {
     is ActivityCollector -> R.string.data_name_physical_activity
     is AppUsageCollector -> R.string.data_name_app_usage
     is BatteryCollector -> R.string.data_name_battery
@@ -100,10 +154,11 @@ fun <T : BaseCollector> T.nameRes() = when(this) {
     is PolarH10Collector -> R.string.data_name_polar_h10
     is SurveyCollector -> R.string.data_name_survey
     is WifiCollector -> R.string.data_name_wifi
+    is SensorCollector -> R.string.data_name_sensor
     else -> null
 }
 
-fun <T : BaseCollector> T.descriptionRes() = when(this) {
+fun <T : BaseCollector> T.descriptionRes() = when (this) {
     is ActivityCollector -> R.string.data_desc_physical_activity
     is AppUsageCollector -> R.string.data_desc_app_usage
     is BatteryCollector -> R.string.data_desc_battery
@@ -121,28 +176,29 @@ fun <T : BaseCollector> T.descriptionRes() = when(this) {
     is PolarH10Collector -> R.string.data_desc_polar_h10
     is SurveyCollector -> R.string.data_desc_survey
     is WifiCollector -> R.string.data_desc_wifi
+    is SensorCollector -> R.string.data_desc_sensor
     else -> null
 }
 
 
-suspend fun <T : BaseCollector> T.start(error: ((collector: T, throwable: Throwable) -> Unit)? = null) = handleState(true, error)
+suspend fun <T : BaseCollector> T.start(onComplete: ((collector: T, throwable: Throwable?) -> Unit)? = null) = handleState(true, onComplete)
 
-suspend fun <T : BaseCollector> T.stop(error: ((collector: T, throwable: Throwable) -> Unit)? = null) = handleState(false, error)
+suspend fun <T : BaseCollector> T.stop(onComplete: ((collector: T, throwable: Throwable?) -> Unit)? = null) = handleState(false, onComplete)
 
 private suspend fun <T : BaseCollector> T.handleState(
         state: Boolean,
-        error: ((collector: T, throwable: Throwable) -> Unit)? = null
+        onComplete: ((collector: T, throwable: Throwable?) -> Unit)? = null
 ) {
-    var throwable : Throwable? = null
+    var throwable: Throwable? = null
 
     try {
         if (state) onStart() else onStop()
     } catch (e: Exception) {
-        if(state) throwable = e
+        if (state) throwable = e
     }
 
     if (throwable != null) {
-        error?.invoke(this, throwable)
+        onComplete?.invoke(this, ABCException.wrap(throwable))
         return
     }
 
@@ -164,5 +220,8 @@ private suspend fun <T : BaseCollector> T.handleState(
         is PolarH10Collector -> CollectorPrefs.hasStartedPolarH10 = state
         is SurveyCollector -> CollectorPrefs.hasStartedSurvey = state
         is WifiCollector -> CollectorPrefs.hasStartedWiFi = state
+        is SensorCollector -> CollectorPrefs.hasStartedSensor = state
     }
+
+    onComplete?.invoke(this, throwable)
 }

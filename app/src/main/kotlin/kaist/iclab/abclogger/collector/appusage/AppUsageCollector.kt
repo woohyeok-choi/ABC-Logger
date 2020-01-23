@@ -82,10 +82,10 @@ class AppUsageCollector(val context: Context) : BaseCollector {
                     type = eventTypeToString(event.eventType),
                     isSystemApp = isSystemApp(packageManager = packageManager, packageName = event.packageName),
                     isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = event.packageName)
-            )
+            ).fill(timeMillis = timestamp)
             entities.add(entity)
         }
-        putEntity(entities)
+        ObjBox.put(entities)
         CollectorPrefs.lastAccessTimeAppUsage = timestamp
     }
 

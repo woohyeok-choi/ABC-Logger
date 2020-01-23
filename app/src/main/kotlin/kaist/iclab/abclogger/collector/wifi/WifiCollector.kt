@@ -33,10 +33,8 @@ class WifiCollector(val context: Context) : BaseCollector {
                                 ssid = result.SSID,
                                 frequency = result.frequency,
                                 rssi = result.level
-                        ).fillBaseInfo(timeMillis = timestamp)
-                    }.run {
-                        putEntity(this)
-                    }
+                        ).fill(timeMillis = timestamp)
+                    }.run { ObjBox.put(this) }
                 } catch (e: SecurityException) { }
             }
         }

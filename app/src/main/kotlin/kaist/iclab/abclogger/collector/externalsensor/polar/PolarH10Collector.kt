@@ -1,7 +1,6 @@
-package kaist.iclab.abclogger.collector.sensor
+package kaist.iclab.abclogger.collector.externalsensor.polar
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.text.TextUtils
@@ -9,10 +8,11 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
+import kaist.iclab.abclogger.collector.sensor.SensorEntity
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
 import polar.com.sdk.api.PolarBleApiDefaultImpl
-import polar.com.sdk.api.errors.PolarInvalidArgument
 import polar.com.sdk.api.model.PolarDeviceInfo
 import polar.com.sdk.api.model.PolarEcgData
 import polar.com.sdk.api.model.PolarHrData
@@ -48,50 +48,43 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
     private fun storeEcg(identifier: String, data: List<PolarEcgData>) {
         data.map { datum ->
             datum.samples.map { ecg ->
-                SensorEntity(
+                ExternalSensorEntity(
                         sensorId = identifier,
-                        sensorName = "PolarH10",
-                        valueType = "ECG",
-                        valueDescription = "ECG",
-                        firstValue = ecg.toFloat()
-                ).fillBaseInfo(
-                        timeMillis = datum.timeStamp
-                )
+                        name = "PolarH10",
+                        description= "ECG",
+                        firstValue = ecg.toString()
+                ).fill(timeMillis = datum.timeStamp)
             }
-        }.flatten().run {
-            putEntity(this)
-        }
+        }.flatten().run { ObjBox.put(this) }
     }
 
     private fun storeHeartRate(identifier: String, data: PolarHrData) {
         val timestamp = System.currentTimeMillis()
         val heartRate = data.hr
-        val contactStatus = if (data.contactStatus) 1.0F else 0.0F
-        val contactStatusSupported = if (data.contactStatusSupported) 1.0F else 0.0F
+        val contactStatus = data.contactStatus
+        val contactStatusSupported = data.contactStatusSupported
 
-        SensorEntity(
+        ExternalSensorEntity(
                 sensorId = CollectorPrefs.polarH10DeviceId,
-                sensorName = "PolarH10",
-                valueType = "HeartRate",
-                valueDescription = "HR/ContactStatus/ContactStatusSupported",
-                firstValue = heartRate.toFloat(),
-                secondValue = contactStatus,
-                thirdValue = contactStatusSupported
-        ).fillBaseInfo(timeMillis = timestamp).run { putEntity(this) }
+                name = "PolarH10",
+                description = "HR/ContactStatus/ContactStatusSupported",
+                firstValue = heartRate.toString(),
+                secondValue = contactStatus.toString(),
+                thirdValue = contactStatusSupported.toString()
+        ).fill(timeMillis = timestamp).run { ObjBox.put(this) }
 
         if (data.rrAvailable) {
             data.rrs.zip(data.rrsMs).map { (rrSec, rrMs) ->
-                SensorEntity(
+                ExternalSensorEntity(
                         sensorId = identifier,
-                        sensorName = "PolarH10",
-                        valueType = "RRInterval",
-                        valueDescription = "RRsec/RRms/ContactStatus/ContactStatusSupported",
-                        firstValue = rrSec.toFloat(),
-                        secondValue = rrMs.toFloat(),
-                        thirdValue = contactStatus,
-                        fourthValue = contactStatusSupported
-                ).fillBaseInfo(timeMillis = timestamp)
-            }.run { putEntity(this) }
+                        name = "PolarH10",
+                        description = "RRsec/RRms/ContactStatus/ContactStatusSupported",
+                        firstValue = rrSec.toString(),
+                        secondValue = rrMs.toString(),
+                        thirdValue = contactStatus.toString(),
+                        fourthValue = contactStatusSupported.toString()
+                ).fill(timeMillis = timestamp)
+            }.run { ObjBox.put(this) }
         }
     }
 
@@ -128,14 +121,14 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
 
     override suspend fun onStart() {
         disposables.clear()
-        polarApi.setApiCallback(this)
         polarApi.connectToDevice(CollectorPrefs.polarH10DeviceId)
+        polarApi.setApiCallback(this)
     }
 
     override suspend fun onStop() {
         disposables.clear()
-        polarApi.setApiCallback(null)
         polarApi.disconnectFromDevice(CollectorPrefs.polarH10DeviceId)
+        polarApi.setApiCallback(null)
     }
 
     override fun checkAvailability(): Boolean =
@@ -156,7 +149,5 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
         const val POLAR_DISCONNECTED = 0
         const val POLAR_CONNECTING = 1
         const val POLAR_CONNECTED = 2
-
-        const val EXTRA_POLAR_H10_DEVICE_ID = "${BuildConfig.APPLICATION_ID}.EXTRA_POLAR_H10_DEVICE_ID"
     }
 }

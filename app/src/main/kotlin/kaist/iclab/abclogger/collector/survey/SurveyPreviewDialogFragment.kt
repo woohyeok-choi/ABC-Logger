@@ -2,7 +2,10 @@ package kaist.iclab.abclogger.collector.survey
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
@@ -11,6 +14,7 @@ import androidx.lifecycle.observe
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.databinding.FragmentSurveyPreviewBinding
 import kaist.iclab.abclogger.ui.Status
+import kaist.iclab.abclogger.ui.survey.question.SurveyQuestionListAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SurveyPreviewDialogFragment : DialogFragment() {
@@ -25,11 +29,22 @@ class SurveyPreviewDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         dataBinding = DataBindingUtil.inflate(
-                layoutInflater,
+                LayoutInflater.from(requireContext()),
                 R.layout.fragment_survey_preview,
                 null,
                 false
         )
+        dataBinding.viewModel = viewModel
+        dataBinding.lifecycleOwner = this
+
+        val adapter = SurveyQuestionListAdapter()
+
+        dataBinding.recyclerView.adapter = adapter
+
+        viewModel.questions.observe(this) { questions ->
+            adapter.bindData(questions = questions, isAvailable = true, showAltText = false)
+        }
+
         return AlertDialog.Builder(requireContext())
                 .setTitle(R.string.dialog_title_survey_preview)
                 .setCancelable(false)
@@ -37,24 +52,11 @@ class SurveyPreviewDialogFragment : DialogFragment() {
                 .setNeutralButton(R.string.general_close) { _, _ -> dismiss() }.create()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        dataBinding.viewModel = viewModel
-        dataBinding.lifecycleOwner = this
-
-        viewModel.loadStatus.observe(this) { status ->
-            when(status.state) {
-                Status.STATE_LOADING -> dataBinding.loadProgressBar.show()
-                Status.STATE_SUCCESS -> dataBinding.loadProgressBar.hide()
-                Status.STATE_FAILURE -> {
-                    dataBinding.loadProgressBar.hide()
-                    showToast(status.error, false)
-                }
-            }
-        }
-
+    override fun onStart() {
+        super.onStart()
         viewModel.load(url)
     }
+
 
     companion object {
         private const val ARG_SURVEY_URL = "${BuildConfig.APPLICATION_ID}.ARG_SURVEY_URL"

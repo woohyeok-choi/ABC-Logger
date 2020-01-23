@@ -14,7 +14,12 @@ class MainActivity : BaseAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if(!checkServiceRunning<ABCLogger.ABCLoggerService>())
+            startForegroundService<ABCLogger.ABCLoggerService>()
+
         setContentView(R.layout.activity_main)
+
         val navController = navigation_host_fragment.findNavController()
         val config = AppBarConfiguration(
                 setOf(R.id.navigation_survey_list, R.id.navigation_config)
@@ -22,13 +27,14 @@ class MainActivity : BaseAppCompatActivity() {
         setupActionBarWithNavController(navController, config)
 
         navigation.setupWithNavController(navController)
+
         navigation.setOnNavigationItemReselectedListener {  }
     }
 
     override fun onBackPressed() {
         val curTime = System.currentTimeMillis()
         if (curTime - backPressedTime < BACK_TWICE_EXIT_LATENCY) {
-            super.onBackPressed()
+            finish()
         } else {
             backPressedTime = curTime
             showToast(R.string.msg_back_twice_exit)

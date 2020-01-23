@@ -106,11 +106,7 @@ class DeviceEventCollector(val context: Context) : BaseCollector {
 
                     DeviceEventEntity(
                             type = event.replace(BuildConfig.APPLICATION_ID, "")
-                    ).fillBaseInfo(
-                            timeMillis = timestamp
-                    ).run {
-                        putEntity(this)
-                    }
+                    ).fill(timeMillis = timestamp).run { ObjBox.put(this) }
                 }
             }
         }

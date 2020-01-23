@@ -12,11 +12,16 @@ class DataConfigListAdapter : RecyclerView.Adapter<DataConfigListAdapter.ViewHol
     var onClick: ((collector: BaseCollector) -> Unit)? = null
     var onCheckedChanged: ((collector: BaseCollector, isChecked: Boolean) -> Unit)? = null
 
-    var items: ArrayList<BaseCollector> = arrayListOf()
+    var items: Array<BaseCollector> = arrayOf()
         set(value) {
             field = value
             notifyDataSetChanged()
         }
+
+    fun updateItemView(collector: BaseCollector) {
+        val index = items.indexOf(collector)
+        if (index > 0) notifyItemChanged(index)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding : DataConfigListItemBinding = DataBindingUtil.inflate(

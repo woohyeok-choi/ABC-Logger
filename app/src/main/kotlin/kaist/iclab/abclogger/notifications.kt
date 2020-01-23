@@ -8,6 +8,7 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -31,7 +32,7 @@ private val NOTIFICATION_SETTINGS = mapOf(
                 hasVibration = true,
                 alertOnce = false
         ),
-        Notifications.CHANNEL_ID_IN_PROGRESS to NotificationSetting(
+        Notifications.CHANNEL_ID_FOREGROUND to NotificationSetting(
                 name = "Experiment in progress",
                 priority = NotificationCompat.PRIORITY_MIN,
                 visibility = NotificationCompat.VISIBILITY_SECRET,
@@ -43,7 +44,7 @@ private val NOTIFICATION_SETTINGS = mapOf(
                 hasVibration = false,
                 alertOnce = true
         ),
-        Notifications.CHANNEL_ID_UPLOAD to NotificationSetting(
+        Notifications.CHANNEL_ID_PROGRESS to NotificationSetting(
                 name = "Upload",
                 priority = NotificationCompat.PRIORITY_HIGH,
                 visibility = NotificationCompat.VISIBILITY_PRIVATE,
@@ -107,6 +108,8 @@ private fun buildChannel(notificationManager: NotificationManagerCompat,
         }
         if (soundUri != null) {
             setSound(soundUri, AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build())
+        } else {
+            setSound(null, null)
         }
     }
     notificationManager.createNotificationChannel(newChannel)
@@ -131,19 +134,29 @@ private fun buildNotificationChannels(context: Context) {
 }
 
 object Notifications {
-    const val CHANNEL_ID_SURVEY = "kaist.iclab.abc.logger.CHANNEL_ID_SURVEY"
-    const val CHANNEL_ID_IN_PROGRESS = "kaist.iclab.abc.logger.CHANNEL_ID_IN_PROGRESS"
-    const val CHANNEL_ID_UPLOAD = "kaist.iclab.abc.logger.CHANNEL_ID_UPLOAD"
-    const val CHANNEL_ID_REQUIRE_SETTING = "kaist.iclab.abc.logger.CHANNEL_ID_REQUIRE_SETTING"
+    const val CHANNEL_ID_SURVEY = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_SURVEY"
+    const val CHANNEL_ID_FOREGROUND = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_IN_PROGRESS"
+    const val CHANNEL_ID_PROGRESS = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_UPLOAD"
+    const val CHANNEL_ID_REQUIRE_SETTING = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_REQUIRE_SETTING"
+
+    const val ID_SURVEY_DELIVERED = 0x01
+    const val ID_FOREGROUND = 0x02
+    const val ID_UPLOAD_PROGRESS = 0x03
+    const val ID_FLUSH_PROGRESS = 0x04
+    const val ID_REQUIRE_SETTING = 0x05
 
     fun bind(context: Context) {
         buildNotificationChannels(context)
     }
 
-    fun buildNotification(context: Context, channelId: String,
-                          title: String? = null, text: String? = null, subText: String? = null,
-                          intent: PendingIntent? = null,
-                          progress: Int? = null): Notification {
+    fun build(context: Context,
+              channelId: String,
+              title: String? = null,
+              text: String? = null,
+              subText: String? = null,
+              intent: PendingIntent? = null,
+              @IntRange(from = 0, to = 100) progress: Int? = null,
+              indeterminate: Boolean = false): Notification {
         val setting = NOTIFICATION_SETTINGS[channelId]
                 ?: throw IllegalArgumentException("Invalid channel ID.")
         val timestamp = System.currentTimeMillis()
@@ -164,7 +177,7 @@ object Notifications {
                     text?.let { setContentText(it) }
                     subText?.let { setSubText(it) }
                     intent?.let { setContentIntent(it) }
-                    progress?.let { setProgress(100, it, false) }
+                    progress?.let { setProgress(100, it, indeterminate) }
                 }.build()
     }
 }

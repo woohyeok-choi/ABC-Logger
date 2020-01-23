@@ -111,10 +111,8 @@ class ActivityCollector(val context: Context) : BaseCollector {
             PhysicalActivityEntity(
                     type = activityTypeToString(detectedActivity.type),
                     confidence = detectedActivity.confidence
-            ).fillBaseInfo(timeMillis = result.time)
-        }.run {
-            putEntity(this)
-        }
+            ).fill(timeMillis = result.time)
+        }.run { ObjBox.put(this) }
     }
 
     private fun handleActivityTransitionUpdate(intent: Intent) {
@@ -134,12 +132,10 @@ class ActivityCollector(val context: Context) : BaseCollector {
             PhysicalActivityTransitionEntity(
                     type = activityTypeToString(type),
                     isEntered = isEntered
-            ).fillBaseInfo(
+            ).fill(
                     timeMillis = time
             )
-        }.run {
-            putEntity(this)
-        }
+        }.run { ObjBox.put(this) }
     }
 
     override suspend fun onStart() {

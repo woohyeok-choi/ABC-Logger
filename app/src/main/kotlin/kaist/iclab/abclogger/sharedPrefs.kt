@@ -7,6 +7,7 @@ object GeneralPrefs : PreferenceHolder(name = BuildConfig.PREF_NAME_GENERAL) {
     var participationTime: Long by ReadWriteLong(default = -1)
     var lastTimeDataSync: Long by ReadWriteLong(default = -1)
     var shouldUploadForNonMeteredNetwork: Boolean by ReadWriteBoolean(default = false)
+    var dbVersion : Int by ReadWriteInt(default = 0)
 }
 
 object CollectorPrefs : PreferenceHolder(name = BuildConfig.PREF_NAME_COLLECTOR) {
@@ -27,6 +28,7 @@ object CollectorPrefs : PreferenceHolder(name = BuildConfig.PREF_NAME_COLLECTOR)
     var hasStartedPhysicalStatus: Boolean by ReadWriteBoolean(default = false)
     var hasStartedSurvey: Boolean by ReadWriteBoolean(default = false)
     var hasStartedPolarH10: Boolean by ReadWriteBoolean(default = false)
+    var hasStartedSensor: Boolean by ReadWriteBoolean(default = false)
 
     var infoCallLog: String by ReadWriteString()
     var infoMessage: String by ReadWriteString()
@@ -44,7 +46,8 @@ object CollectorPrefs : PreferenceHolder(name = BuildConfig.PREF_NAME_COLLECTOR)
     var infoInstallApp: String by ReadWriteString()
     var infoPhysicalStatus: String by ReadWriteString()
     var infoSurvey: String by ReadWriteString()
-    var statusPolarH10: String by ReadWriteString()
+    var infoPolar: String by ReadWriteString()
+    var infoSensor : String by ReadWriteString()
 
     var lastAccessTimeSms: Long by ReadWriteLong(default = -1)
     var lastAccessTimeMms: Long by ReadWriteLong(default = -1)

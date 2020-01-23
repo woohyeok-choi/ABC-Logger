@@ -25,9 +25,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="@dimen/item_default_vertical_padding"
-                android:text="@string/setting_key_log_collector_instruction_keyboard_type"
                 android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_text" />
+                android:textSize="@dimen/txt_size_title_small"
+                android:text="@string/setting_key_log_collector_instruction_keyboard_type" />
 
             <RadioGroup
                 android:id="@+id/radio_group"
@@ -74,24 +74,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="@dimen/item_default_vertical_padding"
-                android:text="@string/setting_key_log_collector_instruction_accessibility"
                 android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_text"
+                android:textSize="@dimen/txt_size_title_small"
+                android:text="@string/setting_key_log_collector_instruction_accessibility"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
 
             <TextView
                 android:id="@+id/txt_key_log_setting_state"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:paddingBottom="@dimen/item_default_vertical_padding"
                 android:text="@{viewModel.isAvailable() ? @string/config_msg_available : @string/config_msg_require_setting}"
                 android:textColor="@{viewModel.isAvailable() ? @color/color_blue : @color/color_accent}"
                 android:textSize="@dimen/txt_size_text"
                 android:maxLines="2"
+                android:gravity="center_vertical"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/guideline"
-                app:layout_constraintBaseline_toBaselineOf="@id/btn_accessibility_setting"/>
+                app:layout_constraintTop_toTopOf="@id/btn_accessibility_setting"
+                app:layout_constraintBottom_toBottomOf="@id/btn_accessibility_setting"/>
 
             <Button
                 android:id="@+id/btn_accessibility_setting"

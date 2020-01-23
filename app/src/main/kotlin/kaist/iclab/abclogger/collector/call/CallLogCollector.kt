@@ -44,9 +44,9 @@ class CallLogCollector(val context: Context) : BaseCollector {
                             dataUsage = cursor.getLong(5)
                     ).fillContact(
                             number = number, contentResolver = context.contentResolver
-                    ).fillBaseInfo(toMillis(timestamp = timestamp))
+                    ).fill(toMillis(timestamp = timestamp))
                 }?.run {
-                    putEntity(this)
+                    ObjBox.put(this)
                 }
 
                 CollectorPrefs.lastAccessTimeCallLog = timestamps.max() ?: -1

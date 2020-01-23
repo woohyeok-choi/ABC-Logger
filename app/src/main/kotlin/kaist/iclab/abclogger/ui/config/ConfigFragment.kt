@@ -9,17 +9,20 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.NotificationManagerCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
 import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.base.BaseCollector
 import kaist.iclab.abclogger.base.BaseFragment
-import kaist.iclab.abclogger.collector.activity.ActivityCollector
 import kaist.iclab.abclogger.databinding.FragmentConfigBinding
+import kaist.iclab.abclogger.ui.Status
+import kaist.iclab.abclogger.ui.splash.SplashActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class ConfigFragment : BaseFragment(), SharedPreferences.OnSharedPreferenceChangeListener {
-    private val viewModel : ConfigViewModel by viewModel()
-    private lateinit var dataBinding : FragmentConfigBinding
+class ConfigFragment : BaseFragment() {
+    private val viewModel: ConfigViewModel by viewModel()
+    private lateinit var dataBinding: FragmentConfigBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,44 +47,25 @@ class ConfigFragment : BaseFragment(), SharedPreferences.OnSharedPreferenceChang
                     collector.newIntentForSetUp?.let { startActivityForResult(it, REQUEST_CODE_SETTING) }
                 }
             }
+
             onCheckedChanged = { collector, isChecked ->
+                val handler: (BaseCollector, Throwable?) -> Unit = { c, t ->
+                    if (t != null) this@ConfigFragment.showToast(t, false)
+                    updateItemView(c)
+                }
+
                 if (isChecked) {
-                    viewModel.requestStart(collector) { throwable ->
-                        this@ConfigFragment.showToast(throwable, false)
-                    }
-                }  else {
-                    viewModel.requestStop(collector) { throwable ->
-                        this@ConfigFragment.showToast(throwable, false)
-                    }
+                    viewModel.requestStart(collector) { c, t -> handler.invoke(c, t) }
+                } else {
+                    viewModel.requestStop(collector) { c, t -> handler.invoke(c, t) }
                 }
             }
         }
 
         dataBinding.recyclerView.adapter = adapter
+        dataBinding.recyclerView.itemAnimator = null
 
-        setupGeneralListeners(dataBinding)
-
-        view.context.getSharedPreferences(
-                BuildConfig.PREF_NAME_COLLECTOR,
-                Context.MODE_PRIVATE
-        ).registerOnSharedPreferenceChangeListener(this)
-
-        view.context.getSharedPreferences(
-                BuildConfig.PREF_NAME_GENERAL,
-                Context.MODE_PRIVATE
-        ).registerOnSharedPreferenceChangeListener(this)
-
-        viewModel.collectors.observe(this) { collectors -> adapter.items = collectors }
-
-        viewModel.flushStatus.observe(this) { (status, isLogout) ->
-            /**
-             * TODO: Show indeterminate progressbar until completion
-             */
-        }
-    }
-
-    private fun setupGeneralListeners(binding: FragmentConfigBinding) {
-        binding.configPermission.onClick = {
+        dataBinding.configPermission.onClick = {
             startActivityForResult(
                     action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                     data = Uri.parse("package:${requireContext().packageName}"),
@@ -89,37 +73,54 @@ class ConfigFragment : BaseFragment(), SharedPreferences.OnSharedPreferenceChang
             )
         }
 
-        binding.configNetwork.onClick = {_, checked ->
-            viewModel.setUploadForNonMeteredNetwork(checked)
-        }
+        dataBinding.configNetwork.onClick = { _, checked -> viewModel.setUploadForNonMeteredNetwork(checked) }
 
-        binding.configSync.onClick = {
-            /**
-             * TODO: Implementing sync
-             */
-        }
+        dataBinding.configFlushData.onClick = { viewModel.flush() }
 
-        binding.configFlushData.onClick = {
-            viewModel.flush()
-        }
+        dataBinding.configLogout.onClick = { viewModel.signOut { isSuccessful ->
+            if(isSuccessful) startActivity<SplashActivity>(flags = Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        } }
 
-        binding.configLogout.onClick = {
-            viewModel.signOut()
+        dataBinding.configSync.onClick = { viewModel.sync() }
+
+        viewModel.collectors.observe(this) { collectors -> adapter.items = collectors }
+
+        viewModel.flushStatus.observe(this) { status ->
+            val ntf = when (status.state) {
+                Status.STATE_LOADING -> Notifications.build(
+                        context = requireContext(),
+                        channelId = Notifications.CHANNEL_ID_PROGRESS,
+                        title = getString(R.string.ntf_title_flush),
+                        text = getString(R.string.ntf_text_flush),
+                        progress = 0,
+                        indeterminate = true
+                )
+                Status.STATE_SUCCESS -> Notifications.build(
+                        context = requireContext(),
+                        channelId = Notifications.CHANNEL_ID_PROGRESS,
+                        title = getString(R.string.ntf_title_flush),
+                        text = getString(R.string.ntf_text_flush_complete)
+                )
+                Status.STATE_FAILURE -> Notifications.build(
+                        context = requireContext(),
+                        channelId = Notifications.CHANNEL_ID_PROGRESS,
+                        title = getString(R.string.ntf_title_flush),
+                        text = listOfNotNull(
+                                getString(R.string.ntf_text_flush_failed),
+                                status.error?.toString(requireContext())
+                        ).joinToString(": ")
+                )
+                else -> null
+            }
+            if (ntf != null) NotificationManagerCompat.from(requireContext()).notify(Notifications.ID_FLUSH_PROGRESS, ntf)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.load()
-    }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        viewModel.load()
-    }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        viewModel.load()
+        viewModel.updatePermission()
+        viewModel.updateCollectors()
     }
 
     companion object {

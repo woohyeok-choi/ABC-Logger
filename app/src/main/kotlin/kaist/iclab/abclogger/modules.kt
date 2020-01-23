@@ -14,8 +14,9 @@ import kaist.iclab.abclogger.collector.media.MediaCollector
 import kaist.iclab.abclogger.collector.message.MessageCollector
 import kaist.iclab.abclogger.collector.notification.NotificationCollector
 import kaist.iclab.abclogger.collector.physicalstatus.PhysicalStatusCollector
-import kaist.iclab.abclogger.collector.sensor.PolarH10Collector
-import kaist.iclab.abclogger.collector.sensor.PolarH10ViewModel
+import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
+import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10ViewModel
+import kaist.iclab.abclogger.collector.sensor.SensorCollector
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.survey.SurveyPreviewViewModel
 import kaist.iclab.abclogger.collector.survey.SurveySettingViewModel
@@ -46,6 +47,7 @@ val collectorModules = module {
     single(createdAtStart = false) { PolarH10Collector(androidContext()) }
     single(createdAtStart = false) { SurveyCollector(androidContext()) }
     single(createdAtStart = false) { WifiCollector(androidContext()) }
+    single(createdAtStart = false) { SensorCollector(androidContext()) }
     single(createdAtStart = false) {
         ABCLogger(
                 get<ActivityCollector>(),
@@ -64,7 +66,8 @@ val collectorModules = module {
                 get<PhysicalStatusCollector>(),
                 get<PolarH10Collector>(),
                 get<SurveyCollector>(),
-                get<WifiCollector>())
+                get<WifiCollector>(),
+                get<SensorCollector>())
     }
 }
 

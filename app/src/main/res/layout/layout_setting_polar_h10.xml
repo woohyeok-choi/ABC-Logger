@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="kaist.iclab.abclogger.collector.sensor.PolarH10ViewModel" />
+            type="kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10ViewModel" />
     </data>
 
     <LinearLayout
@@ -28,7 +28,7 @@
                 android:paddingBottom="@dimen/item_default_vertical_padding"
                 android:text="@string/setting_polar_h10_collector_instruction_device_id"
                 android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_text" />
+                android:textSize="@dimen/txt_size_title_small" />
 
             <EditText
                 android:id="@+id/edt_device_id"
@@ -60,7 +60,7 @@
                 android:paddingBottom="@dimen/item_default_vertical_padding"
                 android:text="@string/setting_polar_h10_collector_instruction_state"
                 android:textColor="@color/color_message"
-                android:textSize="@dimen/txt_size_text" />
+                android:textSize="@dimen/txt_size_title_small" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"

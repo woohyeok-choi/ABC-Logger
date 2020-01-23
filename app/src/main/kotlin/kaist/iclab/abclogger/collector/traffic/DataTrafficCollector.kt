@@ -5,9 +5,9 @@ import android.content.Intent
 import android.net.TrafficStats
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
+import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.fillBaseInfo
-import kaist.iclab.abclogger.putEntity
+import kaist.iclab.abclogger.fill
 
 class DataTrafficCollector(val context: Context) : BaseCollector {
     private val telephonyManager: TelephonyManager by lazy {
@@ -56,8 +56,8 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
                                 txBytes = netTotalTxBytes,
                                 mobileRxBytes = netMobileRxBytes,
                                 mobileTxBytes = netMobileTxBytes
-                        ).fillBaseInfo(timeMillis = curTimestamp).run {
-                            putEntity(this)
+                        ).fill(timeMillis = curTimestamp).run {
+                            ObjBox.put(this)
                         }
 
                         prevTimestamp = curTimestamp

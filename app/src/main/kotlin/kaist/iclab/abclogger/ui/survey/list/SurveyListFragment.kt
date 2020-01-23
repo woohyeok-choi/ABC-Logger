@@ -76,9 +76,5 @@ class SurveyListFragment : BaseFragment(){
         viewModel.entities.observe(this) { data ->
             if (data != null) recyclerViewAdapter.submitList(data)
         }
-
-        viewModel.status.observe(this) { status ->
-            if(status.state == Status.STATE_FAILURE) showToast(status.error, false)
-        }
     }
 }

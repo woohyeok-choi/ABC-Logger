@@ -1,7 +1,13 @@
 package kaist.iclab.abclogger
 
 import android.content.Context
+import com.github.kittinunf.fuel.core.FuelError
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import polar.com.sdk.api.errors.*
 
 abstract class ABCException (override val message: String?): Exception(message) {
     constructor() : this(null)
@@ -11,15 +17,28 @@ abstract class ABCException (override val message: String?): Exception(message) 
     fun toString(context: Context): String = listOf(
             context.getString(stringRes), message
     ).filter { !it.isNullOrEmpty() }.joinToString(separator = ": ")
+
+    companion object {
+        fun wrap(t: Throwable?) = when(t) {
+            is ApiException -> GoogleApiException(t.statusCode)
+            is FirebaseAuthInvalidUserException -> FirebaseInvalidUserException()
+            is FirebaseAuthInvalidCredentialsException -> FirebaseInvalidCredentialException()
+            is FirebaseAuthUserCollisionException -> FirebaseUserCollisionException()
+            is FuelError -> HttpRequestException(t.message)
+            is PolarDeviceDisconnected -> PolarH10Exception("Device is disconnected.")
+            is PolarDeviceNotFound -> PolarH10Exception("Device is not found.")
+            is PolarDeviceNotConnected -> PolarH10Exception("Device is not connected.")
+            is PolarInvalidArgument -> PolarH10Exception("Device id is invalid.")
+            is PolarServiceNotAvailable -> PolarH10Exception("Polar service is not available..")
+            is ABCException -> t
+            else -> UnhandledException(t?.message)
+        }
+    }
 }
 
 class UnhandledException(message: String?) : ABCException(message) {
     override val stringRes: Int
         get() = R.string.error_general
-
-    companion object {
-        fun wrap(t : Throwable?) : UnhandledException = UnhandledException(t?.message)
-    }
 }
 
 class EmptySurveyException : ABCException() {
@@ -90,4 +109,14 @@ class HttpRequestException(message: String?) : ABCException(message) {
 class NoSignedGoogleAccountException: ABCException() {
     override val stringRes: Int
         get() = R.string.error_no_signed_google_account
+}
+
+class InvalidUrlException: ABCException() {
+    override val stringRes: Int
+        get() = R.string.error_invalid_url
+}
+
+class PolarH10Exception(message: String?): ABCException(message) {
+    override val stringRes: Int
+        get() = R.string.error_polar_h10
 }

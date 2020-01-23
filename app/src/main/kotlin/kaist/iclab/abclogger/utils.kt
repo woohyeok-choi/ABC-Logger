@@ -156,7 +156,7 @@ fun Fragment.showToast(message: String, isShort: Boolean = true) =
 fun Context.showToast(throwable: Throwable?, isShort: Boolean = true) {
     val msg = when(throwable) {
         is ABCException -> throwable.toString(this)
-        else -> UnhandledException.wrap(throwable).toString(this)
+        else -> ABCException.wrap(throwable).toString(this)
     }
     Toast.makeText(this, msg, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
@@ -164,7 +164,7 @@ fun Context.showToast(throwable: Throwable?, isShort: Boolean = true) {
 fun Fragment.showToast(throwable: Throwable?, isShort: Boolean = true) {
     val msg = when(throwable) {
         is ABCException -> throwable.toString(requireContext())
-        else -> UnhandledException.wrap(throwable).toString(requireContext())
+        else -> ABCException.wrap(throwable).toString(requireContext())
     }
     Toast.makeText(requireContext(), msg, if (isShort) Toast.LENGTH_SHORT else Toast.LENGTH_LONG).show()
 }
@@ -186,19 +186,24 @@ inline fun <T> Array<T>.sumByLong(selector: (T) -> Long): Long {
     return sum
 }
 
-inline fun <reified T : Activity> Context.startActivity(vararg params: Pair<String, Any?>, options: Bundle? = null) {
-    val intent = Intent(this, T::class.java)
+inline fun <reified T : Activity> Context.startActivity(vararg params: Pair<String, Any?>,
+                                                        options: Bundle? = null,
+                                                        flags: Int? = null) {
+    val intent = Intent(this, T::class.java).apply {
+        if(flags != null) addFlags(flags)
+    }
+
     fillIntentWithArguments(intent, params)
     startActivity(intent, options)
 }
 
-inline fun <reified T : Activity> Context.startService(vararg params: Pair<String, Any?>) {
+inline fun <reified T : Service> Context.startService(vararg params: Pair<String, Any?>) {
     val intent = Intent(this, T::class.java)
     fillIntentWithArguments(intent, params)
     startService(intent)
 }
 
-inline fun <reified T : Activity> Context.startForegroundService(vararg params: Pair<String, Any?>) {
+inline fun <reified T : Service> Context.startForegroundService(vararg params: Pair<String, Any?>) {
     val intent = Intent(this, T::class.java)
     fillIntentWithArguments(intent, params)
     startForegroundService(intent)
@@ -211,18 +216,16 @@ inline fun <reified T : Activity> Activity.startActivityForResult(requestCode: I
     startActivityForResult(intent, requestCode, options)
 }
 
-inline fun <reified T : Activity> Fragment.startActivity(vararg params: Pair<String, Any?>, options: Bundle? = null) {
-    val intent = Intent(requireContext(), T::class.java)
+inline fun <reified T : Activity> Fragment.startActivity(vararg params: Pair<String, Any?>,
+                                                         options: Bundle? = null,
+                                                         flags: Int? = null) {
+    val intent = Intent(requireContext(), T::class.java).apply {
+        if(flags != null) addFlags(flags)
+    }
     fillIntentWithArguments(intent, params)
     startActivity(intent, options)
 }
 
-inline fun <reified T : Activity> Fragment.startActivity(options: Bundle? = null,
-                                                         vararg params: Pair<String, Any?>) {
-    val intent = Intent(requireContext(), T::class.java)
-    fillIntentWithArguments(intent, params)
-    startActivity(intent, options)
-}
 
 fun Fragment.startActivityForResult(action: String, data: Uri?, vararg params: Pair<String, Any?>, requestCode: Int) {
     val intent = Intent().also {
@@ -335,21 +338,12 @@ fun fillBundleWithArguments(bundle: Bundle, params: Array<out Pair<String, Any?>
 }
 
 suspend fun httpGet(url: String, vararg params: Pair<String, Any?>) : String? {
-    val (_, _, result) =     Fuel.get(url, params.toList()).awaitStringResponseResult()
+    val (_, _, result) = Fuel.get(url, params.toList()).awaitStringResponseResult()
     val (response, exception) = result
     if (exception != null) throw HttpRequestException(exception.message)
 
     return response
 }
-
-suspend fun <T> Task<T>.await(): T {
-    if (isComplete) return if (isSuccessful) result!! else throw exception!!
-    return suspendCoroutine { c ->
-        addOnSuccessListener { c.resume(it) }
-        addOnFailureListener { c.resumeWithException(it) }
-    }
-}
-
 
 fun Context.safeRegisterReceiver(receiver: BroadcastReceiver, filter: IntentFilter) = try {
     registerReceiver(receiver, filter)

@@ -23,76 +23,35 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
     private lateinit var binding: ActivitySurveyResponseBinding
     private var reactionTime: Long = -1L
 
-    private val entityId = intent.getLongExtra(EXTRA_ENTITY_ID, -1)
-    private val showFromList = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
-    private val surveyTitle = intent.getStringExtra(EXTRA_SURVEY_TITLE) ?: ""
-    private val surveyMessage = intent.getStringExtra(EXTRA_SURVEY_MESSAGE) ?: ""
-    private val surveyDeliveredTime = intent.getLongExtra(EXTRA_SURVEY_DELIVERED_TIME, 0)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        closeOptionsMenu()
-
-        reactionTime = System.currentTimeMillis()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_survey_response)
-
         setSupportActionBar(tool_bar)
         supportActionBar?.apply {
             title = getString(R.string.title_survey_response)
             setDisplayHomeAsUpEnabled(true)
         }
 
-        val recyclerViewAdapter = SurveyQuestionListAdapter()
+        val entityId = intent.getLongExtra(EXTRA_ENTITY_ID, -1)
+        val showFromList = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
 
-        binding.viewModel = viewModel
+        reactionTime = System.currentTimeMillis()
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_survey_response)
+
         binding.lifecycleOwner = this
+        binding.viewModel = viewModel
+        binding.title = intent.getStringExtra(EXTRA_SURVEY_TITLE) ?: ""
+        binding.message = intent.getStringExtra(EXTRA_SURVEY_MESSAGE) ?: ""
+        binding.deliveredTime = intent.getLongExtra(EXTRA_SURVEY_DELIVERED_TIME, 0)
 
-        binding.recyclerView.apply {
-            adapter = recyclerViewAdapter
-        }
+        val adapter = SurveyQuestionListAdapter()
 
-        viewModel.loadStatus.observe(this) { status ->
-            when (status.state) {
-                Status.STATE_LOADING -> binding.loadProgressBar.show()
-                Status.STATE_SUCCESS -> {
-                    openOptionsMenu()
-                    binding.loadProgressBar.hide()
-                }
-                Status.STATE_FAILURE -> {
-                    binding.loadProgressBar.hide()
-                    showToast(status.error, false)
-                }
-            }
-        }
-
-        viewModel.storeStatus.observe(this) { status ->
-            when (status.state) {
-                Status.STATE_LOADING -> binding.storeProgressBar.show()
-                Status.STATE_SUCCESS -> {
-                    binding.storeProgressBar.hide()
-
-                    if (showFromList) {
-                        supportFinishAfterTransition()
-                    } else {
-                        finish()
-                    }
-                }
-                Status.STATE_FAILURE -> {
-                    binding.loadProgressBar.hide()
-                    if (status.error is ABCException) {
-                        showSnackBar(binding.root, status.error.stringRes)
-                    } else {
-                        showSnackBar(binding.root, R.string.error_general)
-                    }
-                }
-            }
-        }
-
-        viewModel.surveySetting.observe(this) { surveySetting ->
-            recyclerViewAdapter.bindData(
-                    questions = surveySetting.survey.questions,
-                    isAvailable = surveySetting.isAvailable,
-                    showAltText = surveySetting.showEtc
+        binding.recyclerView.adapter = adapter
+        viewModel.setting.observe(this) { (questions, isAvailable, showEtc) ->
+            adapter.bindData(
+                    questions = questions,
+                    isAvailable = isAvailable,
+                    showAltText = showEtc
             )
         }
 
@@ -101,38 +60,50 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
             ViewCompat.setTransitionName(binding.txtMessage, sharedViewNameForMessage(entityId))
             ViewCompat.setTransitionName(binding.txtDeliveredTime, sharedViewNameForDeliveredTime(entityId))
             window.allowReturnTransitionOverlap = true
-            window.sharedElementEnterTransition.doOnEnd { load() }
+            window.sharedElementEnterTransition.doOnEnd { viewModel.load(entityId) }
         } else {
-            load()
+            viewModel.load(entityId)
         }
     }
-
-    private fun load() = viewModel.load(
-            title = surveyTitle,
-            message = surveyMessage,
-            deliveredTime = surveyDeliveredTime,
-            entityId = entityId
-    )
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_activity_survey_question, menu)
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        android.R.id.home -> {
-            true
-        }
-        R.id.menu_activity_survey_question_save -> {
-            YesNoDialogFragment.showDialog(
-                    supportFragmentManager,
-                    getString(R.string.dialog_title_save_immutable),
-                    getString(R.string.dialog_message_save_immutable)) { isYes ->
-                if (isYes) viewModel.store(entityId, reactionTime, System.currentTimeMillis())
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val entityId = intent.getLongExtra(EXTRA_ENTITY_ID, -1)
+        val showFromList = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
+
+        return when (item.itemId) {
+            android.R.id.home -> {
+                true
             }
-            true
+            R.id.menu_activity_survey_question_save -> {
+                YesNoDialogFragment.showDialog(
+                        supportFragmentManager,
+                        getString(R.string.dialog_title_save_immutable),
+                        getString(R.string.dialog_message_save_immutable)) { isYes ->
+                    if (!isYes) return@showDialog
+
+                    viewModel.store(
+                            entityId = entityId,
+                            reactionTime = reactionTime,
+                            responseTime = System.currentTimeMillis()
+                    ) { isSuccessful ->
+                        if (!isSuccessful) return@store
+
+                        if (showFromList) {
+                            supportFinishAfterTransition()
+                        } else {
+                            finish()
+                        }
+                    }
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
-        else -> super.onOptionsItemSelected(item)
     }
 
     companion object {
