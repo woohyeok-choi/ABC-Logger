@@ -14,7 +14,7 @@ import android.os.Build
 import android.provider.Settings
 import android.os.Process
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.getApplicationName
 import kaist.iclab.abclogger.collector.isSystemApp
 import kaist.iclab.abclogger.collector.isUpdatedSystemApp

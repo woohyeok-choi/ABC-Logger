@@ -1,8 +1,6 @@
 package kaist.iclab.abclogger.ui.config
 
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -13,7 +11,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.base.BaseFragment
 import kaist.iclab.abclogger.databinding.FragmentConfigBinding
 import kaist.iclab.abclogger.ui.Status
@@ -92,7 +90,9 @@ class ConfigFragment : BaseFragment() {
             ) { isYes ->
                 if (isYes) {
                     viewModel.signOut { isSuccessful ->
-                        if (isSuccessful) startActivity<SplashActivity>(flags = Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        if (isSuccessful) startActivity<SplashActivity>(
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        )
                     }
                 }
             }

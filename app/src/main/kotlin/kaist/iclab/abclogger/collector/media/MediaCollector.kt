@@ -7,7 +7,7 @@ import android.database.ContentObserver
 import android.os.Handler
 import android.provider.MediaStore
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.getRecentContents
 import kaist.iclab.abclogger.collector.toMillis
 

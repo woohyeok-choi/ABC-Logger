@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
-import kaist.iclab.abclogger.sync.SyncManager
 import kaist.iclab.abclogger.ui.AvoidSmartManagerActivity
 import java.util.*
 
@@ -33,7 +32,7 @@ class BootReceiver : BroadcastReceiver() {
                 }, Random(System.currentTimeMillis()).nextInt(3000).toLong())
             } catch (e: PackageManager.NameNotFoundException) { }
 
-            context.startForegroundService<ABCLogger.ABCLoggerService>()
+            context.startForegroundService<ABC.ABCLoggerService>()
         }
     }
 }

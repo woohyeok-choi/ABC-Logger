@@ -2,10 +2,7 @@ package kaist.iclab.abclogger.collector.survey
 
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
@@ -13,8 +10,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.observe
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.databinding.FragmentSurveyPreviewBinding
-import kaist.iclab.abclogger.ui.Status
-import kaist.iclab.abclogger.ui.survey.question.SurveyQuestionListAdapter
+import kaist.iclab.abclogger.ui.question.SurveyQuestionListAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SurveyPreviewDialogFragment : DialogFragment() {

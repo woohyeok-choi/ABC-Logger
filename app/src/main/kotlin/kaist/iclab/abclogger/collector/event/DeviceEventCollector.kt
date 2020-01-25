@@ -11,7 +11,7 @@ import android.os.PowerManager
 import android.provider.Telephony
 import android.telephony.TelephonyManager
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 
 class DeviceEventCollector(val context: Context) : BaseCollector {
     private val powerManager: PowerManager by lazy {

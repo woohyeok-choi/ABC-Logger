@@ -7,9 +7,8 @@ import android.text.TextUtils
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
-import kaist.iclab.abclogger.collector.sensor.SensorEntity
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
 import polar.com.sdk.api.PolarBleApiDefaultImpl

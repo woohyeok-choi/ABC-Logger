@@ -13,7 +13,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.app.AlarmManagerCompat
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean

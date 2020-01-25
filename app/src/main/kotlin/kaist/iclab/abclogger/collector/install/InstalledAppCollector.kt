@@ -8,7 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.getApplicationName
 import kaist.iclab.abclogger.collector.isSystemApp
 import kaist.iclab.abclogger.collector.isUpdatedSystemApp

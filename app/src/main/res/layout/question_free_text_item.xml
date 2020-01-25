@@ -57,9 +57,11 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toRightOf="@id/txt_should_answer"/>
 
-            <kaist.iclab.abclogger.ui.survey.question.FreeTextView
+            <kaist.iclab.abclogger.ui.question.FreeTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                options="@{question.options}"
+                showEtc="@{question.showEtc}"
                 isAvailable="@{isAvailable}"
                 responses="@={question.responses}"
                 app:layout_constraintTop_toBottomOf="@id/txt_message"

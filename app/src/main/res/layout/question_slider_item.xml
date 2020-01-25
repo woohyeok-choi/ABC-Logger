@@ -57,15 +57,15 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toRightOf="@id/txt_should_answer"/>
 
-            <kaist.iclab.abclogger.ui.survey.question.SliderView
+            <kaist.iclab.abclogger.ui.question.SliderView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/txt_message"
                 app:layout_constraintLeft_toLeftOf="parent"
                 options="@{question.options}"
                 showEtc="@{question.showEtc}"
-                responses="@={question.responses}"
-                isAvailable="@{isAvailable}"/>
+                isAvailable="@{isAvailable}"
+                responses="@={question.responses}"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </layout>

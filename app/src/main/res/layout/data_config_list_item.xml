@@ -17,7 +17,7 @@
 
         <variable
             name="collector"
-            type="kaist.iclab.abclogger.base.BaseCollector" />
+            type="kaist.iclab.abclogger.collector.BaseCollector" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

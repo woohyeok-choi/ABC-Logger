@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.ui.survey.question
+package kaist.iclab.abclogger.ui.question
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

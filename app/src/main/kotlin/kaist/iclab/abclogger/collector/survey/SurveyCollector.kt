@@ -13,8 +13,8 @@ import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.ui.survey.question.SurveyResponseActivity
+import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.ui.question.SurveyResponseActivity
 import kotlinx.coroutines.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode

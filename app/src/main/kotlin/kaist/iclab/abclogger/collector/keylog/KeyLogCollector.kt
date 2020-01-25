@@ -1,15 +1,13 @@
 package kaist.iclab.abclogger.collector.keylog
 
 import android.accessibilityservice.AccessibilityService
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.getApplicationName
 import kaist.iclab.abclogger.collector.isSystemApp
 import kaist.iclab.abclogger.collector.isUpdatedSystemApp
@@ -126,7 +124,6 @@ class KeyLogCollector(val context: Context) : BaseCollector {
             return hypot(distY, distX)
         }
 
-
         private fun findPosition(key: String, keyType: KeyType, isChunjiin: Boolean) : Pair<Float, Float>? {
             val setting = when {
                 keyType == KeyType.KOR && isChunjiin -> CHUNJIIN
@@ -137,7 +134,6 @@ class KeyLogCollector(val context: Context) : BaseCollector {
 
             return setting.find { (k, _, _) -> k == key }?.let { (_, x, y) -> x to y }
         }
-
 
         /* 현재 입력한 키의 타입(예. 한글, 영어 등)을 반환하는 함수 */
         private fun getKeyType(str: String?): KeyType =
@@ -175,6 +171,7 @@ class KeyLogCollector(val context: Context) : BaseCollector {
 
         override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
             if(!CollectorPrefs.hasStartedKeyStrokes) return
+
             accessibilityEvent.packageName ?: return
             accessibilityEvent.source ?: return
 

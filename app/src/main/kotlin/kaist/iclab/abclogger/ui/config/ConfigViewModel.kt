@@ -6,24 +6,20 @@ import android.text.format.Formatter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.start
+import kaist.iclab.abclogger.collector.stop
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.Exception
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class ConfigViewModel(
         val context: Context,
-        val abcLogger: ABCLogger
+        val abcLogger: ABC
 ) : ViewModel() {
     val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
     val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
@@ -92,13 +88,7 @@ class ConfigViewModel(
     fun signOut(onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = GlobalScope.launch {
         try {
             flushStatus.postValue(Status.loading())
-
-            ObjBox.flush(context)
-            GeneralPrefs.clear()
-            CollectorPrefs.clear()
-            FirebaseAuth.getInstance().signOut()
-            GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().toCoroutine()
-
+            ABC.signOut(context)
             flushStatus.postValue(Status.success())
             sizeOfDb.postValue(sizeOfDb())
             onComplete?.invoke(true)

@@ -211,6 +211,11 @@ inline fun <reified T : Service> Context.startForegroundService(vararg params: P
     startForegroundService(intent)
 }
 
+inline fun <reified T : Service> Context.stopService() {
+    val intent = Intent(this, T::class.java)
+    stopService(intent)
+}
+
 inline fun <reified T : Activity> Activity.startActivityForResult(requestCode: Int, options: Bundle? = null,
                                                                   vararg params: Pair<String, Any?>) {
     val intent = Intent(this, T::class.java)
@@ -227,7 +232,6 @@ inline fun <reified T : Activity> Fragment.startActivity(vararg params: Pair<Str
     fillIntentWithArguments(intent, params)
     startActivity(intent, options)
 }
-
 
 fun Fragment.startActivityForResult(action: String, data: Uri?, vararg params: Pair<String, Any?>, requestCode: Int) {
     val intent = Intent().also {

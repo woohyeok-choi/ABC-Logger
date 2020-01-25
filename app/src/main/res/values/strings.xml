@@ -54,8 +54,7 @@
     <string name="btn_dropout">Dropout</string>
     <string name="btn_preview">Preview</string>
 
-    <string name="ntf_title_service_running">@string/app_name</string>
-    <string name="ntf_text_service_running">Application in progress&#8230;</string>
+    <string name="ntf_title_service_running">running in background&#8230;</string>
     <string name="ntf_title_sync">Sync</string>
     <string name="ntf_text_sync">Sync in progress&#8230;</string>
     <string name="ntf_text_sync_complete">Sync complete!</string>

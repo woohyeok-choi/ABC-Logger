@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.ui.survey.list
+package kaist.iclab.abclogger.ui.surveylist
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource

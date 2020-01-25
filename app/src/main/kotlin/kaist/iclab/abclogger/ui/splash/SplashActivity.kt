@@ -5,29 +5,20 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.Status
 import com.google.firebase.auth.*
 import com.tedpark.tedpermission.rx2.TedRx2Permission
-import io.reactivex.Single
-import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.SingleSubject
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.ui.main.MainActivity
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import java.lang.Exception
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 
 class SplashActivity : BaseAppCompatActivity() {
@@ -89,7 +80,7 @@ class SplashActivity : BaseAppCompatActivity() {
         }
     }
 
-    private val abc: ABCLogger by inject()
+    private val abc: ABC by inject()
 
     private val permissionSettingSingle = SingleSubject.create<Boolean>()
     private val whiteListSingle = SingleSubject.create<Boolean>()

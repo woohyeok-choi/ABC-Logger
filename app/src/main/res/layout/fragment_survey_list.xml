@@ -9,7 +9,7 @@
 
         <variable
             name="viewModel"
-            type="kaist.iclab.abclogger.ui.survey.list.SurveyListViewModel" />
+            type="kaist.iclab.abclogger.ui.surveylist.SurveyListViewModel" />
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
