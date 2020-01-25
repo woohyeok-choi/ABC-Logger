@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 
 class BatteryCollector (val context: Context) : BaseCollector {
     private val receiver : BroadcastReceiver by lazy {

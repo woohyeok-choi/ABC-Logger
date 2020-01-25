@@ -12,7 +12,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import com.google.android.gms.location.*
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 
 class ActivityCollector(val context: Context) : BaseCollector {
     private fun activityTypeToString(typeInt: Int) = when (typeInt) {

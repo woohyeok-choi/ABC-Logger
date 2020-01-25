@@ -6,24 +6,20 @@ import android.text.format.Formatter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.start
+import kaist.iclab.abclogger.collector.stop
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.Exception
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class ConfigViewModel(
         val context: Context,
-        val abcLogger: ABCLogger
+        val abcLogger: ABC
 ) : ViewModel() {
     val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
     val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
@@ -76,14 +72,15 @@ class ConfigViewModel(
     fun flush(onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = GlobalScope.launch {
         try {
             flushStatus.postValue(Status.loading())
-            withContext(Dispatchers.IO) {
-                ObjBox.flush(context)
-            }
+
+            ObjBox.flush(context)
+
             flushStatus.postValue(Status.success())
             sizeOfDb.postValue(sizeOfDb())
             onComplete?.invoke(true)
         } catch (e: Exception) {
             flushStatus.postValue(Status.failure(e))
+
             onComplete?.invoke(true)
         }
     }
@@ -91,24 +88,13 @@ class ConfigViewModel(
     fun signOut(onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = GlobalScope.launch {
         try {
             flushStatus.postValue(Status.loading())
-
-            withContext(Dispatchers.IO) {
-                ObjBox.flush(context)
-                GeneralPrefs.clear()
-                CollectorPrefs.clear()
-            }
-
-            FirebaseAuth.getInstance().signOut()
-                suspendCoroutine<Void> { continuation ->
-                    GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut()
-                            .addOnSuccessListener { continuation.resume(it) }
-                            .addOnFailureListener { continuation.resumeWithException(it) }
-            }
+            ABC.signOut(context)
             flushStatus.postValue(Status.success())
             sizeOfDb.postValue(sizeOfDb())
             onComplete?.invoke(true)
         } catch (e: Exception) {
             flushStatus.postValue(Status.failure(e))
+
             onComplete?.invoke(false)
         }
     }

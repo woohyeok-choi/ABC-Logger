@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.ui.survey.list
+package kaist.iclab.abclogger.ui.surveylist
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.databinding.SurveyListItemBinding
-import kaist.iclab.abclogger.ui.survey.sharedViewNameForDeliveredTime
-import kaist.iclab.abclogger.ui.survey.sharedViewNameForMessage
-import kaist.iclab.abclogger.ui.survey.sharedViewNameForTitle
+import kaist.iclab.abclogger.ui.sharedViewNameForDeliveredTime
+import kaist.iclab.abclogger.ui.sharedViewNameForMessage
+import kaist.iclab.abclogger.ui.sharedViewNameForTitle
 
 class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
     var onItemClick : ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null

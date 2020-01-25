@@ -7,7 +7,7 @@ import android.database.ContentObserver
 import android.os.Handler
 import android.provider.CallLog
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.*
 
 class CallLogCollector(val context: Context) : BaseCollector {

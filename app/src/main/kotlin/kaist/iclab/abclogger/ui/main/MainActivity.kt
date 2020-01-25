@@ -8,26 +8,22 @@ import androidx.navigation.ui.setupWithNavController
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.RuntimeException
 
 class MainActivity : BaseAppCompatActivity() {
     private var backPressedTime : Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        if(!checkServiceRunning<ABCLogger.ABCLoggerService>())
-            startForegroundService<ABCLogger.ABCLoggerService>()
-
         setContentView(R.layout.activity_main)
+        ABC.doAfterSignIn(this)
 
         val navController = navigation_host_fragment.findNavController()
         val config = AppBarConfiguration(
                 setOf(R.id.navigation_survey_list, R.id.navigation_config)
         )
         setupActionBarWithNavController(navController, config)
-
         navigation.setupWithNavController(navController)
-
         navigation.setOnNavigationItemReselectedListener {  }
     }
 

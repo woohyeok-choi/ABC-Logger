@@ -23,8 +23,8 @@ import kaist.iclab.abclogger.collector.survey.SurveySettingViewModel
 import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
 import kaist.iclab.abclogger.collector.wifi.WifiCollector
 import kaist.iclab.abclogger.ui.config.ConfigViewModel
-import kaist.iclab.abclogger.ui.survey.list.SurveyListViewModel
-import kaist.iclab.abclogger.ui.survey.question.SurveyResponseViewModel
+import kaist.iclab.abclogger.ui.surveylist.SurveyListViewModel
+import kaist.iclab.abclogger.ui.question.SurveyResponseViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -49,7 +49,7 @@ val collectorModules = module {
     single(createdAtStart = false) { WifiCollector(androidContext()) }
     single(createdAtStart = false) { SensorCollector(androidContext()) }
     single(createdAtStart = false) {
-        ABCLogger(
+        ABC(
                 get<ActivityCollector>(),
                 get<AppUsageCollector>(),
                 get<BatteryCollector>(),

@@ -10,7 +10,7 @@ import android.content.IntentFilter
 import android.net.wifi.WifiManager
 import android.provider.Settings
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import java.util.concurrent.TimeUnit
 
 class WifiCollector(val context: Context) : BaseCollector {

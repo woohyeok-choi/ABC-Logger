@@ -57,7 +57,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toRightOf="@id/txt_should_answer"/>
 
-            <kaist.iclab.abclogger.ui.survey.question.CheckBoxesView
+            <kaist.iclab.abclogger.ui.question.CheckBoxesView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/txt_message"

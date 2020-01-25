@@ -9,7 +9,7 @@ import android.net.Uri
 import android.os.Handler
 import android.provider.Telephony
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.*
 
 class MessageCollector(val context: Context) : BaseCollector {

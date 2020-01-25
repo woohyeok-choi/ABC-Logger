@@ -12,6 +12,7 @@ import kaist.iclab.abclogger.collector.MyObjectBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.isSymlink
 import java.io.File
@@ -23,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference
 object ObjBox {
     val boxStore: AtomicReference<BoxStore> = AtomicReference()
 
-    private fun buildStore(context: Context): BoxStore {
+    private suspend fun buildStore(context: Context): BoxStore = withContext(Dispatchers.IO) {
         val store = (1..500).firstNotNullResult { multiple ->
             try {
                 val tempStore = MyObjectBox.builder()
@@ -39,15 +40,15 @@ object ObjBox {
         } ?: throw RuntimeException("DB size is too large!!")
 
         GeneralPrefs.dbVersion += 1
-        return store
+        return@withContext store
     }
 
-    fun bind(context: Context) {
+    suspend fun bind(context: Context) = withContext(Dispatchers.IO) {
         boxStore.set(buildStore(context))
     }
 
-    fun flush(context: Context) = GlobalScope.launch(Dispatchers.IO) {
-        val oldStore = boxStore.getAndSet(buildStore(context)) ?: return@launch
+    suspend fun flush(context: Context) = withContext(Dispatchers.IO) {
+        val oldStore = boxStore.getAndSet(buildStore(context)) ?: return@withContext
         oldStore.close()
         oldStore.deleteAllFiles()
     }

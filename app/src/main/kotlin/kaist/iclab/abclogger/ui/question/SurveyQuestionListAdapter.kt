@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.ui.survey.question
+package kaist.iclab.abclogger.ui.question
 
 import android.view.LayoutInflater
 import android.view.View

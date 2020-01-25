@@ -54,8 +54,7 @@
     <string name="btn_dropout">Dropout</string>
     <string name="btn_preview">Preview</string>
 
-    <string name="ntf_title_service_running">@string/app_name</string>
-    <string name="ntf_text_service_running">Application in progress&#8230;</string>
+    <string name="ntf_title_service_running">running in background&#8230;</string>
     <string name="ntf_title_sync">Sync</string>
     <string name="ntf_text_sync">Sync in progress&#8230;</string>
     <string name="ntf_text_sync_complete">Sync complete!</string>
@@ -85,6 +84,10 @@
     <string name="dialog_title_permission_request">Permission request</string>
     <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
     <string name="dialog_title_survey_preview">Preview</string>
+    <string name="dialog_title_flush_data">Flush</string>
+    <string name="dialog_message_flush_data">Do you really want to flush local data?</string>
+    <string name="dialog_title_sign_out">Sign Out</string>
+    <string name="dialog_message_sign_out">If you sign out, local data and preferences will be removed. Do you want it?</string>
 
     <string name="msg_sign_in_success">Welcome</string>
     <string name="msg_auth_password_changed">Password changed.</string>
@@ -93,6 +96,7 @@
     <string name="msg_set_notification">Please allow ABC Platform to access notifications.</string>
     <string name="msg_set_google_fitness">Please allow ABC Platform to access your Google Fitness data.</string>
     <string name="msg_permission_setting_required">Some permissions are denied. Please grant permissions in setting.</string>
+    <string name="msg_white_list_required">Please put this app into a whitelist.</string>
     <string name="msg_back_twice_exit">Press back again to exit.</string>
     <string name="msg_save_complete">The response is saved.</string>
     <string name="msg_fail_to_load_contents">Failed to load contents.</string>

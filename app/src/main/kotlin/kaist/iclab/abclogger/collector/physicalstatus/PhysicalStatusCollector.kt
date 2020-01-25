@@ -20,11 +20,7 @@ import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.tasks.Tasks
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kaist.iclab.abclogger.collector.BaseCollector
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException

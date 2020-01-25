@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/navigation_survey_list"
-        android:name="kaist.iclab.abclogger.ui.survey.list.SurveyListFragment"
+        android:name="kaist.iclab.abclogger.ui.surveylist.SurveyListFragment"
         android:label="@string/title_survey_list"
         tools:layout="@layout/fragment_survey_list">
     </fragment>

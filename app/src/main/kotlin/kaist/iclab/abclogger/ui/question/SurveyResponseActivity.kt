@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.ui.survey.question
+package kaist.iclab.abclogger.ui.question
 
 import android.os.Bundle
 import android.view.*
@@ -10,11 +10,10 @@ import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.databinding.ActivitySurveyResponseBinding
 
-import kaist.iclab.abclogger.ui.Status
 import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment
-import kaist.iclab.abclogger.ui.survey.sharedViewNameForDeliveredTime
-import kaist.iclab.abclogger.ui.survey.sharedViewNameForMessage
-import kaist.iclab.abclogger.ui.survey.sharedViewNameForTitle
+import kaist.iclab.abclogger.ui.sharedViewNameForDeliveredTime
+import kaist.iclab.abclogger.ui.sharedViewNameForMessage
+import kaist.iclab.abclogger.ui.sharedViewNameForTitle
 import kotlinx.android.synthetic.main.activity_survey_response.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 

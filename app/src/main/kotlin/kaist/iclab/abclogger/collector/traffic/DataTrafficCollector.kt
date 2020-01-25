@@ -6,7 +6,7 @@ import android.net.TrafficStats
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import kaist.iclab.abclogger.ObjBox
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.fill
 
 class DataTrafficCollector(val context: Context) : BaseCollector {

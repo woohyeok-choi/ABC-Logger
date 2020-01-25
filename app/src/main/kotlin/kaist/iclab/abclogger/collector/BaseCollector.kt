@@ -1,18 +1,19 @@
-package kaist.iclab.abclogger
+package kaist.iclab.abclogger.collector
 
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import android.os.IBinder
-import kaist.iclab.abclogger.base.BaseCollector
-import kaist.iclab.abclogger.base.BaseService
+import kaist.iclab.abclogger.ABCException
+import kaist.iclab.abclogger.CollectorPrefs
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.activity.ActivityCollector
 import kaist.iclab.abclogger.collector.appusage.AppUsageCollector
 import kaist.iclab.abclogger.collector.battery.BatteryCollector
 import kaist.iclab.abclogger.collector.bluetooth.BluetoothCollector
 import kaist.iclab.abclogger.collector.call.CallLogCollector
 import kaist.iclab.abclogger.collector.event.DeviceEventCollector
+import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
 import kaist.iclab.abclogger.collector.install.InstalledAppCollector
 import kaist.iclab.abclogger.collector.keylog.KeyLogCollector
 import kaist.iclab.abclogger.collector.location.LocationCollector
@@ -20,69 +21,45 @@ import kaist.iclab.abclogger.collector.media.MediaCollector
 import kaist.iclab.abclogger.collector.message.MessageCollector
 import kaist.iclab.abclogger.collector.notification.NotificationCollector
 import kaist.iclab.abclogger.collector.physicalstatus.PhysicalStatusCollector
-import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
 import kaist.iclab.abclogger.collector.sensor.SensorCollector
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
 import kaist.iclab.abclogger.collector.wifi.WifiCollector
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
 
-class ABCLogger(vararg collector: BaseCollector) {
-    val collectors = arrayOf(*collector)
-    val maps = collectors.associateBy { it::class.java }
 
-    suspend fun startAll(
-            onComplete: ((collector: BaseCollector, throwable: Throwable?) -> Unit)? = null
-    ) = collectors.forEach { if (it.hasStarted()) it.start(onComplete) }
+/**
+ * Default interface for data collector
+ */
+interface BaseCollector {
+    /**
+     * Define operations when a user requests for starting this collector.
+     * This function should be called in non-UI thread.
+     */
+    suspend fun onStart()
 
-    suspend fun stopAll(
-            onComplete: ((collector: BaseCollector, throwable: Throwable?) -> Unit)? = null
-    ) = collectors.forEach { if (it.hasStarted()) it.stop(onComplete) }
+    /**
+     * Define operations when a user requests for stopping this collector.
+     * This function should be called in non-UI thread.
+     */
+    suspend fun onStop()
 
-    fun isAllAvailable() = collectors.filter { it.hasStarted() }.all { it.checkAvailability() }
+    /**
+     * Check whether a given collector can operate (e.g., permissions).
+     * If not available (even after started), it will be stopped.
+     */
+    fun checkAvailability() : Boolean
 
-    fun hasAnyStarted() = collectors.any { it.hasStarted() }
+    /**
+     * List of permissions (Manifest.permissions.XXX) for this collector.
+     */
+    val requiredPermissions : List<String>
 
-    fun getAllRequiredPermissions() = collectors.map { it.requiredPermissions }.flatten()
-
-    inline fun <reified T : BaseCollector> get() = maps[T::class.java]
-
-    class ABCLoggerService : BaseService() {
-        private val abcLogger: ABCLogger by inject()
-
-        override fun onBind(intent: Intent?): IBinder? = null
-
-        override fun onCreate() {
-            GlobalScope.launch(Dispatchers.IO) {
-                abcLogger.startAll()
-            }
-        }
-
-        override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-            val ntf = Notifications.build(
-                    context = this,
-                    channelId = Notifications.CHANNEL_ID_FOREGROUND,
-                    title = getString(R.string.ntf_title_service_running),
-                    text = getString(R.string.ntf_text_service_running)
-            )
-
-            startForeground(Notifications.ID_FOREGROUND, ntf)
-
-            return START_STICKY
-        }
-
-        override fun onDestroy() {
-            super.onDestroy()
-
-            GlobalScope.launch(Dispatchers.IO) {
-                abcLogger.stopAll()
-            }
-        }
-
-    }
+    /**
+     * Intent to make this collector available;
+     * for example, to collect notifications, ABC Logger needs a user's manual setting.
+     * This function is used to start an activity for the setting.
+     */
+    val newIntentForSetUp: Intent?
 }
 
 fun <T : BaseCollector> T.hasStarted() =

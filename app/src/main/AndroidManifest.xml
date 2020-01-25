@@ -37,10 +37,6 @@
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup,android:supportsRtl">
 
-        <meta-data
-            android:name="firebase_crashlytics_collection_enabled"
-            android:value="false" />
-
         <activity
             android:name=".ui.splash.SplashActivity"
             android:launchMode="singleTop"
@@ -58,7 +54,7 @@
             android:theme="@style/AppTheme" />
 
         <activity
-            android:name=".ui.survey.question.SurveyResponseActivity"
+            android:name="kaist.iclab.abclogger.ui.question.SurveyResponseActivity"
             android:screenOrientation="portrait"
             android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoWindow" />
@@ -105,7 +101,7 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <service android:name=".ABCLogger$ABCLoggerService" />
+        <service android:name=".ABC$ABCLoggerService" />
 
         <receiver
             android:name=".BootReceiver"

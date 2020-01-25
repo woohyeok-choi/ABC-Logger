@@ -5,7 +5,10 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseCollector
+import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.descriptionRes
+import kaist.iclab.abclogger.collector.hasStarted
+import kaist.iclab.abclogger.collector.nameRes
 import kaist.iclab.abclogger.databinding.DataConfigListItemBinding
 
 class DataConfigListAdapter : RecyclerView.Adapter<DataConfigListAdapter.ViewHolder>() {

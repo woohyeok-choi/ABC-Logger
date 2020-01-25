@@ -24,14 +24,14 @@
 
         <variable
             name="viewModel"
-            type="kaist.iclab.abclogger.ui.survey.question.SurveyResponseViewModel" />
+            type="kaist.iclab.abclogger.ui.question.SurveyResponseViewModel" />
 
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.survey.question.SurveyResponseActivity">
+        tools:context=".ui.question.SurveyResponseActivity">
 
         <FrameLayout
             android:layout_width="match_parent"
