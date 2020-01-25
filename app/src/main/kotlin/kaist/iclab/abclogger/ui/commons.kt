@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.ui.survey
+package kaist.iclab.abclogger.ui
 
 fun sharedViewNameForTitle(entityId: Long) = "TITLE_VIEW_$entityId"
 fun sharedViewNameForMessage(entityId: Long) = "MESSAGE_VIEW_$entityId"
