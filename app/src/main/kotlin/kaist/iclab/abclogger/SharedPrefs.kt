@@ -1,6 +1,5 @@
 package kaist.iclab.abclogger
 
-import android.os.Message
 import github.agustarc.koap.PreferenceHolder
 import github.agustarc.koap.delegator.*
 import github.agustarc.koap.inferType
@@ -17,7 +16,7 @@ import kaist.iclab.abclogger.collector.location.LocationCollector
 import kaist.iclab.abclogger.collector.media.MediaCollector
 import kaist.iclab.abclogger.collector.message.MessageCollector
 import kaist.iclab.abclogger.collector.notification.NotificationCollector
-import kaist.iclab.abclogger.collector.physicalstatus.PhysicalStatCollector
+import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatCollector
 import kaist.iclab.abclogger.collector.sensor.SensorCollector
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
