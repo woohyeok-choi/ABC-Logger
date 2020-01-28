@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.collector.survey
+package kaist.iclab.abclogger.collector.survey.setting
 
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kaist.iclab.abclogger.InvalidSurveyFormatException
 import kaist.iclab.abclogger.InvalidUrlException
+import kaist.iclab.abclogger.collector.survey.Survey
 import kaist.iclab.abclogger.httpGet
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +33,6 @@ class SurveyPreviewViewModel: ViewModel() {
 
         try {
             if (!URLUtil.isValidUrl(url)) throw InvalidUrlException()
-
             val survey = withContext(Dispatchers.IO) {
                 val json = httpGet(url) ?: throw InvalidSurveyFormatException()
                 Survey.fromJson(json) ?: throw InvalidSurveyFormatException()

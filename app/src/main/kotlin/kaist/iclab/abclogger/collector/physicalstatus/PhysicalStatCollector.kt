@@ -11,7 +11,6 @@ import android.os.Build
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.Scopes
-import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -20,14 +19,18 @@ import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.tasks.Tasks
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
-import kotlinx.coroutines.Dispatchers
+import kaist.iclab.abclogger.collector.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
-class PhysicalStatusCollector(val context: Context) : BaseCollector {
+class PhysicalStatCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null,
+                      val lastTimeAccessed: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private val alarmManager: AlarmManager by lazy {
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
@@ -61,33 +64,28 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action != ACTION_UPDATE_PHYSICAL_STATUS) return
-
-                ObjBox.put(getPhysicalStatusEntities())
+                GlobalScope.launch { handleUpdate() }
             }
         }
     }
 
-    private fun getPhysicalStatusEntities(): List<PhysicalStatusEntity> {
-        val account = GoogleSignIn.getLastSignedInAccount(context) ?: return listOf()
-        val lastTime = CollectorPrefs.lastAccessTimePhysicalStatus
-        val currentTime = System.currentTimeMillis()
-
-        if (lastTime < 0) return listOf()
+    private suspend fun handleUpdate() {
+        val account = GoogleSignIn.getLastSignedInAccount(context) ?: return
+        val curTime = System.currentTimeMillis()
+        val lastTimeAccessed = Prefs.statusPhysicalStat?.lastTimeAccessed ?: curTime - TimeUnit.DAYS.toMillis(1)
 
         val request = DataReadRequest.Builder()
-                .setTimeRange(lastTime, currentTime, TimeUnit.MILLISECONDS)
+                .setTimeRange(lastTimeAccessed, curTime, TimeUnit.MILLISECONDS)
                 .bucketByTime(30, TimeUnit.SECONDS)
                 .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
                 .aggregate(DataType.TYPE_CALORIES_EXPENDED, DataType.AGGREGATE_CALORIES_EXPENDED)
                 .aggregate(DataType.TYPE_DISTANCE_DELTA, DataType.AGGREGATE_DISTANCE_DELTA)
                 .build()
 
-        val client = Fitness.getHistoryClient(context, account) ?: return listOf()
-        val response = Tasks.await(client.readData(request)) ?: return listOf()
+        val client = Fitness.getHistoryClient(context, account) ?: return
+        val response = client.readData(request).toCoroutine() ?: return
 
-        CollectorPrefs.lastAccessTimePhysicalStatus = currentTime
-
-        return response.buckets.mapNotNull { bucket ->
+        response.buckets.mapNotNull { bucket ->
             bucket?.dataSets?.mapNotNull { dataSet ->
                 dataSet?.dataPoints?.mapNotNull { dataPoint ->
                     when (dataPoint.dataType) {
@@ -105,7 +103,11 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
                     }
                 }
             }?.flatten()
-        }.flatten()
+        }.flatten().also { entity ->
+            ObjBox.put(entity)
+            setStatus(Status(lastTime = curTime))
+        }
+        setStatus(Status(lastTimeAccessed = curTime))
     }
 
     override suspend fun onStart() {
@@ -117,12 +119,12 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
 
         val currentTime = System.currentTimeMillis()
         val threeHour: Long = TimeUnit.HOURS.toMillis(3)
+        val lastTimeAccessed = (getStatus() as? Status)?.lastTimeAccessed ?: 0
 
-        val triggerTime: Long = if (CollectorPrefs.lastAccessTimePhysicalStatus < 0 ||
-                CollectorPrefs.lastAccessTimePhysicalStatus + threeHour < currentTime) {
-            currentTime + 1000 * 5
+        val triggerTime = if (lastTimeAccessed > 0 && lastTimeAccessed + threeHour >= currentTime) {
+            lastTimeAccessed + threeHour
         } else {
-            CollectorPrefs.lastAccessTimePhysicalStatus + threeHour
+            currentTime + TimeUnit.SECONDS.toMillis(10)
         }
 
         context.safeRegisterReceiver(receiver, filter)
@@ -141,7 +143,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
         alarmManager.cancel(intent)
     }
 
-    override fun checkAvailability(): Boolean {
+    override suspend fun checkAvailability(): Boolean {
         val isAccountAvailable = GoogleSignIn.getLastSignedInAccount(context)?.let { account ->
             GoogleSignIn.hasPermissions(account, fitnessOptions) &&
                     GoogleSignIn.hasPermissions(account,

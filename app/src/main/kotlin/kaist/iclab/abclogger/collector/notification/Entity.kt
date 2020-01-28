@@ -1,7 +1,7 @@
 package kaist.iclab.abclogger.collector.notification
 
 import io.objectbox.annotation.Entity
-import kaist.iclab.abclogger.Base
+import kaist.iclab.abclogger.collector.Base
 
 @Entity
 data class NotificationEntity(
@@ -15,5 +15,5 @@ data class NotificationEntity(
         var vibrate: String = "",
         var sound: String = "",
         var lightColor: String = "",
-        var isRemoved: Boolean = false
+        var isPosted: Boolean = false
 ) : Base()

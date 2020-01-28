@@ -1,10 +1,8 @@
 package kaist.iclab.abclogger.collector.survey
 
 import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
 import io.objectbox.annotation.Transient
-import kaist.iclab.abclogger.Base
+import kaist.iclab.abclogger.collector.Base
 import java.util.concurrent.TimeUnit
 
 @Entity
@@ -29,13 +27,3 @@ data class SurveyEntity(
     fun showAltText() : Boolean = timeoutPolicy == Survey.TIMEOUT_ALT_TEXT &&
             System.currentTimeMillis() > deliveredTime + TimeUnit.SECONDS.toMillis(timeoutSec)
 }
-
-@Entity
-data class SurveySettingEntity(
-        @Id var id: Long = 0,
-        @Index var uuid: String = "",
-        var url: String = "",
-        var json: String = "",
-        var lastTimeTriggered: Long = -1,
-        var nextTimeTriggered: Long = -1
-)

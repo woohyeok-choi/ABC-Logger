@@ -1,12 +1,12 @@
-package kaist.iclab.abclogger.collector.keylog
+package kaist.iclab.abclogger.collector.keylog.setting
 
 import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
-import kaist.iclab.abclogger.DataPrefs
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingKeyLogBinding
+import kaist.iclab.abclogger.ui.dialog.SingleChoiceDialogFragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class KeyLogSettingActivity : BaseSettingActivity<LayoutSettingKeyLogBinding, KeyLogViewModel>() {
@@ -25,13 +25,25 @@ class KeyLogSettingActivity : BaseSettingActivity<LayoutSettingKeyLogBinding, Ke
 
     override fun onSaveSelected() {
         viewModel.save()
-        setResult(Activity.RESULT_OK)
         finish()
     }
 
     override fun initialize() {
         dataBinding.viewModel = viewModel
-        dataBinding.btnAccessibilitySetting.setOnClickListener {
+        dataBinding.containerKeyboardType.setOnClickListener {
+            SingleChoiceDialogFragment.showDialog(
+                    fragmentManager = supportFragmentManager,
+                    title = getString(R.string.setting_key_log_collector_keyboard_type_dialog_title),
+                    items = arrayOf(
+                            getString(R.string.setting_key_log_collector_chunjiin),
+                            getString(R.string.setting_key_log_collector_qwerty),
+                            getString(R.string.setting_key_log_collector_others)
+                    ),
+                    selectedItem = dataBinding.txtKeySetting.text?.toString() ?: ""
+            ) { content -> viewModel.update(content) }
+        }
+
+        dataBinding.containerAccessibility.setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
     }

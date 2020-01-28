@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.ui.question
+package kaist.iclab.abclogger.ui.question.item
 
 import android.content.Context
 import android.text.InputType

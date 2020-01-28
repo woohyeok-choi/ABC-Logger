@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.collector.survey
+package kaist.iclab.abclogger.collector.survey.setting
 
 import android.app.Dialog
 import android.os.Bundle
@@ -37,9 +37,7 @@ class SurveyPreviewDialogFragment : DialogFragment() {
 
         dataBinding.recyclerView.adapter = adapter
 
-        viewModel.questions.observe(this) { questions ->
-            adapter.bindData(questions = questions, isAvailable = true, showAltText = false)
-        }
+        viewModel.questions.observe(this) { questions -> if (questions != null) adapter.questions = questions }
 
         return AlertDialog.Builder(requireContext())
                 .setTitle(R.string.dialog_title_survey_preview)
@@ -52,7 +50,6 @@ class SurveyPreviewDialogFragment : DialogFragment() {
         super.onStart()
         viewModel.load(url)
     }
-
 
     companion object {
         private const val ARG_SURVEY_URL = "${BuildConfig.APPLICATION_ID}.ARG_SURVEY_URL"

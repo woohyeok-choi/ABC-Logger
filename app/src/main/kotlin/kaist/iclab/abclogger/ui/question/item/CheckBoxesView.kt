@@ -1,17 +1,13 @@
-package kaist.iclab.abclogger.ui.question
+package kaist.iclab.abclogger.ui.question.item
 
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import android.widget.*
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
 import androidx.core.widget.addTextChangedListener
-import androidx.databinding.BindingAdapter
-import androidx.databinding.InverseBindingAdapter
-import androidx.databinding.InverseBindingListener
 import kaist.iclab.abclogger.R
 
 class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(context, attrs) {

@@ -1,10 +1,9 @@
-package kaist.iclab.abclogger.collector.externalsensor.polar
+package kaist.iclab.abclogger.collector.externalsensor.polar.setting
 
-import android.app.Activity
-import kaist.iclab.abclogger.DataPrefs
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingPolarH10Binding
+import kaist.iclab.abclogger.ui.dialog.EditTextDialogFragment
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PolarH10SettingActivity : BaseSettingActivity<LayoutSettingPolarH10Binding, PolarH10ViewModel>() {
@@ -21,14 +20,24 @@ class PolarH10SettingActivity : BaseSettingActivity<LayoutSettingPolarH10Binding
 
     override fun initialize() {
         dataBinding.viewModel = viewModel
-        dataBinding.btnConnect.setOnClickListener {
-            viewModel.connect()
+
+        dataBinding.containerDeviceId.setOnClickListener {
+            if(dataBinding.switchOnOff.isChecked) return@setOnClickListener
+
+            EditTextDialogFragment.showDialog(
+                    fragmentManager = supportFragmentManager,
+                    title = getString(R.string.setting_polar_h10_collector_device_id_dialog_title),
+                    content = dataBinding.txtDeviceId.text?.toString() ?: ""
+            ) { content -> viewModel.update(content) }
+        }
+
+        dataBinding.switchOnOff.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.connect() else (viewModel.disconnect())
         }
     }
 
     override fun onSaveSelected() {
-        DataPrefs.statusPolar = PolarStatus(deviceId = viewModel.deviceId.value ?: "")
-        setResult(Activity.RESULT_OK)
+        viewModel.save()
         finish()
     }
 }

@@ -5,13 +5,14 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.databinding.SurveySettingListItemBinding
 
-class SurveySettingEntityAdapter : RecyclerView.Adapter<SurveySettingEntityAdapter.ViewHolder>() {
+class SurveySettingAdapter : RecyclerView.Adapter<SurveySettingAdapter.ViewHolder>() {
     var onPreviewClick: ((String?) -> Unit)? = null
-    var onRemoveClick: ((SurveySettingEntity) -> Unit)? = null
+    var onRemoveClick: ((SurveyCollector.Status.Setting) -> Unit)? = null
 
-    var items: ArrayList<SurveySettingEntity> = arrayListOf()
+    var items: ArrayList<SurveyCollector.Status.Setting> = arrayListOf()
         set(value) {
             field = value
             notifyDataSetChanged()

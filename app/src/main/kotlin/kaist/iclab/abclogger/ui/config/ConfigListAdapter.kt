@@ -1,5 +1,6 @@
 package kaist.iclab.abclogger.ui.config
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,8 +13,8 @@ import kaist.iclab.abclogger.databinding.ConfigHeaderListItemBinding
 import kaist.iclab.abclogger.databinding.ConfigSimpleListItemBinding
 import kaist.iclab.abclogger.databinding.ConfigSwitchListItemBinding
 
-class DataConfigListAdapter : RecyclerView.Adapter<DataConfigListAdapter.ViewHolder>() {
-    var items: Array<ConfigData> = arrayOf()
+class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
+    var items: ArrayList<ConfigData> = arrayListOf()
         set(value) {
             if (field.isNotEmpty()) {
                 val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
@@ -61,24 +62,24 @@ class DataConfigListAdapter : RecyclerView.Adapter<DataConfigListAdapter.ViewHol
             }
         }
 
-    var onClick: ((key: String) -> Unit)? = null
-    var onCheckedChanged: ((key: String, isChecked: Boolean) -> Unit)? = null
+    var onClick: ((key: String, item: ConfigData) -> Unit)? = null
+    var onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
-        when (viewType) {
-            VIEW_TYPE_SIMPLE -> SimpleConfigItemViewHolder(
-                    DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.config_simple_list_item, parent, false)
-            )
-            VIEW_TYPE_SWITCH -> SwitchConfigItemViewHolder(
-                    DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.config_switch_list_item, parent, false)
-            )
-            VIEW_TYPE_DATA -> DataConfigItemViewHolder(
-                    DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.config_data_list_item, parent, false)
-            )
-            else -> ConfigHeaderViewHolder(
-                    DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.config_data_list_item, parent, false)
-            )
-        }
+            when (viewType) {
+                VIEW_TYPE_SIMPLE -> SimpleConfigItemViewHolder(
+                        DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.config_simple_list_item, parent, false)
+                )
+                VIEW_TYPE_SWITCH -> SwitchConfigItemViewHolder(
+                        DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.config_switch_list_item, parent, false)
+                )
+                VIEW_TYPE_DATA -> DataConfigItemViewHolder(
+                        DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.config_data_list_item, parent, false)
+                )
+                else -> ConfigHeaderViewHolder(
+                        DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.config_header_list_item, parent, false)
+                )
+            }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         items.getOrNull(position)?.let {
@@ -101,13 +102,13 @@ class DataConfigListAdapter : RecyclerView.Adapter<DataConfigListAdapter.ViewHol
     abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         abstract fun onBind(position: Int,
                             configData: ConfigData,
-                            onClick: ((key: String) -> Unit)?,
-                            onCheckedChanged: ((key: String, isChecked: Boolean) -> Unit)?
+                            onClick: ((key: String, item: ConfigData) -> Unit)?,
+                            onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?
         )
     }
 
     class ConfigHeaderViewHolder(val binding: ConfigHeaderListItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String) -> Unit)?, onCheckedChanged: ((key: String, isChecked: Boolean) -> Unit)?) {
+        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String, item: ConfigData) -> Unit)?, onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?) {
             (configData as? ConfigHeader)?.let { item ->
                 binding.item = item
                 binding.executePendingBindings()
@@ -117,22 +118,22 @@ class DataConfigListAdapter : RecyclerView.Adapter<DataConfigListAdapter.ViewHol
 
 
     class SimpleConfigItemViewHolder(val binding: ConfigSimpleListItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String) -> Unit)?, onCheckedChanged: ((key: String, isChecked: Boolean) -> Unit)?) {
+        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String, item: ConfigData) -> Unit)?, onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?) {
             (configData as? SimpleConfigItem)?.let { item ->
                 binding.item = item
-                binding.root.setOnClickListener { onClick?.invoke(item.key) }
+                binding.root.setOnClickListener { onClick?.invoke(item.key, item) }
                 binding.executePendingBindings()
             }
         }
     }
 
     class SwitchConfigItemViewHolder(val binding: ConfigSwitchListItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String) -> Unit)?, onCheckedChanged: ((key: String, isChecked: Boolean) -> Unit)?) {
+        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String, item: ConfigData) -> Unit)?, onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?) {
             (configData as? SwitchConfigItem)?.let { item ->
                 binding.item = item
-                binding.root.setOnClickListener { onClick?.invoke(item.key) }
+                binding.root.setOnClickListener { binding.switchOnOff.toggle() }
                 binding.switchOnOff.setOnCheckedChangeListener { _, isChecked ->
-                    if (item.isChecked != isChecked) onCheckedChanged?.invoke(item.key, isChecked)
+                    if (item.isChecked != isChecked) onCheckedChanged?.invoke(item.key, item, isChecked)
                 }
                 binding.executePendingBindings()
             }
@@ -140,14 +141,14 @@ class DataConfigListAdapter : RecyclerView.Adapter<DataConfigListAdapter.ViewHol
     }
 
     class DataConfigItemViewHolder(val binding: ConfigDataListItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String) -> Unit)?, onCheckedChanged: ((key: String, isChecked: Boolean) -> Unit)?) {
+        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String, item: ConfigData) -> Unit)?, onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?) {
             (configData as? DataConfigItem)?.let { item ->
                 binding.item = item
                 binding.root.setOnClickListener {
-                    if (!item.isChecked) onClick?.invoke(item.key)
+                    if (!item.isChecked) onClick?.invoke(item.key, item)
                 }
                 binding.switchOnOff.setOnCheckedChangeListener { _, isChecked ->
-                    if (item.isChecked != isChecked) onCheckedChanged?.invoke(item.key, isChecked)
+                    if (item.isChecked != isChecked) onCheckedChanged?.invoke(item.key, item, isChecked)
                 }
                 binding.executePendingBindings()
             }

@@ -1,16 +1,12 @@
-package kaist.iclab.abclogger.ui.question
+package kaist.iclab.abclogger.ui.question.item
 
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import android.widget.*
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.addTextChangedListener
-import androidx.databinding.BindingAdapter
-import androidx.databinding.InverseBindingAdapter
-import androidx.databinding.InverseBindingListener
 import kaist.iclab.abclogger.R
 import io.techery.progresshint.addition.widget.SeekBar as IndicatorSeekBar
 
@@ -19,7 +15,7 @@ class SliderView (context: Context, attrs: AttributeSet?) : QuestionView(context
 
     private val seekBar : IndicatorSeekBar = IndicatorSeekBar(context).apply {
         id = View.generateViewId()
-        hintDelegate.isPopupAlwaysShown = true
+        hintDelegate.isPopupAlwaysShown = false
         hintDelegate.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) attrChanged?.onChange()
@@ -60,12 +56,12 @@ class SliderView (context: Context, attrs: AttributeSet?) : QuestionView(context
             constraint.connect(seekBar.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
             constraint.connect(seekBar.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
 
-            constraint.connect(btnEtc.id, ConstraintSet.TOP, edtEtc.id, ConstraintSet.TOP)
+            constraint.connect(btnEtc.id, ConstraintSet.TOP, seekBar.id, ConstraintSet.BOTTOM)
             constraint.connect(btnEtc.id, ConstraintSet.BOTTOM, edtEtc.id, ConstraintSet.BOTTOM)
             constraint.connect(btnEtc.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
 
             constraint.connect(edtEtc.id, ConstraintSet.TOP, seekBar.id, ConstraintSet.BOTTOM)
-            constraint.connect(edtEtc.id, ConstraintSet.LEFT, edtEtc.id, ConstraintSet.RIGHT)
+            constraint.connect(edtEtc.id, ConstraintSet.LEFT, btnEtc.id, ConstraintSet.RIGHT)
             constraint.connect(edtEtc.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
         }.applyTo(this)
     }

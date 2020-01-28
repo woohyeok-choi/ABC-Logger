@@ -1,7 +1,7 @@
 package kaist.iclab.abclogger.collector.message
 
 import io.objectbox.annotation.Entity
-import kaist.iclab.abclogger.Base
+import kaist.iclab.abclogger.collector.Base
 
 @Entity
 data class MessageEntity (

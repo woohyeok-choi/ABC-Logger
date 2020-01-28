@@ -3,6 +3,8 @@ package kaist.iclab.abclogger.collector.survey
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.*
 
 enum class DayOfWeek(val id: Int) {
@@ -108,10 +110,13 @@ open class Survey(
             ).add(KotlinJsonAdapterFactory()).build()
         }
 
-        fun fromJson(jsonString: String) = moshi.adapter(Survey::class.java).fromJson(jsonString)
+        suspend fun fromJson(jsonString: String) = withContext(Dispatchers.IO) { moshi.adapter(Survey::class.java).fromJson(jsonString) }
     }
 
-    fun toJson() = moshi.adapter(Survey::class.java).toJson(this)
+    suspend fun toJson() : String {
+        val survey = this
+        return withContext(Dispatchers.IO) { moshi.adapter(Survey::class.java).toJson(survey) }
+    }
 }
 
 data class IntervalBasedSurvey(
