@@ -1,28 +1,22 @@
 package kaist.iclab.abclogger
 
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.Gson
 import github.agustarc.koap.Koap
+import github.agustarc.koap.gson.GsonSerializer
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.base.BaseService
-import kaist.iclab.abclogger.collector.hasStarted
+import kaist.iclab.abclogger.collector.getStatus
 import kaist.iclab.abclogger.collector.start
 import kaist.iclab.abclogger.collector.stop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
 
 class ABC(vararg collector: BaseCollector) {
     val collectors = arrayOf(*collector)
@@ -30,41 +24,32 @@ class ABC(vararg collector: BaseCollector) {
 
     suspend fun startAll(
             onComplete: ((collector: BaseCollector, throwable: Throwable?) -> Unit)? = null
-    ) = collectors.forEach { if (it.hasStarted()) it.start(onComplete) }
+    ) = collectors.forEach { if (it.getStatus()?.hasStarted == true) it.start(onComplete) }
 
     suspend fun stopAll(
             onComplete: ((collector: BaseCollector, throwable: Throwable?) -> Unit)? = null
-    ) = collectors.forEach { if (it.hasStarted()) it.stop(onComplete) }
-
-    fun isAllAvailable() = collectors.filter { it.hasStarted() }.all { it.checkAvailability() }
-
-    fun hasAnyStarted() = collectors.any { it.hasStarted() }
+    ) = collectors.forEach { if (it.getStatus()?.hasStarted == true) it.stop(onComplete) }
 
     fun getAllRequiredPermissions() = collectors.map { it.requiredPermissions }.flatten()
 
     inline fun <reified T : BaseCollector> get() = maps[T::class.java]
 
     companion object {
-        private fun startService(context: Context) {
-            if(!context.checkServiceRunning<ABCLoggerService>()) context.startForegroundService<ABCLoggerService>()
+        fun startService(context: Context) {
+            if(!checkServiceRunning<ABCLoggerService>(context) && FirebaseAuth.getInstance().currentUser != null)
+                ContextCompat.startForegroundService(context, Intent(context, ABCLoggerService::class.java))
         }
 
-        private fun stopService(context: Context) {
-            if(context.checkServiceRunning<ABCLoggerService>()) context.stopService<ABCLoggerService>()
+        fun stopService(context: Context) {
+            if(checkServiceRunning<ABCLoggerService>(context))
+                context.stopService(Intent(context, ABCLoggerService::class.java))
         }
 
-        fun doAfterSignIn(context: Context) {
-            FirebaseCrashlytics.getInstance().setUserId(FirebaseAuth.getInstance().currentUser?.email ?: "")
-            startService(context)
-        }
-
-        suspend fun signOut(context: Context) {
-            ObjBox.flush(context)
-            GeneralPrefs.clear()
-            CollectorPrefs.clear()
-            FirebaseAuth.getInstance().signOut()
-            GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().toCoroutine()
-            stopService(context)
+        suspend fun bind(context: Context) {
+            Notifications.bind(context)
+            Koap.serializer = GsonSerializer(Gson())
+            Koap.bind(context, Prefs, Prefs)
+            ObjBox.bind(context)
         }
     }
 
@@ -74,9 +59,7 @@ class ABC(vararg collector: BaseCollector) {
         override fun onBind(intent: Intent?): IBinder? = null
 
         override fun onCreate() {
-            GlobalScope.launch(Dispatchers.IO) {
-                abcLogger.startAll()
-            }
+            GlobalScope.launch(Dispatchers.IO) { abcLogger.startAll() }
         }
 
         override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -89,14 +72,6 @@ class ABC(vararg collector: BaseCollector) {
             startForeground(Notifications.ID_FOREGROUND, ntf)
 
             return START_STICKY
-        }
-
-        override fun onDestroy() {
-            super.onDestroy()
-
-            GlobalScope.launch(Dispatchers.IO) {
-                abcLogger.stopAll()
-            }
         }
     }
 }

@@ -14,12 +14,18 @@ import android.os.Build
 import android.provider.Settings
 import android.os.Process
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.getApplicationName
-import kaist.iclab.abclogger.collector.isSystemApp
-import kaist.iclab.abclogger.collector.isUpdatedSystemApp
+import kaist.iclab.abclogger.collector.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class AppUsageCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null,
+                      val lastTimeAccessed: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private val usageStatManager: UsageStatsManager by lazy {
         context.applicationContext.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
     }
@@ -41,7 +47,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         addAction(ACTION_RETRIEVE_APP_USAGE)
     }
 
-    private fun eventTypeToString(typeInt: Int) = when (typeInt) {
+    private fun eventTypeToString(typeInt: Int?) = when (typeInt) {
         UsageEvents.Event.ACTIVITY_PAUSED -> "ACTIVITY_PAUSED"
         UsageEvents.Event.ACTIVITY_RESUMED -> "ACTIVITY_RESUMED"
         UsageEvents.Event.ACTIVITY_STOPPED -> "ACTIVITY_STOPPED"
@@ -60,52 +66,53 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         else -> "NONE"
     }
 
-    private fun handleRetrieveAppUsage() {
-        val timestamp = System.currentTimeMillis()
+    private suspend fun handleRetrieveAppUsage() {
+        val curTime = System.currentTimeMillis()
+        val lastTimeAccessed = (getStatus() as? Status)?.lastTimeAccessed ?: curTime - TimeUnit.DAYS.toMillis(1)
 
-        if (CollectorPrefs.lastAccessTimeAppUsage < 0) {
-            CollectorPrefs.lastAccessTimeAppUsage = timestamp
-            return
+        if (lastTimeAccessed > 0) {
+            val events = usageStatManager.queryEvents(lastTimeAccessed, curTime) ?: return
+            val event = UsageEvents.Event()
+            val entities = mutableListOf<AppUsageEventEntity>()
+
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                val entity = AppUsageEventEntity(
+                        name = getApplicationName(packageManager = packageManager, packageName = event.packageName)
+                                ?: "",
+                        packageName = event.packageName ?: "",
+                        type = eventTypeToString(event.eventType),
+                        isSystemApp = isSystemApp(packageManager = packageManager, packageName = event.packageName),
+                        isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = event.packageName)
+                ).fill(timeMillis = curTime)
+                entities.add(entity)
+            }
+
+            ObjBox.put(entities)
+            setStatus(Status(lastTime = curTime))
         }
 
-        val events = usageStatManager.queryEvents(CollectorPrefs.lastAccessTimeAppUsage, timestamp)
-        val event = UsageEvents.Event()
-        val entities = mutableListOf<AppUsageEventEntity>()
+        setStatus(Status(lastTimeAccessed = curTime))
 
-        while (events.hasNextEvent()) {
-            events.getNextEvent(event)
-
-            val entity = AppUsageEventEntity(
-                    name = getApplicationName(packageManager = packageManager, packageName = event.packageName)
-                            ?: "",
-                    packageName = event.packageName,
-                    type = eventTypeToString(event.eventType),
-                    isSystemApp = isSystemApp(packageManager = packageManager, packageName = event.packageName),
-                    isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = event.packageName)
-            ).fill(timeMillis = timestamp)
-            entities.add(entity)
-        }
-        ObjBox.put(entities)
-        CollectorPrefs.lastAccessTimeAppUsage = timestamp
     }
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action != ACTION_RETRIEVE_APP_USAGE) return
 
-            handleRetrieveAppUsage()
+            GlobalScope.launch { handleRetrieveAppUsage() }
         }
     }
 
     override suspend fun onStart() {
         val currentTime = System.currentTimeMillis()
-        val threeHour: Long = 1000 * 60 * 60 * 3
+        val threeHour = TimeUnit.HOURS.toMillis(3)
+        val lastTimeAccessed = Prefs.statusAppUsage?.lastTimeAccessed ?: 0
 
-        val triggerTime: Long = if (CollectorPrefs.lastAccessTimeAppUsage < 0 ||
-                CollectorPrefs.lastAccessTimeAppUsage + threeHour < currentTime) {
-            currentTime + 1000 * 5
+        val triggerTime = if (lastTimeAccessed > 0 && lastTimeAccessed + threeHour >= currentTime) {
+            lastTimeAccessed + threeHour
         } else {
-            CollectorPrefs.lastAccessTimeAppUsage + threeHour
+            currentTime + TimeUnit.SECONDS.toMillis(10)
         }
 
         context.safeRegisterReceiver(receiver, filter)
@@ -126,7 +133,7 @@ class AppUsageCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
 
-    override fun checkAvailability(): Boolean {
+    override suspend fun checkAvailability(): Boolean {
         val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             appOpsManager.checkOpNoThrow(

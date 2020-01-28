@@ -46,13 +46,10 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
         val adapter = SurveyQuestionListAdapter()
 
         binding.recyclerView.adapter = adapter
-        viewModel.setting.observe(this) { (questions, isAvailable, showEtc) ->
-            adapter.bindData(
-                    questions = questions,
-                    isAvailable = isAvailable,
-                    showAltText = showEtc
-            )
-        }
+
+        viewModel.questions.observe(this) { questions -> if(questions != null) adapter.questions = questions }
+        viewModel.available.observe(this) { isAvailable -> if (isAvailable != null) adapter.isAvailable = isAvailable }
+        viewModel.showAltText.observe(this) { showAltText -> if (showAltText != null) adapter.showAltText = showAltText }
 
         if (showFromList) {
             ViewCompat.setTransitionName(binding.txtHeader, sharedViewNameForTitle(entityId))
@@ -82,9 +79,7 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
                 YesNoDialogFragment.showDialog(
                         supportFragmentManager,
                         getString(R.string.dialog_title_save_immutable),
-                        getString(R.string.dialog_message_save_immutable)) { isYes ->
-                    if (!isYes) return@showDialog
-
+                        getString(R.string.dialog_message_save_immutable)) {
                     viewModel.store(
                             entityId = entityId,
                             reactionTime = reactionTime,

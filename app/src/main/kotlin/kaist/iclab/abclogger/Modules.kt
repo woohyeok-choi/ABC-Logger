@@ -8,18 +8,18 @@ import kaist.iclab.abclogger.collector.call.CallLogCollector
 import kaist.iclab.abclogger.collector.event.DeviceEventCollector
 import kaist.iclab.abclogger.collector.install.InstalledAppCollector
 import kaist.iclab.abclogger.collector.keylog.KeyLogCollector
-import kaist.iclab.abclogger.collector.keylog.KeyLogViewModel
+import kaist.iclab.abclogger.collector.keylog.setting.KeyLogViewModel
 import kaist.iclab.abclogger.collector.location.LocationCollector
 import kaist.iclab.abclogger.collector.media.MediaCollector
 import kaist.iclab.abclogger.collector.message.MessageCollector
 import kaist.iclab.abclogger.collector.notification.NotificationCollector
-import kaist.iclab.abclogger.collector.physicalstatus.PhysicalStatusCollector
+import kaist.iclab.abclogger.collector.physicalstatus.PhysicalStatCollector
 import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
-import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10ViewModel
+import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10ViewModel
 import kaist.iclab.abclogger.collector.sensor.SensorCollector
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
-import kaist.iclab.abclogger.collector.survey.SurveyPreviewViewModel
-import kaist.iclab.abclogger.collector.survey.SurveySettingViewModel
+import kaist.iclab.abclogger.collector.survey.setting.SurveyPreviewViewModel
+import kaist.iclab.abclogger.collector.survey.setting.SurveySettingViewModel
 import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
 import kaist.iclab.abclogger.collector.wifi.WifiCollector
 import kaist.iclab.abclogger.ui.config.ConfigViewModel
@@ -43,7 +43,7 @@ val collectorModules = module {
     single(createdAtStart = false) { MediaCollector(androidContext()) }
     single(createdAtStart = false) { MessageCollector(androidContext()) }
     single(createdAtStart = false) { NotificationCollector(androidContext()) }
-    single(createdAtStart = false) { PhysicalStatusCollector(androidContext()) }
+    single(createdAtStart = false) { PhysicalStatCollector(androidContext()) }
     single(createdAtStart = false) { PolarH10Collector(androidContext()) }
     single(createdAtStart = false) { SurveyCollector(androidContext()) }
     single(createdAtStart = false) { WifiCollector(androidContext()) }
@@ -63,7 +63,7 @@ val collectorModules = module {
                 get<MediaCollector>(),
                 get<MessageCollector>(),
                 get<NotificationCollector>(),
-                get<PhysicalStatusCollector>(),
+                get<PhysicalStatCollector>(),
                 get<PolarH10Collector>(),
                 get<SurveyCollector>(),
                 get<WifiCollector>(),
@@ -75,8 +75,8 @@ val viewModelModules = module {
     viewModel { ConfigViewModel(androidContext(), get()) }
     viewModel { SurveyListViewModel() }
     viewModel { SurveyResponseViewModel() }
-    viewModel { PolarH10ViewModel(androidContext()) }
-    viewModel { SurveySettingViewModel() }
+    viewModel { PolarH10ViewModel(androidContext(), get()) }
+    viewModel { SurveySettingViewModel(get()) }
     viewModel { SurveyPreviewViewModel() }
-    viewModel { KeyLogViewModel(get()) }
+    viewModel { KeyLogViewModel(androidContext(), get()) }
 }

@@ -9,37 +9,38 @@ import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.getApplicationName
-import kaist.iclab.abclogger.collector.isSystemApp
-import kaist.iclab.abclogger.collector.isUpdatedSystemApp
+import kaist.iclab.abclogger.collector.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
 class NotificationCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     class NotificationCollectorService: NotificationListenerService() {
+        private val collector : NotificationCollector by inject()
+
         override fun onNotificationPosted(sbn: StatusBarNotification?) {
             super.onNotificationPosted(sbn)
-            if (!CollectorPrefs.hasStartedNotification) return
-
-            try {
-                sbn?.run {
-                    store(this, true)
-                    ABCEvent.post(postTime, ABCEvent.NOTIFICATION_POSTED)
+            GlobalScope.launch {
+                if (collector.getStatus()?.hasStarted == true && sbn != null) {
+                    store(sbn, true)
+                    ABCEvent.post(sbn.postTime, ABCEvent.NOTIFICATION_POSTED)
                 }
-
-            } catch (e: Exception) { }
+            }
         }
 
         override fun onNotificationRemoved(sbn: StatusBarNotification?) {
             super.onNotificationRemoved(sbn)
-            if (!CollectorPrefs.hasStartedNotification) return
 
-            try {
-                sbn?.run {
-                    store(this, false)
-                    ABCEvent.post(postTime, ABCEvent.NOTIFICATION_REMOVED)
+            GlobalScope.launch {
+                if (collector.getStatus()?.hasStarted == true && sbn != null) {
+                    store(sbn, false)
+                    ABCEvent.post(sbn.postTime, ABCEvent.NOTIFICATION_POSTED)
                 }
-            } catch (e: Exception) {
-
             }
         }
 
@@ -50,7 +51,7 @@ class NotificationCollector(val context: Context) : BaseCollector {
             else -> "UNKNOWN"
         }
 
-        private fun store(sbn: StatusBarNotification, isPosted: Boolean) {
+        private suspend fun store(sbn: StatusBarNotification, isPosted: Boolean) {
             val notification = sbn.notification
             val postTime = sbn.postTime
             val packageName = sbn.packageName
@@ -63,12 +64,12 @@ class NotificationCollector(val context: Context) : BaseCollector {
             val lightColor: String
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                vibrate = notification.vibrate?.joinToString(",") ?: ""
-                sound = notification.sound?.toString() ?: ""
-                lightColor = notification.ledARGB.toString()
+                vibrate = notification?.vibrate?.joinToString(",") ?: ""
+                sound = notification?.sound?.toString() ?: ""
+                lightColor = notification?.ledARGB?.toString() ?: ""
             } else {
                 val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                val channel = notification.channelId?.let { channelId ->
+                val channel = notification?.channelId?.let { channelId ->
                     notificationManager.getNotificationChannel(channelId)
                 }
 
@@ -80,7 +81,7 @@ class NotificationCollector(val context: Context) : BaseCollector {
             NotificationEntity(
                     name = getApplicationName(packageManager = packageManager, packageName = packageName)
                             ?: "",
-                    packageName = packageName,
+                    packageName = packageName ?: "",
                     isSystemApp = isSystemApp(packageManager = packageManager, packageName = packageName),
                     isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
                     title = title,
@@ -89,8 +90,11 @@ class NotificationCollector(val context: Context) : BaseCollector {
                     vibrate = vibrate,
                     sound = sound,
                     lightColor = lightColor,
-                    isRemoved = isPosted
-            ).fill(timeMillis = postTime).run { ObjBox.put(this) }
+                    isPosted = isPosted
+            ).fill(timeMillis = postTime).also { entity ->
+                ObjBox.put(entity)
+                collector.setStatus(Status(lastTime = postTime))
+            }
         }
     }
 
@@ -98,7 +102,7 @@ class NotificationCollector(val context: Context) : BaseCollector {
 
     override suspend fun onStop() { }
 
-    override fun checkAvailability(): Boolean =
+    override suspend fun checkAvailability(): Boolean =
             Settings.Secure.getString(
                     context.contentResolver, "enabled_notification_listeners"
             )?.contains(context.packageName) == true

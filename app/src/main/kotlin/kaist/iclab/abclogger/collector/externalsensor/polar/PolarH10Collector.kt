@@ -3,21 +3,35 @@ package kaist.iclab.abclogger.collector.externalsensor.polar
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.text.TextUtils
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
+import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10SettingActivity
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
 import polar.com.sdk.api.PolarBleApiDefaultImpl
 import polar.com.sdk.api.model.PolarDeviceInfo
 import polar.com.sdk.api.model.PolarEcgData
 import polar.com.sdk.api.model.PolarHrData
+import java.lang.Exception
 import java.util.concurrent.TimeUnit
 
 class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallback() {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null,
+                      val deviceId: String? = null,
+                      val connection: String? = null,
+                      val batteryLevel: Int? = null) : BaseStatus() {
+
+        override fun info(): String = "Id: ${deviceId ?: "UNKNOWN"}; " +
+                "Connected: ${connection ?: "UNKNOWN"}; " +
+                "Battery: ${batteryLevel ?: "UNKNOWN"}"
+    }
+
     private val disposables = CompositeDisposable()
 
     private val polarApi by lazy {
@@ -25,12 +39,12 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                 context,
                 PolarBleApi.FEATURE_HR or
                         PolarBleApi.FEATURE_BATTERY_INFO or
-                PolarBleApi.FEATURE_DEVICE_INFO or
-                PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING
-        ).also { api ->
-            api.setPolarFilter(false)
-            api.setAutomaticReconnection(true)
-            api.setApiCallback(this)
+                        PolarBleApi.FEATURE_DEVICE_INFO or
+                        PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING
+        ).apply {
+            setPolarFilter(false)
+            setAutomaticReconnection(true)
+            setApiCallback(this@PolarH10Collector)
         }
     }
 
@@ -45,16 +59,22 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
     }
 
     private fun storeEcg(identifier: String, data: List<PolarEcgData>) {
+        val timestamp = System.currentTimeMillis()
         data.map { datum ->
             datum.samples.map { ecg ->
                 ExternalSensorEntity(
                         sensorId = identifier,
                         name = "PolarH10",
-                        description= "ECG",
+                        description = "ECG",
                         firstValue = ecg.toString()
                 ).fill(timeMillis = datum.timeStamp)
             }
-        }.flatten().run { ObjBox.put(this) }
+        }.flatten().also { entity ->
+            GlobalScope.launch {
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = timestamp))
+            }
+        }
     }
 
     private fun storeHeartRate(identifier: String, data: PolarHrData) {
@@ -64,13 +84,18 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
         val contactStatusSupported = data.contactStatusSupported
 
         ExternalSensorEntity(
-                sensorId = CollectorPrefs.polarH10DeviceId,
+                sensorId = identifier,
                 name = "PolarH10",
                 description = "HR/ContactStatus/ContactStatusSupported",
                 firstValue = heartRate.toString(),
                 secondValue = contactStatus.toString(),
                 thirdValue = contactStatusSupported.toString()
-        ).fill(timeMillis = timestamp).run { ObjBox.put(this) }
+        ).fill(timeMillis = timestamp).also { entity ->
+            GlobalScope.launch {
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = timestamp))
+            }
+        }
 
         if (data.rrAvailable) {
             data.rrs.zip(data.rrsMs).map { (rrSec, rrMs) ->
@@ -83,7 +108,12 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                         thirdValue = contactStatus.toString(),
                         fourthValue = contactStatusSupported.toString()
                 ).fill(timeMillis = timestamp)
-            }.run { ObjBox.put(this) }
+            }.also { entity ->
+                GlobalScope.launch {
+                    ObjBox.put(entity)
+                    setStatus(Status(lastTime = timestamp))
+                }
+            }
         }
     }
 
@@ -94,23 +124,23 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
 
     override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
         super.deviceConnected(polarDeviceInfo)
-        CollectorPrefs.polarH10Connection = POLAR_CONNECTED
+        GlobalScope.launch { setStatus(Status(connection = "CONNECTED")) }
     }
 
     override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
         super.deviceConnecting(polarDeviceInfo)
-        CollectorPrefs.polarH10Connection = POLAR_CONNECTING
+        GlobalScope.launch { setStatus(Status(connection = "CONNECTING")) }
     }
 
     override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
         super.deviceDisconnected(polarDeviceInfo)
-        CollectorPrefs.polarH10Connection = POLAR_DISCONNECTED
+        GlobalScope.launch { setStatus(Status(connection = "DISCONNECTED")) }
         disposables.clear()
     }
 
     override fun batteryLevelReceived(identifier: String, level: Int) {
         super.batteryLevelReceived(identifier, level)
-        CollectorPrefs.polarH10BatteryLevel = level
+        GlobalScope.launch { setStatus(Status(batteryLevel = level)) }
     }
 
     override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
@@ -120,18 +150,17 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
 
     override suspend fun onStart() {
         disposables.clear()
-        polarApi.connectToDevice(CollectorPrefs.polarH10DeviceId)
+        polarApi.connectToDevice((getStatus() as? Status)?.deviceId ?: "")
         polarApi.setApiCallback(this)
     }
 
     override suspend fun onStop() {
         disposables.clear()
-        polarApi.disconnectFromDevice(CollectorPrefs.polarH10DeviceId)
-        polarApi.setApiCallback(null)
+        try { polarApi.disconnectFromDevice((getStatus() as? Status)?.deviceId ?: "") } catch (e: Exception) { }
+        try { polarApi.setApiCallback(null) } catch (e: Exception) { }
     }
 
-    override fun checkAvailability(): Boolean =
-            !TextUtils.isEmpty(CollectorPrefs.polarH10DeviceId) && context.checkPermission(requiredPermissions)
+    override suspend fun checkAvailability(): Boolean = !(getStatus() as? Status)?.deviceId.isNullOrBlank() && context.checkPermission(requiredPermissions)
 
     override val requiredPermissions: List<String>
         get() = listOf(
@@ -143,10 +172,4 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
 
     override val newIntentForSetUp: Intent?
         get() = Intent(context, PolarH10SettingActivity::class.java)
-
-    companion object {
-        const val POLAR_DISCONNECTED = 0
-        const val POLAR_CONNECTING = 1
-        const val POLAR_CONNECTED = 2
-    }
 }

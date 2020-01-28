@@ -2,6 +2,7 @@ package kaist.iclab.abclogger.collector.survey
 
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kaist.iclab.abclogger.InvalidSurveyFormatException
@@ -14,15 +15,17 @@ import kotlinx.coroutines.withContext
 import java.lang.Exception
 
 class SurveyPreviewViewModel: ViewModel() {
+    private val surveyLiveData = MutableLiveData<Survey>()
     val loadStatus = MutableLiveData<Status>(Status.init())
-    val title = MutableLiveData<String>()
-    val message = MutableLiveData<String>()
-    val instruction = MutableLiveData<String>()
+
+    val title = Transformations.map(surveyLiveData) { survey -> survey?.title ?: "" }
+    val message = Transformations.map(surveyLiveData) { survey -> survey?.message ?: "" }
+    val instruction = Transformations.map(surveyLiveData) { survey -> survey?.instruction ?: ""}
 
     /**
      *  Here, questions are used only in a way of programs.
      */
-    val questions = MutableLiveData<Array<Survey.Question>>()
+    val questions = Transformations.map(surveyLiveData) { survey -> survey?.questions ?: arrayOf() }
 
     fun load(url: String) = viewModelScope.launch {
         loadStatus.postValue(Status.loading())
@@ -34,12 +37,7 @@ class SurveyPreviewViewModel: ViewModel() {
                 val json = httpGet(url) ?: throw InvalidSurveyFormatException()
                 Survey.fromJson(json) ?: throw InvalidSurveyFormatException()
             }
-
-            title.postValue(survey.title)
-            message.postValue(survey.message)
-
-            instruction.postValue(survey.instruction)
-            questions.postValue(survey.questions)
+            surveyLiveData.postValue(survey)
             loadStatus.postValue(Status.success())
         } catch (e: Exception) {
             loadStatus.postValue(Status.failure(e))

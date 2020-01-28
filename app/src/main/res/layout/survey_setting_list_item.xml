@@ -5,7 +5,7 @@
     <data>
         <variable
             name="item"
-            type="kaist.iclab.abclogger.collector.survey.SurveySettingEntity"/>
+            type="kaist.iclab.abclogger.collector.survey.SurveyCollector.Status.Setting"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

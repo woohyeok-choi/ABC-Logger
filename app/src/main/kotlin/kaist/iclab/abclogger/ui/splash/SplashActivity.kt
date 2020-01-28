@@ -27,6 +27,16 @@ class SplashActivity : BaseAppCompatActivity() {
             val isSuccessful = try {
 
                 GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this@SplashActivity).toCoroutine()
+                requestGoogleSignIn()
+
+                val intent = googleSignInSingle.toCoroutine()
+                val account = GoogleSignIn.getSignedInAccountFromIntent(intent).toCoroutine() ?: throw NoSignedGoogleAccountException()
+                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                val user = FirebaseAuth.getInstance().signInWithCredential(credential).toCoroutine()?.user ?: throw FirebaseInvalidCredentialException()
+                val message = listOf(
+                        getString(R.string.msg_sign_in_success), user.displayName
+                        ?: user.email ?: ""
+                ).joinToString(separator = " ")
 
                 val permissionResult = TedRx2Permission.with(this@SplashActivity)
                         .setRationaleTitle(getString(R.string.dialog_title_permission_request))
@@ -46,7 +56,6 @@ class SplashActivity : BaseAppCompatActivity() {
                 if (!isPermitted) throw PermissionDeniedException()
 
                 val isWhitelisted = if(!this@SplashActivity.isWhitelisted()) {
-                    showToast(R.string.msg_white_list_required, false)
 
                     requestWhiteList()
                     whiteListSingle.toCoroutine()
@@ -55,17 +64,6 @@ class SplashActivity : BaseAppCompatActivity() {
                 }
 
                 if (!isWhitelisted) throw WhiteListDeniedException()
-                requestGoogleSignIn()
-
-                val intent = googleSignInSingle.toCoroutine()
-
-                val account = GoogleSignIn.getSignedInAccountFromIntent(intent).toCoroutine() ?: throw NoSignedGoogleAccountException()
-                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                val user = FirebaseAuth.getInstance().signInWithCredential(credential).toCoroutine()?.user ?: throw FirebaseInvalidCredentialException()
-                val message = listOf(
-                        getString(R.string.msg_sign_in_success), user.displayName
-                        ?: user.email ?: ""
-                ).joinToString(separator = " ")
                 showToast(message, true)
                 true
             } catch (e: Exception) {
@@ -76,7 +74,10 @@ class SplashActivity : BaseAppCompatActivity() {
             delay(1000)
             finish()
 
-            if(isSuccessful) this@SplashActivity.startActivity<MainActivity>()
+            if(isSuccessful) {
+                val intent = Intent(this@SplashActivity, MainActivity::class.java)
+                this@SplashActivity.startActivity(intent)
+            }
         }
     }
 

@@ -3,11 +3,10 @@ package kaist.iclab.abclogger.collector.keylog
 import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
-import kaist.iclab.abclogger.CollectorPrefs
+import kaist.iclab.abclogger.DataPrefs
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingKeyLogBinding
-import kaist.iclab.abclogger.extraIntentFor
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class KeyLogSettingActivity : BaseSettingActivity<LayoutSettingKeyLogBinding, KeyLogViewModel>() {
@@ -25,7 +24,7 @@ class KeyLogSettingActivity : BaseSettingActivity<LayoutSettingKeyLogBinding, Ke
     }
 
     override fun onSaveSelected() {
-        CollectorPrefs.softKeyboardType = viewModel.keyType()
+        viewModel.save()
         setResult(Activity.RESULT_OK)
         finish()
     }

@@ -69,22 +69,3 @@ data class ABCEvent(
         const val BLUETOOTH_DEACTIVATE = "BLUETOOTH_DEACTIVATE"
     }
 }
-
-data class ErrorEvent(val timestamp: Long,
-                      val className: String?,
-                      val exception: ABCException? = null,
-                      val message: String? = null) {
-    companion object {
-        fun post(timestamp: Long, eventType: String) {
-            EventBus.getDefault().post(ErrorEvent(timestamp, eventType))
-        }
-
-        fun register(subscriber: Any) {
-            EventBus.getDefault().register(subscriber)
-        }
-
-        fun unregister(subscriber: Any) {
-            EventBus.getDefault().unregister(subscriber)
-        }
-    }
-}

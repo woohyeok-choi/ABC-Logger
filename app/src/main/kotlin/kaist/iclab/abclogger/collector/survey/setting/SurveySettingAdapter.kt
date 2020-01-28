@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.collector.survey
+package kaist.iclab.abclogger.collector.survey.setting
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

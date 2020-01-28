@@ -1,7 +1,7 @@
 package kaist.iclab.abclogger.collector.externalsensor.polar
 
 import android.app.Activity
-import kaist.iclab.abclogger.CollectorPrefs
+import kaist.iclab.abclogger.DataPrefs
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingPolarH10Binding
@@ -27,7 +27,7 @@ class PolarH10SettingActivity : BaseSettingActivity<LayoutSettingPolarH10Binding
     }
 
     override fun onSaveSelected() {
-        CollectorPrefs.polarH10DeviceId = viewModel.deviceId.value ?: ""
+        DataPrefs.statusPolar = PolarStatus(deviceId = viewModel.deviceId.value ?: "")
         setResult(Activity.RESULT_OK)
         finish()
     }

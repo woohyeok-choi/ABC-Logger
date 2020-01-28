@@ -13,17 +13,21 @@ import kaist.iclab.abclogger.databinding.QuestionRadioButtonItemBinding
 import kaist.iclab.abclogger.databinding.QuestionSliderItemBinding
 
 class SurveyQuestionListAdapter : RecyclerView.Adapter<SurveyQuestionListAdapter.ViewHolder>() {
-    private var questions: Array<Survey.Question> = arrayOf()
-    private var isAvailable: Boolean = true
-    private var showAltText: Boolean = false
-
-    fun bindData(questions: Array<Survey.Question>, isAvailable: Boolean, showAltText: Boolean) {
-        this.questions = questions
-        this.isAvailable = isAvailable
-        this.showAltText = showAltText
-
-        notifyDataSetChanged()
-    }
+    var questions: Array<Survey.Question> = arrayOf()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+    var isAvailable: Boolean = true
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+    var showAltText: Boolean = false
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     override fun getItemViewType(position: Int): Int =
             when (questions.getOrNull(position)?.type) {

@@ -2,7 +2,6 @@ package kaist.iclab.abclogger.base
 
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.CallSuper
@@ -44,7 +43,6 @@ abstract class BaseSettingActivity<T: ViewDataBinding, VM: ViewModel> : BaseAppC
             true
         }
         R.id.menu_activity_settings_save -> {
-            Log.d("ZXCV", "ZXCVZXCVZXCV")
             onSaveSelected()
             true
         }

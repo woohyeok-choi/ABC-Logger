@@ -12,13 +12,24 @@ import android.provider.Telephony
 import android.telephony.TelephonyManager
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
+import kaist.iclab.abclogger.collector.setStatus
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class DeviceEventCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private val powerManager: PowerManager by lazy {
         context.getSystemService(Context.POWER_SERVICE) as PowerManager
     }
 
-    private val filter = arrayOf(Intent.ACTION_HEADSET_PLUG,
+    private val filter = arrayOf(
+            Intent.ACTION_HEADSET_PLUG,
             Intent.ACTION_POWER_CONNECTED,
             Intent.ACTION_POWER_DISCONNECTED,
             Intent.ACTION_SHUTDOWN,
@@ -82,8 +93,8 @@ class DeviceEventCollector(val context: Context) : BaseCollector {
                         when (intent.getIntExtra(AudioManager.EXTRA_RINGER_MODE, AudioManager.RINGER_MODE_NORMAL)) {
                             AudioManager.RINGER_MODE_NORMAL -> ABCEvent.RINGER_MODE_NORMAL
                             AudioManager.RINGER_MODE_SILENT -> ABCEvent.RINGER_MODE_SILENT
-                            AudioManager.RINGER_MODE_VIBRATE -> ABCEvent.RINGER_MODE_NORMAL
-                            else -> null
+                            AudioManager.RINGER_MODE_VIBRATE -> ABCEvent.RINGER_MODE_VIBRATE
+                            else -> ABCEvent.RINGER_MODE_UNKNOWN
                         }
                     Intent.ACTION_BATTERY_LOW -> ABCEvent.BATTERY_LOW
                     Intent.ACTION_BATTERY_OKAY -> ABCEvent.BATTERY_OKAY
@@ -105,8 +116,13 @@ class DeviceEventCollector(val context: Context) : BaseCollector {
                     ABCEvent.post(timestamp = timestamp, eventType = event)
 
                     DeviceEventEntity(
-                            type = event.replace(BuildConfig.APPLICATION_ID, "")
-                    ).fill(timeMillis = timestamp).run { ObjBox.put(this) }
+                            type = event
+                    ).fill(timeMillis = timestamp).also { entity ->
+                        GlobalScope.launch {
+                            ObjBox.put(entity)
+                            setStatus(Status(lastTime = timestamp))
+                        }
+                    }
                 }
             }
         }
@@ -120,7 +136,7 @@ class DeviceEventCollector(val context: Context) : BaseCollector {
         context.safeUnregisterReceiver(receiver)
     }
 
-    override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override val requiredPermissions: List<String>
         get() = listOf(

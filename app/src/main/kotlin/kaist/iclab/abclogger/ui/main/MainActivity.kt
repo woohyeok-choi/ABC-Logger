@@ -5,6 +5,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -12,11 +14,18 @@ import java.lang.RuntimeException
 
 class MainActivity : BaseAppCompatActivity() {
     private var backPressedTime : Long = 0
+    private lateinit var crashlytics: FirebaseCrashlytics
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        ABC.doAfterSignIn(this)
+
+        crashlytics = FirebaseCrashlytics.getInstance()
+        crashlytics.setUserId(FirebaseAuth.getInstance().currentUser?.email ?: "")
+        crashlytics.sendUnsentReports()
+
+        ABC.startService(this)
+
 
         val navController = navigation_host_fragment.findNavController()
         val config = AppBarConfiguration(

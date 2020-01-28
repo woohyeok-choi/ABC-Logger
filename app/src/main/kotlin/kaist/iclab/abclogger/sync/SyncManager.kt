@@ -10,7 +10,6 @@ import androidx.work.Worker
 import io.objectbox.Box
 import io.objectbox.EntityInfo
 import kaist.iclab.abclogger.App
-import kaist.iclab.abclogger.Base
 
 
 object SyncManager {

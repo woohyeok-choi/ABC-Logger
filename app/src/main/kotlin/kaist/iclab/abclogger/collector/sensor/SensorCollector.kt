@@ -9,12 +9,25 @@ import android.hardware.SensorManager
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
+import kaist.iclab.abclogger.Prefs
 import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.fill
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
+import kaist.iclab.abclogger.collector.setStatus
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class SensorCollector(val context: Context) : BaseCollector, SensorEventListener {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null,
+                      val isProximityAvailable: Boolean? = null,
+                      val isLightAvailable: Boolean? = null) : BaseStatus() {
+        override fun info(): String =
+                "Proximity: ${if(isProximityAvailable == true) "On" else "Off"}; Light: ${if(isLightAvailable == true) "On" else "Off"}"
+    }
+
     private val sensorManager : SensorManager by lazy { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     private val subject : PublishSubject<SensorEntity> = PublishSubject.create<SensorEntity>()
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -29,22 +42,27 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
         disposables.clear()
         sensorManager.unregisterListener(this)
 
-        sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)?.let { lightSensor ->
-            sensorManager.registerListener(this, lightSensor, TimeUnit.SECONDS.toMicros(1).toInt())
-        }
+        val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        val proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
-        sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)?.let { proxyMeter ->
-            sensorManager.registerListener(this, proxyMeter, TimeUnit.SECONDS.toMicros(1).toInt())
-        }
+        lightSensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(1).toInt()) }
+        proximitySensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(1).toInt()) }
+
+        Prefs.statusSensor = Prefs.statusSensor?.copy(
+                isLightAvailable = lightSensor != null,
+                isProximityAvailable = proximitySensor != null
+        )
 
         val disposable = subject.buffer(
                 10, TimeUnit.SECONDS
         ).subscribeOn(
                 Schedulers.io()
         ).subscribe { entities ->
-            ObjBox.put(entities)
+            GlobalScope.launch {
+                ObjBox.put(entities)
+                setStatus(Status(lastTime = System.currentTimeMillis()))
+            }
         }
-
         disposables.addAll(disposable)
     }
 
@@ -54,7 +72,7 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
         sensorManager.unregisterListener(this)
     }
 
-    override fun checkAvailability(): Boolean = true
+    override suspend fun checkAvailability(): Boolean = true
 
     override val requiredPermissions: List<String>
         get() = listOf()

@@ -31,8 +31,7 @@ android {
         versionName "0.9.3"
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
         buildConfigField("String", "DB_NAME", "\"abc-logger\"")
-        buildConfigField("String", "PREF_NAME_COLLECTOR", "\"abc-logger-collector-pref\"")
-        buildConfigField("String", "PREF_NAME_GENERAL", "\"abc-logger-general-pref\"")
+        buildConfigField("String", "PREF_NAME", "\"abc-logger-pref\"")
         buildConfigField("Long", "DB_MAX_SIZE", "3145728L")
 
         // buildConfigField("String", "SERVER_ADDRESS", "\"abc.kaist.ac.kr:50051\"")
@@ -101,10 +100,10 @@ dependencies {
     implementation 'androidx.preference:preference-ktx:1.1.0'
     implementation "androidx.paging:paging-common-ktx:2.1.1"
     implementation 'androidx.paging:paging-runtime-ktx:2.1.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-rc03'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0-rc03'
-    implementation "androidx.lifecycle:lifecycle-livedata-core-ktx:2.2.0-rc03"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0-rc03'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
+    implementation "androidx.lifecycle:lifecycle-livedata-core-ktx:2.2.0"
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0'
     implementation 'androidx.work:work-runtime-ktx:2.2.0'
     implementation "androidx.navigation:navigation-fragment-ktx:2.1.0"
     implementation "androidx.navigation:navigation-ui-ktx:2.1.0"
@@ -131,6 +130,8 @@ dependencies {
      * Koap for easy-to-use of shared preferences
      */
     implementation 'com.github.AgustaRC.koap:koap:1.0.1'
+    implementation "com.github.AgustaRC.koap:koap-gson-serializer:1.0.1"
+    implementation "com.google.code.gson:gson:2.8.5"
 
     /**
      * Objectbox for android database

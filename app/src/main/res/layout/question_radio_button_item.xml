@@ -55,13 +55,15 @@
                 isBold="@{isAvailable}"
                 android:textColor="@{isAvailable ? @color/color_title : @color/color_message}"
                 app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintLeft_toRightOf="@id/txt_should_answer"/>
 
-            <kaist.iclab.abclogger.ui.question.RadioButtonsView
-                android:layout_width="match_parent"
+            <kaist.iclab.abclogger.ui.question.item.RadioButtonsView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/txt_message"
                 app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
                 options="@{question.options}"
                 showEtc="@{question.showEtc}"
                 responses="@={question.responses}"

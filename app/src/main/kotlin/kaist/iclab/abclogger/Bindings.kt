@@ -25,7 +25,7 @@ fun handleContentProgress(view: ContentLoadingProgressBar, status: Status?, show
     val state = status?.state
     val error = status?.error
 
-    if (state == Status.STATE_LOADING) view.show() else view.hide()
+    if (state == Status.STATE_LOADING || state == Status.STATE_INIT) view.show() else view.hide()
     if (state == Status.STATE_FAILURE && error != null && showToast == true) view.context.showToast(error)
 }
 

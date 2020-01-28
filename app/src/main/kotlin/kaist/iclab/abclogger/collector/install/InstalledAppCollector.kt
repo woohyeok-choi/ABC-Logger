@@ -8,13 +8,18 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.getApplicationName
-import kaist.iclab.abclogger.collector.isSystemApp
-import kaist.iclab.abclogger.collector.isUpdatedSystemApp
+import kaist.iclab.abclogger.collector.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class InstalledAppCollector (val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null,
+                      val lastTimeAccessed: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private val packageManager: PackageManager by lazy { context.applicationContext.packageManager }
 
     private val alarmManager: AlarmManager by lazy {
@@ -25,25 +30,28 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action != ACTION_RETRIEVE_PACKAGES) return
-                val timestamp = System.currentTimeMillis()
-
+                val curTime = System.currentTimeMillis()
                 packageManager.getInstalledPackages(
                         PackageManager.GET_META_DATA
                 ).map { info ->
                     InstalledAppEntity(
                             name = getApplicationName(packageManager = packageManager, packageName = info.packageName)
                                     ?: "",
-                            packageName = info.packageName,
+                            packageName = info.packageName ?: "",
                             isSystemApp = isSystemApp(packageManager = packageManager, packageName = info.packageName),
                             isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = info.packageName),
                             firstInstallTime = info.firstInstallTime,
                             lastUpdateTime = info.lastUpdateTime
-                    ).fill(timeMillis = timestamp)
-                }.run {
-                    ObjBox.put(this)
+                    ).fill(timeMillis = curTime)
+                }.also { entity ->
+                    GlobalScope.launch {
+                        ObjBox.put(entity)
+                        setStatus(Status(lastTime = curTime))
+                    }
                 }
-
-                CollectorPrefs.lastAccessTimeInstalledApp = timestamp
+                GlobalScope.launch {
+                    setStatus(Status(lastTimeAccessed = curTime))
+                }
             }
         }
     }
@@ -60,12 +68,12 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
     override suspend fun onStart() {
         val currentTime = System.currentTimeMillis()
         val halfDayHour : Long = TimeUnit.HOURS.toMillis(12)
+        val lastTimeAccessed = (getStatus() as? Status)?.lastTimeAccessed ?: 0
 
-        val triggerTime : Long = if(CollectorPrefs.lastAccessTimeInstalledApp < 0 ||
-                CollectorPrefs.lastAccessTimeInstalledApp + halfDayHour < currentTime) {
-            currentTime + 1000 * 5
+        val triggerTime = if (lastTimeAccessed > 0 && lastTimeAccessed + halfDayHour >= currentTime) {
+            lastTimeAccessed + halfDayHour
         } else {
-            CollectorPrefs.lastAccessTimeInstalledApp + halfDayHour
+            currentTime + TimeUnit.SECONDS.toMillis(10)
         }
 
         context.safeRegisterReceiver(receiver, filter)
@@ -85,7 +93,7 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
         alarmManager.cancel(intent)
     }
 
-    override fun checkAvailability(): Boolean = true
+    override suspend fun checkAvailability(): Boolean = true
 
     override val requiredPermissions: List<String>
         get() = listOf()

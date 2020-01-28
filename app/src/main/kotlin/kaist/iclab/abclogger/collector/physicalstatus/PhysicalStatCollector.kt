@@ -21,6 +21,7 @@ import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.tasks.Tasks
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
+import kotlinx.coroutines.Dispatchers
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -112,20 +113,7 @@ class PhysicalStatusCollector(val context: Context) : BaseCollector {
                 ?: throw NoSignedGoogleAccountException()
         val client = Fitness.getRecordingClient(context, account)
 
-        suspendCoroutine<Void> { continuation ->
-            Tasks.whenAll(
-                    dataTypes.map { type -> client.subscribe(type) }
-            ).addOnSuccessListener { result ->
-                continuation.resume(result)
-            }.addOnFailureListener { exception ->
-                val exc = if (exception is ApiException) {
-                    GoogleApiException(exception.statusCode)
-                } else {
-                    exception
-                }
-                continuation.resumeWithException(exc)
-            }
-        }
+        Tasks.whenAll(dataTypes.map { type -> client.subscribe(type) }).toCoroutine()
 
         val currentTime = System.currentTimeMillis()
         val threeHour: Long = TimeUnit.HOURS.toMillis(3)

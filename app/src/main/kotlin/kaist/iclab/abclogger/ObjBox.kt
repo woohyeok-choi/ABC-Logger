@@ -1,28 +1,56 @@
 package kaist.iclab.abclogger
 
 import android.content.Context
-import android.os.Build
-import com.google.firebase.auth.FirebaseAuth
+import androidx.core.app.NotificationManagerCompat
 import io.objectbox.BoxStore
-import io.objectbox.annotation.BaseEntity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
 import io.objectbox.kotlin.boxFor
+import kaist.iclab.abclogger.collector.Base
 import kaist.iclab.abclogger.collector.MyObjectBox
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FileUtils.isSymlink
 import java.io.File
 import java.lang.Exception
-import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
 
 object ObjBox {
     val boxStore: AtomicReference<BoxStore> = AtomicReference()
+
+    private fun notifyFlushProgress(context: Context) {
+        val ntf = Notifications.build(
+                context = context,
+                channelId = Notifications.CHANNEL_ID_PROGRESS,
+                title = context.getString(R.string.ntf_title_flush),
+                text = context.getString(R.string.ntf_text_flush),
+                progress = 0,
+                indeterminate = true
+        )
+        NotificationManagerCompat.from(context).notify(Notifications.ID_FLUSH_PROGRESS, ntf)
+    }
+
+    private fun notifyFlushComplete(context: Context) {
+        val ntf = Notifications.build(
+                context = context,
+                channelId = Notifications.CHANNEL_ID_PROGRESS,
+                title = context.getString(R.string.ntf_title_flush),
+                text = context.getString(R.string.ntf_text_flush_complete)
+        )
+        NotificationManagerCompat.from(context).notify(Notifications.ID_FLUSH_PROGRESS, ntf)
+    }
+
+    private fun notifyFlushError(context: Context, throwable: Throwable?) {
+        val ntf = Notifications.build(
+                context = context,
+                channelId = Notifications.CHANNEL_ID_PROGRESS,
+                title = context.getString(R.string.ntf_title_flush),
+                text = listOfNotNull(
+                        context.getString(R.string.ntf_text_flush_failed),
+                        ABCException.wrap(throwable).toString(context)
+                ).joinToString(": ")
+        )
+        NotificationManagerCompat.from(context).notify(Notifications.ID_FLUSH_PROGRESS, ntf)
+    }
 
     private suspend fun buildStore(context: Context): BoxStore = withContext(Dispatchers.IO) {
         val store = (1..500).firstNotNullResult { multiple ->
@@ -30,16 +58,16 @@ object ObjBox {
                 val tempStore = MyObjectBox.builder()
                         .androidContext(context.applicationContext)
                         .maxSizeInKByte(BuildConfig.DB_MAX_SIZE * multiple) //3 GB
-                        .name("${BuildConfig.DB_NAME}-${GeneralPrefs.dbVersion}")
+                        .name("${BuildConfig.DB_NAME}-${Prefs.dbVersion}")
                         .build()
-                GeneralPrefs.dbSize = BuildConfig.DB_MAX_SIZE * multiple
+                Prefs.maxDbSize = BuildConfig.DB_MAX_SIZE * multiple
                 tempStore
             } catch (e: Exception) {
                 null
             }
         } ?: throw RuntimeException("DB size is too large!!")
 
-        GeneralPrefs.dbVersion += 1
+        Prefs.dbVersion += 1
         return@withContext store
     }
 
@@ -47,10 +75,16 @@ object ObjBox {
         boxStore.set(buildStore(context))
     }
 
-    suspend fun flush(context: Context) = withContext(Dispatchers.IO) {
-        val oldStore = boxStore.getAndSet(buildStore(context)) ?: return@withContext
-        oldStore.close()
-        oldStore.deleteAllFiles()
+    suspend fun flush(context: Context, showProgress: Boolean = false) = withContext(Dispatchers.IO) {
+        if (showProgress) notifyFlushProgress(context)
+        try {
+            val oldStore = boxStore.getAndSet(buildStore(context))
+            oldStore?.close()
+            oldStore?.deleteAllFiles()
+            if (showProgress) notifyFlushComplete(context)
+        } catch (e: Exception) {
+            if(showProgress) notifyFlushError(context, e)
+        }
     }
 
     fun size(context: Context): Long {
@@ -58,7 +92,7 @@ object ObjBox {
         return FileUtils.sizeOfDirectory(baseDir)
     }
 
-    fun maxSizeInBytes() = BuildConfig.DB_MAX_SIZE * 1000L
+    fun maxSizeInBytes() = Prefs.maxDbSize * 1000L
 
     inline fun <reified T> boxFor() = boxStore.get()?.boxFor<T>()
 
@@ -66,7 +100,7 @@ object ObjBox {
         entity ?: return -1L
         if (boxStore.get()?.isClosed != false) return -1
 
-        if (BuildConfig.DEBUG) AppLog.d(any = entity)
+        if (BuildConfig.DEBUG) AppLog.d(entity::class.java.name, entity)
         return boxFor<T>()?.put(entity) ?: -1
     }
 
@@ -74,47 +108,28 @@ object ObjBox {
         if (entities.isNullOrEmpty()) return
         if (boxStore.get()?.isClosed != false) return
 
-        if (BuildConfig.DEBUG) AppLog.d(any = entities)
+        if (BuildConfig.DEBUG) AppLog.d(entities::class.java.name, entities)
         boxFor<T>()?.put(entities)
     }
 
-    inline fun <reified T : Base> put(entity: T?) = GlobalScope.launch(Dispatchers.IO) {
-        entity ?: return@launch
-        if (boxStore.get()?.isClosed != false) return@launch
+    suspend inline fun <reified T : Base> put(entity: T?): Long = withContext<Long>(Dispatchers.IO) {
+        entity ?: return@withContext -1
+        if (boxStore.get()?.isClosed != false) return@withContext -1
 
-        if (BuildConfig.DEBUG) AppLog.d(any = entity)
-        boxFor<T>()?.put(entity) ?: -1
+        if (BuildConfig.DEBUG) AppLog.d(entity::class.java.name, entity)
+        return@withContext boxFor<T>()?.put(entity) ?: -1
     }
 
-    inline fun <reified T : Base> put(entities: Collection<T>?) = GlobalScope.launch(Dispatchers.IO) {
-        if (entities.isNullOrEmpty()) return@launch
-        if (boxStore.get()?.isClosed != false) return@launch
+    suspend inline fun <reified T : Base> put(entities: Collection<T>?) = withContext(Dispatchers.IO) {
+        if (entities.isNullOrEmpty()) return@withContext
+        if (boxStore.get()?.isClosed != false) return@withContext
 
-        if (BuildConfig.DEBUG) AppLog.d(any = entities)
+        if (BuildConfig.DEBUG) AppLog.d(entities::class.java.name, entities)
         boxFor<T>()?.put(entities)
     }
 }
 
-@BaseEntity
-abstract class Base(
-        @Id var id: Long = 0,
-        var timestamp: Long = -1,
-        var utcOffset: Float = Float.MIN_VALUE,
-        var subjectEmail: String = "",
-        var participationTime: Long = -1,
-        var deviceInfo: String = "",
-        @Index var isUploaded: Boolean = false
-)
 
-fun <T : Base> T.fill(timeMillis: Long): T {
-    timestamp = timeMillis
-    utcOffset = TimeZone.getDefault().rawOffset.toFloat() / (1000 * 60 * 60)
-    subjectEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
-    participationTime = GeneralPrefs.participationTime
-    deviceInfo = "${Build.MANUFACTURER}-${Build.MODEL}-${Build.VERSION.RELEASE}"
-    isUploaded = false
 
-    return this
-}
 
 

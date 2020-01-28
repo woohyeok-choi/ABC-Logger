@@ -12,9 +12,15 @@ import android.os.SystemClock
 import android.provider.Settings
 import com.google.android.gms.location.*
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class ActivityCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null, override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private fun activityTypeToString(typeInt: Int) = when (typeInt) {
         DetectedActivity.IN_VEHICLE -> "IN_VEHICLE"
         DetectedActivity.ON_BICYCLE -> "ON_BICYCLE"
@@ -106,13 +112,19 @@ class ActivityCollector(val context: Context) : BaseCollector {
     private fun handleActivityUpdate(intent: Intent) {
         if (!ActivityRecognitionResult.hasResult(intent)) return
         val result = ActivityRecognitionResult.extractResult(intent) ?: return
+        val curTime = System.currentTimeMillis()
 
         result.probableActivities?.map { detectedActivity ->
             PhysicalActivityEntity(
                     type = activityTypeToString(detectedActivity.type),
                     confidence = detectedActivity.confidence
             ).fill(timeMillis = result.time)
-        }.run { ObjBox.put(this) }
+        }.also { entity ->
+            GlobalScope.launch {
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = curTime))
+            }
+        }
     }
 
     private fun handleActivityTransitionUpdate(intent: Intent) {
@@ -135,7 +147,12 @@ class ActivityCollector(val context: Context) : BaseCollector {
             ).fill(
                     timeMillis = time
             )
-        }.run { ObjBox.put(this) }
+        }.also { entity ->
+            GlobalScope.launch {
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = curTime))
+            }
+        }
     }
 
     override suspend fun onStart() {
@@ -152,7 +169,7 @@ class ActivityCollector(val context: Context) : BaseCollector {
         client.removeActivityTransitionUpdates(activityTransitionIntent)
     }
 
-    override fun checkAvailability(): Boolean {
+    override suspend fun checkAvailability(): Boolean {
         val isPermitted = context.checkPermission(requiredPermissions)
         val isLocationEnabled = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             Settings.Secure.getInt(context.contentResolver, Settings.Secure.LOCATION_MODE) != Settings.Secure.LOCATION_MODE_OFF

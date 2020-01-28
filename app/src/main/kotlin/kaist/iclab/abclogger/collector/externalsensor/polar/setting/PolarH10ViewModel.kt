@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.reactivex.disposables.CompositeDisposable
-import kaist.iclab.abclogger.CollectorPrefs
+import kaist.iclab.abclogger.DataPrefs
 import kaist.iclab.abclogger.R
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
@@ -15,7 +15,7 @@ import polar.com.sdk.api.model.PolarHrData
 import java.lang.Exception
 
 class PolarH10ViewModel(val context: Context): ViewModel() {
-    val deviceId : MutableLiveData<String> = MutableLiveData(CollectorPrefs.polarH10DeviceId)
+    val deviceId : MutableLiveData<String> = MutableLiveData(DataPrefs.polarH10DeviceId)
     val state : MutableLiveData<String> = MutableLiveData(context.getString(R.string.general_disconnected))
     val battery : MutableLiveData<String> = MutableLiveData("0")
     val heartRate: MutableLiveData<String> = MutableLiveData("0")

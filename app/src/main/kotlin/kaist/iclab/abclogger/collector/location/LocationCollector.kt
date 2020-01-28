@@ -12,8 +12,18 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
+import kaist.iclab.abclogger.collector.setStatus
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class LocationCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private val client : FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(context)
     }
@@ -31,8 +41,11 @@ class LocationCollector(val context: Context) : BaseCollector {
                             accuracy = loc.accuracy,
                             speed = loc.speed
                     ).fill(timeMillis = loc.time)
-                }?.run {
-                    ObjBox.put(this)
+                }?.also { entity ->
+                    GlobalScope.launch {
+                        ObjBox.put(entity)
+                        setStatus(Status(lastTime = System.currentTimeMillis()))
+                    }
                 }
             }
         }
@@ -61,7 +74,7 @@ class LocationCollector(val context: Context) : BaseCollector {
         client.removeLocationUpdates(intent)
     }
 
-    override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override val requiredPermissions: List<String>
         get() = listOf(
