@@ -87,20 +87,20 @@
 
                         <TextView
                             android:id="@+id/txt_header"
-                            isBold="@{viewModel.setting.second}"
+                            isBold="@{viewModel.available}"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
                             android:text="@{title}"
-                            android:textColor="@{viewModel.setting.second ? @color/color_title : @color/color_message}"
+                            android:textColor="@{viewModel.available ? @color/color_title : @color/color_message}"
                             android:textSize="@dimen/txt_size_title_small"
                             app:layout_constraintLeft_toLeftOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
                             android:id="@+id/txt_message"
-                            isBold="@{viewModel.setting.second}"
+                            isBold="@{viewModel.available}"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
@@ -113,11 +113,11 @@
 
                         <TextView
                             android:id="@+id/txt_delivered_time"
-                            isBold="@{viewModel.setting.second}"
+                            isBold="@{viewModel.available}"
                             timestamp="@{deliveredTime}"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:textColor="@{viewModel.setting.second ? @color/color_blue : @color/color_message}"
+                            android:textColor="@{viewModel.available ? @color/color_blue : @color/color_message}"
                             android:textSize="@dimen/txt_size_text_small"
                             app:layout_constraintLeft_toRightOf="@id/txt_header"
                             app:layout_constraintRight_toRightOf="parent"

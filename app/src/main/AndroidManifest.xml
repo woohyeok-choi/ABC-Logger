@@ -64,18 +64,18 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <activity
-            android:name="kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10SettingActivity"
+            android:name="kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10SettingActivity"
             android:screenOrientation="portrait"
             android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoWindow" />
         <activity
-            android:name=".collector.survey.SurveySettingActivity"
+            android:name=".collector.survey.setting.SurveySettingActivity"
             android:screenOrientation="portrait"
             android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoWindow" />
 
         <activity
-            android:name=".collector.keylog.KeyLogSettingActivity"
+            android:name=".collector.keylog.setting.KeyLogSettingActivity"
             android:screenOrientation="portrait"
             android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme.NoWindow" />

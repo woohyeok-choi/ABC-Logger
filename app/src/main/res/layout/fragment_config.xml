@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
@@ -7,146 +8,18 @@
             name="viewModel"
             type="kaist.iclab.abclogger.ui.config.ConfigViewModel" />
     </data>
-
-    <androidx.core.widget.NestedScrollView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <!-- General Config -->
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="@dimen/item_default_horizontal_padding"
-                    android:paddingRight="@dimen/item_default_horizontal_padding"
-                    android:paddingTop="@dimen/item_default_vertical_padding"
-                    android:text="@string/config_category_general"
-                    android:textColor="@color/color_message"
-                    android:textSize="@dimen/txt_size_title_small" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                        description="@{viewModel.userName}"
-                        header="@{@string/config_title_user_name}"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                        description="@{viewModel.email}"
-                        header="@{@string/config_title_email}"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                        android:id="@+id/config_permission"
-                        description="@{viewModel.isAllPermissionGranted() ? @string/general_granted : @string/general_denied}"
-                        header="@{@string/config_title_permission}"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-
-                    <kaist.iclab.abclogger.ui.config.SimpleSwitchConfigView
-                        android:id="@+id/config_network"
-                        checked="@{viewModel.shouldUploadForNonMeteredNetwork}"
-                        description="@{@string/config_desc_upload_setting}"
-                        header="@{@string/config_title_upload_setting}"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                        android:id="@+id/config_sync"
-                        description="@{viewModel.lastSyncTime}"
-                        header="@{@string/config_title_sync}"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                        description="@{viewModel.sizeOfDb}"
-                        header="@{@string/config_title_size_of_data}"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- Data Configuration -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="@dimen/item_default_horizontal_padding"
-                    android:paddingRight="@dimen/item_default_horizontal_padding"
-                    android:paddingTop="@dimen/item_default_vertical_padding"
-                    android:text="@string/config_category_collector"
-                    android:textColor="@color/color_message"
-                    android:textSize="@dimen/txt_size_title_small" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                    app:layout_constraintTop_toBottomOf="@id/btn_add_item"
-                    app:layout_constraintStart_toStartOf="parent"/>
-
-            </LinearLayout>
-
-            <!-- Others -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="@dimen/item_default_horizontal_padding"
-                    android:paddingRight="@dimen/item_default_horizontal_padding"
-                    android:paddingTop="@dimen/item_default_vertical_padding"
-                    android:text="@string/config_category_others"
-                    android:textColor="@color/color_message"
-                    android:textSize="@dimen/txt_size_title_small" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                        android:id="@+id/config_flush_data"
-                        description="@{@string/config_desc_flush_data}"
-                        header="@{@string/config_title_flush_data}"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <kaist.iclab.abclogger.ui.config.SimpleConfigView
-                        android:id="@+id/config_logout"
-                        description="@{@string/config_desc_logout}"
-                        header="@{@string/config_title_logout}"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
-            </LinearLayout>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

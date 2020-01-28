@@ -21,18 +21,19 @@ class BootReceiver : BroadcastReceiver() {
                 Intent.ACTION_BOOT_COMPLETED
         ).map { it.toLowerCase(Locale.getDefault()) }
 
-        if (action in filters) {
-            try {
-                context.packageManager.getPackageInfo(PACKAGE_NAME_SMART_MANAGER, PackageManager.GET_META_DATA)
+        if (action !in filters) return
 
-                Handler().postDelayed({
-                    context.startActivity(Intent(context, AvoidSmartManagerActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    })
-                }, Random(System.currentTimeMillis()).nextInt(3000).toLong())
-            } catch (e: PackageManager.NameNotFoundException) { }
+        try {
+            context.packageManager.getPackageInfo(PACKAGE_NAME_SMART_MANAGER, PackageManager.GET_META_DATA)
 
-            context.startForegroundService<ABC.ABCLoggerService>()
-        }
+            Handler().postDelayed({
+                context.startActivity(Intent(context, AvoidSmartManagerActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            }, Random(System.currentTimeMillis()).nextInt(3000).toLong())
+        } catch (e: PackageManager.NameNotFoundException) { }
+
+        ABC.startService(context)
+        ABCEvent.post(System.currentTimeMillis(), ABCEvent.BOOT_COMPLETED)
     }
 }

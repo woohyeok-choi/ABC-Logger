@@ -5,12 +5,11 @@
     <data>
         <variable
             name="viewModel"
-            type="kaist.iclab.abclogger.collector.survey.SurveySettingViewModel" />
+            type="kaist.iclab.abclogger.collector.survey.setting.SurveySettingViewModel" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:paddingLeft="@dimen/item_default_horizontal_padding"
         android:paddingTop="@dimen/item_default_vertical_padding"
         android:paddingRight="@dimen/item_default_horizontal_padding">
@@ -43,8 +42,7 @@
             android:id="@+id/txt_survey_setting_instruction"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:paddingBottom="@dimen/item_default_vertical_padding"
+            android:textStyle="bold"
             android:text="@string/setting_survey_collector_instruction"
             android:textColor="@color/color_message"
             android:textSize="@dimen/txt_size_title_small"

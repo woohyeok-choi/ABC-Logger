@@ -1,5 +1,6 @@
 package kaist.iclab.abclogger.ui.surveylist
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -51,15 +52,14 @@ class SurveyListFragment : BaseFragment(){
                             UtilPair.create(binding.txtMessage, sharedViewNameForMessage(entityId)),
                             UtilPair.create(binding.txtDeliveredTime, sharedViewNameForDeliveredTime(entityId))
                     ).toBundle()
-
-                    startActivity<SurveyResponseActivity>(
+                    val intent = Intent(context, SurveyResponseActivity::class.java).fillExtras(
                             SurveyResponseActivity.EXTRA_ENTITY_ID to entityId,
                             SurveyResponseActivity.EXTRA_SHOW_FROM_LIST to true,
                             SurveyResponseActivity.EXTRA_SURVEY_TITLE to item.title,
                             SurveyResponseActivity.EXTRA_SURVEY_MESSAGE to item.message,
-                            SurveyResponseActivity.EXTRA_SURVEY_DELIVERED_TIME to item.deliveredTime,
-                            options = options
+                            SurveyResponseActivity.EXTRA_SURVEY_DELIVERED_TIME to item.deliveredTime
                     )
+                    startActivity(intent, options)
                 }
             }
         }

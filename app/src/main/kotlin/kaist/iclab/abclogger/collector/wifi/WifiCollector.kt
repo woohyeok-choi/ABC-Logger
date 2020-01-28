@@ -11,9 +11,19 @@ import android.net.wifi.WifiManager
 import android.provider.Settings
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
+import kaist.iclab.abclogger.collector.setStatus
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class WifiCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private val wifiManager: WifiManager by lazy {
         context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     }
@@ -25,17 +35,7 @@ class WifiCollector(val context: Context) : BaseCollector {
     private val receiver: BroadcastReceiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                val timestamp = System.currentTimeMillis()
-                try {
-                    wifiManager.scanResults.map { result ->
-                        WifiEntity(
-                                bssid = result.BSSID,
-                                ssid = result.SSID,
-                                frequency = result.frequency,
-                                rssi = result.level
-                        ).fill(timeMillis = timestamp)
-                    }.run { ObjBox.put(this) }
-                } catch (e: SecurityException) { }
+                GlobalScope.launch { handleWifiUpdate() }
             }
         }
     }
@@ -50,8 +50,26 @@ class WifiCollector(val context: Context) : BaseCollector {
         addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
     }
 
+    private suspend fun handleWifiUpdate() {
+        val timestamp = System.currentTimeMillis()
+
+        try {
+            wifiManager.scanResults.map { result ->
+                WifiEntity(
+                        bssid = result.BSSID,
+                        ssid = result.SSID,
+                        frequency = result.frequency,
+                        rssi = result.level
+                ).fill(timeMillis = timestamp)
+            }.also { entity ->
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = timestamp))
+            }
+        } catch (e: SecurityException) { }
+    }
+
     override suspend fun onStart() {
-        context.registerReceiver(receiver, filter)
+        context.safeRegisterReceiver(receiver, filter)
 
         alarmManager.cancel(intent)
         alarmManager.setRepeating(
@@ -63,11 +81,11 @@ class WifiCollector(val context: Context) : BaseCollector {
     }
 
     override suspend fun onStop() {
-        context.unregisterReceiver(receiver)
+        context.safeUnregisterReceiver(receiver)
         alarmManager.cancel(intent)
     }
 
-    override fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override val requiredPermissions: List<String>
         get() = listOf(

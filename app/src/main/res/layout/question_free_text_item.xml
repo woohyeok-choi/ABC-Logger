@@ -55,16 +55,18 @@
                 isBold="@{isAvailable}"
                 android:textColor="@{isAvailable ? @color/color_title : @color/color_message}"
                 app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintLeft_toRightOf="@id/txt_should_answer"/>
 
-            <kaist.iclab.abclogger.ui.question.FreeTextView
-                android:layout_width="match_parent"
+            <kaist.iclab.abclogger.ui.question.item.FreeTextView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 options="@{question.options}"
                 showEtc="@{question.showEtc}"
                 isAvailable="@{isAvailable}"
                 responses="@={question.responses}"
                 app:layout_constraintTop_toBottomOf="@id/txt_message"
+                app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

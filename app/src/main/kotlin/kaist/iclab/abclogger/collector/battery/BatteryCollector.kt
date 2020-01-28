@@ -7,12 +7,23 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
+import kaist.iclab.abclogger.collector.setStatus
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
-class BatteryCollector (val context: Context) : BaseCollector {
-    private val receiver : BroadcastReceiver by lazy {
+class BatteryCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
+    private val receiver: BroadcastReceiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
+                val timestamp = System.currentTimeMillis()
 
                 BatteryEntity(
                         level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1),
@@ -41,7 +52,12 @@ class BatteryCollector (val context: Context) : BaseCollector {
                             BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "NOT_CHARGING"
                             else -> "UNKNOWN"
                         }
-                ).fill(timeMillis = System.currentTimeMillis()).run { ObjBox.put(this) }
+                ).fill(timeMillis = timestamp).also { entity ->
+                    GlobalScope.launch {
+                        ObjBox.put(entity)
+                        setStatus(Status(lastTime = timestamp))
+                    }
+                }
             }
         }
     }
@@ -58,7 +74,7 @@ class BatteryCollector (val context: Context) : BaseCollector {
         context.safeUnregisterReceiver(receiver)
     }
 
-    override fun checkAvailability(): Boolean = true
+    override suspend fun checkAvailability(): Boolean = true
 
     override val requiredPermissions: List<String>
         get() = listOf()

@@ -6,96 +6,148 @@ import android.text.format.Formatter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.start
-import kaist.iclab.abclogger.collector.stop
+import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.lang.Exception
 
 class ConfigViewModel(
-        val context: Context,
-        val abcLogger: ABC
+        private val context: Context,
+        private val abcLogger: ABC
 ) : ViewModel() {
-    val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
-    val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
-    val isAllPermissionGranted = MutableLiveData<Boolean>(permissionGranted())
-    val lastSyncTime = MutableLiveData<String>(lastSyncTime())
-    val shouldUploadForNonMeteredNetwork = MutableLiveData<Boolean>(GeneralPrefs.shouldUploadForNonMeteredNetwork)
-    val sizeOfDb = MutableLiveData<String>(sizeOfDb())
-    val collectors = MutableLiveData<Array<BaseCollector>>(abcLogger.collectors)
-    val flushStatus = MutableLiveData<Status>()
+    val errorStatus: MutableLiveData<Status> = MutableLiveData(Status.init())
+    val configs: MutableLiveData<ArrayList<ConfigData>> = MutableLiveData()
 
-    private fun permissionGranted() = context.checkPermission(abcLogger.getAllRequiredPermissions())
-
-    private fun lastSyncTime() =
-            if (GeneralPrefs.lastTimeDataSync > 0) {
-        String.format("%s: %s",
-                context.getString(R.string.general_last_sync_time),
-                DateUtils.formatDateTime(context, GeneralPrefs.lastTimeDataSync, DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
-        )
-    } else {
-        context.getString(R.string.general_none)
-    }
-
-    private fun sizeOfDb() = "${Formatter.formatFileSize(context, ObjBox.size(context))} / ${Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())}"
-
-    fun setUploadForNonMeteredNetwork(isEnabled: Boolean) {
-        GeneralPrefs.shouldUploadForNonMeteredNetwork = isEnabled
-        shouldUploadForNonMeteredNetwork.postValue(GeneralPrefs.shouldUploadForNonMeteredNetwork)
-    }
-
-    fun updatePermission() {
-        isAllPermissionGranted.postValue(permissionGranted())
-    }
-
-    fun updateCollectors() {
-        collectors.postValue(abcLogger.collectors)
-    }
-
-    fun requestStart(collector: BaseCollector, onComplete: ((BaseCollector, Throwable?) -> Unit)? = null) = viewModelScope.launch {
-        collector.start { collector, throwable -> onComplete?.invoke(collector, throwable) }
-    }
-
-    fun requestStop(collector: BaseCollector, onComplete: ((BaseCollector, Throwable?) -> Unit)? = null) = viewModelScope.launch {
-        collector.stop { collector, throwable -> onComplete?.invoke(collector, throwable) }
-    }
-
-    fun sync() = GlobalScope.launch(Dispatchers.IO) {
-
-    }
-
-    fun flush(onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = GlobalScope.launch {
+    fun update() = viewModelScope.launch(Dispatchers.IO) {
         try {
-            flushStatus.postValue(Status.loading())
-
-            ObjBox.flush(context)
-
-            flushStatus.postValue(Status.success())
-            sizeOfDb.postValue(sizeOfDb())
-            onComplete?.invoke(true)
+            errorStatus.postValue(Status.init())
+            configs.postValue(
+                    arrayListOf<ConfigData>().apply {
+                        (generalConfig() + dataConfig() + otherConfig()).forEach { add(it) }
+                    }
+            )
         } catch (e: Exception) {
-            flushStatus.postValue(Status.failure(e))
-
-            onComplete?.invoke(true)
+            errorStatus.postValue(Status.failure(e))
         }
     }
 
-    fun signOut(onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = GlobalScope.launch {
-        try {
-            flushStatus.postValue(Status.loading())
-            ABC.signOut(context)
-            flushStatus.postValue(Status.success())
-            sizeOfDb.postValue(sizeOfDb())
-            onComplete?.invoke(true)
-        } catch (e: Exception) {
-            flushStatus.postValue(Status.failure(e))
+    fun setUploadSetting(enableMetered: Boolean) {
+        Prefs.canUploadMeteredNetwork = enableMetered
+    }
 
-            onComplete?.invoke(false)
+    fun requestStart(prefKey: String) = viewModelScope.launch{
+        abcLogger.collectors.find { it.prefKey() == prefKey }?.start { _, throwable ->
+            if (throwable != null) errorStatus.postValue(Status.failure(throwable))
+        }
+    }
+
+    fun requestStop(prefKey: String) = viewModelScope.launch{
+        abcLogger.collectors.find { it.prefKey() == prefKey }?.stop { _, throwable ->
+            if (throwable != null) errorStatus.postValue(Status.failure(throwable))
+        }
+    }
+
+    fun sync() = GlobalScope.launch {
+
+    }
+
+    fun flush() = GlobalScope.launch {
+        ObjBox.flush(context, true)
+    }
+
+    fun logout(onComplete: () -> Unit) = GlobalScope.launch {
+        ObjBox.flush(context, true)
+        Prefs.clear()
+        Prefs.clear()
+        FirebaseAuth.getInstance().signOut()
+        GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().toCoroutine()
+        abcLogger.stopAll()
+        ABC.stopService(context)
+        onComplete.invoke()
+    }
+
+    private suspend fun generalConfig() = configs {
+        header {
+            title = context.getString(R.string.config_category_general)
+        }
+        simple {
+            title = context.getString(R.string.config_title_user_name)
+            description = FirebaseAuth.getInstance().currentUser?.displayName ?: "Unknown"
+        }
+        simple {
+            title = context.getString(R.string.config_title_email)
+            description = FirebaseAuth.getInstance().currentUser?.email ?: "Unknown"
+        }
+        simple {
+            key = PrefKeys.PERMISSION
+            title = context.getString(R.string.config_title_permission)
+            description = if (context.checkPermission(abcLogger.getAllRequiredPermissions())) {
+                context.getString(R.string.general_granted)
+            } else {
+                context.getString(R.string.general_denied)
+            }
+        }
+        simple {
+            key = PrefKeys.LAST_TIME_SYNC
+            title = context.getString(R.string.config_title_sync)
+            description = if (Prefs.lastTimeDataSync > 0) {
+                String.format("%s: %s",
+                        context.getString(R.string.general_last_sync_time),
+                        DateUtils.formatDateTime(
+                                context, Prefs.lastTimeDataSync,
+                                DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
+                        )
+                )
+            } else {
+                context.getString(R.string.general_none)
+            }
+        }
+        switch {
+            key = PrefKeys.CAN_UPLOAD_METERED_NETWORK
+            title = context.getString(R.string.config_title_upload_setting)
+            description = context.getString(R.string.config_desc_upload_setting)
+            isChecked = Prefs.canUploadMeteredNetwork
+        }
+    }
+
+    private suspend fun dataConfig() = configs {
+        header {
+            title = context.getString(R.string.config_category_collector)
+        }
+        abcLogger.collectors.forEach { collector ->
+            data {
+                key = collector.prefKey() ?: ""
+                title = collector.nameRes()?.let { context.getString(it) } ?: ""
+                description = collector.descriptionRes()?.let { context.getString(it) } ?: ""
+                isChecked = collector.getStatus()?.hasStarted ?: false
+                isAvailable = collector.checkAvailability()
+                info = collector.getStatus()?.toInfo() ?: ""
+                intent = collector.newIntentForSetUp
+            }
+        }
+    }
+
+    private suspend fun otherConfig() = configs {
+        header {
+            title = context.getString(R.string.config_category_others)
+        }
+        simple {
+            key = PrefKeys.MAX_DB_SIZE
+            title = context.getString(R.string.config_title_flush_data)
+            description = listOf(
+                    context.getString(R.string.general_current_db_size),
+                    "${Formatter.formatFileSize(context, ObjBox.size(context))} / ${Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())}"
+            ).joinToString(": ")
+        }
+        simple {
+            key = PrefKeys.LOGOUT
+            title = context.getString(R.string.config_title_logout)
+            description = context.getString(R.string.config_desc_logout)
         }
     }
 }

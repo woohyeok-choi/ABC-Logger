@@ -3,19 +3,25 @@ package kaist.iclab.abclogger.collector.keylog
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
-import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.getApplicationName
-import kaist.iclab.abclogger.collector.isSystemApp
-import kaist.iclab.abclogger.collector.isUpdatedSystemApp
+import kaist.iclab.abclogger.collector.*
+import kaist.iclab.abclogger.collector.keylog.setting.KeyLogSettingActivity
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.hypot
 
 class KeyLogCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null,
+                      val keyboardType: String? = null) : BaseStatus() {
+        override fun info(): String = "Keyboard: ${keyboardType ?: "UNKNOWN"}"
+    }
 
     data class KeyLog(
             val timestamp: Long = 0,
@@ -32,21 +38,42 @@ class KeyLogCollector(val context: Context) : BaseCollector {
     }
 
     class KeyLogCollectorService: AccessibilityService() {
-        private var keyLog = KeyLog()
+        private val collector : KeyLogCollector by inject()
+        private val keyLog : AtomicReference<KeyLog> = AtomicReference(KeyLog())
 
         private fun hasMask(input: Int, mask: Int) = input and mask == mask
 
-        /* 새로 입력한 키 정보(키 타입, 거리 등)를 분석하기 위해 입력 진행 중인 EditText 트래킹 */
-        private fun trackNewInput(node: AccessibilityNodeInfo,
-                                  packageName: String,
-                                  eventTime: Long,
-                                  isChunjiin: Boolean) {
-            if(node.text?.isNotEmpty() == true && "edittext" in node.className.toString().toLowerCase(Locale.getDefault())) {
-                val newKeyLog = handleTextChanged(
-                        node = node, eventTime = eventTime, prevKeyLog = keyLog
+        private suspend fun handleAccessibilityEvent(packageName: String, source: AccessibilityNodeInfo, eventTime: Long, eventType: Int)  {
+            if(collector.getStatus()?.hasStarted != true) return
+            val isChunjiin = (collector.getStatus() as? Status)?.keyboardType == KEYBOARD_TYPE_CHUNJIIN
+            if (hasMask(eventType, AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED)) {
+                trackNewInput(
+                        node = source,
+                        packageName = packageName,
+                        eventTime = eventTime,
+                        isChunjiin = isChunjiin
                 )
+            }
+
+            if (hasMask(eventType, AccessibilityEvent.TYPE_VIEW_FOCUSED)) {
+                keyLog.set(handleFocused(nodeText = source.text, eventTime = eventTime))
+            }
+        }
+
+
+        /* 새로 입력한 키 정보(키 타입, 거리 등)를 분석하기 위해 입력 진행 중인 EditText 트래킹 */
+        private suspend fun trackNewInput(node: AccessibilityNodeInfo, packageName: String, eventTime: Long, isChunjiin: Boolean) {
+            val text = node.text
+            val className = node.className?.toString()?.toLowerCase(Locale.getDefault())
+
+            if (!text.isNullOrEmpty() && (className?.contains("edittext") == true || className?.contains("autocompletetextview") == true)) {
+                val newKeyLog = handleTextChanged(
+                        nodeText = text, eventTime = eventTime, prevKeyLog = keyLog.get()
+                )
+                val oldKeyLog = keyLog.getAndSet(newKeyLog) ?: return
+
                 val distance = calculateDistance(
-                        fromKey = keyLog.key, fromKeyType = keyLog.type,
+                        fromKey = oldKeyLog.key, fromKeyType = oldKeyLog.type,
                         toKey = newKeyLog.key, toKeyType = newKeyLog.type,
                         isChunjiin = isChunjiin
                 )
@@ -58,15 +85,16 @@ class KeyLogCollector(val context: Context) : BaseCollector {
                         isSystemApp = isSystemApp(packageManager = packageManager, packageName = packageName),
                         isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
                         distance = distance,
-                        timeTaken = newKeyLog.timestamp - keyLog.timestamp,
-                        keyboardType = CollectorPrefs.softKeyboardType,
-                        prevKey = keyLog.key,
-                        prevKeyType = keyLog.type.name,
+                        timeTaken = newKeyLog.timestamp - oldKeyLog.timestamp,
+                        keyboardType = (collector.getStatus() as? Status)?.keyboardType ?: KEYBOARD_TYPE_OTHERS,
+                        prevKey = oldKeyLog.key,
+                        prevKeyType = oldKeyLog.type.name,
                         currentKey = newKeyLog.key,
                         currentKeyType = newKeyLog.type.name
-                ).fill(timeMillis = eventTime).run { ObjBox.put(this) }
-
-                keyLog = newKeyLog
+                ).fill(timeMillis = eventTime).also { entity ->
+                    ObjBox.put(entity)
+                    collector.setStatus(Status(lastTime = eventTime))
+                }
             }
 
             for (i in 0 until node.childCount) {
@@ -75,12 +103,11 @@ class KeyLogCollector(val context: Context) : BaseCollector {
             }
         }
 
-        private fun handleFocused(node: AccessibilityNodeInfo, eventTime: Long) : KeyLog {
-            val text = node.text?.toString() ?: ""
+        private fun handleFocused(nodeText: CharSequence?, eventTime: Long) : KeyLog {
+            val text = nodeText?.toString() ?: ""
             val decomposedText = decomposeText(text)
             val key = text.lastOrNull()?.toString() ?: ""
             val type = getKeyType(key)
-
 
             return KeyLog(
                     timestamp = eventTime,
@@ -91,10 +118,10 @@ class KeyLogCollector(val context: Context) : BaseCollector {
             )
         }
 
-        private fun handleTextChanged(node: AccessibilityNodeInfo, eventTime: Long, prevKeyLog: KeyLog) : KeyLog {
-            if (node.text.isNullOrEmpty()) return KeyLog(timestamp = eventTime)
+        private fun handleTextChanged(nodeText: CharSequence?, eventTime: Long, prevKeyLog: KeyLog?) : KeyLog {
+            if (nodeText.isNullOrEmpty() || prevKeyLog == null) return KeyLog(timestamp = eventTime)
 
-            val text = node.text.toString()
+            val text = nodeText.toString()
             val decomposedText = decomposeText(text)
             val key = decomposedText.lastOrNull()?.toString() ?: ""
             val keyType = if (decomposedText.length >= prevKeyLog.decomposedText.length && key.isNotEmpty()) {
@@ -170,24 +197,13 @@ class KeyLogCollector(val context: Context) : BaseCollector {
         override fun onInterrupt() {}
 
         override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
-            if(!CollectorPrefs.hasStartedKeyStrokes) return
-
-            accessibilityEvent.packageName ?: return
-            accessibilityEvent.source ?: return
-
+            val packageName = accessibilityEvent.packageName?.toString() ?: return
+            val source = accessibilityEvent.source ?: return
+            val time = accessibilityEvent.eventTime
             val eventType = accessibilityEvent.eventType
 
-            if (hasMask(eventType, AccessibilityEvent.TYPE_VIEW_FOCUSED)) {
-                trackNewInput(
-                        node = accessibilityEvent.source,
-                        packageName = accessibilityEvent.packageName.toString(),
-                        eventTime = accessibilityEvent.eventTime,
-                        isChunjiin = CollectorPrefs.softKeyboardType == KEYBOARD_TYPE_CHUNJIIN
-                )
-            }
-
-            if (hasMask(eventType, AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED)) {
-                keyLog = handleFocused(node = accessibilityEvent.source, eventTime = accessibilityEvent.eventTime)
+            GlobalScope.launch {
+                handleAccessibilityEvent(packageName, source, time, eventType)
             }
         }
     }
@@ -196,18 +212,8 @@ class KeyLogCollector(val context: Context) : BaseCollector {
 
     override suspend fun onStop() { }
 
-    override fun checkAvailability(): Boolean {
-        val serviceName = "${context.packageName}/${KeyLogCollectorService::class.java.canonicalName}"
-        val isEnabled = Settings.Secure.getInt(
-                context.contentResolver,
-                Settings.Secure.ACCESSIBILITY_ENABLED, 0
-        ) == 1
-        val isIncluded = Settings.Secure.getString(
-                context.contentResolver,
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )?.replace("$", ".")?.split(":")?.contains(serviceName) ?: false
-
-        return isEnabled && isIncluded && CollectorPrefs.softKeyboardType.isNotEmpty()
+    override suspend fun checkAvailability(): Boolean {
+        return checkAccessibilityService<KeyLogCollectorService>(context) && !(getStatus() as? Status)?.keyboardType.isNullOrBlank()
     }
 
     override val requiredPermissions: List<String>
@@ -216,9 +222,9 @@ class KeyLogCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent? = Intent(context, KeyLogSettingActivity::class.java)
 
     companion object {
-        const val KEYBOARD_TYPE_CHUNJIIN = "KEYBOARD_TYPE_CHUNJIIN"
-        const val KEYBOARD_TYPE_QWERTY_KOR = "KEYBOARD_TYPE_QWERTY_KOR"
-        const val KEYBOARD_TYPE_UNKNOWN = "KEYBOARD_TYPE_UNKNOWN"
+        const val KEYBOARD_TYPE_CHUNJIIN = "CHUNJIIN"
+        const val KEYBOARD_TYPE_QWERTY_KOR = "QWERTY_KOR"
+        const val KEYBOARD_TYPE_OTHERS = "OTHERS"
 
         /* 각 키보드 유형별 키 좌표 */
         private val KEYS_CHUNJIIN = arrayOf("l", "ㆍ", "ㅡ", "backspace", "ㄱ", "ㅋ", "ㄴ", "ㄹ", "ㄷ", "ㅌ", "ㅂ", "ㅍ", "ㅅ", "ㅎ", "ㅈ", "ㅊ", ".", "?", "!", "ㅇ", "ㅁ", " ", "@", "ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ", "ㅐ", "ㅔ", "ㅒ", "ㅖ", "ㅙ", "ㅞ", "ㅘ", "ㅝ", "ㅚ", "ㅟ", "ㅢ")

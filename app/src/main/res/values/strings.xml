@@ -7,6 +7,7 @@
     <string name="general_year">year(s)</string>
     <string name="general_etc">Others</string>
     <string name="general_last_sync_time">Last sync time</string>
+    <string name="general_current_db_size">Local data</string>
     <string name="general_free_text">Freely type it.</string>
     <string name="general_email">Email</string>
     <string name="general_gender">Gender</string>
@@ -29,6 +30,7 @@
     <string name="general_connected">Connected</string>
     <string name="general_disconnected">Disconnected</string>
     <string name="general_connecting">Connecting</string>
+    <string name="general_unknown">Unknown</string>
 
     <string name="config_category_general">General</string>
     <string name="config_category_collector">Collector</string>
@@ -36,12 +38,10 @@
 
     <string name="config_title_user_name">User name</string>
     <string name="config_title_upload_setting">Upload setting</string>
-    <string name="config_desc_upload_setting">Data should be uploaded only when non-metered network is connected.</string>
+    <string name="config_desc_upload_setting">Data can be uploaded even when a metered-network (e.g., 5G, LTE) is connected.</string>
     <string name="config_title_email">Email</string>
     <string name="config_title_sync">Sync</string>
-    <string name="config_title_size_of_data">Local data size</string>
     <string name="config_title_flush_data">Flush local data</string>
-    <string name="config_desc_flush_data">Remove all data in a local database.</string>
     <string name="config_title_logout">Logout</string>
     <string name="config_desc_logout">Remove all data, stop data collection, and logout.</string>
     <string name="config_title_permission">Permissions</string>
@@ -154,20 +154,23 @@
     <string name="permission_title_google_fitness">Google Fitness account access</string>
 
     <!-- Here, define strings for setting activity of each collector -->
-    <string name="setting_key_log_collector_instruction_keyboard_type">Select a type of your soft-keyboard for Korean.</string>
+    <string name="setting_key_log_collector_keyboard_type_header">Type of Korean Soft-Keyboard</string>
     <string name="setting_key_log_collector_chunjiin">Chun-ji-in</string>
     <string name="setting_key_log_collector_qwerty">Qwerty</string>
     <string name="setting_key_log_collector_others">Others</string>
-    <string name="setting_key_log_collector_instruction_accessibility">Allow this app to use accessibility service.</string>
+    <string name="setting_key_log_collector_accessibility_header">Accessibility Setting</string>
+    <string name="setting_key_log_collector_keyboard_type_dialog_title">Choose your Korean keyboard.</string>
 
-    <string name="setting_polar_h10_collector_instruction_device_id">Enter a device ID to connect.</string>
-    <string name="setting_polar_h10_collector_connect">Touch to connect</string>
+    <string name="setting_polar_h10_collector_device_id_header">Polar Device ID</string>
+    <string name="setting_polar_h10_collector_state_header">State</string>
+    <string name="setting_polar_h10_collector_nearby_devices_header">Nearby Devices</string>
+    <string name="setting_polar_h10_collector_nearby_devices_button">Scan</string>
     <string name="setting_polar_h10_collector_connect_hint">Device ID</string>
-    <string name="setting_polar_h10_collector_instruction_state">State</string>
     <string name="setting_polar_h10_collector_connection_state">Connection</string>
     <string name="setting_polar_h10_collector_battery">Battery</string>
     <string name="setting_polar_h10_collector_heart_rate">Heart rate</string>
     <string name="setting_polar_h10_collector_ecg">ECG</string>
+    <string name="setting_polar_h10_collector_device_id_dialog_title">Type your Polar H10 device ID.</string>
 
     <string name="setting_survey_collector_instruction">Survey URLs</string>
     <string name="setting_survey_collector_preview">Preview</string>

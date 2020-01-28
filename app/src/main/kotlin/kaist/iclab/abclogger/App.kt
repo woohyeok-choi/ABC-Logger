@@ -21,12 +21,7 @@ class App : Application(){
             androidContext(this@App)
             modules(listOf(collectorModules, viewModelModules))
         }
-        Notifications.bind(this)
-
-        GlobalScope.launch (Dispatchers.IO) {
-            Koap.bind(this@App, CollectorPrefs, GeneralPrefs)
-            ObjBox.bind(this@App)
-        }
+        GlobalScope.launch { ABC.bind(this@App) }
     }
 
     override fun onTerminate() {

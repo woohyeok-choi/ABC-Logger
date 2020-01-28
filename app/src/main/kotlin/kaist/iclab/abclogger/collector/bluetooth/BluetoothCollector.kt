@@ -14,11 +14,19 @@ import android.content.IntentFilter
 import androidx.core.app.AlarmManagerCompat
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
+import kaist.iclab.abclogger.collector.setStatus
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BluetoothCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                               override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
         BluetoothAdapter.getDefaultAdapter()
     }
@@ -31,16 +39,22 @@ class BluetoothCollector(val context: Context) : BaseCollector {
         object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
                 super.onScanResult(callbackType, result)
+                val timestamp = System.currentTimeMillis()
                 val address = result?.device?.address ?: return
-                if (address in discoveredBLEDevices) return
 
+                if (address in discoveredBLEDevices) return
                 discoveredBLEDevices.add(address)
 
                 BluetoothEntity(
-                        deviceName = result.device.name ?: "",
+                        deviceName = result.device?.name ?: "",
                         address = address,
                         rssi = result.rssi
-                ).fill(timeMillis = System.currentTimeMillis()).run { ObjBox.put(this) }
+                ).fill(timeMillis = timestamp).also { entity ->
+                    GlobalScope.launch {
+                        ObjBox.put(entity)
+                        setStatus(Status(lastTime = timestamp))
+                    }
+                }
             }
         }
     }
@@ -91,13 +105,18 @@ class BluetoothCollector(val context: Context) : BaseCollector {
         val timestamp = System.currentTimeMillis()
         val extras = intent.extras ?: return
         val device = extras.getParcelable<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE) ?: return
-        val rssi = extras.getShort(BluetoothDevice.EXTRA_RSSI).toInt()
+        val rssi = extras.getShort(BluetoothDevice.EXTRA_RSSI, 0).toInt()
 
         BluetoothEntity(
-                deviceName = device.name,
-                address = device.address,
+                deviceName = device.name ?: "Unknown",
+                address = device.address ?: "Unknown",
                 rssi = rssi
-        ).fill(timeMillis = timestamp).run { ObjBox.put(this) }
+        ).fill(timeMillis = timestamp).also { entity ->
+            GlobalScope.launch {
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = timestamp))
+            }
+        }
     }
 
     private fun handleBluetoothScanRequest() {
@@ -130,7 +149,7 @@ class BluetoothCollector(val context: Context) : BaseCollector {
         alarmManager.cancel(intent)
     }
 
-    override fun checkAvailability(): Boolean =
+    override suspend fun checkAvailability(): Boolean =
             bluetoothAdapter?.isEnabled == true && context.checkPermission(requiredPermissions)
 
     override val requiredPermissions: List<String>

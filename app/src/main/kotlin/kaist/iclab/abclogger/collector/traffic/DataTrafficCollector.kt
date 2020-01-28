@@ -7,65 +7,74 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.fill
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
+import kaist.iclab.abclogger.collector.setStatus
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicLong
 
 class DataTrafficCollector(val context: Context) : BaseCollector {
+    data class Status(override val hasStarted: Boolean? = null,
+                      override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): String = ""
+    }
+
     private val telephonyManager: TelephonyManager by lazy {
         context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     }
 
+    private val timestamp : AtomicLong = AtomicLong(0)
+    private val totalRxBytes : AtomicLong = AtomicLong(0)
+    private val totalTxBytes : AtomicLong = AtomicLong(0)
+    private val mobileRxBytes : AtomicLong = AtomicLong(0)
+    private val mobileTxBytes : AtomicLong = AtomicLong(0)
+
+    private val directions = arrayOf(
+            TelephonyManager.DATA_ACTIVITY_IN,
+            TelephonyManager.DATA_ACTIVITY_OUT,
+            TelephonyManager.DATA_ACTIVITY_INOUT
+    )
+
+    private suspend fun handleDataActivity() {
+        val curTime = System.currentTimeMillis()
+        val curTotalRxBytes = TrafficStats.getTotalRxBytes()
+        val curTotalTxBytes = TrafficStats.getTotalTxBytes()
+        val curMobileRxBytes = TrafficStats.getMobileRxBytes()
+        val curMobileTxBytes = TrafficStats.getMobileTxBytes()
+
+        val prevTime = timestamp.getAndSet(curTime)
+        val prevTotalRxBytes = totalRxBytes.getAndSet(curTotalRxBytes)
+        val prevTotalTxBytes = totalTxBytes.getAndSet(curTotalTxBytes)
+        val prevMobileRxBytes = mobileRxBytes.getAndSet(curMobileRxBytes)
+        val prevMobileTxBytes = mobileTxBytes.getAndSet(curMobileTxBytes)
+
+        if (prevTime > 0) {
+            val netTotalRxBytes = curTotalRxBytes - prevTotalRxBytes
+            val netTotalTxBytes = curTotalTxBytes - prevTotalTxBytes
+            val netMobileRxBytes = curMobileRxBytes - prevMobileRxBytes
+            val netMobileTxBytes = curMobileTxBytes - prevMobileTxBytes
+
+            DataTrafficEntity(
+                    fromTime = prevTime,
+                    rxBytes = netTotalRxBytes,
+                    txBytes = netTotalTxBytes,
+                    mobileRxBytes = netMobileRxBytes,
+                    mobileTxBytes = netMobileTxBytes
+            ).fill(timeMillis = curTime).also { entity ->
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = curTime))
+            }
+        }
+    }
+
     private val dataListener by lazy {
         object : PhoneStateListener() {
-            val directions = arrayOf(
-                    TelephonyManager.DATA_ACTIVITY_IN,
-                    TelephonyManager.DATA_ACTIVITY_OUT,
-                    TelephonyManager.DATA_ACTIVITY_INOUT
-            )
-
-            var totalRxBytes: Long = -1
-            var totalTxBytes: Long = -1
-            var mobileRxBytes: Long = -1
-            var mobileTxBytes: Long = -1
-            var prevTimestamp: Long = -1
-
 
             override fun onDataActivity(direction: Int) {
                 super.onDataActivity(direction)
                 if (direction in directions) {
-                    if (prevTimestamp < 0) {
-                        prevTimestamp = System.currentTimeMillis()
-                        totalRxBytes = TrafficStats.getTotalRxBytes()
-                        totalTxBytes = TrafficStats.getTotalTxBytes()
-                        mobileRxBytes = TrafficStats.getMobileRxBytes()
-                        mobileTxBytes = TrafficStats.getMobileTxBytes()
-                    } else {
-                        val curTimestamp = System.currentTimeMillis()
-                        val curTotalRxBytes = TrafficStats.getTotalRxBytes()
-                        val curTotalTxBytes = TrafficStats.getTotalTxBytes()
-                        val curMobileRxBytes = TrafficStats.getMobileRxBytes()
-                        val curMobileTxBytes = TrafficStats.getMobileTxBytes()
-
-                        val netTotalRxBytes = curTotalRxBytes - totalRxBytes
-                        val netTotalTxBytes = curTotalTxBytes - totalTxBytes
-                        val netMobileRxBytes = curMobileRxBytes - mobileRxBytes
-                        val netMobileTxBytes = curMobileTxBytes - mobileTxBytes
-
-                        DataTrafficEntity(
-                                fromTime = prevTimestamp,
-                                rxBytes = netTotalRxBytes,
-                                txBytes = netTotalTxBytes,
-                                mobileRxBytes = netMobileRxBytes,
-                                mobileTxBytes = netMobileTxBytes
-                        ).fill(timeMillis = curTimestamp).run {
-                            ObjBox.put(this)
-                        }
-
-                        prevTimestamp = curTimestamp
-                        totalRxBytes = curTotalRxBytes
-                        totalTxBytes = curTotalTxBytes
-                        mobileRxBytes = curMobileRxBytes
-                        mobileTxBytes = curMobileTxBytes
-                    }
+                    GlobalScope.launch { handleDataActivity() }
                 }
             }
         }
@@ -85,5 +94,5 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
     override val newIntentForSetUp: Intent?
         get() = null
 
-    override fun checkAvailability(): Boolean = true
+    override suspend fun checkAvailability(): Boolean = true
 }

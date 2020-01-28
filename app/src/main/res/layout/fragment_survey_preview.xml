@@ -12,7 +12,7 @@
 
         <variable
             name="viewModel"
-            type="kaist.iclab.abclogger.collector.survey.SurveyPreviewViewModel" />
+            type="kaist.iclab.abclogger.collector.survey.setting.SurveyPreviewViewModel" />
 
     </data>
 
