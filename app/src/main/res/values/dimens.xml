@@ -19,4 +19,6 @@
     <dimen name="space_btw_signin_btn">24dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
 
+    <dimen name="progress_bar_size">64dp</dimen>
+
 </resources>

@@ -22,18 +22,16 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingLeft="@dimen/item_default_horizontal_padding"
-            android:paddingRight="@dimen/item_default_horizontal_padding">
+            android:layout_height="match_parent">
 
             <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/load_progress_bar"
-                style="?android:attr/progressBarStyleLarge"
+                style="?android:attr/progressBarStyle"
                 showToast="@{true}"
                 status="@{viewModel.loadStatus}"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical|center_horizontal"
+                android:layout_width="@dimen/progress_bar_size"
+                android:layout_height="@dimen/progress_bar_size"
+                android:layout_gravity="center"
                 android:indeterminate="true" />
 
             <TextView
@@ -59,7 +57,11 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="@dimen/item_default_horizontal_padding"
+                        android:paddingRight="@dimen/item_default_horizontal_padding"
+                        android:paddingTop="@dimen/item_default_vertical_padding"
+                        android:paddingBottom="@dimen/item_default_vertical_padding">
 
                         <TextView
                             android:id="@+id/txt_header"
@@ -71,8 +73,9 @@
                             android:text="@{viewModel.title}"
                             android:textColor="@color/color_title"
                             android:textSize="@dimen/txt_size_title_small"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintRight_toLeftOf="parent" />
 
                         <TextView
                             android:id="@+id/txt_message"
@@ -84,8 +87,9 @@
                             android:text="@{viewModel.message}"
                             android:textColor="@color/color_message"
                             android:textSize="@dimen/txt_size_text"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/txt_header" />
+                            app:layout_constraintTop_toBottomOf="@id/txt_header"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintRight_toRightOf="parent" />
 
                         <TextView
                             android:id="@+id/txt_delivered_time"
