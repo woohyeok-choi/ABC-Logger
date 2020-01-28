@@ -203,6 +203,8 @@ suspend inline fun <T : BaseCollector, reified V : BaseStatus> T.setStatus(newSt
     val oldStatus = getStatus() as? V
     val mergedStatus = oldStatus merge newStatus
 
+    AppLog.d(this::class.java.name, mergedStatus)
+
     withContext(Dispatchers.IO) {
         when (collector) {
             is ActivityCollector -> Prefs.statusActivity = mergedStatus as? ActivityCollector.Status

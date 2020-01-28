@@ -20,7 +20,10 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
         id = View.generateViewId()
         text = context.getString(R.string.general_etc)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-        setOnCheckedChangeListener(onCheckedChanged)
+        setOnCheckedChangeListener { _, isChecked ->
+            edtEtc.isEnabled = isChecked
+            attrChanged?.onChange()
+        }
     }
 
     private val edtEtc: EditText = EditText(context).apply {
@@ -30,12 +33,7 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
         addTextChangedListener({ _, _, _, _ -> }, { _, _, _, _ -> attrChanged?.onChange() }, {})
     }
 
-    private val onCheckedChanged: (CompoundButton, Boolean) -> Unit = { _, _ ->
-        edtEtc.isEnabled = btnEtc.isChecked
-        attrChanged?.onChange()
-    }
-
-    init {
+   init {
         addView(layoutCheckGroup, LayoutParams(0, LayoutParams.WRAP_CONTENT))
         addView(btnEtc, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
         addView(edtEtc, LayoutParams(0, LayoutParams.WRAP_CONTENT))
@@ -47,12 +45,12 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
             constraint.connect(layoutCheckGroup.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
             constraint.connect(layoutCheckGroup.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
 
-            constraint.connect(btnEtc.id, ConstraintSet.TOP, edtEtc.id, ConstraintSet.TOP)
+            constraint.connect(btnEtc.id, ConstraintSet.TOP, layoutCheckGroup.id, ConstraintSet.BOTTOM)
             constraint.connect(btnEtc.id, ConstraintSet.BOTTOM, edtEtc.id, ConstraintSet.BOTTOM)
             constraint.connect(btnEtc.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
 
             constraint.connect(edtEtc.id, ConstraintSet.TOP, layoutCheckGroup.id, ConstraintSet.BOTTOM)
-            constraint.connect(edtEtc.id, ConstraintSet.LEFT, edtEtc.id, ConstraintSet.RIGHT)
+            constraint.connect(edtEtc.id, ConstraintSet.LEFT, btnEtc.id, ConstraintSet.RIGHT)
             constraint.connect(edtEtc.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
         }.applyTo(this)
     }
@@ -70,11 +68,10 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
         layoutCheckGroup.removeAllViews()
 
         options.map { option ->
-            RadioButton(context).apply {
+            CheckBox(context).apply {
                 id = View.generateViewId()
                 text = option
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-                setOnCheckedChangeListener(onCheckedChanged)
             }
         }.forEach { button ->
             layoutCheckGroup.addView(button)

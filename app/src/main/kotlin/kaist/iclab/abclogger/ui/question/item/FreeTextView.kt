@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.addTextChangedListener
 import com.google.android.material.textfield.TextInputEditText
@@ -23,7 +24,7 @@ class FreeTextView (context: Context, attributeSet: AttributeSet?) : QuestionVie
     private val layoutText = TextInputLayout(context).apply {
         id = View.generateViewId()
         hint = context.getString(R.string.general_free_text)
-        addView(edtResponse, LayoutParams(LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        addView(edtResponse, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
     }
 
     init {

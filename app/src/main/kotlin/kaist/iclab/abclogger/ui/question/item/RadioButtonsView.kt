@@ -4,26 +4,17 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
-import android.widget.CompoundButton
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.RadioButton
+import android.widget.*
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
 import androidx.core.widget.addTextChangedListener
 import kaist.iclab.abclogger.R
 
 class RadioButtonsView(context: Context, attributeSet: AttributeSet?) : QuestionView(context, attributeSet) {
-    private val layoutRadioGroup = LinearLayout(context).apply {
+    private val layoutRadioGroup = RadioGroup(context).apply {
         id = View.generateViewId()
         orientation = LinearLayout.VERTICAL
-    }
-
-    private val btnEtc: RadioButton = RadioButton(context).apply {
-        id = View.generateViewId()
-        text = context.getString(R.string.general_etc)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-        setOnCheckedChangeListener(onCheckedChanged)
+        setOnCheckedChangeListener { _, _ -> attrChanged?.onChange() }
     }
 
     private val edtEtc: EditText = EditText(context).apply {
@@ -33,12 +24,16 @@ class RadioButtonsView(context: Context, attributeSet: AttributeSet?) : Question
         addTextChangedListener({ _, _, _, _ -> }, { _, _, _, _ -> attrChanged?.onChange() }, {})
     }
 
-    private val onCheckedChanged: (CompoundButton, Boolean) -> Unit = { button, _ ->
-        (layoutRadioGroup.children + btnEtc).forEach { view ->
-            (view as? CompoundButton)?.isChecked = view == button
+    private val btnEtc: CheckBox = CheckBox(context).apply {
+        id = View.generateViewId()
+        text = context.getString(R.string.general_etc)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
+        setOnCheckedChangeListener { _, isChecked ->
+            edtEtc.isEnabled = isChecked
+            layoutRadioGroup.isEnabled = !isChecked
+            layoutRadioGroup.children.forEach { (it as? CompoundButton)?.isEnabled = !isChecked }
+            attrChanged?.onChange()
         }
-        edtEtc.isEnabled = btnEtc.isChecked
-        attrChanged?.onChange()
     }
 
     init {
@@ -53,12 +48,12 @@ class RadioButtonsView(context: Context, attributeSet: AttributeSet?) : Question
             constraint.connect(layoutRadioGroup.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
             constraint.connect(layoutRadioGroup.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
 
-            constraint.connect(btnEtc.id, ConstraintSet.TOP, edtEtc.id, ConstraintSet.TOP)
+            constraint.connect(btnEtc.id, ConstraintSet.TOP, layoutRadioGroup.id, ConstraintSet.BOTTOM)
             constraint.connect(btnEtc.id, ConstraintSet.BOTTOM, edtEtc.id, ConstraintSet.BOTTOM)
             constraint.connect(btnEtc.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID, ConstraintSet.LEFT)
 
             constraint.connect(edtEtc.id, ConstraintSet.TOP, layoutRadioGroup.id, ConstraintSet.BOTTOM)
-            constraint.connect(edtEtc.id, ConstraintSet.LEFT, edtEtc.id, ConstraintSet.RIGHT)
+            constraint.connect(edtEtc.id, ConstraintSet.LEFT, btnEtc.id, ConstraintSet.RIGHT)
             constraint.connect(edtEtc.id, ConstraintSet.RIGHT, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT)
         }.applyTo(this)
     }
@@ -80,7 +75,6 @@ class RadioButtonsView(context: Context, attributeSet: AttributeSet?) : Question
                 id = View.generateViewId()
                 text = option
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-                setOnCheckedChangeListener(onCheckedChanged)
             }
         }.forEach { button ->
             layoutRadioGroup.addView(button)
@@ -88,18 +82,20 @@ class RadioButtonsView(context: Context, attributeSet: AttributeSet?) : Question
     }
 
     override var responses: Array<String> = arrayOf()
-        get() =
-            (layoutRadioGroup.children + btnEtc).find { view ->
-                (view as? CompoundButton)?.isChecked == true
-            }?.let { view ->
-                val text = if (view == btnEtc) {
-                    edtEtc.text
-                } else {
-                    (view as? CompoundButton)?.text
-                }?.toString()
-
-                if (!text.isNullOrBlank()) arrayOf(text) else null
-            } ?: arrayOf()
+        get() {
+            val response = if (btnEtc.isChecked) {
+                edtEtc.text?.toString()
+            } else {
+                (layoutRadioGroup.children.find { view ->
+                    view.id == layoutRadioGroup.checkedRadioButtonId
+                } as? CompoundButton)?.text?.toString()
+            }
+            return if (response.isNullOrBlank()) {
+                arrayOf()
+            } else {
+                arrayOf(response)
+            }
+        }
         set(value) {
             if(field.firstOrNull() == value.firstOrNull()) return
 
