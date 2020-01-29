@@ -43,8 +43,11 @@ class SurveyListFragment : BaseFragment(){
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        val recyclerViewAdapter = SurveyListAdapter().also { adapter ->
-            adapter.onItemClick = { item: SurveyEntity?, binding: SurveyListItemBinding ->
+        binding.recyclerView.addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        binding.recyclerView.itemAnimator = DefaultItemAnimator()
+
+        val adapter = SurveyListAdapter().apply {
+            onItemClick = { item: SurveyEntity?, binding: SurveyListItemBinding ->
                 item?.id?.let { entityId ->
                     val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                             requireActivity(),
@@ -64,16 +67,10 @@ class SurveyListFragment : BaseFragment(){
             }
         }
 
-        binding.recyclerView.apply {
-            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
-            itemAnimator = DefaultItemAnimator()
-            adapter = recyclerViewAdapter
-        }
+        binding.recyclerView.adapter = adapter
 
         binding.swipeLayout.setOnRefreshListener { viewModel.refresh() }
 
-        viewModel.entities.observe(this) { data ->
-            if (data != null) recyclerViewAdapter.submitList(data)
-        }
+        viewModel.entities.observe(this) { data -> if (data != null) adapter.submitList(data) }
     }
 }

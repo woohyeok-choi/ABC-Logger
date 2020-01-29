@@ -14,31 +14,36 @@ import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment
 import kaist.iclab.abclogger.ui.sharedViewNameForDeliveredTime
 import kaist.iclab.abclogger.ui.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.sharedViewNameForTitle
-import kotlinx.android.synthetic.main.activity_survey_response.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SurveyResponseActivity : BaseAppCompatActivity() {
     private val viewModel: SurveyResponseViewModel by viewModel()
+
     private lateinit var binding: ActivitySurveyResponseBinding
-    private var reactionTime: Long = -1L
+    private var showOptionMenu: Boolean = false
+
+    private var reactionTime: Long = 0
+    private var entityId : Long = 0
+    private var showFromList : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setSupportActionBar(tool_bar)
+        reactionTime = System.currentTimeMillis()
+        entityId = intent.getLongExtra(EXTRA_ENTITY_ID, 0)
+        showFromList = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_survey_response)
+
+        setSupportActionBar(binding.toolBar)
+
         supportActionBar?.apply {
             title = getString(R.string.title_survey_response)
             setDisplayHomeAsUpEnabled(true)
         }
 
-        val entityId = intent.getLongExtra(EXTRA_ENTITY_ID, -1)
-        val showFromList = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
-
-        reactionTime = System.currentTimeMillis()
-
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_survey_response)
-
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+
         binding.title = intent.getStringExtra(EXTRA_SURVEY_TITLE) ?: ""
         binding.message = intent.getStringExtra(EXTRA_SURVEY_MESSAGE) ?: ""
         binding.deliveredTime = intent.getLongExtra(EXTRA_SURVEY_DELIVERED_TIME, 0)
@@ -47,14 +52,27 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
 
         binding.recyclerView.adapter = adapter
 
-        viewModel.questions.observe(this) { questions -> if(questions != null) adapter.questions = questions }
-        viewModel.available.observe(this) { isAvailable -> if (isAvailable != null) adapter.isAvailable = isAvailable }
-        viewModel.showAltText.observe(this) { showAltText -> if (showAltText != null) adapter.showAltText = showAltText }
+        viewModel.questions.observe(this) { questions ->
+            questions?.let { adapter.questions = it }
+        }
+
+        viewModel.availableForProgram.observe(this) { isAvailable ->
+            isAvailable?.let {
+                adapter.isAvailable = it
+                showOptionMenu = it
+                invalidateOptionsMenu()
+            }
+        }
+
+        viewModel.showAltText.observe(this) { showAltText ->
+            showAltText?.let { adapter.showAltText = showAltText }
+        }
 
         if (showFromList) {
             ViewCompat.setTransitionName(binding.txtHeader, sharedViewNameForTitle(entityId))
             ViewCompat.setTransitionName(binding.txtMessage, sharedViewNameForMessage(entityId))
             ViewCompat.setTransitionName(binding.txtDeliveredTime, sharedViewNameForDeliveredTime(entityId))
+
             window.allowReturnTransitionOverlap = true
             window.sharedElementEnterTransition.doOnEnd { viewModel.load(entityId) }
         } else {
@@ -64,35 +82,26 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_activity_survey_question, menu)
+        menu?.findItem(R.id.menu_activity_survey_question_save)?.isVisible = showOptionMenu
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val entityId = intent.getLongExtra(EXTRA_ENTITY_ID, -1)
-        val showFromList = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
-
-        return when (item.itemId) {
+         return when (item.itemId) {
             android.R.id.home -> {
+                if (showFromList) supportFinishAfterTransition() else finish()
                 true
             }
             R.id.menu_activity_survey_question_save -> {
                 YesNoDialogFragment.showDialog(
-                        supportFragmentManager,
-                        getString(R.string.dialog_title_save_immutable),
-                        getString(R.string.dialog_message_save_immutable)) {
+                        fragmentManager =  supportFragmentManager,
+                        title =  getString(R.string.dialog_title_save_immutable),
+                        message = getString(R.string.dialog_message_save_immutable)) {
                     viewModel.store(
                             entityId = entityId,
                             reactionTime = reactionTime,
                             responseTime = System.currentTimeMillis()
-                    ) { isSuccessful ->
-                        if (!isSuccessful) return@store
-
-                        if (showFromList) {
-                            supportFinishAfterTransition()
-                        } else {
-                            finish()
-                        }
-                    }
+                    ) { if (showFromList) supportFinishAfterTransition() else finish() }
                 }
                 true
             }

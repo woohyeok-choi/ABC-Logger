@@ -8,6 +8,8 @@ import android.widget.*
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
 import androidx.core.widget.addTextChangedListener
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import kaist.iclab.abclogger.R
 
 class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(context, attrs) {
@@ -26,7 +28,7 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
         }
     }
 
-    private val edtEtc: EditText = EditText(context).apply {
+    private val edtEtc: TextInputEditText = TextInputEditText(context).apply {
         id = View.generateViewId()
         setHint(R.string.general_free_text)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
@@ -72,6 +74,7 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
                 id = View.generateViewId()
                 text = option
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
+                setOnCheckedChangeListener { _, _ -> attrChanged?.onChange() }
             }
         }.forEach { button ->
             layoutCheckGroup.addView(button)
@@ -79,26 +82,24 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
     }
 
     override var responses: Array<String> = arrayOf()
-        get() =
-            (layoutCheckGroup.children + btnEtc).filter { view ->
-                (view as? CompoundButton)?.isChecked == true
-            }.mapNotNull { view ->
-                val text = if (view == btnEtc) {
-                    btnEtc.text?.toString()
+        get() {
+            val checkedItems = layoutCheckGroup.children.map { view ->
+                if ((view as? CompoundButton)?.isChecked == true) {
+                    view.text?.toString()
                 } else {
-                    (view as? CompoundButton)?.text
+                    null
                 }
-                if (!text.isNullOrBlank()) text.toString() else null
-            }.toSet().toTypedArray()
+            } + if(btnEtc.isChecked) edtEtc.text?.toString() else null
+            return checkedItems.filterNotNull().filter { !it.isBlank() }.toSet().toTypedArray()
+        }
         set(value) {
-            if (field.toSet() == value.toSet()) return
+            if(field.contentEquals(value)) return
 
             value.firstOrNull { text ->
                 val checkBox = layoutCheckGroup.children.find { view ->
                     (view as? CompoundButton)?.text == text
-                }
-                (checkBox as? CompoundButton)?.isChecked = true
-
+                } as? CompoundButton
+                checkBox?.isChecked = true
                 checkBox == null
             }?.let { text ->
                 btnEtc.isChecked = true

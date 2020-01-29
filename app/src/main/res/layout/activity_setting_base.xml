@@ -26,7 +26,7 @@
             android:background="@color/color_primary"
             android:elevation="4dp"
             android:theme="@style/AppTheme"
-            app:layout_scrollFlags="scroll|enterAlways" />
+            app:layout_scrollFlags="snap" />
     </com.google.android.material.appbar.AppBarLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

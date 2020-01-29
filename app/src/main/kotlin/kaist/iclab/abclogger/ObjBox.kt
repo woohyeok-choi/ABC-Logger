@@ -53,7 +53,7 @@ object ObjBox {
     }
 
     private suspend fun buildStore(context: Context): BoxStore = withContext(Dispatchers.IO) {
-        val store = (1..500).firstNotNullResult { multiple ->
+        return@withContext (1..500).firstNotNullResult { multiple ->
             try {
                 val tempStore = MyObjectBox.builder()
                         .androidContext(context.applicationContext)
@@ -61,14 +61,12 @@ object ObjBox {
                         .name("${BuildConfig.DB_NAME}-${Prefs.dbVersion}")
                         .build()
                 Prefs.maxDbSize = BuildConfig.DB_MAX_SIZE * multiple
+
                 tempStore
             } catch (e: Exception) {
                 null
             }
         } ?: throw RuntimeException("DB size is too large!!")
-
-        Prefs.dbVersion += 1
-        return@withContext store
     }
 
     suspend fun bind(context: Context) = withContext(Dispatchers.IO) {
@@ -78,6 +76,7 @@ object ObjBox {
     suspend fun flush(context: Context, showProgress: Boolean = false) = withContext(Dispatchers.IO) {
         if (showProgress) notifyFlushProgress(context)
         try {
+            Prefs.dbVersion += 1
             val oldStore = boxStore.getAndSet(buildStore(context))
             oldStore?.close()
             oldStore?.deleteAllFiles()

@@ -85,6 +85,8 @@ open class Survey(
 
             return true
         }
+
+        fun isCorrectlyAnswered() : Boolean = !shouldAnswer || responses.any { !it.isBlank() }
     }
 
     companion object {

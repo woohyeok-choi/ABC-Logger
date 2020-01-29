@@ -77,17 +77,20 @@
     <string name="error_http_error">Error occurs during Http connection</string>
     <string name="error_no_signed_google_account">No signed google account</string>
     <string name="error_invalid_url">Invalid URL</string>
-    <string name="error_invalid_value">Contents are not correctly loaded.</string>
+    <string name="error_invalid_value">Contents are not correctly loaded</string>
     <string name="error_polar_h10">Error occurs on Polar H10</string>
     <string name="error_require_to_update_google_play_service">Please update Google Play service to use this app</string>
+    <string name="error_survey_incorrectly_answered">Some questions required to be answered is not answered</string>
 
-    <string name="dialog_title_permission_request">Permission request</string>
+    <string name="dialog_title_permission_request">Permission Request</string>
     <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
     <string name="dialog_title_survey_preview">Preview</string>
     <string name="dialog_title_flush_data">Flush</string>
     <string name="dialog_message_flush_data">Do you really want to flush local data?</string>
     <string name="dialog_title_sign_out">Sign Out</string>
     <string name="dialog_message_sign_out">If you sign out, local data and preferences will be removed. Do you want it?</string>
+    <string name="dialog_title_save_immutable">Save</string>
+    <string name="dialog_message_save_immutable">You cannot edit responses after saving them.</string>
 
     <string name="msg_sign_in_success">Welcome</string>
     <string name="msg_auth_password_changed">Password changed.</string>
@@ -101,9 +104,6 @@
     <string name="msg_save_complete">The response is saved.</string>
     <string name="msg_fail_to_load_contents">Failed to load contents.</string>
 
-    <string name="dialog_title_save_immutable">Save</string>
-    <string name="dialog_message_save_immutable">You cannot edit responses after saving them.</string>
-
     <string name="title_survey_list">Survey</string>
     <string name="title_config">Config</string>
     <string name="title_survey_response">Response</string>
@@ -112,9 +112,9 @@
     <string name="menu_item_setting_save">Save</string>
 
     <string name="data_name_physical_activity">Physical Activity</string>
-    <string name="data_desc_physical_activity">It collects a history of physical activities</string>
+    <string name="data_desc_physical_activity">It collects a history of physical activities.</string>
     <string name="data_name_app_usage">App Usage</string>
-    <string name="data_desc_app_usage">It collects which app is used.</string>
+    <string name="data_desc_app_usage">It collects a duration of app usage.</string>
     <string name="data_name_battery">Battery Usage</string>
     <string name="data_desc_battery">It collects a status of battery (e.g., voltage, temperature)</string>
     <string name="data_name_bluetooth">Bluetooth</string>
@@ -124,34 +124,34 @@
     <string name="data_name_traffic">Data Traffic</string>
     <string name="data_desc_traffic">It collects an amount of data usage.</string>
     <string name="data_name_device_event">Device Event</string>
-    <string name="data_desc_device_event">It collects general events on the smartphone</string>
+    <string name="data_desc_device_event">It collects general events on the smartphone.</string>
     <string name="data_name_installed_app">Installed App</string>
-    <string name="data_desc_installed_app">It collects installed apps on the smartphone.</string>
+    <string name="data_desc_installed_app">It collects installed apps on your smartphone.</string>
     <string name="data_name_key_log">Touch</string>
-    <string name="data_desc_key_log">It collects a speed of touch interactions</string>
+    <string name="data_desc_key_log">It collects a speed of touch interactions.</string>
     <string name="data_name_location">Location</string>
-    <string name="data_desc_location">It collects locations visited.</string>
+    <string name="data_desc_location">It collects locations you visited.</string>
     <string name="data_name_media">Media</string>
-    <string name="data_desc_media">It collects events of media generation (e.g., taking a photo).</string>
+    <string name="data_desc_media">It collects the number of photos and videos you took.</string>
     <string name="data_name_message">Message</string>
-    <string name="data_desc_message">It collects how many SMS/MMSes are received/sent.</string>
+    <string name="data_desc_message">It collects the number of SMS/MMSes you received/sent.</string>
     <string name="data_name_notification">Notification</string>
-    <string name="data_desc_notification">It collects a history of notifications received.</string>
-    <string name="data_name_physical_status">Physiological Status</string>
-    <string name="data_desc_physical_status">It collects physiological status (e.g., step counts, calories).</string>
+    <string name="data_desc_notification">It collects a history of notifications you received.</string>
+    <string name="data_name_physical_stat">Physical Stat</string>
+    <string name="data_desc_physical_stat">It collects your physiological stats (e.g., step counts, calories) using Google Fitness.</string>
     <string name="data_name_polar_h10">Polar H10</string>
-    <string name="data_desc_polar_h10">It collects physiological status using Polar H10.</string>
+    <string name="data_desc_polar_h10">It collects your physiological signals using Polar H10 (e.g., heart-rate, ECG).</string>
     <string name="data_name_survey">Survey</string>
-    <string name="data_desc_survey">It collects in-situ surveys.</string>
+    <string name="data_desc_survey">It collects in-situ survey responses.</string>
     <string name="data_name_wifi">WiFi</string>
-    <string name="data_desc_wifi">It collects WiFI APs around a user.</string>
+    <string name="data_desc_wifi">It collects WiFI APs around you.</string>
     <string name="data_name_sensor">Sensor</string>
-    <string name="data_desc_sensor">It collects data from sensors equipped on a smartphone.</string>
+    <string name="data_desc_sensor">It collects data from sensors equipped on your smartphone.</string>
 
-    <string name="permission_title_general">App permissions</string>
-    <string name="permission_title_notification">Notification access</string>
-    <string name="permission_title_app_usage">App usage data access</string>
-    <string name="permission_title_google_fitness">Google Fitness account access</string>
+    <string name="permission_title_general">Permissions</string>
+    <string name="permission_title_notification">Notification Access</string>
+    <string name="permission_title_app_usage">App Usage Data Access</string>
+    <string name="permission_title_google_fitness">Google Fitness Account Access</string>
 
     <!-- Here, define strings for setting activity of each collector -->
     <string name="setting_key_log_collector_keyboard_type_header">Type of Korean Soft-Keyboard</string>
@@ -168,7 +168,7 @@
     <string name="setting_polar_h10_collector_connect_hint">Device ID</string>
     <string name="setting_polar_h10_collector_connection_state">Connection</string>
     <string name="setting_polar_h10_collector_battery">Battery</string>
-    <string name="setting_polar_h10_collector_heart_rate">Heart rate</string>
+    <string name="setting_polar_h10_collector_heart_rate">Heart-rate</string>
     <string name="setting_polar_h10_collector_ecg">ECG</string>
     <string name="setting_polar_h10_collector_device_id_dialog_title">Type your Polar H10 device ID.</string>
 

@@ -16,7 +16,8 @@ class SurveyResponseViewModel : ViewModel() {
     val storeStatus = MutableLiveData<Status>(Status.init())
 
     val instruction = Transformations.map(surveyLiveData) { (_, survey) -> survey.instruction }
-    val available = Transformations.map(surveyLiveData) { (entity, _) -> entity.isAvailable() }
+    val availableForProgram = Transformations.map(surveyLiveData) { (entity, _) -> entity.isAvailable() }
+    val availableForXml = Transformations.map(surveyLiveData) { (entity, _) -> entity.isAvailable() }
     val showAltText= Transformations.map(surveyLiveData) { (entity, _) -> entity.showAltText() }
     val questions = Transformations.map(surveyLiveData) { (_, survey) -> survey.questions }
 
@@ -40,17 +41,18 @@ class SurveyResponseViewModel : ViewModel() {
     fun store(entityId: Long,
               reactionTime: Long,
               responseTime: Long,
-              onComplete: ((isSuccessful: Boolean) -> Unit)? = null) = viewModelScope.launch {
+              onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
         storeStatus.postValue(Status.loading())
         try {
             withContext(Dispatchers.IO) {
+                if (questions.value?.all { it.isCorrectlyAnswered() } != true) throw SurveyIncorrectlyAnsweredException()
+
                 val entity = ObjBox.boxFor<SurveyEntity>()?.get(entityId)
                         ?: throw InvalidEntityIdException()
                 val survey = Survey.fromJson(entity.json)
                         ?: throw InvalidSurveyFormatException()
 
                 survey.questions = questions.value ?: survey.questions
-
                 entity.reactionTime = reactionTime
                 entity.responseTime = responseTime
                 entity.json = survey.toJson()
@@ -58,10 +60,9 @@ class SurveyResponseViewModel : ViewModel() {
                 ObjBox.put(entity)
             }
             storeStatus.postValue(Status.success())
-            onComplete?.invoke(true)
+            onSuccess?.invoke()
         } catch (e: Exception) {
             storeStatus.postValue(Status.failure(e))
-            onComplete?.invoke(false)
         }
     }
 }

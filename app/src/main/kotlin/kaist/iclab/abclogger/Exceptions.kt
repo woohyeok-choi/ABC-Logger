@@ -132,3 +132,8 @@ class GooglePlayServiceOutdatedException : ABCException() {
     override val stringRes: Int
         get() = R.string.error_require_to_update_google_play_service
 }
+
+class SurveyIncorrectlyAnsweredException : ABCException() {
+    override val stringRes: Int
+        get() = R.string.error_survey_incorrectly_answered
+}
