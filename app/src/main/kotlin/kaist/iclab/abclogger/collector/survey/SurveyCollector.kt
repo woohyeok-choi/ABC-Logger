@@ -57,8 +57,9 @@ class SurveyCollector(val context: Context) : BaseCollector {
     private val filter = IntentFilter().apply { addAction(ACTION_SURVEY_TRIGGER) }
 
     private suspend fun handleTrigger(uuid: String?) {
-        val setting = (getStatus() as? Status)?.settings?.find { setting -> setting.uuid == uuid } ?: return
-        val survey = setting.json?.let { Survey.fromJson(it) } ?: return
+        val settings = (getStatus() as? Status)?.settings ?: return
+        val curSetting = settings.find { setting -> setting.uuid == uuid } ?: return
+        val survey = curSetting.json?.let { Survey.fromJson(it) } ?: return
         val curTime = System.currentTimeMillis()
         val id = SurveyEntity(
                 title = survey.title,
@@ -66,14 +67,18 @@ class SurveyCollector(val context: Context) : BaseCollector {
                 timeoutPolicy = survey.timeoutPolicy,
                 timeoutSec = survey.timeoutSec,
                 deliveredTime = curTime,
-                json = setting.json
+                json = curSetting.json
         ).fill(timeMillis = curTime).let { entity ->
             ObjBox.put(entity)
         }
 
         if (id <= 0) return
 
-        setStatus(Status(lastTime = curTime))
+        val updatedSettings = settings.map { setting ->
+            if (setting.uuid == uuid) setting.copy(lastTimeTriggered = curTime) else setting.copy()
+        }
+
+        setStatus(Status(lastTime = curTime, settings = updatedSettings))
 
         val surveyIntent = Intent(context, SurveyResponseActivity::class.java).fillExtras(
                 SurveyResponseActivity.EXTRA_ENTITY_ID to id,

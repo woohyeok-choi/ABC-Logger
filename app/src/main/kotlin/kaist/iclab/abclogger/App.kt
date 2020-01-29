@@ -21,7 +21,10 @@ class App : Application(){
             androidContext(this@App)
             modules(listOf(collectorModules, viewModelModules))
         }
-        GlobalScope.launch { ABC.bind(this@App) }
+        GlobalScope.launch {
+            ABC.bind(this@App)
+            Debug.generateSurveyEntities(100)
+        }
     }
 
     override fun onTerminate() {

@@ -18,7 +18,7 @@ class SliderView (context: Context, attrs: AttributeSet?) : QuestionView(context
         hintDelegate.isPopupAlwaysShown = false
         hintDelegate.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) attrChanged?.onChange()
+                attrChanged?.onChange()
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) { }
             override fun onStopTrackingTouch(seekBar: SeekBar?) { }
@@ -80,7 +80,7 @@ class SliderView (context: Context, attrs: AttributeSet?) : QuestionView(context
     override fun setOptions(options: Array<String>) {
         offset = options.firstOrNull()?.toIntOrNull() ?: 0
         seekBar.apply {
-            max = options.lastOrNull()?.toIntOrNull() ?: 100 - offset
+            max = (options.lastOrNull()?.toIntOrNull() ?: 100) - offset
         }
     }
 
@@ -94,8 +94,8 @@ class SliderView (context: Context, attrs: AttributeSet?) : QuestionView(context
                 btnEtc.isChecked = true
                 edtEtc.setText(response)
             } else {
-                val progress = response.toInt() + offset
-                if (progress in (offset..seekBar.max)) {
+                val progress = response.toInt() - offset
+                if (progress in (0..seekBar.max)) {
                     seekBar.progress = progress
                 } else {
                     btnEtc.isChecked = true

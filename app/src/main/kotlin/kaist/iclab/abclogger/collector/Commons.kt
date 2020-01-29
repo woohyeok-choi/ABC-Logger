@@ -271,7 +271,7 @@ fun <T : BaseCollector> T.nameRes() = when (this) {
     is MediaCollector -> R.string.data_name_media
     is MessageCollector -> R.string.data_name_message
     is NotificationCollector -> R.string.data_name_notification
-    is PhysicalStatCollector -> R.string.data_name_physical_status
+    is PhysicalStatCollector -> R.string.data_name_physical_stat
     is PolarH10Collector -> R.string.data_name_polar_h10
     is SurveyCollector -> R.string.data_name_survey
     is WifiCollector -> R.string.data_name_wifi
@@ -293,7 +293,7 @@ fun <T : BaseCollector> T.descriptionRes() = when (this) {
     is MediaCollector -> R.string.data_desc_media
     is MessageCollector -> R.string.data_desc_message
     is NotificationCollector -> R.string.data_desc_notification
-    is PhysicalStatCollector -> R.string.data_desc_physical_status
+    is PhysicalStatCollector -> R.string.data_desc_physical_stat
     is PolarH10Collector -> R.string.data_desc_polar_h10
     is SurveyCollector -> R.string.data_desc_survey
     is WifiCollector -> R.string.data_desc_wifi

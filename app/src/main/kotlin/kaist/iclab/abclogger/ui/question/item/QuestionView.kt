@@ -27,8 +27,6 @@ abstract class QuestionView(context: Context, attrs: AttributeSet?) : Constraint
 
         isBound = true
     }
-
-
 }
 
 @BindingAdapter("options", "isAvailable", "showEtc", "responses")

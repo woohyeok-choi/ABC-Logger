@@ -26,7 +26,7 @@ class SplashActivity : BaseAppCompatActivity() {
         lifecycleScope.launchWhenCreated {
             val isSuccessful = try {
 
-                GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this@SplashActivity).toCoroutine()
+                GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this@SplashActivity).toCoroutine(throwable = GooglePlayServiceOutdatedException())
                 requestGoogleSignIn()
 
                 val intent = googleSignInSingle.toCoroutine()

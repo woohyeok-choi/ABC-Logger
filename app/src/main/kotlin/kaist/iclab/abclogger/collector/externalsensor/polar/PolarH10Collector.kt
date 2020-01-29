@@ -66,7 +66,7 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                         sensorId = identifier,
                         name = "PolarH10",
                         description = "ECG",
-                        firstValue = ecg.toString()
+                        firstValue = ecg.toFloat()
                 ).fill(timeMillis = datum.timeStamp)
             }
         }.flatten().also { entity ->
@@ -87,9 +87,9 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                 sensorId = identifier,
                 name = "PolarH10",
                 description = "HR/ContactStatus/ContactStatusSupported",
-                firstValue = heartRate.toString(),
-                secondValue = contactStatus.toString(),
-                thirdValue = contactStatusSupported.toString()
+                firstValue = heartRate.toFloat(),
+                secondValue = if (contactStatus) 1.0F else 0.0F,
+                thirdValue = if (contactStatusSupported) 1.0F else 0.0F
         ).fill(timeMillis = timestamp).also { entity ->
             GlobalScope.launch {
                 ObjBox.put(entity)
@@ -103,10 +103,10 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                         sensorId = identifier,
                         name = "PolarH10",
                         description = "RRsec/RRms/ContactStatus/ContactStatusSupported",
-                        firstValue = rrSec.toString(),
-                        secondValue = rrMs.toString(),
-                        thirdValue = contactStatus.toString(),
-                        fourthValue = contactStatusSupported.toString()
+                        firstValue = rrSec.toFloat(),
+                        secondValue = rrMs.toFloat(),
+                        thirdValue = if (contactStatus) 1.0F else 0.0F,
+                        fourthValue = if (contactStatusSupported) 1.0F else 0.0F
                 ).fill(timeMillis = timestamp)
             }.also { entity ->
                 GlobalScope.launch {

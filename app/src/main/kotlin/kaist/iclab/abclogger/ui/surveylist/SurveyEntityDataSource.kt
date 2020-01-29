@@ -3,6 +3,7 @@ package kaist.iclab.abclogger.ui.surveylist
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
+import io.objectbox.android.ObjectBoxDataSource
 import io.objectbox.query.Query
 import io.objectbox.reactive.DataObserver
 import kaist.iclab.abclogger.EmptySurveyException
@@ -13,7 +14,6 @@ import kotlinx.coroutines.*
 class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
                              private val scope: CoroutineScope) : PositionalDataSource<SurveyEntity>() {
     private val observer = DataObserver<List<SurveyEntity>> { invalidate() }
-
     val status = MutableLiveData<Status>(Status.init())
 
     init {
@@ -22,47 +22,40 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<SurveyEntity>) {
         status.postValue(Status.loading())
-
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    val data = query?.find(params.startPosition.toLong(), params.loadSize.toLong()) ?: listOf()
-                    callback.onResult(data)
-                }
-                status.postValue(Status.success())
-            } catch (e: Exception) {
-                status.postValue(Status.failure(e))
-            }
+        try {
+            val data = query?.find(params.startPosition.toLong(), params.loadSize.toLong())
+                    ?: listOf()
+            callback.onResult(data)
+            status.postValue(Status.success())
+        } catch (e: Exception) {
+            status.postValue(Status.failure(e))
         }
     }
 
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<SurveyEntity>) {
         status.postValue(Status.loading())
 
-        scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    val count = query?.count()?.toInt() ?: 0
-                    if (count == 0) {
-                        throw EmptySurveyException()
-                    }
-                    val position = computeInitialLoadPosition(params, count)
-                    val loadSize = computeInitialLoadSize(params, position, count)
-
-                    val data = query?.find(position.toLong(), loadSize.toLong()) ?: listOf()
-
-                    if (data.size == loadSize) {
-                        callback.onResult(data, position, count)
-                    } else {
-                        invalidate()
-                    }
-                }
-
-                status.postValue(Status.success())
-            } catch (e: Exception) {
-                status.postValue(Status.failure(e))
+        try {
+            val count = query?.count()?.toInt() ?: 0
+            if (count == 0) {
+                callback.onResult(listOf(), 0, 0)
+                throw EmptySurveyException()
             }
+            val position = computeInitialLoadPosition(params, count)
+            val loadSize = computeInitialLoadSize(params, position, count)
+
+            val data = query?.find(position.toLong(), loadSize.toLong()) ?: listOf()
+
+            if (data.size == loadSize) {
+                callback.onResult(data, position, count)
+            } else {
+                invalidate()
+            }
+            status.postValue(Status.success())
+        } catch (e: Exception) {
+            status.postValue(Status.failure(e))
         }
+
     }
 
 
