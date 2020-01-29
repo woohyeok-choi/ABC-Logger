@@ -23,7 +23,7 @@ class App : Application(){
         }
         GlobalScope.launch {
             ABC.bind(this@App)
-            Debug.generateSurveyEntities(100)
+            //Debug.generateSurveyEntities(100)
         }
     }
 
