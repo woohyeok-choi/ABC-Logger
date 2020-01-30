@@ -56,29 +56,42 @@ class SurveyCollector(val context: Context) : BaseCollector {
 
     private val filter = IntentFilter().apply { addAction(ACTION_SURVEY_TRIGGER) }
 
-    private suspend fun handleTrigger(uuid: String?) {
-        val settings = (getStatus() as? Status)?.settings ?: return
-        val curSetting = settings.find { setting -> setting.uuid == uuid } ?: return
-        val survey = curSetting.json?.let { Survey.fromJson(it) } ?: return
-        val curTime = System.currentTimeMillis()
+    private fun checkTriggerCondition(curTime: Long,
+                                      dailyStartTimeHour: Int,
+                                      dailyStartTimeMinute: Int,
+                                      dailyEndTimeHour: Int,
+                                      dailyEndTimeMinute: Int,
+                                      daysOfWeek: Array<DayOfWeek>) : Boolean {
+        val curCalendar = GregorianCalendar.getInstance(TimeZone.getDefault()).apply {
+            timeInMillis = curTime
+        }
+        val curDayOfWeek = DayOfWeek.from(curCalendar.get(Calendar.DAY_OF_WEEK))
+        val curHour = curCalendar.get(Calendar.HOUR_OF_DAY)
+        val curMinute = curCalendar.get(Calendar.MINUTE)
+
+        val dailyStartTimeAsMinute = TimeUnit.HOURS.toMinutes(dailyStartTimeHour.toLong()) + dailyStartTimeMinute
+        val dailyEndTimeAsMinute = TimeUnit.HOURS.toMinutes(dailyEndTimeHour.toLong()) + dailyEndTimeMinute
+        val curTimeAsMinute = TimeUnit.HOURS.toMinutes(curHour.toLong()) + curMinute
+
+        if (curDayOfWeek !in daysOfWeek) return false
+        if (curTimeAsMinute !in (dailyStartTimeAsMinute..dailyEndTimeAsMinute)) return false
+
+        return true
+    }
+
+    private suspend fun notify(curTime: Long, survey: Survey, json: String) {
         val id = SurveyEntity(
                 title = survey.title,
                 message = survey.message,
                 timeoutPolicy = survey.timeoutPolicy,
                 timeoutSec = survey.timeoutSec,
                 deliveredTime = curTime,
-                json = curSetting.json
+                json = json
         ).fill(timeMillis = curTime).let { entity ->
             ObjBox.put(entity)
         }
 
-        if (id <= 0) return
-
-        val updatedSettings = settings.map { setting ->
-            if (setting.uuid == uuid) setting.copy(lastTimeTriggered = curTime) else setting.copy()
-        }
-
-        setStatus(Status(lastTime = curTime, settings = updatedSettings))
+        if (id < 0) return
 
         val surveyIntent = Intent(context, SurveyResponseActivity::class.java).fillExtras(
                 SurveyResponseActivity.EXTRA_ENTITY_ID to id,
@@ -100,10 +113,47 @@ class SurveyCollector(val context: Context) : BaseCollector {
                         context, curTime,
                         DateUtils.FORMAT_NO_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
                 ),
-                intent = pendingIntent
+                intent = pendingIntent,
+                timeoutMs = if (survey.timeoutPolicy == Survey.TIMEOUT_DISABLED) TimeUnit.SECONDS.toMillis(survey.timeoutSec) else null
         )
 
         NotificationManagerCompat.from(context).notify(Notifications.ID_SURVEY_DELIVERED, notification)
+    }
+
+    private suspend fun handleTrigger(uuid: String?) {
+        val settings = (getStatus() as? Status)?.settings ?: return
+        val curSetting = settings.find { setting -> setting.uuid == uuid } ?: return
+        val json = curSetting.json ?: return
+        val survey = json.let { Survey.fromJson(it) } ?: return
+        val curTime = System.currentTimeMillis()
+
+        val updatedSettings = settings.map { setting ->
+            if (setting.uuid == uuid) setting.copy(lastTimeTriggered = curTime) else setting.copy()
+        }
+
+        setStatus(Status(lastTime = curTime, settings = updatedSettings))
+
+        val shouldNotify = when(survey) {
+            is IntervalBasedSurvey -> checkTriggerCondition(
+                    curTime = curTime,
+                    dailyStartTimeHour = survey.dailyStartTimeHour,
+                    dailyStartTimeMinute = survey.dailyStartTimeMinute,
+                    dailyEndTimeHour = survey.dailyEndTimeHour,
+                    dailyEndTimeMinute = survey.dailyEndTimeMinute,
+                    daysOfWeek = survey.daysOfWeek
+            )
+            is EventBasedSurvey -> checkTriggerCondition(
+                    curTime = curTime,
+                    dailyStartTimeHour = survey.dailyStartTimeHour,
+                    dailyStartTimeMinute = survey.dailyStartTimeMinute,
+                    dailyEndTimeHour = survey.dailyEndTimeHour,
+                    dailyEndTimeMinute = survey.dailyEndTimeMinute,
+                    daysOfWeek = survey.daysOfWeek
+            )
+            else -> true
+        }
+
+        if (shouldNotify) notify(curTime, survey, json)
     }
 
     private suspend fun scheduleAll(event: ABCEvent? = null) {

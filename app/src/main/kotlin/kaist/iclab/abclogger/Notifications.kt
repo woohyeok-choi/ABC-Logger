@@ -2,12 +2,14 @@ package kaist.iclab.abclogger
 
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.widget.RemoteViews
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -39,6 +41,7 @@ object Notifications {
                     ongoing = false,
                     showBadge = true,
                     showWhen = true,
+                    autoCancel = true,
                     hasSound = true,
                     hasVibration = true,
                     alertOnce = false
@@ -51,6 +54,7 @@ object Notifications {
                     ongoing = true,
                     showBadge = false,
                     showWhen = false,
+                    autoCancel = false,
                     hasSound = false,
                     hasVibration = false,
                     alertOnce = true
@@ -62,6 +66,7 @@ object Notifications {
                     importance = NotificationManagerCompat.IMPORTANCE_HIGH,
                     ongoing = false,
                     showBadge = false,
+                    autoCancel = false,
                     showWhen = false,
                     hasSound = false,
                     hasVibration = false,
@@ -74,6 +79,7 @@ object Notifications {
                     importance = NotificationManagerCompat.IMPORTANCE_MAX,
                     ongoing = false,
                     showBadge = false,
+                    autoCancel = true,
                     showWhen = false,
                     hasSound = true,
                     hasVibration = true,
@@ -87,6 +93,7 @@ object Notifications {
             val priority: Int,
             val visibility: Int,
             val importance: Int,
+            val autoCancel: Boolean,
             val ongoing: Boolean,
             val showBadge: Boolean,
             val showWhen: Boolean,
@@ -149,6 +156,14 @@ object Notifications {
         buildNotificationChannels(context)
     }
 
+    fun cancel(context: Context, id: Int) {
+        NotificationManagerCompat.from(context).cancel(id)
+    }
+
+    fun cancelAll(context: Context) {
+        NotificationManagerCompat.from(context).cancelAll()
+    }
+
     fun build(context: Context,
               channelId: String,
               title: String? = null,
@@ -156,7 +171,9 @@ object Notifications {
               subText: String? = null,
               intent: PendingIntent? = null,
               @IntRange(from = 0, to = 100) progress: Int? = null,
-              indeterminate: Boolean = false): Notification {
+              indeterminate: Boolean = false,
+              timeoutMs: Long? = null,
+              removeViews: RemoteViews? = null): Notification {
         val setting = NOTIFICATION_SETTINGS[channelId]
                 ?: throw IllegalArgumentException("Invalid channel ID.")
         val timestamp = System.currentTimeMillis()
@@ -170,6 +187,7 @@ object Notifications {
                 .setOnlyAlertOnce(setting.alertOnce)
                 .setShowWhen(setting.showWhen)
                 .setWhen(timestamp)
+                .setAutoCancel(setting.autoCancel)
                 .apply {
                     if (setting.hasSound) setSound(DEFAULT_RINGTONE_URI)
                     if (setting.hasVibration) setVibrate(DEFAULT_VIBRATION_PATTERN)
@@ -177,7 +195,12 @@ object Notifications {
                     text?.let { setContentText(it) }
                     subText?.let { setSubText(it) }
                     intent?.let { setContentIntent(it) }
+                    timeoutMs?.let { setTimeoutAfter(it) }
                     progress?.let { setProgress(100, it, indeterminate) }
+                    if (removeViews != null) {
+                        setCustomContentView(removeViews)
+                        setStyle(NotificationCompat.DecoratedCustomViewStyle())
+                    }
                 }.build()
     }
 }

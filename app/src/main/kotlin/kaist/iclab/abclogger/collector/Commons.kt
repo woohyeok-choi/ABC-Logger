@@ -91,9 +91,10 @@ fun toHash(input: String, start: Int = 0, end: Int = input.length, algorithm: St
     val safeStart = max(0, start)
     val safeEnd = min(input.length, end)
 
+    if (safeStart >= safeEnd || safeEnd > input.length) return input
+
     val subString = input.substring(safeEnd, input.length - 1).toByteArray()
     val bytes = MessageDigest.getInstance(algorithm).digest(subString)
-    println(input.substring(0, if (safeStart < 1) 0 else safeStart - 1))
 
     return input.substring(safeStart, safeEnd) + "\$" +
             bytes.joinToString(separator = "", transform = {

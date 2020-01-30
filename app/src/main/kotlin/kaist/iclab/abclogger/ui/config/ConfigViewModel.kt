@@ -63,11 +63,11 @@ class ConfigViewModel(
     fun logout(onComplete: () -> Unit) = GlobalScope.launch {
         ObjBox.flush(context, true)
         Prefs.clear()
-        Prefs.clear()
         FirebaseAuth.getInstance().signOut()
         GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().toCoroutine()
         abcLogger.stopAll()
         ABC.stopService(context)
+        Notifications.cancelAll(context)
         onComplete.invoke()
     }
 
