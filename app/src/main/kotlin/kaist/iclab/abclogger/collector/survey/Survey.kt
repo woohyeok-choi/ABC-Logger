@@ -32,10 +32,7 @@ enum class DayOfWeek(val id: Int) {
     companion object {
         private val valueMap = enumValues<DayOfWeek>().associateBy { it.id }
 
-        fun now(): DayOfWeek {
-            val dayOfWeek = GregorianCalendar.getInstance(TimeZone.getDefault()).get(GregorianCalendar.DAY_OF_WEEK)
-            return valueMap[dayOfWeek] ?: NONE
-        }
+        fun from(dayOfWeekInt: Int) = valueMap[dayOfWeekInt]
     }
 }
 
@@ -135,7 +132,7 @@ data class IntervalBasedSurvey(
         val dailyStartTimeMinute: Int = -1,
         val dailyEndTimeHour: Int = -1,
         val dailyEndTimeMinute: Int = -1,
-        val daysOfWeek: List<DayOfWeek> = DayOfWeek.values().toList()
+        val daysOfWeek: Array<DayOfWeek> = DayOfWeek.values()
 ) : Survey(TYPE_INTERVAL, title, message, instruction, timeoutSec, timeoutPolicy, questions) {
 
     override fun equals(other: Any?): Boolean {
@@ -157,7 +154,7 @@ data class IntervalBasedSurvey(
         if (dailyStartTimeMinute != other.dailyStartTimeMinute) return false
         if (dailyEndTimeHour != other.dailyEndTimeHour) return false
         if (dailyEndTimeMinute != other.dailyEndTimeMinute) return false
-        if (daysOfWeek != other.daysOfWeek) return false
+        if (!daysOfWeek.contentEquals(other.daysOfWeek)) return false
 
         return true
     }
@@ -176,7 +173,7 @@ data class IntervalBasedSurvey(
         result = 31 * result + dailyStartTimeMinute
         result = 31 * result + dailyEndTimeHour
         result = 31 * result + dailyEndTimeMinute
-        result = 31 * result + daysOfWeek.hashCode()
+        result = 31 * result + daysOfWeek.contentHashCode()
         return result
     }
 }
@@ -196,7 +193,7 @@ data class EventBasedSurvey(
         val dailyStartTimeMinute: Int = -1,
         val dailyEndTimeHour: Int = -1,
         val dailyEndTimeMinute: Int = -1,
-        val daysOfWeek: List<DayOfWeek> = DayOfWeek.values().toList()
+        val daysOfWeek: Array<DayOfWeek> = DayOfWeek.values()
 ) : Survey(TYPE_EVENT, title, message, instruction, timeoutSec, timeoutPolicy, questions) {
 
     override fun equals(other: Any?): Boolean {
@@ -219,7 +216,7 @@ data class EventBasedSurvey(
         if (dailyStartTimeMinute != other.dailyStartTimeMinute) return false
         if (dailyEndTimeHour != other.dailyEndTimeHour) return false
         if (dailyEndTimeMinute != other.dailyEndTimeMinute) return false
-        if (daysOfWeek != other.daysOfWeek) return false
+        if (!daysOfWeek.contentEquals(other.daysOfWeek)) return false
 
         return true
     }
@@ -239,7 +236,7 @@ data class EventBasedSurvey(
         result = 31 * result + dailyStartTimeMinute
         result = 31 * result + dailyEndTimeHour
         result = 31 * result + dailyEndTimeMinute
-        result = 31 * result + daysOfWeek.hashCode()
+        result = 31 * result + daysOfWeek.contentHashCode()
         return result
     }
 }

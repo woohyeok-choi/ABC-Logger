@@ -3,6 +3,7 @@ package kaist.iclab.abclogger
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
@@ -66,7 +67,8 @@ class ABC(vararg collector: BaseCollector) {
             val ntf = Notifications.build(
                     context = this,
                     channelId = Notifications.CHANNEL_ID_FOREGROUND,
-                    title = getString(R.string.ntf_title_service_running)
+                    subText = getString(R.string.ntf_title_service_running),
+                    removeViews = RemoteViews(packageName, R.layout.notification_foreground)
             )
 
             startForeground(Notifications.ID_FOREGROUND, ntf)
