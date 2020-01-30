@@ -1,10 +1,12 @@
 package kaist.iclab.abclogger.collector.externalsensor.polar.setting
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.reactivex.disposables.CompositeDisposable
+import kaist.iclab.abclogger.PolarH10Exception
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
 import kaist.iclab.abclogger.collector.getStatus
@@ -32,8 +34,18 @@ class PolarH10ViewModel(private val context: Context, private val collector: Pol
         override fun ecgFeatureReady(identifier: String) {
             super.ecgFeatureReady(identifier)
             val disposable = polarApi.requestEcgSettings(identifier)
-                    .flatMapPublisher { setting -> polarApi.startEcgStreaming(identifier, setting.maxSettings()) }
-                    .subscribe { data -> ecg.postValue(data.samples.lastOrNull()?.toString() ?: "") }
+                    .flatMapPublisher { setting ->
+                        val maxSetting = try {
+                            setting.maxSettings()
+                        } catch (e: Exception) {
+                            null
+                        } ?: throw PolarH10Exception("Sensor is incorrectly set. Please try once again.")
+                        polarApi.startEcgStreaming(identifier, maxSetting)
+                    }.subscribe{ data ->
+                        Log.d("ZXCV", "ECT")
+                        ecg.postValue(data.samples.lastOrNull()?.toString() ?: "")
+                    }
+
             disposables.add(disposable)
         }
 
@@ -47,6 +59,9 @@ class PolarH10ViewModel(private val context: Context, private val collector: Pol
 
         override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
             state.postValue(context.getString(R.string.general_disconnected))
+            battery.postValue("")
+            heartRate.postValue(null)
+            ecg.postValue(null)
         }
 
         override fun batteryLevelReceived(identifier: String, level: Int) {

@@ -27,7 +27,7 @@ class PolarH10SettingActivity : BaseSettingActivity<LayoutSettingPolarH10Binding
             EditTextDialogFragment.showDialog(
                     fragmentManager = supportFragmentManager,
                     title = getString(R.string.setting_polar_h10_collector_device_id_dialog_title),
-                    content = dataBinding.txtDeviceId.text?.toString() ?: ""
+                    content = viewModel.deviceId.value?.toString() ?: ""
             ) { content -> viewModel.update(content) }
         }
 

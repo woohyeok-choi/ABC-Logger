@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
@@ -33,6 +34,7 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
     }
 
     private val disposables = CompositeDisposable()
+    private val subject: PublishSubject<ExternalSensorEntity> = PublishSubject.create()
 
     private val polarApi by lazy {
         PolarBleApiDefaultImpl.defaultImplementation(
@@ -44,82 +46,36 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
         ).apply {
             setPolarFilter(false)
             setAutomaticReconnection(true)
-            setApiCallback(this@PolarH10Collector)
         }
     }
 
-    private fun handleEcgStreaming(identifier: String) {
-        val disposable = polarApi.requestEcgSettings(identifier)
-                .flatMapPublisher { setting -> polarApi.startEcgStreaming(identifier, setting.maxSettings()) }
-                .buffer(5, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.io())
-                .subscribe { data -> storeEcg(identifier, data) }
-
-        disposables.add(disposable)
-    }
-
-    private fun storeEcg(identifier: String, data: List<PolarEcgData>) {
-        val timestamp = System.currentTimeMillis()
-        data.map { datum ->
-            datum.samples.map { ecg ->
-                ExternalSensorEntity(
-                        sensorId = identifier,
-                        name = "PolarH10",
-                        description = "ECG",
-                        firstValue = ecg.toFloat()
-                ).fill(timeMillis = datum.timeStamp)
-            }
-        }.flatten().also { entity ->
-            GlobalScope.launch {
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = timestamp))
-            }
-        }
-    }
-
-    private fun storeHeartRate(identifier: String, data: PolarHrData) {
-        val timestamp = System.currentTimeMillis()
-        val heartRate = data.hr
-        val contactStatus = data.contactStatus
-        val contactStatusSupported = data.contactStatusSupported
-
-        ExternalSensorEntity(
-                sensorId = identifier,
-                name = "PolarH10",
-                description = "HR/ContactStatus/ContactStatusSupported",
-                firstValue = heartRate.toFloat(),
-                secondValue = if (contactStatus) 1.0F else 0.0F,
-                thirdValue = if (contactStatusSupported) 1.0F else 0.0F
-        ).fill(timeMillis = timestamp).also { entity ->
-            GlobalScope.launch {
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = timestamp))
-            }
-        }
-
-        if (data.rrAvailable) {
-            data.rrs.zip(data.rrsMs).map { (rrSec, rrMs) ->
-                ExternalSensorEntity(
-                        sensorId = identifier,
-                        name = "PolarH10",
-                        description = "RRsec/RRms/ContactStatus/ContactStatusSupported",
-                        firstValue = rrSec.toFloat(),
-                        secondValue = rrMs.toFloat(),
-                        thirdValue = if (contactStatus) 1.0F else 0.0F,
-                        fourthValue = if (contactStatusSupported) 1.0F else 0.0F
-                ).fill(timeMillis = timestamp)
-            }.also { entity ->
-                GlobalScope.launch {
-                    ObjBox.put(entity)
-                    setStatus(Status(lastTime = timestamp))
+    private fun handleEcgStreaming(identifier: String) =
+            polarApi.requestEcgSettings(identifier)
+                .flatMapPublisher {
+                    setting -> polarApi.startEcgStreaming(identifier, setting.maxSettings())
+                }.map { data ->
+                    data.samples.map { ecg ->
+                        ExternalSensorEntity(
+                                sensorId = identifier,
+                                name = "PolarH10",
+                                description = "ECG/mV",
+                                firstValue = ecg.toFloat()
+                        ).fill(timeMillis = data.timeStamp)
+                    }
+                }.buffer(
+                        5, TimeUnit.SECONDS
+                ).subscribeOn(
+                        Schedulers.io()
+                ).subscribe { entities ->
+                    GlobalScope.launch {
+                        ObjBox.put(entities.flatten())
+                        setStatus(Status(lastTime = System.currentTimeMillis()))
+                    }
                 }
-            }
-        }
-    }
 
     override fun ecgFeatureReady(identifier: String) {
         super.ecgFeatureReady(identifier)
-        handleEcgStreaming(identifier)
+        handleEcgStreaming(identifier)?.let { disposables.add(it) }
     }
 
     override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
@@ -145,17 +101,59 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
 
     override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
         super.hrNotificationReceived(identifier, data)
-        storeHeartRate(identifier, data)
+
+        val timestamp = System.currentTimeMillis()
+        val heartRate = data.hr
+        val contactStatus = data.contactStatus
+        val contactStatusSupported = data.contactStatusSupported
+
+        ExternalSensorEntity(
+                sensorId = identifier,
+                name = "PolarH10",
+                description = "HR/ContactStatus/ContactStatusSupported",
+                firstValue = heartRate.toFloat(),
+                secondValue = if (contactStatus) 1.0F else 0.0F,
+                thirdValue = if (contactStatusSupported) 1.0F else 0.0F
+        ).fill(timeMillis = timestamp).let { subject.onNext(it) }
+
+        if (data.rrAvailable) {
+            data.rrs.zip(data.rrsMs).map { (rrSec, rrMs) ->
+                ExternalSensorEntity(
+                        sensorId = identifier,
+                        name = "PolarH10",
+                        description = "RRsec/RRms/ContactStatus/ContactStatusSupported",
+                        firstValue = rrSec.toFloat(),
+                        secondValue = rrMs.toFloat(),
+                        thirdValue = if (contactStatus) 1.0F else 0.0F,
+                        fourthValue = if (contactStatusSupported) 1.0F else 0.0F
+                ).fill(timeMillis = timestamp)
+            }.forEach { subject.onNext(it) }
+        }
     }
 
     override suspend fun onStart() {
         disposables.clear()
+
         polarApi.connectToDevice((getStatus() as? Status)?.deviceId ?: "")
         polarApi.setApiCallback(this)
+
+        val disposable = subject.buffer(
+                10, TimeUnit.SECONDS
+        ).subscribeOn(
+                Schedulers.io()
+        ).subscribe { entities ->
+            GlobalScope.launch {
+                ObjBox.put(entities)
+                setStatus(Status(lastTime = System.currentTimeMillis()))
+            }
+        }
+
+        disposables.add(disposable)
     }
 
     override suspend fun onStop() {
         disposables.clear()
+
         try { polarApi.disconnectFromDevice((getStatus() as? Status)?.deviceId ?: "") } catch (e: Exception) { }
         try { polarApi.setApiCallback(null) } catch (e: Exception) { }
     }

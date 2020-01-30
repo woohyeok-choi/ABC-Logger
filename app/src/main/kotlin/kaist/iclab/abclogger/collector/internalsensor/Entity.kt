@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.collector.sensor
+package kaist.iclab.abclogger.collector.internalsensor
 
 import io.objectbox.annotation.Entity
 import kaist.iclab.abclogger.collector.Base

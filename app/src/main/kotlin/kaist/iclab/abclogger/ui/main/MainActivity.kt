@@ -1,6 +1,7 @@
 package kaist.iclab.abclogger.ui.main
 
 import android.os.Bundle
+import android.transition.Fade
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController

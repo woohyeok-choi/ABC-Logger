@@ -6,10 +6,8 @@ import android.text.InputType
 import android.util.TypedValue
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.core.view.marginLeft
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import kaist.iclab.abclogger.BuildConfig
@@ -20,7 +18,6 @@ import kaist.iclab.abclogger.setHorizontalPadding
 class EditTextDialogFragment : DialogFragment() {
     private lateinit var title: String
     private lateinit var content: String
-    private lateinit var hint: String
 
     private var onPositiveButtonSelected: ((content: String) -> Unit)? = null
 

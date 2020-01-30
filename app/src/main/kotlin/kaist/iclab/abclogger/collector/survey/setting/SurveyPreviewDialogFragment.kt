@@ -37,7 +37,7 @@ class SurveyPreviewDialogFragment : DialogFragment() {
 
         dataBinding.recyclerView.adapter = adapter
 
-        viewModel.questions.observe(this) { questions -> if (questions != null) adapter.questions = questions }
+        viewModel.questions.observe(this) { questions -> questions?.let { adapter.bind(questions = questions, isAvailable = true, showAltText = false) }}
 
         return AlertDialog.Builder(requireContext())
                 .setTitle(R.string.dialog_title_survey_preview)

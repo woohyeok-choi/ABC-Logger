@@ -2,6 +2,7 @@ package kaist.iclab.abclogger.ui.surveylist
 
 import android.content.Intent
 import android.os.Bundle
+import android.transition.Fade
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,7 +40,6 @@ class SurveyListFragment : BaseFragment(){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 

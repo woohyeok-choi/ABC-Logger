@@ -92,6 +92,7 @@ open class Survey(
         const val TIMEOUT_NONE = "NONE"
 
         const val QUESTION_FREE_TEXT = "FREE_TEXT"
+        const val QUESTION_HORIZONTAL_RADIO_BUTTON = "HORIZONTAL_RADIO_BUTTON"
         const val QUESTION_RADIO_BUTTON = "RADIO_BUTTON"
         const val QUESTION_CHECK_BOX = "CHECK_BOX"
         const val QUESTION_SLIDER = "SLIDER"

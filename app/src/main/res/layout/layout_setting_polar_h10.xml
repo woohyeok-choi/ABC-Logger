@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
+        <import type="android.text.TextUtils"/>
         <variable
             name="viewModel"
             type="kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10ViewModel" />
@@ -44,7 +45,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:text="@{viewModel.deviceId}"
+                android:text="@{TextUtils.isEmpty(viewModel.deviceId) ? @string/general_unknown : viewModel.deviceId}"
                 android:textColor="@color/color_message"
                 android:textSize="@dimen/txt_size_text"
                 android:maxLines="5"

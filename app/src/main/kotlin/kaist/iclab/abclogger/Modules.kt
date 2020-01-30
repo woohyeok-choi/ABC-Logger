@@ -16,7 +16,7 @@ import kaist.iclab.abclogger.collector.notification.NotificationCollector
 import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatCollector
 import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
 import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10ViewModel
-import kaist.iclab.abclogger.collector.sensor.SensorCollector
+import kaist.iclab.abclogger.collector.internalsensor.SensorCollector
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.survey.setting.SurveyPreviewViewModel
 import kaist.iclab.abclogger.collector.survey.setting.SurveySettingViewModel

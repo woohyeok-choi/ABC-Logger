@@ -2,10 +2,13 @@ package kaist.iclab.abclogger.ui.question
 
 import android.os.Bundle
 import android.view.*
+import androidx.core.app.SharedElementCallback
 import androidx.core.transition.doOnEnd
+import androidx.core.transition.doOnStart
 import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
+import androidx.recyclerview.widget.DefaultItemAnimator
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.databinding.ActivitySurveyResponseBinding
@@ -16,7 +19,7 @@ import kaist.iclab.abclogger.ui.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.sharedViewNameForTitle
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class SurveyResponseActivity : BaseAppCompatActivity() {
+class SurveyResponseActivity : BaseAppCompatActivity(), ViewTreeObserver.OnPreDrawListener {
     private val viewModel: SurveyResponseViewModel by viewModel()
 
     private lateinit var binding: ActivitySurveyResponseBinding
@@ -28,7 +31,9 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         reactionTime = System.currentTimeMillis()
+
         entityId = intent.getLongExtra(EXTRA_ENTITY_ID, 0)
         showFromList = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
 
@@ -51,33 +56,27 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
         val adapter = SurveyQuestionListAdapter()
 
         binding.recyclerView.adapter = adapter
+        binding.recyclerView.itemAnimator = DefaultItemAnimator()
 
-        viewModel.questions.observe(this) { questions ->
-            questions?.let { adapter.questions = it }
-        }
-
-        viewModel.availableForProgram.observe(this) { isAvailable ->
-            isAvailable?.let {
-                adapter.isAvailable = it
-                showOptionMenu = it
-                invalidateOptionsMenu()
-            }
-        }
-
-        viewModel.showAltText.observe(this) { showAltText ->
-            showAltText?.let { adapter.showAltText = showAltText }
+        viewModel.data.observe(this) { data ->
+            binding.containerDefaultInfo.viewTreeObserver.addOnPreDrawListener(this)
+            data?.let { (questions, isAvailable, showAltText) -> adapter.bind(questions, isAvailable, showAltText) }
         }
 
         if (showFromList) {
             ViewCompat.setTransitionName(binding.txtHeader, sharedViewNameForTitle(entityId))
             ViewCompat.setTransitionName(binding.txtMessage, sharedViewNameForMessage(entityId))
             ViewCompat.setTransitionName(binding.txtDeliveredTime, sharedViewNameForDeliveredTime(entityId))
-
-            window.allowReturnTransitionOverlap = true
-            window.sharedElementEnterTransition.doOnEnd { viewModel.load(entityId) }
-        } else {
-            viewModel.load(entityId)
         }
+        viewModel.load(entityId)
+
+
+     }
+
+    override fun onPreDraw(): Boolean {
+        binding.containerDefaultInfo.viewTreeObserver.removeOnPreDrawListener(this)
+        supportStartPostponedEnterTransition()
+        return true
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -86,9 +85,15 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
         return true
     }
 
+    override fun onBackPressed() {
+        if (showFromList) supportFinishAfterTransition() else finish()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
          return when (item.itemId) {
             android.R.id.home -> {
+                overridePendingTransition(0, 0)
+
                 if (showFromList) supportFinishAfterTransition() else finish()
                 true
             }
@@ -116,4 +121,6 @@ class SurveyResponseActivity : BaseAppCompatActivity() {
         const val EXTRA_SURVEY_MESSAGE = "${BuildConfig.APPLICATION_ID}.EXTRA_SURVEY_MESSAGE"
         const val EXTRA_SURVEY_DELIVERED_TIME = "${BuildConfig.APPLICATION_ID}.EXTRA_SURVEY_DELIVERED_TIME"
     }
+
+
 }

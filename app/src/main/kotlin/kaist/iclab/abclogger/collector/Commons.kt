@@ -27,7 +27,7 @@ import kaist.iclab.abclogger.collector.message.MessageCollector
 import kaist.iclab.abclogger.collector.message.MessageEntity
 import kaist.iclab.abclogger.collector.notification.NotificationCollector
 import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatCollector
-import kaist.iclab.abclogger.collector.sensor.SensorCollector
+import kaist.iclab.abclogger.collector.internalsensor.SensorCollector
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
 import kaist.iclab.abclogger.collector.wifi.WifiCollector

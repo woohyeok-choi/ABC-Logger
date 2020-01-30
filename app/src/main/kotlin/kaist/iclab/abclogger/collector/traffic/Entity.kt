@@ -6,6 +6,7 @@ import kaist.iclab.abclogger.collector.Base
 @Entity
 data class DataTrafficEntity(
         var fromTime: Long = Long.MIN_VALUE,
+        var toTime: Long = Long.MIN_VALUE,
         var rxBytes: Long = Long.MIN_VALUE,
         var txBytes: Long = Long.MIN_VALUE,
         var mobileRxBytes: Long = Long.MIN_VALUE,

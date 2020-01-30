@@ -5,8 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.PublishSubject
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
+import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
 import kaist.iclab.abclogger.collector.keylog.setting.KeyLogSettingActivity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -59,7 +62,6 @@ class KeyLogCollector(val context: Context) : BaseCollector {
                 keyLog.set(handleFocused(nodeText = source.text, eventTime = eventTime))
             }
         }
-
 
         /* 새로 입력한 키 정보(키 타입, 거리 등)를 분석하기 위해 입력 진행 중인 EditText 트래킹 */
         private suspend fun trackNewInput(node: AccessibilityNodeInfo, packageName: String, eventTime: Long, isChunjiin: Boolean) {

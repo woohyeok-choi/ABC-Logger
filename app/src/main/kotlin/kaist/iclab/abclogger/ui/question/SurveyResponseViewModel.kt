@@ -14,12 +14,12 @@ class SurveyResponseViewModel : ViewModel() {
 
     val loadStatus = MutableLiveData<Status>(Status.init())
     val storeStatus = MutableLiveData<Status>(Status.init())
-
     val instruction = Transformations.map(surveyLiveData) { (_, survey) -> survey.instruction }
-    val availableForProgram = Transformations.map(surveyLiveData) { (entity, _) -> entity.isAvailable() }
-    val availableForXml = Transformations.map(surveyLiveData) { (entity, _) -> entity.isAvailable() }
-    val showAltText= Transformations.map(surveyLiveData) { (entity, _) -> entity.showAltText() }
-    val questions = Transformations.map(surveyLiveData) { (_, survey) -> survey.questions }
+    val available = Transformations.map(surveyLiveData) { (entity, _) -> entity.isAvailable() }
+
+    val data = Transformations.map(surveyLiveData) { (entity, survey) ->
+        Triple(survey.questions, entity.isAvailable(), entity.showAltText())
+    }
 
     fun load(entityId: Long) = viewModelScope.launch {
         loadStatus.postValue(Status.loading())
@@ -31,8 +31,8 @@ class SurveyResponseViewModel : ViewModel() {
                         ?: throw InvalidSurveyFormatException()
                 entity to survey
             }
-            surveyLiveData.postValue(data)
             loadStatus.postValue(Status.success())
+            surveyLiveData.postValue(data)
         } catch (e: Exception) {
             loadStatus.postValue(Status.failure(e))
         }
@@ -45,14 +45,15 @@ class SurveyResponseViewModel : ViewModel() {
         storeStatus.postValue(Status.loading())
         try {
             withContext(Dispatchers.IO) {
-                if (questions.value?.all { it.isCorrectlyAnswered() } != true) throw SurveyIncorrectlyAnsweredException()
+                val questions = data.value?.first
+                if (questions?.all { it.isCorrectlyAnswered() } != true) throw SurveyIncorrectlyAnsweredException()
 
                 val entity = ObjBox.boxFor<SurveyEntity>()?.get(entityId)
                         ?: throw InvalidEntityIdException()
                 val survey = Survey.fromJson(entity.json)
                         ?: throw InvalidSurveyFormatException()
 
-                survey.questions = questions.value ?: survey.questions
+                survey.questions = questions
                 entity.reactionTime = reactionTime
                 entity.responseTime = responseTime
                 entity.json = survey.toJson()

@@ -57,6 +57,7 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
 
             DataTrafficEntity(
                     fromTime = prevTime,
+                    toTime = curTime,
                     rxBytes = netTotalRxBytes,
                     txBytes = netTotalTxBytes,
                     mobileRxBytes = netMobileRxBytes,
