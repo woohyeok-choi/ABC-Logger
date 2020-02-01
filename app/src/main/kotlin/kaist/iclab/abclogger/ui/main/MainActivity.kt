@@ -1,7 +1,6 @@
 package kaist.iclab.abclogger.ui.main
 
 import android.os.Bundle
-import android.transition.Fade
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -9,9 +8,8 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.ui.base.BaseAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.RuntimeException
 
 class MainActivity : BaseAppCompatActivity() {
     private var backPressedTime : Long = 0

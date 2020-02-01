@@ -14,8 +14,7 @@ data class SurveyEntity(
         var deliveredTime: Long = 0,
         var reactionTime: Long = 0,
         var responseTime: Long = 0,
-        var json: String = "",
-        @Transient var isResponded: Boolean = responseTime > 0
+        var json: String = ""
 ) : Base() {
     fun isAnswered() : Boolean = responseTime > 0
 

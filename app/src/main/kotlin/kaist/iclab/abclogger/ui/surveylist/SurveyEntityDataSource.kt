@@ -1,5 +1,6 @@
 package kaist.iclab.abclogger.ui.surveylist
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
@@ -11,8 +12,7 @@ import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.*
 
-class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
-                             private val scope: CoroutineScope) : PositionalDataSource<SurveyEntity>() {
+class SurveyEntityDataSource(private val query: Query<SurveyEntity>?) : PositionalDataSource<SurveyEntity>() {
     private val observer = DataObserver<List<SurveyEntity>> { invalidate() }
     val status = MutableLiveData<Status>(Status.init())
 
@@ -21,12 +21,11 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
     }
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<SurveyEntity>) {
-        status.postValue(Status.loading())
         try {
             val data = query?.find(params.startPosition.toLong(), params.loadSize.toLong())
                     ?: listOf()
             callback.onResult(data)
-            status.postValue(Status.success())
+            Log.d(this::class.java.name, "Load Range ${data.size}")
         } catch (e: Exception) {
             status.postValue(Status.failure(e))
         }
@@ -51,6 +50,7 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
             } else {
                 invalidate()
             }
+            Log.d(this::class.java.name, "Load Initial ${data.size}")
             status.postValue(Status.success())
         } catch (e: Exception) {
             status.postValue(Status.failure(e))
@@ -59,11 +59,11 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
     }
 
 
-    class Factory(private val query: Query<SurveyEntity>?, private val scope: CoroutineScope) : DataSource.Factory<Int, SurveyEntity>() {
+    class Factory(private val query: Query<SurveyEntity>?) : DataSource.Factory<Int, SurveyEntity>() {
         val source = MutableLiveData<SurveyEntityDataSource>()
 
         override fun create(): DataSource<Int, SurveyEntity> {
-            val newSource = SurveyEntityDataSource(query, scope)
+            val newSource = SurveyEntityDataSource(query)
             source.postValue(newSource)
             return newSource
         }

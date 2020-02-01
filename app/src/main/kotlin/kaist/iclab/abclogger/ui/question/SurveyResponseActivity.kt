@@ -2,15 +2,12 @@ package kaist.iclab.abclogger.ui.question
 
 import android.os.Bundle
 import android.view.*
-import androidx.core.app.SharedElementCallback
-import androidx.core.transition.doOnEnd
-import androidx.core.transition.doOnStart
 import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.DefaultItemAnimator
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.ui.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.databinding.ActivitySurveyResponseBinding
 
 import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment

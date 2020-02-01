@@ -31,6 +31,8 @@
     <string name="general_disconnected">Disconnected</string>
     <string name="general_connecting">Connecting</string>
     <string name="general_unknown">Unknown</string>
+    <string name="general_n_received"># Received</string>
+    <string name="general_n_answered"># Answered</string>
 
     <string name="config_category_general">General</string>
     <string name="config_category_collector">Collector</string>

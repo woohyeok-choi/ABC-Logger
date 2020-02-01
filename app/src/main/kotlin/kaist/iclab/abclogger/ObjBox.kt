@@ -4,15 +4,12 @@ import android.content.Context
 import androidx.core.app.NotificationManagerCompat
 import io.objectbox.BoxStore
 import io.objectbox.kotlin.boxFor
-import kaist.iclab.abclogger.collector.Base
 import kaist.iclab.abclogger.collector.MyObjectBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.io.FileUtils
 import java.io.File
-import java.lang.Exception
 import java.util.concurrent.atomic.AtomicReference
-
 
 object ObjBox {
     val boxStore: AtomicReference<BoxStore> = AtomicReference()
@@ -93,38 +90,40 @@ object ObjBox {
 
     fun maxSizeInBytes() = Prefs.maxDbSize * 1000L
 
-    inline fun <reified T> boxFor() = boxStore.get()?.boxFor<T>()
+    inline fun <reified T : Any> boxFor() = try { boxStore.get()?.boxFor<T>() } catch (e: Exception) { null }
 
-    inline fun <reified T : Base> putSync(entity: T?): Long {
+    fun <T : Any> boxFor(clazz: Class<T>) = try { boxStore.get()?.boxFor(clazz) } catch (e: Exception) { null }
+
+    inline fun <reified T : Any> putSync(entity: T?): Long {
         entity ?: return -1L
         if (boxStore.get()?.isClosed != false) return -1
 
-        if (BuildConfig.DEBUG) AppLog.d(entity::class.java.name, entity)
-        return boxFor<T>()?.put(entity) ?: -1
+        if (BuildConfig.DEBUG) AppLog.d(T::class.java.name, entity)
+        return try { boxFor<T>()?.put(entity) } catch (e: Exception) { null } ?: -1
     }
 
-    inline fun <reified T : Base> putSync(entities: Collection<T>?) {
+    inline fun <reified T : Any> putSync(entities: Collection<T>?) {
         if (entities.isNullOrEmpty()) return
         if (boxStore.get()?.isClosed != false) return
 
-        if (BuildConfig.DEBUG) AppLog.d(entities::class.java.name, entities)
-        boxFor<T>()?.put(entities)
+        if (BuildConfig.DEBUG) AppLog.d(T::class.java.name, entities)
+        try { boxFor<T>()?.put(entities) } catch (e: Exception) { }
     }
 
-    suspend inline fun <reified T : Base> put(entity: T?): Long = withContext<Long>(Dispatchers.IO) {
+    suspend inline fun <reified T : Any> put(entity: T?): Long = withContext<Long>(Dispatchers.IO) {
         entity ?: return@withContext -1
         if (boxStore.get()?.isClosed != false) return@withContext -1
 
-        if (BuildConfig.DEBUG) AppLog.d(entity::class.java.name, entity)
-        return@withContext boxFor<T>()?.put(entity) ?: -1
+        if (BuildConfig.DEBUG) AppLog.d(T::class.java.name, entity)
+        return@withContext try { boxFor<T>()?.put(entity) } catch (e: Exception) { null } ?: -1
     }
 
-    suspend inline fun <reified T : Base> put(entities: Collection<T>?) = withContext(Dispatchers.IO) {
+    suspend inline fun <reified T : Any> put(entities: Collection<T>?) = withContext(Dispatchers.IO) {
         if (entities.isNullOrEmpty()) return@withContext
         if (boxStore.get()?.isClosed != false) return@withContext
 
-        if (BuildConfig.DEBUG) AppLog.d(entities::class.java.name, entities)
-        boxFor<T>()?.put(entities)
+        if (BuildConfig.DEBUG) AppLog.d(T::class.java.name, entities)
+        try { boxFor<T>()?.put(entities) } catch (e: Exception) { }
     }
 }
 

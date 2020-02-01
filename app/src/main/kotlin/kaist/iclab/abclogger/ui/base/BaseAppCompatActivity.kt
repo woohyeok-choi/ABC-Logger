@@ -1,8 +1,7 @@
-package kaist.iclab.abclogger.base
+package kaist.iclab.abclogger.ui.base
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.util.Log
 import kaist.iclab.abclogger.AppLog
 
 abstract class BaseAppCompatActivity: AppCompatActivity() {

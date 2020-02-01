@@ -1,5 +1,6 @@
 package kaist.iclab.abclogger
 
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
@@ -10,7 +11,6 @@ import com.google.gson.Gson
 import github.agustarc.koap.Koap
 import github.agustarc.koap.gson.GsonSerializer
 import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.base.BaseService
 import kaist.iclab.abclogger.collector.getStatus
 import kaist.iclab.abclogger.collector.start
 import kaist.iclab.abclogger.collector.stop
@@ -54,7 +54,7 @@ class ABC(vararg collector: BaseCollector) {
         }
     }
 
-    class ABCLoggerService : BaseService() {
+    class ABCLoggerService : Service() {
         private val abcLogger: ABC by inject()
 
         override fun onBind(intent: Intent?): IBinder? = null

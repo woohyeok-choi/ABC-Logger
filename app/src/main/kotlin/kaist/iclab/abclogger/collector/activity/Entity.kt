@@ -12,5 +12,5 @@ data class PhysicalActivityTransitionEntity(
 @Entity
 data class PhysicalActivityEntity(
         var type: String = "",
-        var confidence: Int = -1
+        var confidence: Int = Int.MIN_VALUE
 ) : Base()

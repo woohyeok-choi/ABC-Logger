@@ -42,7 +42,6 @@ class PolarH10ViewModel(private val context: Context, private val collector: Pol
                         } ?: throw PolarH10Exception("Sensor is incorrectly set. Please try once again.")
                         polarApi.startEcgStreaming(identifier, maxSetting)
                     }.subscribe{ data ->
-                        Log.d("ZXCV", "ECT")
                         ecg.postValue(data.samples.lastOrNull()?.toString() ?: "")
                     }
 

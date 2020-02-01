@@ -229,7 +229,7 @@
     },
     {
       "id": "5:7923830234545329198",
-      "lastPropertyId": "12:1468610930011348141",
+      "lastPropertyId": "13:3944081941854360063",
       "name": "DataTrafficEntity",
       "properties": [
         {
@@ -276,6 +276,10 @@
         {
           "id": "12:1468610930011348141",
           "name": "mobileTxBytes"
+        },
+        {
+          "id": "13:3944081941854360063",
+          "name": "toTime"
         }
       ],
       "relations": []

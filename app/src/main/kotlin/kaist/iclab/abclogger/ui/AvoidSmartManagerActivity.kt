@@ -3,7 +3,7 @@ package kaist.iclab.abclogger.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import kaist.iclab.abclogger.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.ui.base.BaseAppCompatActivity
 
 class AvoidSmartManagerActivity: BaseAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

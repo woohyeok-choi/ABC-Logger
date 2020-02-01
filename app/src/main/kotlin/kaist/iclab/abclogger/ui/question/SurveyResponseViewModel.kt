@@ -2,14 +2,17 @@ package kaist.iclab.abclogger.ui.question
 
 import androidx.lifecycle.*
 import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.collector.getStatus
+import kaist.iclab.abclogger.collector.setStatus
 import kaist.iclab.abclogger.collector.survey.Survey
+import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SurveyResponseViewModel : ViewModel() {
+class SurveyResponseViewModel(private val collector: SurveyCollector) : ViewModel() {
     private val surveyLiveData = MutableLiveData<Pair<SurveyEntity, Survey>>()
 
     val loadStatus = MutableLiveData<Status>(Status.init())
@@ -59,6 +62,9 @@ class SurveyResponseViewModel : ViewModel() {
                 entity.json = survey.toJson()
 
                 ObjBox.put(entity)
+
+                val nResponded = (collector.getStatus() as? SurveyCollector.Status)?.nAnswered ?: 0
+                collector.setStatus(SurveyCollector.Status(nAnswered = nResponded + 1))
             }
             storeStatus.postValue(Status.success())
             onSuccess?.invoke()

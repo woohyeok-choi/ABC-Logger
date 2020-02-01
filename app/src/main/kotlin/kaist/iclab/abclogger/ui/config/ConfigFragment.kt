@@ -9,14 +9,11 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.NotificationManagerCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.base.BaseFragment
+import kaist.iclab.abclogger.ui.base.BaseFragment
 import kaist.iclab.abclogger.databinding.FragmentConfigBinding
-import kaist.iclab.abclogger.ui.Status
 import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment
 import kaist.iclab.abclogger.ui.splash.SplashActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel

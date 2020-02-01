@@ -2,7 +2,6 @@ package kaist.iclab.abclogger.ui.surveylist
 
 import android.content.Intent
 import android.os.Bundle
-import android.transition.Fade
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseFragment
+import kaist.iclab.abclogger.ui.base.BaseFragment
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.databinding.FragmentSurveyListBinding
 import kaist.iclab.abclogger.databinding.SurveyListItemBinding

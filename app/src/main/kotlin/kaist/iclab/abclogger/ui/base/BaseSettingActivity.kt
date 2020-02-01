@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.base
+package kaist.iclab.abclogger.ui.base
 
 import android.app.Activity
 import android.os.Bundle

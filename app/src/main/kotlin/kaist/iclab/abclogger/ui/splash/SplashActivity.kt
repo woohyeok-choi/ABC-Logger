@@ -14,7 +14,7 @@ import com.tedpark.tedpermission.rx2.TedRx2Permission
 import io.reactivex.subjects.SingleSubject
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.ui.base.BaseAppCompatActivity
 import kaist.iclab.abclogger.ui.main.MainActivity
 import kotlinx.coroutines.delay
 import org.koin.android.ext.android.inject
