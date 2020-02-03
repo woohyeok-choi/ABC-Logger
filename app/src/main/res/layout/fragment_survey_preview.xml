@@ -5,9 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <import type="kaist.iclab.abclogger.ui.Status" />
-
         <import type="android.view.View" />
 
         <variable

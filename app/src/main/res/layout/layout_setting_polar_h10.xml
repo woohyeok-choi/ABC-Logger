@@ -118,7 +118,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.3" />
+                    app:layout_constraintGuide_percent="0.5" />
 
                 <TextView
                     android:id="@+id/txt_label_connection_state"
@@ -167,7 +167,7 @@
                     android:gravity="center_horizontal"
                     android:paddingTop="@dimen/item_default_vertical_padding"
                     android:paddingBottom="@dimen/item_default_vertical_padding"
-                    android:text="@{viewModel.battery}"
+                    android:text="@{viewModel.battery ?? @string/general_unknown}"
                     android:textColor="@color/color_message"
                     android:textSize="@dimen/txt_size_text"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -194,12 +194,39 @@
                     android:gravity="center_horizontal"
                     android:paddingTop="@dimen/item_default_vertical_padding"
                     android:paddingBottom="@dimen/item_default_vertical_padding"
-                    android:text="@{viewModel.heartRate}"
+                    android:text="@{viewModel.heartRate ?? @string/general_unknown}"
                     android:textColor="@color/color_message"
                     android:textSize="@dimen/txt_size_text"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/guideline"
                     app:layout_constraintTop_toBottomOf="@id/txt_battery_state" />
+
+                <TextView
+                    android:id="@+id/txt_label_rr_interval"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@string/setting_polar_h10_collector_rr_interval"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="@id/guideline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/txt_label_heart_rate" />
+
+                <TextView
+                    android:id="@+id/txt_rr_interval"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:paddingTop="@dimen/item_default_vertical_padding"
+                    android:paddingBottom="@dimen/item_default_vertical_padding"
+                    android:text="@{viewModel.rrInterval ?? @string/general_unknown}"
+                    android:textColor="@color/color_message"
+                    android:textSize="@dimen/txt_size_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/guideline"
+                    app:layout_constraintTop_toBottomOf="@id/txt_heart_rate" />
 
                 <TextView
                     android:id="@+id/txt_label_ecg"
@@ -212,7 +239,7 @@
                     android:textSize="@dimen/txt_size_text"
                     app:layout_constraintEnd_toEndOf="@id/guideline"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/txt_label_heart_rate" />
+                    app:layout_constraintTop_toBottomOf="@id/txt_label_rr_interval" />
 
                 <TextView
                     android:id="@+id/txt_ecg"
@@ -221,12 +248,12 @@
                     android:gravity="center_horizontal"
                     android:paddingTop="@dimen/item_default_vertical_padding"
                     android:paddingBottom="@dimen/item_default_vertical_padding"
-                    android:text="@{viewModel.ecg}"
+                    android:text="@{viewModel.ecg ?? @string/general_unknown}"
                     android:textColor="@color/color_message"
                     android:textSize="@dimen/txt_size_text"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/guideline"
-                    app:layout_constraintTop_toBottomOf="@id/txt_heart_rate" />
+                    app:layout_constraintTop_toBottomOf="@id/txt_rr_interval" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

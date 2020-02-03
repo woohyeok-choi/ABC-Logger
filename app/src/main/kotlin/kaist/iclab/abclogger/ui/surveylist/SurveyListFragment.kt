@@ -2,6 +2,7 @@ package kaist.iclab.abclogger.ui.surveylist
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,8 +43,10 @@ class SurveyListFragment : BaseFragment(){
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        binding.recyclerView.addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
-        binding.recyclerView.itemAnimator = DefaultItemAnimator()
+        binding.recyclerView.apply {
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+            itemAnimator = DefaultItemAnimator()
+        }
 
         val adapter = SurveyListAdapter().apply {
             onItemClick = { item: SurveyEntity?, binding: SurveyListItemBinding ->
@@ -67,9 +70,10 @@ class SurveyListFragment : BaseFragment(){
         }
 
         binding.recyclerView.adapter = adapter
-
         binding.swipeLayout.setOnRefreshListener { viewModel.refresh() }
-
-        viewModel.entities.observe(this) { data -> if (data != null) adapter.submitList(data) }
+        viewModel.entities.observe(this) { data -> if (data != null)
+            adapter.submitList(data)
+            Log.d("ZXCV", "${data.size}")
+        }
     }
 }

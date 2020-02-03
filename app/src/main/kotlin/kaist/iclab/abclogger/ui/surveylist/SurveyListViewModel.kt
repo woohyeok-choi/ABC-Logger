@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import io.objectbox.android.ObjectBoxDataSource
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.R
@@ -14,6 +15,7 @@ import kaist.iclab.abclogger.collector.survey.SurveyEntity_
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 
 
 class SurveyListViewModel(private val context: Context, private val collector: SurveyCollector) : ViewModel() {
@@ -36,19 +38,12 @@ class SurveyListViewModel(private val context: Context, private val collector: S
         }
     }
 
-
     private val factory = SurveyEntityDataSource.Factory(
             query = ObjBox.boxFor<SurveyEntity>()?.query()?.orderDesc(SurveyEntity_.deliveredTime)?.build()
     )
 
-    private val config = PagedList.Config.Builder()
-            .setPageSize(60)
-            .setInitialLoadSizeHint(20)
-            .setEnablePlaceholders(true)
-            .build()
-
-    val entities = LivePagedListBuilder(factory, config)
-            .setFetchExecutor(Dispatchers.IO.asExecutor()).build()
+    val entities = LivePagedListBuilder(factory, 20)
+            .setFetchExecutor(Executors.newSingleThreadExecutor()).build()
 
     val status = Transformations.switchMap(factory.source) { source -> source.status }
 

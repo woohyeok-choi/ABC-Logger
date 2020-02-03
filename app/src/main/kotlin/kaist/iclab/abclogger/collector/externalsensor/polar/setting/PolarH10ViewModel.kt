@@ -1,17 +1,13 @@
 package kaist.iclab.abclogger.collector.externalsensor.polar.setting
 
 import android.content.Context
-import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import io.reactivex.disposables.CompositeDisposable
 import kaist.iclab.abclogger.PolarH10Exception
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
 import kaist.iclab.abclogger.collector.getStatus
 import kaist.iclab.abclogger.collector.setStatus
-import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import polar.com.sdk.api.PolarBleApi
@@ -24,9 +20,10 @@ import java.lang.Exception
 class PolarH10ViewModel(private val context: Context, private val collector: PolarH10Collector): ViewModel() {
     val deviceId : MutableLiveData<String> = MutableLiveData()
     val state : MutableLiveData<String> = MutableLiveData(context.getString(R.string.general_disconnected))
-    val battery : MutableLiveData<String> = MutableLiveData("0")
-    val heartRate: MutableLiveData<String> = MutableLiveData("0")
-    val ecg: MutableLiveData<String> = MutableLiveData("0")
+    val battery : MutableLiveData<String> = MutableLiveData()
+    val heartRate: MutableLiveData<String> = MutableLiveData()
+    val rrInterval: MutableLiveData<String> = MutableLiveData()
+    val ecg: MutableLiveData<String> = MutableLiveData()
 
     private var disposables: CompositeDisposable = CompositeDisposable()
 
@@ -58,8 +55,10 @@ class PolarH10ViewModel(private val context: Context, private val collector: Pol
 
         override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
             state.postValue(context.getString(R.string.general_disconnected))
-            battery.postValue("")
+
+            battery.postValue(null)
             heartRate.postValue(null)
+            rrInterval.postValue(null)
             ecg.postValue(null)
         }
 
@@ -71,6 +70,7 @@ class PolarH10ViewModel(private val context: Context, private val collector: Pol
         override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
             super.hrNotificationReceived(identifier, data)
             heartRate.postValue(data.hr.toString())
+            rrInterval.postValue(data.rrs?.lastOrNull()?.toString())
         }
     }
 
@@ -104,8 +104,10 @@ class PolarH10ViewModel(private val context: Context, private val collector: Pol
             polarApi.connectToDevice(deviceId.value ?: "")
         } catch (e: Exception) {
             state.postValue(context.getString(R.string.general_disconnected))
-            battery.postValue("")
+
+            battery.postValue(null)
             heartRate.postValue(null)
+            rrInterval.postValue(null)
             ecg.postValue(null)
         }
     }

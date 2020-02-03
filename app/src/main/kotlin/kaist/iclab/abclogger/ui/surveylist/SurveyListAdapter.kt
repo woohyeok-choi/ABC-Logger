@@ -23,7 +23,10 @@ class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHo
         val binding : SurveyListItemBinding = DataBindingUtil.inflate(
                 LayoutInflater.from(parent.context), R.layout.survey_list_item, parent,false
         )
-        return ViewHolder(binding)
+
+        return ViewHolder(binding) { position ->
+            onItemClick?.invoke(getItem(position), binding)
+        }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -31,10 +34,6 @@ class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHo
 
         holder.binding.entity = item
         holder.binding.isAvailable = item.isAvailable()
-
-        holder.setOnClick {
-            onItemClick?.invoke(item, holder.binding)
-        }
 
         ViewCompat.setTransitionName(
                 holder.binding.txtHeader,
@@ -50,9 +49,9 @@ class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHo
         )
     }
 
-    class ViewHolder (val binding: SurveyListItemBinding): RecyclerView.ViewHolder(binding.root) {
-        fun setOnClick(onClick: (() -> Unit)? = null) {
-            itemView.setOnClickListener { onClick?.invoke() }
+    class ViewHolder (val binding: SurveyListItemBinding, val onClick: ((position: Int) -> Unit)): RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.root.setOnClickListener { onClick.invoke(adapterPosition) }
         }
     }
 

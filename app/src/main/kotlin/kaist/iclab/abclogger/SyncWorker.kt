@@ -1,12 +1,9 @@
-package kaist.iclab.abclogger.sync
+package kaist.iclab.abclogger
 
 import android.content.Context
 import androidx.work.*
 import io.grpc.android.AndroidChannelBuilder
 import io.objectbox.EntityInfo
-import io.objectbox.query.Query
-import kaist.iclab.abclogger.BuildConfig
-import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.collector.Base
 import kaist.iclab.abclogger.collector.activity.PhysicalActivityEntity
 import kaist.iclab.abclogger.collector.activity.PhysicalActivityTransitionEntity
@@ -31,16 +28,80 @@ import kaist.iclab.abclogger.grpc.DataOperationsCoroutineGrpc
 import kaist.iclab.abclogger.grpc.DatumProto
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.min
 
 
 class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    private val foregroundInfo = ForegroundInfo(
+            Notifications.ID_SYNC_PROGRESS,
+            Notifications.build(
+                    context = applicationContext,
+                    channelId = Notifications.CHANNEL_ID_PROGRESS,
+                    title = applicationContext.getString(R.string.ntf_title_sync),
+                    text = applicationContext.getString(R.string.ntf_text_sync),
+                    progress = 0,
+                    indeterminate = true
+            )
+    )
 
     override suspend fun doWork(): Result {
+        setForeground(foregroundInfo)
+
+        val timestamp = System.currentTimeMillis()
+
         ObjBox.boxStore.get().allEntityClasses.forEach { clazz ->
-            val uploaded = query(clazz)?.find()?.let { upload(it) }
-            ObjBox.put(uploaded)
+            try {
+                val entities = if (clazz == SurveyEntity::class.java) {
+                    findSurvey()
+                } else {
+                    find(clazz)
+                }
+                val uploaded = entities?.let { upload(it) }
+                ObjBox.put(uploaded)
+            } catch (e: Exception) {
+                AppLog.ee(e)
+                e.printStackTrace()
+            }
         }
-        TODO()
+        Prefs.lastTimeDataSync = timestamp
+
+        if (timestamp - Prefs.lastTimeDataFlush >= INTERVAL_FLUSH) {
+            ObjBox.boxStore.get().allEntityClasses.forEach { clazz ->
+                try {
+                    remove(clazz)
+                } catch (e: Exception) {
+                    AppLog.ee(e)
+                    e.printStackTrace()
+                }
+            }
+
+            Prefs.lastTimeDataFlush = timestamp
+        }
+
+        return Result.success()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> find(clazz: Class<T>) : Collection<T>? {
+        val box = ObjBox.boxFor(clazz) ?: return null
+        val properties = (box.entityInfo as? EntityInfo<T>)?.allProperties ?: return null
+        val isUploaded = properties.find { property -> property.name == "isUploaded" } ?: return null
+
+        return box.query().equal(isUploaded, false).build()?.find()
+    }
+
+    private fun findSurvey() : Collection<SurveyEntity>? {
+        val box = ObjBox.boxFor<SurveyEntity>() ?: return null
+        return box.query().filter { entity -> !entity.isAvailable() && !entity.isUploaded }.build()?.find()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> remove(clazz: Class<T>) {
+        val box = ObjBox.boxFor(clazz) ?: return
+        val properties = (box.entityInfo as? EntityInfo<T>)?.allProperties ?: return
+        val isUploaded = properties.find { property -> property.name == "isUploaded" } ?: return
+
+        box.query().equal(isUploaded, true).build().remove()
     }
 
     private suspend inline fun <reified T : Any> upload(entities: Collection<T>) = withContext(Dispatchers.IO) {
@@ -68,19 +129,6 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             }
             entity
         }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T : Any> query(clazz: Class<T>) : Query<T>? {
-        val box = ObjBox.boxFor(clazz) ?: return null
-        val properties = (box.entityInfo as? EntityInfo<T>)?.allProperties ?: return null
-        val isUploaded = properties.find { property -> property.name == "isUploaded" } ?: return null
-        val responseTime = properties.find { property -> property.name == "responseTime" }
-
-        return if (responseTime != null)
-            box.query().equal(isUploaded, false).greater(isUploaded, 0).build()
-        else
-            box.query().equal(isUploaded, false).build()
     }
 
     private fun <T> toProto(entity: T) : DatumProto.Datum? {
@@ -277,13 +325,21 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
     }
 
     companion object {
-        fun requestSync(context: Context, enableMetered: Boolean, forceStart: Boolean) {
+        private val INTERVAL_SYNC = TimeUnit.HOURS.toMillis(1)
+        private val INTERVAL_FLUSH = TimeUnit.HOURS.toMillis(3)
+
+        fun requestStart(context: Context, forceStart: Boolean, enableMetered: Boolean? = null) {
+            if (enableMetered != null) Prefs.canUploadMeteredNetwork = enableMetered
+
             val constraints = Constraints.Builder()
-                    .setRequiredNetworkType(if (enableMetered) NetworkType.NOT_ROAMING else NetworkType.UNMETERED)
+                    .setRequiredNetworkType(if (Prefs.canUploadMeteredNetwork) NetworkType.NOT_ROAMING else NetworkType.UNMETERED)
                     .build()
 
-            val request = PeriodicWorkRequestBuilder<SyncWorker>(1, TimeUnit.HOURS)
+            val initDelay = if(forceStart) 0L else INTERVAL_SYNC
+
+            val request = PeriodicWorkRequestBuilder<SyncWorker>(INTERVAL_SYNC, TimeUnit.MILLISECONDS)
                     .setConstraints(constraints)
+                    .setInitialDelay(initDelay, TimeUnit.MILLISECONDS)
                     .build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(

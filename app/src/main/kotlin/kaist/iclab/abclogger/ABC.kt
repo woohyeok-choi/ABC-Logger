@@ -67,8 +67,7 @@ class ABC(vararg collector: BaseCollector) {
             val ntf = Notifications.build(
                     context = this,
                     channelId = Notifications.CHANNEL_ID_FOREGROUND,
-                    subText = getString(R.string.ntf_title_service_running),
-                    removeViews = RemoteViews(packageName, R.layout.notification_foreground)
+                    title = getString(R.string.ntf_title_service_running)
             )
 
             startForeground(Notifications.ID_FOREGROUND, ntf)

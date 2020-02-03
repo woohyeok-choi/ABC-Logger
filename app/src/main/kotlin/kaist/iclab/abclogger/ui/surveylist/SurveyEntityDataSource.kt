@@ -1,16 +1,13 @@
 package kaist.iclab.abclogger.ui.surveylist
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
-import io.objectbox.android.ObjectBoxDataSource
 import io.objectbox.query.Query
 import io.objectbox.reactive.DataObserver
 import kaist.iclab.abclogger.EmptySurveyException
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.ui.Status
-import kotlinx.coroutines.*
 
 class SurveyEntityDataSource(private val query: Query<SurveyEntity>?) : PositionalDataSource<SurveyEntity>() {
     private val observer = DataObserver<List<SurveyEntity>> { invalidate() }
@@ -25,7 +22,6 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>?) : Position
             val data = query?.find(params.startPosition.toLong(), params.loadSize.toLong())
                     ?: listOf()
             callback.onResult(data)
-            Log.d(this::class.java.name, "Load Range ${data.size}")
         } catch (e: Exception) {
             status.postValue(Status.failure(e))
         }
@@ -50,7 +46,6 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>?) : Position
             } else {
                 invalidate()
             }
-            Log.d(this::class.java.name, "Load Initial ${data.size}")
             status.postValue(Status.success())
         } catch (e: Exception) {
             status.postValue(Status.failure(e))

@@ -8,6 +8,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.SyncWorker
 import kaist.iclab.abclogger.ui.base.BaseAppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -24,7 +25,7 @@ class MainActivity : BaseAppCompatActivity() {
         crashlytics.sendUnsentReports()
 
         ABC.startService(this)
-
+        SyncWorker.requestStart(this, false)
 
         val navController = navigation_host_fragment.findNavController()
         val config = AppBarConfiguration(

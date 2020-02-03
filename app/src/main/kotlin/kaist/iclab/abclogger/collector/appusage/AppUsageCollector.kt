@@ -93,7 +93,6 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         }
 
         setStatus(Status(lastTimeAccessed = curTime))
-
     }
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {

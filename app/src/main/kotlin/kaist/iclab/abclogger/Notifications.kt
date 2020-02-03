@@ -24,7 +24,7 @@ object Notifications {
 
     const val ID_SURVEY_DELIVERED = 0x01
     const val ID_FOREGROUND = 0x02
-    const val ID_UPLOAD_PROGRESS = 0x03
+    const val ID_SYNC_PROGRESS = 0x03
     const val ID_FLUSH_PROGRESS = 0x04
     const val ID_REQUIRE_SETTING = 0x05
 
