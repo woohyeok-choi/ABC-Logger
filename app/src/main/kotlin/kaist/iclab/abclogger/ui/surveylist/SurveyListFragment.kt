@@ -21,6 +21,7 @@ import kaist.iclab.abclogger.ui.question.SurveyResponseActivity
 import kaist.iclab.abclogger.ui.sharedViewNameForDeliveredTime
 import kaist.iclab.abclogger.ui.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.sharedViewNameForTitle
+import org.koin.android.ext.android.bind
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.core.util.Pair as UtilPair
 
@@ -71,9 +72,8 @@ class SurveyListFragment : BaseFragment(){
 
         binding.recyclerView.adapter = adapter
         binding.swipeLayout.setOnRefreshListener { viewModel.refresh() }
-        viewModel.entities.observe(this) { data -> if (data != null)
-            adapter.submitList(data)
-            Log.d("ZXCV", "${data.size}")
-        }
+
+        viewModel.isRefreshing.observe(this) { isRefreshing -> binding.swipeLayout.isRefreshing = isRefreshing }
+        viewModel.entities.observe(this) { data -> data?.let { adapter.submitList(data) } }
     }
 }

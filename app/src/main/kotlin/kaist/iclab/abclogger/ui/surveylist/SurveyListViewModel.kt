@@ -12,6 +12,7 @@ import kaist.iclab.abclogger.collector.getStatus
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.collector.survey.SurveyEntity_
+import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.launch
@@ -46,6 +47,8 @@ class SurveyListViewModel(private val context: Context, private val collector: S
             .setFetchExecutor(Executors.newSingleThreadExecutor()).build()
 
     val status = Transformations.switchMap(factory.source) { source -> source.status }
+
+    val isRefreshing = Transformations.map(status) { status -> status?.state == Status.STATE_LOADING }
 
     fun refresh() = viewModelScope.launch(Dispatchers.IO) {
         entities.value?.dataSource?.invalidate()

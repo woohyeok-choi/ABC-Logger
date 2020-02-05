@@ -1,5 +1,6 @@
 package kaist.iclab.abclogger
 
+import android.util.Log
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import java.util.concurrent.TimeUnit
 
@@ -166,7 +167,7 @@ object Debug {
         val time = System.currentTimeMillis()
         (0..size).map {
             SurveyEntity(
-                    title = "$it 감정 설문이 도착했습니다",
+                    title = "$it",
                     message = "설문에 응답해주세요",
                     timeoutSec = 600,
                     timeoutPolicy = "DISABLED",
@@ -174,6 +175,15 @@ object Debug {
                     json = testJson
             )
         }.let { ObjBox.put(it) }
+
+        val query = ObjBox.boxFor<SurveyEntity>()?.query()?.build() ?: return
+        val count = query.count()
+
+        for (offset in 0 until count step 5) {
+            val s = query.find(offset, 5)
+            if (s.isEmpty()) break
+            Log.d("Test", "First = ${s.firstOrNull()?.title}/Last = ${s.lastOrNull()?.title}")
+        }
     }
 
     private val testJson = """

@@ -28,13 +28,13 @@ android {
         applicationId 'kaist.iclab.abclogger'
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 9
-        versionName "0.9.5-b"
+        versionCode 10
+        versionName "0.9.6"
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
         buildConfigField("String", "DB_NAME", "\"abc-logger\"")
         buildConfigField("String", "PREF_NAME", "\"abc-logger-pref\"")
         buildConfigField("Long", "DB_MAX_SIZE", "3145728L")
-        buildConfigField("String", "SERVER_ADDRESS", "\"143.248.90.87:50051\"")
+        buildConfigField("String", "SERVER_ADDRESS", "\"143.248.100.24:50052\"")
     }
     buildTypes {
         release {
@@ -47,6 +47,7 @@ android {
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
         test.java.srcDirs += 'src/test/kotlin'
+        main.proto.srcDirs += 'grpc'
     }
     compileOptions {
         sourceCompatibility = '1.8'
@@ -56,14 +57,6 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
     productFlavors {
-    }
-
-    sourceSets {
-        main {
-            proto {
-                srcDir "grpc"
-            }
-        }
     }
 }
 
@@ -118,7 +111,7 @@ dependencies {
     implementation 'androidx.media:media:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
 
     /**
      * Google GMS libraries for login, location, and fitness data retrieval
@@ -181,6 +174,7 @@ dependencies {
      * Other utils
      */
     implementation 'commons-io:commons-io:2.6'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
 }
 
 

@@ -10,13 +10,14 @@ import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
 import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10SettingActivity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.launch
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
 import polar.com.sdk.api.PolarBleApiDefaultImpl
 import polar.com.sdk.api.model.PolarDeviceInfo
-import polar.com.sdk.api.model.PolarEcgData
 import polar.com.sdk.api.model.PolarHrData
 import java.lang.Exception
 import java.util.concurrent.TimeUnit
@@ -51,27 +52,29 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
 
     private fun handleEcgStreaming(identifier: String) =
             polarApi.requestEcgSettings(identifier)
-                .flatMapPublisher {
-                    setting -> polarApi.startEcgStreaming(identifier, setting.maxSettings())
-                }.map { data ->
-                    data.samples.map { ecg ->
-                        ExternalSensorEntity(
-                                sensorId = identifier,
-                                name = "PolarH10",
-                                description = "ECG/mV",
-                                firstValue = ecg.toFloat()
-                        ).fill(timeMillis = data.timeStamp)
+                    .flatMapPublisher { setting ->
+                        polarApi.startEcgStreaming(identifier, setting.maxSettings())
+                    }.map { data ->
+                        data.samples.map { ecg ->
+                            ExternalSensorEntity(
+                                    sensorId = identifier,
+                                    name = "PolarH10",
+                                    description = "ECG/mV",
+                                    firstValue = ecg.toFloat()
+                            ).fill(timeMillis = data.timeStamp)
+                        }
+                    }.buffer(
+                            5, TimeUnit.SECONDS
+                    ).observeOn(
+                            Schedulers.from(Dispatchers.IO.asExecutor())
+                    ).subscribeOn(
+                            Schedulers.from(Dispatchers.IO.asExecutor())
+                    ).subscribe { entities ->
+                        GlobalScope.launch {
+                            ObjBox.put(entities.flatten())
+                            setStatus(Status(lastTime = System.currentTimeMillis()))
+                        }
                     }
-                }.buffer(
-                        5, TimeUnit.SECONDS
-                ).subscribeOn(
-                        Schedulers.io()
-                ).subscribe { entities ->
-                    GlobalScope.launch {
-                        ObjBox.put(entities.flatten())
-                        setStatus(Status(lastTime = System.currentTimeMillis()))
-                    }
-                }
 
     override fun ecgFeatureReady(identifier: String) {
         super.ecgFeatureReady(identifier)
@@ -154,8 +157,14 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
     override suspend fun onStop() {
         disposables.clear()
 
-        try { polarApi.disconnectFromDevice((getStatus() as? Status)?.deviceId ?: "") } catch (e: Exception) { }
-        try { polarApi.setApiCallback(null) } catch (e: Exception) { }
+        try {
+            polarApi.disconnectFromDevice((getStatus() as? Status)?.deviceId ?: "")
+        } catch (e: Exception) {
+        }
+        try {
+            polarApi.setApiCallback(null)
+        } catch (e: Exception) {
+        }
     }
 
     override suspend fun checkAvailability(): Boolean = !(getStatus() as? Status)?.deviceId.isNullOrBlank() && context.checkPermission(requiredPermissions)

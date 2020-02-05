@@ -49,7 +49,7 @@ class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHo
         )
     }
 
-    class ViewHolder (val binding: SurveyListItemBinding, val onClick: ((position: Int) -> Unit)): RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder (val binding: SurveyListItemBinding, private val onClick: ((position: Int) -> Unit)): RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener { onClick.invoke(adapterPosition) }
         }

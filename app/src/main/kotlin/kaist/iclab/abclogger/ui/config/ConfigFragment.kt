@@ -87,14 +87,14 @@ class ConfigFragment : BaseFragment(), SharedPreferences.OnSharedPreferenceChang
                     PrefKeys.PERMISSION -> startPermissionActivity()
                     PrefKeys.MAX_DB_SIZE -> {
                         YesNoDialogFragment.showDialog(
-                                requireFragmentManager(),
+                                parentFragmentManager,
                                 getString(R.string.dialog_title_flush_data),
                                 getString(R.string.dialog_message_flush_data)
                         ) { viewModel.flush() }
                     }
                     PrefKeys.LOGOUT -> {
                         YesNoDialogFragment.showDialog(
-                                requireFragmentManager(),
+                                parentFragmentManager,
                                 getString(R.string.dialog_title_sign_out),
                                 getString(R.string.dialog_message_sign_out)
                         ) { viewModel.logout { startSplashActivity() } }

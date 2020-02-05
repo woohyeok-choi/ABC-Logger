@@ -5,11 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.subjects.PublishSubject
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
-import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
 import kaist.iclab.abclogger.collector.keylog.setting.KeyLogSettingActivity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
