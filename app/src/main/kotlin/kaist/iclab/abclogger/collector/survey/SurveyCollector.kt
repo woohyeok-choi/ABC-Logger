@@ -27,6 +27,8 @@ class SurveyCollector(val context: Context) : BaseCollector {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val startTime: Long? = null,
+                      val nReceived: Int? = null,
+                      val nAnswered: Int? = null,
                       val settings: List<Setting>? = null) : BaseStatus() {
         override fun info(): String = ""
 
@@ -153,7 +155,13 @@ class SurveyCollector(val context: Context) : BaseCollector {
             else -> true
         }
 
-        if (shouldNotify) notify(curTime, survey, json)
+        if (shouldNotify) {
+            notify(curTime, survey, json)
+
+            val nDelivered = (getStatus() as? Status)?.nReceived ?: 0
+
+            setStatus(Status(nReceived = nDelivered + 1))
+        }
     }
 
     private suspend fun scheduleAll(event: ABCEvent? = null) {
@@ -299,7 +307,8 @@ class SurveyCollector(val context: Context) : BaseCollector {
     override suspend fun onStart() {
         ABCEvent.register(this)
 
-        setStatus(Status(startTime = System.currentTimeMillis()))
+        val prevStartTime = (getStatus() as? Status)?.startTime ?: 0
+        if (prevStartTime <= 0) setStatus(Status(startTime = System.currentTimeMillis()))
 
         cancelAll()
         scheduleAll()

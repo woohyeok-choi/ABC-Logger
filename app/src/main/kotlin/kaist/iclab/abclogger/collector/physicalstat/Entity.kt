@@ -4,7 +4,7 @@ import io.objectbox.annotation.Entity
 import kaist.iclab.abclogger.collector.Base
 
 @Entity
-data class PhysicalStatusEntity(
+data class PhysicalStatEntity(
         var type: String = "",
         var startTime: Long = 0,
         var endTime: Long = 0,

@@ -39,7 +39,7 @@
             <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/store_progress_bar"
                 style="?android:attr/progressBarStyle"
-                showToast="@{true}"
+                showToast="@{viewModel.storeStatus}"
                 status="@{viewModel.storeStatus}"
                 android:layout_width="@dimen/progress_bar_size"
                 android:layout_height="@dimen/progress_bar_size"
@@ -120,7 +120,7 @@
                         <androidx.core.widget.ContentLoadingProgressBar
                             android:id="@+id/load_progress_bar"
                             style="?android:attr/progressBarStyle"
-                            showToast="@{true}"
+                            showToast="@{viewModel.loadStatus}"
                             status="@{viewModel.loadStatus}"
                             android:layout_width="@dimen/progress_bar_size"
                             android:layout_height="@dimen/progress_bar_size"

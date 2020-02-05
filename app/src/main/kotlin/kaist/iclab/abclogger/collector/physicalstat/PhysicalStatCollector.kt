@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.Scopes
@@ -95,7 +94,7 @@ class PhysicalStatCollector(val context: Context) : BaseCollector {
                         DataType.TYPE_DISTANCE_DELTA -> Field.FIELD_DISTANCE
                         else -> null
                     }?.let { field ->
-                        PhysicalStatusEntity(
+                        PhysicalStatEntity(
                                 type = dataPoint.dataType.name,
                                 startTime = dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                                 endTime = dataPoint.getEndTime(TimeUnit.MILLISECONDS),

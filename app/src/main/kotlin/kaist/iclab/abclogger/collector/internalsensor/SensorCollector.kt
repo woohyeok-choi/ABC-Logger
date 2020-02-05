@@ -6,15 +6,17 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.PublishSubject
 import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
 import kaist.iclab.abclogger.collector.setStatus
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
@@ -55,8 +57,10 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
 
         val disposable = subject.buffer(
                 10, TimeUnit.SECONDS
+        ).observeOn(
+                Schedulers.from(Dispatchers.IO.asExecutor())
         ).subscribeOn(
-                Schedulers.io()
+                Schedulers.from(Dispatchers.IO.asExecutor())
         ).subscribe { entities ->
             GlobalScope.launch {
                 ObjBox.put(entities)

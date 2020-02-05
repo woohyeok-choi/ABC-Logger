@@ -20,21 +20,17 @@ fun setFormattedTime(view: TextView, timestamp: Long?) {
     }
 }
 
-@BindingAdapter("status", "showToast")
-fun handleContentProgress(view: ContentLoadingProgressBar, status: Status?, showToast: Boolean?) {
+@BindingAdapter("status")
+fun handleContentProgress(view: ContentLoadingProgressBar, status: Status?) {
     val state = status?.state
-    val error = status?.error
 
     if (state == Status.STATE_LOADING) view.show() else view.hide()
-    if (state == Status.STATE_FAILURE && error != null && showToast == true) view.context.showToast(error)
 }
 
-@BindingAdapter("status", "showToast")
-fun handleSwipeRefresh(view: SwipeRefreshLayout, status: Status?, showToast: Boolean?) {
-    val state = status?.state
-    val error = status?.error
+@BindingAdapter("showToast")
+fun showToast(view: View, showToast: Status?) {
+    val state = showToast?.state
+    val error = showToast?.error
 
-    view.isRefreshing = state == Status.STATE_LOADING
-
-    if (state == Status.STATE_FAILURE && error != null && showToast == true) view.context.showToast(error)
+    if (state == Status.STATE_FAILURE && error != null) view.context.showToast(error)
 }

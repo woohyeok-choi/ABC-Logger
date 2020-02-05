@@ -78,7 +78,14 @@ class SurveySettingViewModel(val collector: SurveyCollector) : ViewModel() {
                         lastTimeTriggered = null
                 )
             }?.let { settings ->
-                collector.setStatus(SurveyCollector.Status(settings = settings))
+                collector.setStatus(
+                        SurveyCollector.Status(
+                                nReceived = 0,
+                                nAnswered = 0,
+                                startTime = 0,
+                                settings = settings
+                        )
+                )
             }
             storeStatus.postValue(Status.success())
             onSuccess?.invoke()

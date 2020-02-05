@@ -31,6 +31,8 @@
     <string name="general_disconnected">Disconnected</string>
     <string name="general_connecting">Connecting</string>
     <string name="general_unknown">Unknown</string>
+    <string name="general_n_received"># Received</string>
+    <string name="general_n_answered"># Answered</string>
 
     <string name="config_category_general">General</string>
     <string name="config_category_collector">Collector</string>
@@ -167,9 +169,10 @@
     <string name="setting_polar_h10_collector_nearby_devices_button">Scan</string>
     <string name="setting_polar_h10_collector_connect_hint">Device ID</string>
     <string name="setting_polar_h10_collector_connection_state">Connection</string>
-    <string name="setting_polar_h10_collector_battery">Battery</string>
-    <string name="setting_polar_h10_collector_heart_rate">Heart-rate</string>
-    <string name="setting_polar_h10_collector_ecg">ECG</string>
+    <string name="setting_polar_h10_collector_battery">Battery (%)</string>
+    <string name="setting_polar_h10_collector_heart_rate">Heart-rate (bpm)</string>
+    <string name="setting_polar_h10_collector_rr_interval">RR Interval (sec)</string>
+    <string name="setting_polar_h10_collector_ecg">ECG (mV)</string>
     <string name="setting_polar_h10_collector_device_id_dialog_title">Type your Polar H10 device ID.</string>
 
     <string name="setting_survey_collector_instruction">Survey URLs</string>

@@ -5,9 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <import type="kaist.iclab.abclogger.ui.Status" />
-
         <import type="android.view.View" />
 
         <variable
@@ -27,7 +25,7 @@
             <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/load_progress_bar"
                 style="?android:attr/progressBarStyle"
-                showToast="@{true}"
+                showToast="@{viewModel.loadStatus}"
                 status="@{viewModel.loadStatus}"
                 android:layout_width="@dimen/progress_bar_size"
                 android:layout_height="@dimen/progress_bar_size"

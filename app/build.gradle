@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.protobuf'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
@@ -27,14 +28,13 @@ android {
         applicationId 'kaist.iclab.abclogger'
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 9
-        versionName "0.9.5-b"
+        versionCode 10
+        versionName "0.9.6"
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
         buildConfigField("String", "DB_NAME", "\"abc-logger\"")
         buildConfigField("String", "PREF_NAME", "\"abc-logger-pref\"")
         buildConfigField("Long", "DB_MAX_SIZE", "3145728L")
-
-        // buildConfigField("String", "SERVER_ADDRESS", "\"abc.kaist.ac.kr:50051\"")
+        buildConfigField("String", "SERVER_ADDRESS", "\"143.248.100.24:50052\"")
     }
     buildTypes {
         release {
@@ -47,6 +47,7 @@ android {
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
         test.java.srcDirs += 'src/test/kotlin'
+        main.proto.srcDirs += 'grpc'
     }
     compileOptions {
         sourceCompatibility = '1.8'
@@ -59,9 +60,7 @@ android {
     }
 }
 
-
 dependencies {
-
     implementation fileTree(include: ['*.aar'], dir: 'libs')
 
     /**
@@ -112,7 +111,7 @@ dependencies {
     implementation 'androidx.media:media:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
 
     /**
      * Google GMS libraries for login, location, and fitness data retrieval
@@ -131,7 +130,7 @@ dependencies {
      */
     implementation 'com.github.AgustaRC.koap:koap:1.0.1'
     implementation "com.github.AgustaRC.koap:koap-gson-serializer:1.0.1"
-    implementation "com.google.code.gson:gson:2.8.5"
+    implementation "com.google.code.gson:gson:2.8.6"
 
     /**
      * Objectbox for android database
@@ -158,10 +157,53 @@ dependencies {
     implementation 'com.github.kittinunf.fuel:fuel-coroutines:2.2.1'
 
     /**
-     * For compatibility of Polar H10 API
+     * rxJava 3.0.0 for reactive pattern
      */
-    implementation 'commons-io:commons-io:2.4'
-    implementation 'com.google.protobuf:protobuf-java:3.4.0'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.0-RC8'
+
+    /**
+     * gRPC
+     */
+    implementation 'io.grpc:grpc-okhttp:1.26.0'
+    implementation 'io.grpc:grpc-protobuf-lite:1.26.0'
+    implementation 'io.grpc:grpc-stub:1.26.0'
+    implementation 'io.grpc:grpc-android:1.26.0'
+    implementation "com.github.marcoferrer.krotoplus:kroto-plus-coroutines:0.6.0"
+
+    /**
+     * Other utils
+     */
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+}
+
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.11.1'
+    }
+
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.26.0'
+        }
+        kroto {
+            artifact = "com.github.marcoferrer.krotoplus:protoc-gen-grpc-coroutines:0.6.0"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option "lite"
+                }
+            }
+            task.plugins {
+                grpc {
+                    option 'lite'
+                }
+                kroto { }
+            }
+        }
+    }
 }

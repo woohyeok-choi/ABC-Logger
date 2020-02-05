@@ -2,7 +2,7 @@ package kaist.iclab.abclogger.ui.surveylist
 
 import android.content.Intent
 import android.os.Bundle
-import android.transition.Fade
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.base.BaseFragment
+import kaist.iclab.abclogger.ui.base.BaseFragment
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.databinding.FragmentSurveyListBinding
 import kaist.iclab.abclogger.databinding.SurveyListItemBinding
@@ -21,6 +21,7 @@ import kaist.iclab.abclogger.ui.question.SurveyResponseActivity
 import kaist.iclab.abclogger.ui.sharedViewNameForDeliveredTime
 import kaist.iclab.abclogger.ui.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.sharedViewNameForTitle
+import org.koin.android.ext.android.bind
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.core.util.Pair as UtilPair
 
@@ -43,8 +44,10 @@ class SurveyListFragment : BaseFragment(){
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        binding.recyclerView.addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
-        binding.recyclerView.itemAnimator = DefaultItemAnimator()
+        binding.recyclerView.apply {
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+            itemAnimator = DefaultItemAnimator()
+        }
 
         val adapter = SurveyListAdapter().apply {
             onItemClick = { item: SurveyEntity?, binding: SurveyListItemBinding ->
@@ -68,9 +71,9 @@ class SurveyListFragment : BaseFragment(){
         }
 
         binding.recyclerView.adapter = adapter
-
         binding.swipeLayout.setOnRefreshListener { viewModel.refresh() }
 
-        viewModel.entities.observe(this) { data -> if (data != null) adapter.submitList(data) }
+        viewModel.isRefreshing.observe(this) { isRefreshing -> binding.swipeLayout.isRefreshing = isRefreshing }
+        viewModel.entities.observe(this) { data -> data?.let { adapter.submitList(data) } }
     }
 }

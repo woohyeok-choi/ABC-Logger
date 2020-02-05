@@ -3,6 +3,7 @@ package kaist.iclab.abclogger
 import android.app.Application
 import android.util.Log
 import github.agustarc.koap.Koap
+import kaist.iclab.abclogger.grpc.DatumProto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -15,7 +16,6 @@ class App : Application(){
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate()")
-
         startKoin {
             androidLogger()
             androidContext(this@App)
@@ -23,7 +23,6 @@ class App : Application(){
         }
         GlobalScope.launch {
             ABC.bind(this@App)
-            Debug.generateSurveyEntities(100)
         }
     }
 

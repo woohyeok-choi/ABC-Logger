@@ -14,12 +14,11 @@ data class SurveyEntity(
         var deliveredTime: Long = 0,
         var reactionTime: Long = 0,
         var responseTime: Long = 0,
-        var json: String = "",
-        @Transient var isResponded: Boolean = responseTime > 0
+        var json: String = ""
 ) : Base() {
-    fun isAnswered() : Boolean = responseTime > 0
+    private fun isAnswered() : Boolean = responseTime > 0
 
-    fun isExpired() : Boolean = timeoutPolicy == Survey.TIMEOUT_DISABLED &&
+    private fun isExpired() : Boolean = timeoutPolicy == Survey.TIMEOUT_DISABLED &&
             System.currentTimeMillis() > deliveredTime + TimeUnit.SECONDS.toMillis(timeoutSec)
 
     fun isAvailable() : Boolean = !isAnswered() && !isExpired()

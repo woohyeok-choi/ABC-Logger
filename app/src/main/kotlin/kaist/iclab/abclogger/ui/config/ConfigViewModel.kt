@@ -37,7 +37,7 @@ class ConfigViewModel(
     }
 
     fun setUploadSetting(enableMetered: Boolean) {
-        Prefs.canUploadMeteredNetwork = enableMetered
+        SyncWorker.requestStart(context, false, enableMetered)
     }
 
     fun requestStart(prefKey: String) = viewModelScope.launch{
@@ -53,7 +53,7 @@ class ConfigViewModel(
     }
 
     fun sync() = GlobalScope.launch {
-
+        SyncWorker.requestStart(context, true)
     }
 
     fun flush() = GlobalScope.launch {

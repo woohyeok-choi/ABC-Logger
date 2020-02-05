@@ -53,7 +53,7 @@ object Prefs : PreferenceHolder(name = BuildConfig.PREF_NAME) {
     /**
      * Belows are presented to a user
      */
-    var lastTimeDataSync: Long by ReadWriteLong(default = -1, key = PrefKeys.LAST_TIME_SYNC)
+    var lastTimeDataSync: Long by ReadWriteLong(default = 0, key = PrefKeys.LAST_TIME_SYNC)
     var canUploadMeteredNetwork: Boolean by ReadWriteBoolean(default = false, key = PrefKeys.CAN_UPLOAD_METERED_NETWORK)
     var maxDbSize : Long by ReadWriteLong(default = 0, key = PrefKeys.MAX_DB_SIZE)
     var statusCallLog: CallLogCollector.Status? by ReadWriteSerializable(type = inferType<CallLogCollector.Status>(), key = PrefKeys.STATUS_CALL_LOG)

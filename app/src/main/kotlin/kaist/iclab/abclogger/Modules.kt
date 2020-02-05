@@ -73,8 +73,8 @@ val collectorModules = module {
 
 val viewModelModules = module {
     viewModel { ConfigViewModel(androidContext(), get()) }
-    viewModel { SurveyListViewModel() }
-    viewModel { SurveyResponseViewModel() }
+    viewModel { SurveyListViewModel(androidContext(), get()) }
+    viewModel { SurveyResponseViewModel(get()) }
     viewModel { PolarH10ViewModel(androidContext(), get()) }
     viewModel { SurveySettingViewModel(get()) }
     viewModel { SurveyPreviewViewModel() }

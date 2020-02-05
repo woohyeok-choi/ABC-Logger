@@ -8,8 +8,8 @@ data class ExternalSensorEntity(
         var sensorId: String = "",
         var name: String = "",
         var description: String = "",
-        var firstValue: Float = 0F,
-        var secondValue: Float = 0F,
-        var thirdValue: Float = 0F,
-        var fourthValue: Float = 0F
+        var firstValue: Float = Float.MIN_VALUE,
+        var secondValue: Float = Float.MIN_VALUE,
+        var thirdValue: Float = Float.MIN_VALUE,
+        var fourthValue: Float = Float.MIN_VALUE
 ) : Base()

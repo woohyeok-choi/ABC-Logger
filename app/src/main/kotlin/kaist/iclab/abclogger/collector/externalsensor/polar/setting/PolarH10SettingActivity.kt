@@ -1,7 +1,7 @@
 package kaist.iclab.abclogger.collector.externalsensor.polar.setting
 
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.base.BaseSettingActivity
+import kaist.iclab.abclogger.ui.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingPolarH10Binding
 import kaist.iclab.abclogger.ui.dialog.EditTextDialogFragment
 import org.koin.androidx.viewmodel.ext.android.viewModel

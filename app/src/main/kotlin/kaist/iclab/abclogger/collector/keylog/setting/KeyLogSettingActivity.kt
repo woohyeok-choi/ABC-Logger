@@ -1,10 +1,9 @@
 package kaist.iclab.abclogger.collector.keylog.setting
 
-import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.base.BaseSettingActivity
+import kaist.iclab.abclogger.ui.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingKeyLogBinding
 import kaist.iclab.abclogger.ui.dialog.SingleChoiceDialogFragment
 import org.koin.androidx.viewmodel.ext.android.viewModel

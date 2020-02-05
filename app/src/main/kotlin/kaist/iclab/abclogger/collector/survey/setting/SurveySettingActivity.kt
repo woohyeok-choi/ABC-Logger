@@ -1,9 +1,8 @@
 package kaist.iclab.abclogger.collector.survey.setting
 
-import android.app.Activity
 import androidx.lifecycle.observe
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.base.BaseSettingActivity
+import kaist.iclab.abclogger.ui.base.BaseSettingActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingSurveyBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
 

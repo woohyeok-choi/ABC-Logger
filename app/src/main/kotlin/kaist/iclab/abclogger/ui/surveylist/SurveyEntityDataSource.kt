@@ -3,16 +3,13 @@ package kaist.iclab.abclogger.ui.surveylist
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
-import io.objectbox.android.ObjectBoxDataSource
 import io.objectbox.query.Query
 import io.objectbox.reactive.DataObserver
 import kaist.iclab.abclogger.EmptySurveyException
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.ui.Status
-import kotlinx.coroutines.*
 
-class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
-                             private val scope: CoroutineScope) : PositionalDataSource<SurveyEntity>() {
+class SurveyEntityDataSource(private val query: Query<SurveyEntity>?) : PositionalDataSource<SurveyEntity>() {
     private val observer = DataObserver<List<SurveyEntity>> { invalidate() }
     val status = MutableLiveData<Status>(Status.init())
 
@@ -21,12 +18,10 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
     }
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<SurveyEntity>) {
-        status.postValue(Status.loading())
         try {
             val data = query?.find(params.startPosition.toLong(), params.loadSize.toLong())
                     ?: listOf()
             callback.onResult(data)
-            status.postValue(Status.success())
         } catch (e: Exception) {
             status.postValue(Status.failure(e))
         }
@@ -59,11 +54,11 @@ class SurveyEntityDataSource(private val query: Query<SurveyEntity>?,
     }
 
 
-    class Factory(private val query: Query<SurveyEntity>?, private val scope: CoroutineScope) : DataSource.Factory<Int, SurveyEntity>() {
+    class Factory(private val query: Query<SurveyEntity>?) : DataSource.Factory<Int, SurveyEntity>() {
         val source = MutableLiveData<SurveyEntityDataSource>()
 
         override fun create(): DataSource<Int, SurveyEntity> {
-            val newSource = SurveyEntityDataSource(query, scope)
+            val newSource = SurveyEntityDataSource(query)
             source.postValue(newSource)
             return newSource
         }
