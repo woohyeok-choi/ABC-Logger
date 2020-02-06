@@ -41,7 +41,7 @@ class SurveyQuestionListAdapter : RecyclerView.Adapter<SurveyQuestionListAdapter
                 )
                 QUESTION_HORIZONTAL_RADIO_BUTTON -> HorizontalRadioButtonItemViewHolder(
                         DataBindingUtil.inflate(
-                                LayoutInflater.from(parent.context), R.layout.question_radio_button_item, parent, false
+                                LayoutInflater.from(parent.context), R.layout.question_horizontal_radio_button_item, parent, false
                         )
                 )
                 QUESTION_CHECK_BOX -> CheckBoxItemViewHolder(
