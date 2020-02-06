@@ -23,8 +23,7 @@ class App : Application(){
         }
         GlobalScope.launch {
             ABC.bind(this@App)
-
-           // Debug.generateEntities(50000)
+           // Debug.generateEntities(10 * 50000)
         }
     }
 

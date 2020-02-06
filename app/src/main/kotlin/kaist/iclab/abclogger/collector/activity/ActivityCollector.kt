@@ -17,6 +17,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class ActivityCollector(val context: Context) : BaseCollector {
+
     data class Status(override val hasStarted: Boolean? = null, override val lastTime: Long? = null) : BaseStatus() {
         override fun info(): String = ""
     }
@@ -130,22 +131,20 @@ class ActivityCollector(val context: Context) : BaseCollector {
     private fun handleActivityTransitionUpdate(intent: Intent) {
         if (!ActivityTransitionResult.hasResult(intent)) return
 
-        val elapsedTimeNano = SystemClock.elapsedRealtimeNanos()
         val curTime = System.currentTimeMillis()
         val result = ActivityTransitionResult.extractResult(intent)?.transitionEvents ?: return
 
         result.map { event ->
-            val time = curTime + (event.elapsedRealTimeNanos - elapsedTimeNano)
             val type = event.activityType
             val isEntered = event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
 
-            transitionEventToABCEvent(isEntered, type)?.let { ABCEvent.post(timestamp = time, eventType = it) }
+            transitionEventToABCEvent(isEntered, type)?.let { ABCEvent.post(timestamp = curTime, eventType = it) }
 
             PhysicalActivityTransitionEntity(
                     type = activityTypeToString(type),
                     isEntered = isEntered
             ).fill(
-                    timeMillis = time
+                    timeMillis = curTime
             )
         }.also { entity ->
             GlobalScope.launch {

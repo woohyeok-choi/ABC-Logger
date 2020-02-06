@@ -29,6 +29,7 @@
     <application
         android:name=".App"
         android:allowBackup="false"
+        android:largeHeap="true"
         android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

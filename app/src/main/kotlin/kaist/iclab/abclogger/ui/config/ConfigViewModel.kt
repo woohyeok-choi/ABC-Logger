@@ -23,7 +23,7 @@ class ConfigViewModel(
     val errorStatus: MutableLiveData<Status> = MutableLiveData(Status.init())
     val configs: MutableLiveData<ArrayList<ConfigData>> = MutableLiveData()
 
-    fun update() = viewModelScope.launch(Dispatchers.IO) {
+    fun update() = viewModelScope.launch {
         try {
             errorStatus.postValue(Status.init())
             configs.postValue(
@@ -40,27 +40,27 @@ class ConfigViewModel(
         SyncWorker.requestStart(context, false, enableMetered)
     }
 
-    fun requestStart(prefKey: String) = viewModelScope.launch{
+    fun requestStart(prefKey: String) = viewModelScope.launch {
         abcLogger.collectors.find { it.prefKey() == prefKey }?.start { _, throwable ->
             if (throwable != null) errorStatus.postValue(Status.failure(throwable))
         }
     }
 
-    fun requestStop(prefKey: String) = viewModelScope.launch{
+    fun requestStop(prefKey: String) = viewModelScope.launch {
         abcLogger.collectors.find { it.prefKey() == prefKey }?.stop { _, throwable ->
             if (throwable != null) errorStatus.postValue(Status.failure(throwable))
         }
     }
 
-    fun sync() = GlobalScope.launch {
+    fun sync() {
         SyncWorker.requestStart(context, true)
     }
 
-    fun flush() = GlobalScope.launch {
+    fun flush() = GlobalScope.launch (Dispatchers.IO) {
         ObjBox.flush(context, true)
     }
 
-    fun logout(onComplete: () -> Unit) = GlobalScope.launch {
+    fun logout(onComplete: () -> Unit) = GlobalScope.launch (Dispatchers.IO) {
         ObjBox.flush(context, true)
         Prefs.clear()
         FirebaseAuth.getInstance().signOut()

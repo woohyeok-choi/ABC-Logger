@@ -52,14 +52,14 @@ object ObjBox {
 
     private suspend fun buildStore(context: Context): BoxStore = withContext(Dispatchers.IO) {
         return@withContext (1..500).firstNotNullResult { multiple ->
+            val size = BuildConfig.DB_MAX_SIZE * multiple
             try {
                 val tempStore = MyObjectBox.builder()
                         .androidContext(context.applicationContext)
-                        .maxSizeInKByte(BuildConfig.DB_MAX_SIZE * multiple) //3 GB
+                        .maxSizeInKByte(size) //3 GB
                         .name("${BuildConfig.DB_NAME}-${Prefs.dbVersion}")
                         .build()
-                Prefs.maxDbSize = BuildConfig.DB_MAX_SIZE * multiple
-
+                Prefs.maxDbSize = size
                 tempStore
             } catch (e: Exception) {
                 null
@@ -125,13 +125,6 @@ object ObjBox {
 
         if (BuildConfig.DEBUG) AppLog.d(T::class.java.name, entities)
         try { boxFor<T>()?.put(entities) } catch (e: Exception) { }
-    }
-
-    suspend inline fun <reified T : Base> removeByKeys(ids: Collection<Long>?) = withContext(Dispatchers.IO) {
-        if (ids.isNullOrEmpty()) return@withContext
-        if (boxStore.get()?.isClosed != false) return@withContext
-
-        try { boxFor<T>()?.removeByKeys(ids) } catch (e: Exception) { }
     }
 }
 

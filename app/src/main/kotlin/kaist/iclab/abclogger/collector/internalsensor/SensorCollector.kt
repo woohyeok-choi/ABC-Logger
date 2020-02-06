@@ -47,8 +47,8 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
         val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         val proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
-        lightSensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(5).toInt()) }
-        proximitySensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(5).toInt()) }
+        lightSensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(3).toInt()) }
+        proximitySensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(3).toInt()) }
 
         setStatus(Status(
                 isLightAvailable = lightSensor != null,
@@ -57,14 +57,12 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
 
         val disposable = subject.buffer(
                 10, TimeUnit.SECONDS
-        ).observeOn(
-                Schedulers.from(Dispatchers.IO.asExecutor())
         ).subscribeOn(
-                Schedulers.from(Dispatchers.IO.asExecutor())
+                Schedulers.io()
         ).subscribe { entities ->
             GlobalScope.launch {
                 ObjBox.put(entities)
-                setStatus(Status(lastTime = System.currentTimeMillis()))
+                if (entities.isNotEmpty()) setStatus(Status(lastTime = System.currentTimeMillis()))
             }
         }
         disposables.addAll(disposable)

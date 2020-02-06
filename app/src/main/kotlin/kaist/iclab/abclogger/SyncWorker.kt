@@ -1,7 +1,6 @@
 package kaist.iclab.abclogger
 
 import android.content.Context
-import android.util.Log
 import androidx.work.*
 import io.grpc.ManagedChannel
 import io.grpc.android.AndroidChannelBuilder
@@ -49,6 +48,8 @@ import kaist.iclab.abclogger.collector.wifi.WifiEntity_
 import kaist.iclab.abclogger.grpc.DataOperationsCoroutineGrpc
 import kaist.iclab.abclogger.grpc.DatumProto
 import kotlinx.coroutines.*
+import java.lang.ref.WeakReference
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 
@@ -65,7 +66,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             )
     )
 
-    override suspend fun doWork(): Result = withContext(Dispatchers.IO){
+    override suspend fun doWork(): Result = withContext(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
         setForeground(foregroundInfo)
 
         val channel: ManagedChannel = AndroidChannelBuilder
@@ -77,12 +78,12 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
 
         val stub = DataOperationsCoroutineGrpc.newStubWithContext(channel)
 
-        uploadAll(stub.withDeadlineAfter(5, TimeUnit.MINUTES))
+        uploadAll(stub)
 
         Prefs.lastTimeDataSync = System.currentTimeMillis()
 
         try {
-            channel.shutdownNow().awaitTermination(10, TimeUnit.SECONDS)
+            channel.shutdownNow()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -90,32 +91,33 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         return@withContext Result.success()
     }
 
-    private suspend inline fun <reified T: Base> upload(isUploadedProperty: Property<T>,
-                                                        stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) = coroutineScope {
+    private suspend inline fun <reified T : Base> upload(isUploadedProperty: Property<T>,
+                                                         stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) = coroutineScope {
         try {
-            val query = query(isUploadedProperty, false) ?: throw Exception("No corresponding query")
-            val count = query.count()
+            val deadlineStub = stub.withDeadlineAfter(5, TimeUnit.MINUTES)
 
-            val uploadedKeys = (0 until count step N_UPLOADS).mapNotNull { offset ->
-                val entities = if (T::class.java == SurveyEntity::class.java) {
-                    query.find(offset, N_UPLOADS).filter { entity -> (entity as? SurveyEntity)?.isAvailable() == false }
+            while(true) {
+                val query = query(isUploadedProperty, false) ?: throw Exception("No corresponding query")
+                if (query.count() == 0L) break
+
+                val entities: List<T> = if (T::class.java == SurveyEntity::class.java) {
+                    query.find(0, N_UPLOADS).filter { entity -> (entity as? SurveyEntity)?.isAvailable() == false }
                 } else {
-                    query.find(offset, N_UPLOADS)
+                    query.find(0, N_UPLOADS)
                 }
 
                 entities.map { entity ->
-                    async {
+                    async(Dispatchers.IO) {
                         try {
-                            toProto(entity)?.let { proto -> stub.createDatum(proto) }
-                            entity.id
+                            val proto = toProto(entity) ?: throw Exception("No corresponding Protobuf")
+                            deadlineStub.createDatum(proto)
+                            ObjBox.boxFor<T>()?.remove(entity)
                         } catch (e: Exception) {
                             null
                         }
                     }
-                }.awaitAll().filterNotNull()
-            }.flatten()
-
-            ObjBox.removeByKeys<T>(uploadedKeys)
+                }.awaitAll()
+            }
         } catch (e: Exception) {
             AppLog.ee(e)
             e.printStackTrace()
@@ -145,7 +147,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
     }
 
 
-    private inline fun <reified T : Base> query(isUploadedProperty: Property<T>, isUploaded: Boolean) : Query<T>? {
+    private inline fun <reified T : Base> query(isUploadedProperty: Property<T>, isUploaded: Boolean): Query<T>? {
         return ObjBox.boxFor<T>()?.query()?.equal(isUploadedProperty, isUploaded)?.build()
     }
 

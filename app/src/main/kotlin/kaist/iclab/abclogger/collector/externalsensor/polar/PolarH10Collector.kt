@@ -63,10 +63,8 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                         ).fill(timeMillis = System.currentTimeMillis())
                     }.buffer(
                             5, TimeUnit.SECONDS
-                    ).observeOn(
-                            Schedulers.from(Dispatchers.IO.asExecutor())
                     ).subscribeOn(
-                            Schedulers.from(Dispatchers.IO.asExecutor())
+                            Schedulers.io()
                     ).subscribe { entities ->
                         GlobalScope.launch {
                             ObjBox.put(entities)
