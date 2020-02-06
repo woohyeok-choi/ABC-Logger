@@ -16,7 +16,7 @@ import kaist.iclab.abclogger.ui.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.sharedViewNameForTitle
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class SurveyResponseActivity : BaseAppCompatActivity(), ViewTreeObserver.OnPreDrawListener {
+class SurveyResponseActivity : BaseAppCompatActivity() {
     private val viewModel: SurveyResponseViewModel by viewModel()
 
     private lateinit var binding: ActivitySurveyResponseBinding
@@ -56,8 +56,12 @@ class SurveyResponseActivity : BaseAppCompatActivity(), ViewTreeObserver.OnPreDr
         binding.recyclerView.itemAnimator = DefaultItemAnimator()
 
         viewModel.data.observe(this) { data ->
-            binding.containerDefaultInfo.viewTreeObserver.addOnPreDrawListener(this)
             data?.let { (questions, isAvailable, showAltText) -> adapter.bind(questions, isAvailable, showAltText) }
+        }
+
+        viewModel.availableProgram.observe(this) { available ->
+            showOptionMenu = available
+            invalidateOptionsMenu()
         }
 
         if (showFromList) {
@@ -65,16 +69,9 @@ class SurveyResponseActivity : BaseAppCompatActivity(), ViewTreeObserver.OnPreDr
             ViewCompat.setTransitionName(binding.txtMessage, sharedViewNameForMessage(entityId))
             ViewCompat.setTransitionName(binding.txtDeliveredTime, sharedViewNameForDeliveredTime(entityId))
         }
+
         viewModel.load(entityId)
-
-
      }
-
-    override fun onPreDraw(): Boolean {
-        binding.containerDefaultInfo.viewTreeObserver.removeOnPreDrawListener(this)
-        supportStartPostponedEnterTransition()
-        return true
-    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_activity_survey_question, menu)
@@ -89,8 +86,6 @@ class SurveyResponseActivity : BaseAppCompatActivity(), ViewTreeObserver.OnPreDr
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
          return when (item.itemId) {
             android.R.id.home -> {
-                overridePendingTransition(0, 0)
-
                 if (showFromList) supportFinishAfterTransition() else finish()
                 true
             }

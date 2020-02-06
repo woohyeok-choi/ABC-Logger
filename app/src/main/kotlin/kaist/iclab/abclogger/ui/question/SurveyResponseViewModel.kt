@@ -19,6 +19,7 @@ class SurveyResponseViewModel(private val collector: SurveyCollector) : ViewMode
     val storeStatus = MutableLiveData<Status>(Status.init())
     val instruction = Transformations.map(surveyLiveData) { (_, survey) -> survey.instruction }
     val available = Transformations.map(surveyLiveData) { (entity, _) -> entity.isAvailable() }
+    val availableProgram = Transformations.map(available) { isAvailable -> isAvailable }
 
     val data = Transformations.map(surveyLiveData) { (entity, survey) ->
         Triple(survey.questions, entity.isAvailable(), entity.showAltText())
