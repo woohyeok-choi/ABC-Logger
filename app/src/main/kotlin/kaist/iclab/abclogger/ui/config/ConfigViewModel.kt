@@ -68,6 +68,7 @@ class ConfigViewModel(
         abcLogger.stopAll()
         ABC.stopService(context)
         Notifications.cancelAll(context)
+        SyncWorker.requestStop(context)
         onComplete.invoke()
     }
 

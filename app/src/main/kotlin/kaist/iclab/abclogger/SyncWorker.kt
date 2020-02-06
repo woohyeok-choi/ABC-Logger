@@ -24,7 +24,9 @@ import kaist.iclab.abclogger.collector.media.MediaEntity
 import kaist.iclab.abclogger.collector.message.MessageEntity
 import kaist.iclab.abclogger.collector.notification.NotificationEntity
 import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatEntity
+import kaist.iclab.abclogger.collector.survey.Survey
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
+import kaist.iclab.abclogger.collector.survey.SurveyEntity_
 import kaist.iclab.abclogger.collector.traffic.DataTrafficEntity
 import kaist.iclab.abclogger.collector.wifi.WifiEntity
 import kaist.iclab.abclogger.grpc.DataOperationsCoroutineGrpc
@@ -72,16 +74,15 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
     private suspend fun uploadAll(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) = withContext(Dispatchers.IO) {
         ObjBox.boxStore.get().allEntityClasses.forEach { clazz ->
             try {
-                val query = if (clazz == SurveyEntity::class.java) {
-                    querySurvey()
-                } else {
-                    query(clazz)
-                } ?: throw Exception("No corresponding query")
-
+                val query = query(clazz) ?: throw Exception("No corresponding query")
                 val count = query.count()
 
                 (0 until count step N_UPLOADS).forEach { offset ->
-                    val entities = query.find(offset, N_UPLOADS)
+                    val entities = if (clazz == SurveyEntity::class.java) {
+                        query.find(offset, N_UPLOADS).filter { entity -> (entity as? SurveyEntity)?.isAvailable() == false }
+                    } else {
+                        query.find(offset, N_UPLOADS)
+                    }
                     val deferred = entities.map { entity ->
                         async {
                             try {
@@ -129,11 +130,6 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         val isUploaded = properties.find { property -> property.name == "isUploaded" }
                 ?: return null
         return box.query().equal(isUploaded, false).build()
-    }
-
-    private fun querySurvey(): Query<SurveyEntity>? {
-        val box = ObjBox.boxFor<SurveyEntity>() ?: return null
-        return box.query().filter { entity -> !entity.isAvailable() && !entity.isUploaded }.build()
     }
 
     @Suppress("UNCHECKED_CAST")
