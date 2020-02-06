@@ -28,8 +28,8 @@ android {
         applicationId 'kaist.iclab.abclogger'
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 15
-        versionName "0.9.6-e"
+        versionCode 16
+        versionName "0.9.6-f"
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
         buildConfigField("String", "DB_NAME", "\"abc-logger\"")
         buildConfigField("String", "PREF_NAME", "\"abc-logger-pref\"")
@@ -172,9 +172,16 @@ dependencies {
     implementation "com.github.marcoferrer.krotoplus:kroto-plus-coroutines:0.6.0"
 
     /**
+     * For compatibility of Polar API
+     */
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+
+    /**
      * Other utils
      */
     implementation 'commons-io:commons-io:2.6'
+
 }
 
 
