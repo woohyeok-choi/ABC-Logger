@@ -92,7 +92,7 @@ class KeyLogCollector(val context: Context) : BaseCollector {
                         currentKeyType = newKeyLog.type.name
                 ).fill(timeMillis = eventTime).also { entity ->
                     ObjBox.put(entity)
-                    collector.setStatus(Status(lastTime = eventTime))
+                    collector.setStatus(Status(lastTime = System.currentTimeMillis()))
                 }
             }
 

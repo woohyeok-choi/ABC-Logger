@@ -61,7 +61,7 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                                     name = "PolarH10",
                                     description = "ECG/mV",
                                     firstValue = ecg.toFloat()
-                            ).fill(timeMillis = data.timeStamp)
+                            ).fill(timeMillis = System.currentTimeMillis())
                         }
                     }.buffer(
                             5, TimeUnit.SECONDS

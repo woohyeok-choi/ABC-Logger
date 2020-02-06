@@ -5,30 +5,47 @@ import android.util.Log
 import androidx.work.*
 import io.grpc.ManagedChannel
 import io.grpc.android.AndroidChannelBuilder
-import io.objectbox.EntityInfo
+import io.objectbox.Property
 import io.objectbox.query.Query
 import kaist.iclab.abclogger.collector.Base
 import kaist.iclab.abclogger.collector.activity.PhysicalActivityEntity
+import kaist.iclab.abclogger.collector.activity.PhysicalActivityEntity_
 import kaist.iclab.abclogger.collector.activity.PhysicalActivityTransitionEntity
+import kaist.iclab.abclogger.collector.activity.PhysicalActivityTransitionEntity_
 import kaist.iclab.abclogger.collector.appusage.AppUsageEventEntity
+import kaist.iclab.abclogger.collector.appusage.AppUsageEventEntity_
 import kaist.iclab.abclogger.collector.battery.BatteryEntity
+import kaist.iclab.abclogger.collector.battery.BatteryEntity_
 import kaist.iclab.abclogger.collector.bluetooth.BluetoothEntity
+import kaist.iclab.abclogger.collector.bluetooth.BluetoothEntity_
 import kaist.iclab.abclogger.collector.call.CallLogEntity
+import kaist.iclab.abclogger.collector.call.CallLogEntity_
 import kaist.iclab.abclogger.collector.event.DeviceEventEntity
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity_
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
+import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity_
 import kaist.iclab.abclogger.collector.install.InstalledAppEntity
+import kaist.iclab.abclogger.collector.install.InstalledAppEntity_
 import kaist.iclab.abclogger.collector.internalsensor.SensorEntity
+import kaist.iclab.abclogger.collector.internalsensor.SensorEntity_
 import kaist.iclab.abclogger.collector.keylog.KeyLogEntity
+import kaist.iclab.abclogger.collector.keylog.KeyLogEntity_
 import kaist.iclab.abclogger.collector.location.LocationEntity
+import kaist.iclab.abclogger.collector.location.LocationEntity_
 import kaist.iclab.abclogger.collector.media.MediaEntity
+import kaist.iclab.abclogger.collector.media.MediaEntity_
 import kaist.iclab.abclogger.collector.message.MessageEntity
+import kaist.iclab.abclogger.collector.message.MessageEntity_
 import kaist.iclab.abclogger.collector.notification.NotificationEntity
+import kaist.iclab.abclogger.collector.notification.NotificationEntity_
 import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatEntity
-import kaist.iclab.abclogger.collector.survey.Survey
+import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatEntity_
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.collector.survey.SurveyEntity_
 import kaist.iclab.abclogger.collector.traffic.DataTrafficEntity
+import kaist.iclab.abclogger.collector.traffic.DataTrafficEntity_
 import kaist.iclab.abclogger.collector.wifi.WifiEntity
+import kaist.iclab.abclogger.collector.wifi.WifiEntity_
 import kaist.iclab.abclogger.grpc.DataOperationsCoroutineGrpc
 import kaist.iclab.abclogger.grpc.DatumProto
 import kotlinx.coroutines.*
@@ -48,7 +65,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             )
     )
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO){
         setForeground(foregroundInfo)
 
         val channel: ManagedChannel = AndroidChannelBuilder
@@ -58,87 +75,78 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 .executor(Dispatchers.IO.asExecutor())
                 .build()
 
-        val stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub = DataOperationsCoroutineGrpc.newStubWithContext(channel)
-                .withDeadlineAfter(10, TimeUnit.SECONDS)
+        val stub = DataOperationsCoroutineGrpc.newStubWithContext(channel)
 
-        uploadAll(stub)
-        removeAll()
+        uploadAll(stub.withDeadlineAfter(5, TimeUnit.MINUTES))
 
         Prefs.lastTimeDataSync = System.currentTimeMillis()
 
-        terminate(channel)
-
-        return Result.success()
-    }
-
-    private suspend fun uploadAll(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) = withContext(Dispatchers.IO) {
-        ObjBox.boxStore.get().allEntityClasses.forEach { clazz ->
-            try {
-                val query = query(clazz) ?: throw Exception("No corresponding query")
-                val count = query.count()
-
-                (0 until count step N_UPLOADS).forEach { offset ->
-                    val entities = if (clazz == SurveyEntity::class.java) {
-                        query.find(offset, N_UPLOADS).filter { entity -> (entity as? SurveyEntity)?.isAvailable() == false }
-                    } else {
-                        query.find(offset, N_UPLOADS)
-                    }
-                    val deferred = entities.map { entity ->
-                        async {
-                            try {
-                                toProto(entity)?.let { stub.createDatum(it) }
-                                entity
-                            } catch (e: Exception) {
-                                null
-                            }
-                        }
-                    }
-                    val uploaded = deferred.awaitAll().filterNotNull()
-                    uploaded.forEach { entity -> (entity as? Base)?.isUploaded = true }
-                    ObjBox.put(uploaded)
-                }
-            } catch (e: Exception) {
-                AppLog.ee(e)
-                e.printStackTrace()
-            }
-        }
-    }
-
-    private suspend fun removeAll() = withContext(Dispatchers.IO) {
-        ObjBox.boxStore.get().allEntityClasses.forEach { clazz ->
-            try {
-                remove(clazz)
-            } catch (e: Exception) {
-                AppLog.ee(e)
-                e.printStackTrace()
-            }
-        }
-    }
-
-    private suspend fun terminate(channel: ManagedChannel) = withContext(Dispatchers.IO) {
         try {
             channel.shutdownNow().awaitTermination(10, TimeUnit.SECONDS)
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
+        return@withContext Result.success()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> query(clazz: Class<T>): Query<T>? {
-        val box = ObjBox.boxFor(clazz) ?: return null
-        val properties = (box.entityInfo as? EntityInfo<T>)?.allProperties ?: return null
-        val isUploaded = properties.find { property -> property.name == "isUploaded" }
-                ?: return null
-        return box.query().equal(isUploaded, false).build()
+    private suspend inline fun <reified T: Base> upload(isUploadedProperty: Property<T>,
+                                                        stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) = coroutineScope {
+        try {
+            val query = query(isUploadedProperty, false) ?: throw Exception("No corresponding query")
+            val count = query.count()
+            Log.d("ZXCV", "$count")
+            val uploadedKeys = (0 until count step N_UPLOADS).mapNotNull { offset ->
+                val entities = if (T::class.java == SurveyEntity::class.java) {
+                    query.find(offset, N_UPLOADS).filter { entity -> (entity as? SurveyEntity)?.isAvailable() == false }
+                } else {
+                    query.find(offset, N_UPLOADS)
+                }
+
+                entities.map { entity ->
+                    async {
+                        try {
+                            toProto(entity)?.let { proto -> stub.createDatum(proto) }
+                            entity.id
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                }.awaitAll().filterNotNull()
+            }.flatten()
+            ObjBox.removeByKeys<T>(uploadedKeys)
+        } catch (e: Exception) {
+            AppLog.ee(e)
+            e.printStackTrace()
+        }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> remove(clazz: Class<T>) {
-        val box = ObjBox.boxFor(clazz) ?: return
-        val properties = (box.entityInfo as? EntityInfo<T>)?.allProperties ?: return
-        val isUploaded = properties.find { property -> property.name == "isUploaded" } ?: return
 
-        box.query().equal(isUploaded, true).build().remove()
+    private suspend fun uploadAll(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) {
+        upload<PhysicalActivityTransitionEntity>(PhysicalActivityTransitionEntity_.isUploaded, stub)
+        upload<PhysicalActivityEntity>(PhysicalActivityEntity_.isUploaded, stub)
+        upload<AppUsageEventEntity>(AppUsageEventEntity_.isUploaded, stub)
+        upload<BatteryEntity>(BatteryEntity_.isUploaded, stub)
+        upload<BluetoothEntity>(BluetoothEntity_.isUploaded, stub)
+        upload<CallLogEntity>(CallLogEntity_.isUploaded, stub)
+        upload<DeviceEventEntity>(DeviceEventEntity_.isUploaded, stub)
+        upload<ExternalSensorEntity>(ExternalSensorEntity_.isUploaded, stub)
+        upload<InstalledAppEntity>(InstalledAppEntity_.isUploaded, stub)
+        upload<KeyLogEntity>(KeyLogEntity_.isUploaded, stub)
+        upload<LocationEntity>(LocationEntity_.isUploaded, stub)
+        upload<MediaEntity>(MediaEntity_.isUploaded, stub)
+        upload<MessageEntity>(MessageEntity_.isUploaded, stub)
+        upload<NotificationEntity>(NotificationEntity_.isUploaded, stub)
+        upload<PhysicalStatEntity>(PhysicalStatEntity_.isUploaded, stub)
+        upload<SensorEntity>(SensorEntity_.isUploaded, stub)
+        upload<SurveyEntity>(SurveyEntity_.isUploaded, stub)
+        upload<DataTrafficEntity>(DataTrafficEntity_.isUploaded, stub)
+        upload<WifiEntity>(WifiEntity_.isUploaded, stub)
+    }
+
+
+    private inline fun <reified T : Base> query(isUploadedProperty: Property<T>, isUploaded: Boolean) : Query<T>? {
+        return ObjBox.boxFor<T>()?.query()?.equal(isUploadedProperty, isUploaded)?.build()
     }
 
     private fun <T> toProto(entity: T): DatumProto.Datum? {

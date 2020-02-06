@@ -11,5 +11,5 @@ abstract class Base(
         var utcOffset: Float = Float.MIN_VALUE,
         var subjectEmail: String = "",
         var deviceInfo: String = "",
-        @Index var isUploaded: Boolean = false
+        var isUploaded: Boolean = false
 )

@@ -1,6 +1,8 @@
 package kaist.iclab.abclogger
 
 import android.util.Log
+import kaist.iclab.abclogger.collector.activity.PhysicalActivityTransitionEntity
+import kaist.iclab.abclogger.collector.fill
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import java.util.concurrent.TimeUnit
 
@@ -163,6 +165,13 @@ object Debug {
         }
     })*/
 
+    suspend fun generateEntities(size: Int) {
+        (0..size).map {
+            PhysicalActivityTransitionEntity(type = "ASDFASDFASDFASDFASDFASDFASDF", isEntered = true).fill(System.currentTimeMillis())
+        }.let { ObjBox.put(it) }
+        Log.d("ZXCV", "${ObjBox.boxFor<PhysicalActivityTransitionEntity>()?.count()}")
+    }
+
     suspend fun generateSurveyEntities (size: Int) {
         val time = System.currentTimeMillis()
         (0..size).map {
@@ -173,7 +182,7 @@ object Debug {
                     timeoutPolicy = "DISABLED",
                     deliveredTime = time + it * TimeUnit.MINUTES.toMillis(5),
                     json = testJson
-            )
+            ).fill(System.currentTimeMillis())
         }.let { ObjBox.put(it) }
 
         val query = ObjBox.boxFor<SurveyEntity>()?.query()?.build() ?: return

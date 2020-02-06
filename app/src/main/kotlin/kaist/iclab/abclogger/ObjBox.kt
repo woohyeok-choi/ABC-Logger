@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.app.NotificationManagerCompat
 import io.objectbox.BoxStore
 import io.objectbox.kotlin.boxFor
+import kaist.iclab.abclogger.collector.Base
 import kaist.iclab.abclogger.collector.MyObjectBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -90,11 +91,11 @@ object ObjBox {
 
     fun maxSizeInBytes() = Prefs.maxDbSize * 1000L
 
-    inline fun <reified T : Any> boxFor() = try { boxStore.get()?.boxFor<T>() } catch (e: Exception) { null }
+    inline fun <reified T : Base> boxFor() = try { boxStore.get()?.boxFor<T>() } catch (e: Exception) { null }
 
-    fun <T : Any> boxFor(clazz: Class<T>) = try { boxStore.get()?.boxFor(clazz) } catch (e: Exception) { null }
+    fun <T : Base> boxFor(clazz: Class<T>) = try { boxStore.get()?.boxFor(clazz) } catch (e: Exception) { null }
 
-    inline fun <reified T : Any> putSync(entity: T?): Long {
+    inline fun <reified T : Base> putSync(entity: T?): Long {
         entity ?: return -1L
         if (boxStore.get()?.isClosed != false) return -1
 
@@ -102,7 +103,7 @@ object ObjBox {
         return try { boxFor<T>()?.put(entity) } catch (e: Exception) { null } ?: -1
     }
 
-    inline fun <reified T : Any> putSync(entities: Collection<T>?) {
+    inline fun <reified T : Base> putSync(entities: Collection<T>?) {
         if (entities.isNullOrEmpty()) return
         if (boxStore.get()?.isClosed != false) return
 
@@ -110,7 +111,7 @@ object ObjBox {
         try { boxFor<T>()?.put(entities) } catch (e: Exception) { }
     }
 
-    suspend inline fun <reified T : Any> put(entity: T?): Long = withContext<Long>(Dispatchers.IO) {
+    suspend inline fun <reified T : Base> put(entity: T?): Long = withContext<Long>(Dispatchers.IO) {
         entity ?: return@withContext -1
         if (boxStore.get()?.isClosed != false) return@withContext -1
 
@@ -118,12 +119,19 @@ object ObjBox {
         return@withContext try { boxFor<T>()?.put(entity) } catch (e: Exception) { null } ?: -1
     }
 
-    suspend inline fun <reified T : Any> put(entities: Collection<T>?) = withContext(Dispatchers.IO) {
+    suspend inline fun <reified T : Base> put(entities: Collection<T>?) = withContext(Dispatchers.IO) {
         if (entities.isNullOrEmpty()) return@withContext
         if (boxStore.get()?.isClosed != false) return@withContext
 
         if (BuildConfig.DEBUG) AppLog.d(T::class.java.name, entities)
         try { boxFor<T>()?.put(entities) } catch (e: Exception) { }
+    }
+
+    suspend inline fun <reified T : Base> removeByKeys(ids: Collection<Long>?) = withContext(Dispatchers.IO) {
+        if (ids.isNullOrEmpty()) return@withContext
+        if (boxStore.get()?.isClosed != false) return@withContext
+
+        try { boxFor<T>()?.removeByKeys(ids) } catch (e: Exception) { }
     }
 }
 
