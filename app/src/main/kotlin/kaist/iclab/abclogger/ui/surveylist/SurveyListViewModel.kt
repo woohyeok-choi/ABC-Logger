@@ -24,9 +24,9 @@ class SurveyListViewModel(private val context: Context, private val collector: S
 
     private suspend fun getResponseRates() =
         (collector.getStatus() as? SurveyCollector.Status)?.let { status ->
-            val nReceived = status.nReceived ?: 0
             val nAnswered = status.nAnswered ?: 0
-            val rates = if (nReceived > 0) nReceived.toFloat() / nAnswered.toFloat() * 100 else 0.0F
+            val nReceived = status.nReceived ?: 0
+            val rates = if (nReceived > 0) nAnswered.toFloat() / nReceived.toFloat() * 100 else 0.0F
 
             "${context.getString(R.string.general_n_answered)}: $nAnswered" +
                     "/ ${context.getString(R.string.general_n_received)}: $nReceived " +
