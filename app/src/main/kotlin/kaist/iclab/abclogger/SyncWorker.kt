@@ -95,7 +95,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         try {
             val query = query(isUploadedProperty, false) ?: throw Exception("No corresponding query")
             val count = query.count()
-            Log.d("ZXCV", "$count")
+
             val uploadedKeys = (0 until count step N_UPLOADS).mapNotNull { offset ->
                 val entities = if (T::class.java == SurveyEntity::class.java) {
                     query.find(offset, N_UPLOADS).filter { entity -> (entity as? SurveyEntity)?.isAvailable() == false }
@@ -114,13 +114,13 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                     }
                 }.awaitAll().filterNotNull()
             }.flatten()
+
             ObjBox.removeByKeys<T>(uploadedKeys)
         } catch (e: Exception) {
             AppLog.ee(e)
             e.printStackTrace()
         }
     }
-
 
     private suspend fun uploadAll(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) {
         upload<PhysicalActivityTransitionEntity>(PhysicalActivityTransitionEntity_.isUploaded, stub)
@@ -224,6 +224,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                             .setSecondValue(entity.secondValue)
                             .setThirdValue(entity.thirdValue)
                             .setFourthValue(entity.fourthValue)
+                            .setCollection(entity.collection)
                             .build()
             )
             is InstalledAppEntity -> builder.setInstalledApp(

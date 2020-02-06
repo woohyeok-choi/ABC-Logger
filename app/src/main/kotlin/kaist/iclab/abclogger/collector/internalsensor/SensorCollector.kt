@@ -47,8 +47,8 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
         val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         val proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
-        lightSensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(1).toInt()) }
-        proximitySensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(1).toInt()) }
+        lightSensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(5).toInt()) }
+        proximitySensor?.let { sensorManager.registerListener(this, it, TimeUnit.SECONDS.toMicros(5).toInt()) }
 
         setStatus(Status(
                 isLightAvailable = lightSensor != null,

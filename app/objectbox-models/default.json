@@ -917,7 +917,7 @@
     },
     {
       "id": "22:5094520727689055866",
-      "lastPropertyId": "14:8354720909191942070",
+      "lastPropertyId": "15:2843438322382556903",
       "name": "ExternalSensorEntity",
       "properties": [
         {
@@ -971,6 +971,10 @@
         {
           "id": "14:8354720909191942070",
           "name": "fourthValue"
+        },
+        {
+          "id": "15:2843438322382556903",
+          "name": "collection"
         }
       ],
       "relations": []

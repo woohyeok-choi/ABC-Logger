@@ -55,14 +55,12 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                     .flatMapPublisher { setting ->
                         polarApi.startEcgStreaming(identifier, setting.maxSettings())
                     }.map { data ->
-                        data.samples.map { ecg ->
-                            ExternalSensorEntity(
-                                    sensorId = identifier,
-                                    name = "PolarH10",
-                                    description = "ECG/mV",
-                                    firstValue = ecg.toFloat()
-                            ).fill(timeMillis = System.currentTimeMillis())
-                        }
+                        ExternalSensorEntity(
+                                sensorId = identifier,
+                                name = "PolarH10",
+                                description = "ECG/mV",
+                                collection = data.samples?.joinToString(",") ?: ""
+                        ).fill(timeMillis = System.currentTimeMillis())
                     }.buffer(
                             5, TimeUnit.SECONDS
                     ).observeOn(
@@ -71,7 +69,7 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
                             Schedulers.from(Dispatchers.IO.asExecutor())
                     ).subscribe { entities ->
                         GlobalScope.launch {
-                            ObjBox.put(entities.flatten())
+                            ObjBox.put(entities)
                             setStatus(Status(lastTime = System.currentTimeMillis()))
                         }
                     }
@@ -113,24 +111,30 @@ class PolarH10Collector(val context: Context) : BaseCollector, PolarBleApiCallba
         ExternalSensorEntity(
                 sensorId = identifier,
                 name = "PolarH10",
-                description = "HR/ContactStatus/ContactStatusSupported",
+                description = "HR,ContactStatus,ContactStatusSupported",
                 firstValue = heartRate.toFloat(),
                 secondValue = if (contactStatus) 1.0F else 0.0F,
                 thirdValue = if (contactStatusSupported) 1.0F else 0.0F
         ).fill(timeMillis = timestamp).let { subject.onNext(it) }
 
         if (data.rrAvailable) {
-            data.rrs.zip(data.rrsMs).map { (rrSec, rrMs) ->
-                ExternalSensorEntity(
-                        sensorId = identifier,
-                        name = "PolarH10",
-                        description = "RRsec/RRms/ContactStatus/ContactStatusSupported",
-                        firstValue = rrSec.toFloat(),
-                        secondValue = rrMs.toFloat(),
-                        thirdValue = if (contactStatus) 1.0F else 0.0F,
-                        fourthValue = if (contactStatusSupported) 1.0F else 0.0F
-                ).fill(timeMillis = timestamp)
-            }.forEach { subject.onNext(it) }
+            ExternalSensorEntity(
+                    sensorId = identifier,
+                    name = "PolarH10",
+                    description = "ContactStatus,ContactStatusSupported,RRsec",
+                    thirdValue = if (contactStatus) 1.0F else 0.0F,
+                    fourthValue = if (contactStatusSupported) 1.0F else 0.0F,
+                    collection = data.rrs?.joinToString(",") ?: ""
+            ).fill(timeMillis = timestamp).let { subject.onNext(it) }
+
+            ExternalSensorEntity(
+                    sensorId = identifier,
+                    name = "PolarH10",
+                    description = "ContactStatus,ContactStatusSupported,RRmillis",
+                    thirdValue = if (contactStatus) 1.0F else 0.0F,
+                    fourthValue = if (contactStatusSupported) 1.0F else 0.0F,
+                    collection = data.rrsMs?.joinToString(",") ?: ""
+            ).fill(timeMillis = timestamp).let { subject.onNext(it) }
         }
     }
 

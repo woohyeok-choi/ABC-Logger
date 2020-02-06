@@ -29,7 +29,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 17
-        versionName "0.9.7"
+        versionName "0.9.7-a"
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
         buildConfigField("String", "DB_NAME", "\"abc-logger\"")
         buildConfigField("String", "PREF_NAME", "\"abc-logger-pref\"")
