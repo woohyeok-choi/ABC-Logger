@@ -66,7 +66,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             )
     )
 
-    override suspend fun doWork(): Result = withContext(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO + SupervisorJob()) {
         setForeground(foregroundInfo)
 
         val channel: ManagedChannel = AndroidChannelBuilder
@@ -145,7 +145,6 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         upload<DataTrafficEntity>(DataTrafficEntity_.isUploaded, stub)
         upload<WifiEntity>(WifiEntity_.isUploaded, stub)
     }
-
 
     private inline fun <reified T : Base> query(isUploadedProperty: Property<T>, isUploaded: Boolean): Query<T>? {
         return ObjBox.boxFor<T>()?.query()?.equal(isUploadedProperty, isUploaded)?.build()

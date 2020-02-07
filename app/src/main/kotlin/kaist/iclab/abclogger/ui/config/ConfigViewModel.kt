@@ -23,7 +23,7 @@ class ConfigViewModel(
     val errorStatus: MutableLiveData<Status> = MutableLiveData(Status.init())
     val configs: MutableLiveData<ArrayList<ConfigData>> = MutableLiveData()
 
-    fun update() = viewModelScope.launch {
+    fun update() = viewModelScope.launch(Dispatchers.IO + viewModelScope.coroutineContext) {
         try {
             errorStatus.postValue(Status.init())
             configs.postValue(
