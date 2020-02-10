@@ -8,9 +8,9 @@
   "initialDelaySec": 600,
   "intervalSec": 2400,
   "flexIntervalSec": 1200,
-  "dailyStartTimeHour": 10,
+  "dailyStartTimeHour": 13,
   "dailyStartTimeMinute": 0,
-  "dailyEndTimeHour": 22,
+  "dailyEndTimeHour": 1,
   "dailyEndTimeMinute": 0,
   "questions": [
     {
