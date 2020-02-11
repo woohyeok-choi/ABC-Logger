@@ -11,7 +11,7 @@
   "dailyStartTimeHour": 10,
   "dailyStartTimeMinute": 0,
   "dailyEndTimeHour": 23,
-  "dailyEndTimeMinute": 00,
+  "dailyEndTimeMinute": 0,
   "questions": [
     {
       "type": "HORIZONTAL_RADIO_BUTTON",
