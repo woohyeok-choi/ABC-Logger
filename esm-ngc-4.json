@@ -3,14 +3,14 @@
   "title": "감정 설문이 도착했습니다",
   "message": "설문에 응답해주세요",
   "instruction": "알림 도착 이후 10분 이내의 상황을 기준으로 아래에 응답해주세요",
-  "timeoutSec": 600,
+  "timeoutSec": 900,
   "timeoutPolicy": "DISABLED",
   "initialDelaySec": 60,
   "intervalSec": 7200,
   "flexIntervalSec": 1200,
   "dailyStartTimeHour": 10,
   "dailyStartTimeMinute": 0,
-  "dailyEndTimeHour": 23,
+  "dailyEndTimeHour": 22,
   "dailyEndTimeMinute": 0,
   "questions": [
     {
