@@ -5,7 +5,7 @@
   "instruction": "알림 도착 이후 10분 이내의 상황을 기준으로 아래에 응답해주세요",
   "timeoutSec": 600,
   "timeoutPolicy": "DISABLED",
-  "initialDelaySec": 600,
+  "initialDelaySec": 60,
   "intervalSec": 2400,
   "flexIntervalSec": 1200,
   "dailyStartTimeHour": 10,
