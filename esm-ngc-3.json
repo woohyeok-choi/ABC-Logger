@@ -8,10 +8,10 @@
   "initialDelaySec": 600,
   "intervalSec": 2400,
   "flexIntervalSec": 1200,
-  "dailyStartTimeHour": 13,
+  "dailyStartTimeHour": 12,
   "dailyStartTimeMinute": 0,
-  "dailyEndTimeHour": 1,
-  "dailyEndTimeMinute": 0,
+  "dailyEndTimeHour": 23,
+  "dailyEndTimeMinute": 59,
   "questions": [
     {
       "type": "HORIZONTAL_RADIO_BUTTON",
