@@ -1,39 +1,37 @@
 package kaist.iclab.abclogger
 
 import android.app.Application
-import android.util.Log
-import github.agustarc.koap.Koap
-import kaist.iclab.abclogger.grpc.DatumProto
-import kotlinx.coroutines.Dispatchers
+import kaist.iclab.abclogger.commons.AppLog
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 
-class App : Application(){
+class AbcApplication : Application(){
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "onCreate()")
+        AppLog.d(TAG, "onCreate()")
         startKoin {
             androidLogger()
-            androidContext(this@App)
+            androidContext(this@AbcApplication)
             modules(listOf(collectorModules, viewModelModules))
         }
         GlobalScope.launch {
-            ABC.bind(this@App)
-           // Debug.generateEntities(10 * 50000)
+            AbcCollector.bind(this@AbcApplication)
+
+            if (BuildConfig.IS_TEST_MODE) {
+                Debug.generateEntities(500000)
+            }
         }
     }
 
     override fun onTerminate() {
         super.onTerminate()
-        Log.d(TAG, "onTerminate()")
-
+        AppLog.d(TAG, "onTerminate()")
     }
 
     companion object {
-        val TAG = App::class.java.canonicalName
+        val TAG = AbcApplication::class.java.canonicalName
     }
 }

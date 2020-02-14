@@ -27,7 +27,7 @@
         tools:ignore="ProtectedPermissions" />
 
     <application
-        android:name=".App"
+        android:name=".AbcApplication"
         android:allowBackup="false"
         android:largeHeap="true"
         android:fullBackupContent="@xml/backup_descriptor"
@@ -102,10 +102,11 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <service android:name=".ABC$ABCLoggerService" />
+        <service android:name=".AbcCollector$LoggerService" />
+        <service android:name=".SyncWorker$CancelIntentService" />
 
         <receiver
-            android:name=".BootReceiver"
+            android:name=".AbcCollector$BootReceiver"
             android:enabled="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>

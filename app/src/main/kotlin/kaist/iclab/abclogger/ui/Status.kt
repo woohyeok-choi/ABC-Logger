@@ -1,7 +1,6 @@
 package kaist.iclab.abclogger.ui
 
-import kaist.iclab.abclogger.ABCException
-import kaist.iclab.abclogger.UnhandledException
+import kaist.iclab.abclogger.commons.ABCException
 
 data class Status(val state: Int, val error: ABCException? = null) {
     companion object {
@@ -18,4 +17,8 @@ data class Status(val state: Int, val error: ABCException? = null) {
             else -> ABCException.wrap(t)
         })
     }
+
+    fun isSucceeded() : Boolean = state == STATE_SUCCESS
+    fun isLoading() : Boolean = state == STATE_LOADING
+    fun isFailed() : Boolean = state == STATE_FAILURE
 }

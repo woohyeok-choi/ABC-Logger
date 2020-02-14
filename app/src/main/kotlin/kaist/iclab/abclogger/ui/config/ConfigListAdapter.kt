@@ -14,56 +14,45 @@ import kaist.iclab.abclogger.databinding.ConfigSimpleListItemBinding
 import kaist.iclab.abclogger.databinding.ConfigSwitchListItemBinding
 
 class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
+    private fun getDiffCallback(oldValue: ArrayList<ConfigData>, newValue: ArrayList<ConfigData>) : DiffUtil.Callback = object : DiffUtil.Callback() {
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldValue.getOrNull(oldItemPosition) ?: return false
+            val newItem = newValue.getOrNull(newItemPosition) ?: return false
+
+            return oldItem.title == newItem.title
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldValue.getOrNull(oldItemPosition) ?: return false
+            val newItem = newValue.getOrNull(newItemPosition) ?: return false
+
+            if (oldItem is ConfigHeader && newItem is ConfigHeader) {
+                return oldItem.title == newItem.title
+            }
+
+            if (oldItem is ConfigItem && newItem is ConfigItem) {
+                return oldItem == newItem
+            }
+
+            return false
+        }
+
+        override fun getOldListSize(): Int = oldValue.size
+
+        override fun getNewListSize(): Int = newValue.size
+    }
+
     var items: ArrayList<ConfigData> = arrayListOf()
         set(value) {
             if (field.isNotEmpty()) {
-                val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-                    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                        val oldItem = field.getOrNull(oldItemPosition) ?: return false
-                        val newItem = value.getOrNull(newItemPosition) ?: return false
-
-                        if (oldItem is ConfigHeader && newItem is ConfigHeader) {
-                            return oldItem.title == newItem.title
-                        }
-
-                        if (oldItem is ConfigItem && newItem is ConfigItem) {
-                            return if (oldItem.key.isEmpty() && newItem.key.isEmpty()) {
-                                oldItem.title == newItem.title
-                            } else {
-                                oldItem.key == newItem.key
-                            }
-                        }
-                        return false
-                    }
-
-                    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                        val oldItem = field.getOrNull(oldItemPosition) ?: return false
-                        val newItem = value.getOrNull(newItemPosition) ?: return false
-
-                        if (oldItem is ConfigHeader && newItem is ConfigHeader) {
-                            return oldItem.title == newItem.title
-                        }
-
-                        if (oldItem is ConfigItem && newItem is ConfigItem) {
-                            return oldItem == newItem
-                        }
-                        return false
-                    }
-
-                    override fun getOldListSize(): Int = field.size
-
-                    override fun getNewListSize(): Int = value.size
-                })
+                val result = DiffUtil.calculateDiff(getDiffCallback(field, value))
                 field = value
                 result.dispatchUpdatesTo(this)
             } else {
                 field = value
-                notifyItemRangeInserted(0, value.size)
+                notifyDataSetChanged()
             }
         }
-
-    var onClick: ((key: String, item: ConfigData) -> Unit)? = null
-    var onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             when (viewType) {
@@ -82,9 +71,7 @@ class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
             }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        items.getOrNull(position)?.let {
-            holder.onBind(position, it, onClick, onCheckedChanged)
-        }
+        items.getOrNull(position)?.let { data -> holder.onBind(position, data) }
     }
 
     override fun getItemViewType(position: Int): Int =
@@ -100,15 +87,12 @@ class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
     override fun getItemCount(): Int = items.size
 
     abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        abstract fun onBind(position: Int,
-                            configData: ConfigData,
-                            onClick: ((key: String, item: ConfigData) -> Unit)?,
-                            onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?
-        )
+        abstract fun onBind(position: Int, configData: ConfigData)
+
     }
 
     class ConfigHeaderViewHolder(val binding: ConfigHeaderListItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String, item: ConfigData) -> Unit)?, onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?) {
+        override fun onBind(position: Int, configData: ConfigData) {
             (configData as? ConfigHeader)?.let { item ->
                 binding.item = item
                 binding.executePendingBindings()
@@ -118,22 +102,24 @@ class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
 
 
     class SimpleConfigItemViewHolder(val binding: ConfigSimpleListItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String, item: ConfigData) -> Unit)?, onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?) {
+        override fun onBind(position: Int, configData: ConfigData) {
             (configData as? SimpleConfigItem)?.let { item ->
                 binding.item = item
-                binding.root.setOnClickListener { onClick?.invoke(item.key, item) }
+                binding.root.setOnClickListener {
+                    item.onAction?.invoke()
+                }
                 binding.executePendingBindings()
             }
         }
     }
 
     class SwitchConfigItemViewHolder(val binding: ConfigSwitchListItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String, item: ConfigData) -> Unit)?, onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?) {
+        override fun onBind(position: Int, configData: ConfigData) {
             (configData as? SwitchConfigItem)?.let { item ->
                 binding.item = item
                 binding.root.setOnClickListener { binding.switchOnOff.toggle() }
                 binding.switchOnOff.setOnCheckedChangeListener { _, isChecked ->
-                    if (item.isChecked != isChecked) onCheckedChanged?.invoke(item.key, item, isChecked)
+                    if (item.isChecked != isChecked) item.onChange?.invoke(isChecked)
                 }
                 binding.executePendingBindings()
             }
@@ -141,14 +127,14 @@ class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
     }
 
     class DataConfigItemViewHolder(val binding: ConfigDataListItemBinding) : ViewHolder(binding.root) {
-        override fun onBind(position: Int, configData: ConfigData, onClick: ((key: String, item: ConfigData) -> Unit)?, onCheckedChanged: ((key: String, item: ConfigData, isChecked: Boolean) -> Unit)?) {
+        override fun onBind(position: Int, configData: ConfigData) {
             (configData as? DataConfigItem)?.let { item ->
                 binding.item = item
                 binding.root.setOnClickListener {
-                    if (!item.isChecked) onClick?.invoke(item.key, item)
+                    if (!item.isChecked) item.onAction?.invoke()
                 }
                 binding.switchOnOff.setOnCheckedChangeListener { _, isChecked ->
-                    if (item.isChecked != isChecked) onCheckedChanged?.invoke(item.key, item, isChecked)
+                    if (item.isChecked != isChecked) item.onChange?.invoke(isChecked)
                 }
                 binding.executePendingBindings()
             }

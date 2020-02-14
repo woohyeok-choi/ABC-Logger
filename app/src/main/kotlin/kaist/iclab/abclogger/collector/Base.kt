@@ -10,6 +10,5 @@ abstract class Base(
         var timestamp: Long = -1,
         var utcOffset: Float = Float.MIN_VALUE,
         var subjectEmail: String = "",
-        var deviceInfo: String = "",
-        var isUploaded: Boolean = false
+        var deviceInfo: String = ""
 )

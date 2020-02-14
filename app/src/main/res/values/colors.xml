@@ -4,11 +4,12 @@
     <color name="color_primary_dark">#008e76</color>
     <color name="color_button">#01a18c</color>
     <color name="color_accent">#FF4081</color>
-    <color name="color_hint">#eeeeee</color>
+    <color name="color_hint">#CCCCCC</color>
     <color name="color_gray">#e0e0e0</color>
     <color name="color_title">#111111</color>
     <color name="color_blue">#4285f4</color>
     <color name="color_message">#7a7a7a</color>
     <color name="color_disabled">#dbdbdb</color>
     <color name="color_white_alpha">#33DBDBDB</color>
+    <color name="color_header_background">#EEEEEE</color>
 </resources>

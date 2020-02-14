@@ -12,8 +12,8 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.fillArguments
-import kaist.iclab.abclogger.setHorizontalPadding
+import kaist.iclab.abclogger.commons.fillArguments
+import kaist.iclab.abclogger.commons.setHorizontalPadding
 
 class EditTextDialogFragment : DialogFragment() {
     private lateinit var title: String

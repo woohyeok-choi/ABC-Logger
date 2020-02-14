@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger
+package kaist.iclab.abclogger.commons
 
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics

@@ -1,46 +1,31 @@
 package kaist.iclab.abclogger.collector.survey.setting
 
+import android.os.Bundle
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kaist.iclab.abclogger.InvalidSurveyFormatException
-import kaist.iclab.abclogger.InvalidUrlException
+import kaist.iclab.abclogger.commons.InvalidSurveyFormatException
+import kaist.iclab.abclogger.commons.InvalidUrlException
 import kaist.iclab.abclogger.collector.survey.Survey
-import kaist.iclab.abclogger.httpGet
-import kaist.iclab.abclogger.ui.Status
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.lang.Exception
+import kaist.iclab.abclogger.commons.httpGet
+import kaist.iclab.abclogger.ui.base.BaseViewModel
 
-class SurveyPreviewViewModel: ViewModel() {
-    private val surveyLiveData = MutableLiveData<Survey>()
-    val loadStatus = MutableLiveData<Status>(Status.init())
+class SurveyPreviewViewModel(navigator: SurveyPreviewNavigator): BaseViewModel<SurveyPreviewNavigator>(navigator) {
+    private val surveyData = MutableLiveData<Survey>()
 
-    val title = Transformations.map(surveyLiveData) { survey -> survey?.title ?: "" }
-    val message = Transformations.map(surveyLiveData) { survey -> survey?.message ?: "" }
-    val instruction = Transformations.map(surveyLiveData) { survey -> survey?.instruction ?: ""}
+    val title = Transformations.map(surveyData) { survey -> survey?.title ?: "" }
+    val message = Transformations.map(surveyData) { survey -> survey?.message ?: "" }
+    val instruction = Transformations.map(surveyData) { survey -> survey?.instruction ?: ""}
+    val questions = Transformations.map(surveyData) { survey -> survey?.questions ?: arrayOf() }
 
-    /**
-     *  Here, questions are used only in a way of programs.
-     */
-    val questions = Transformations.map(surveyLiveData) { survey -> survey?.questions ?: arrayOf() }
+    override suspend fun onLoad(extras: Bundle?) {
+        val url = extras?.getString(SurveyPreviewDialogFragment.ARG_SURVEY_URL) ?: ""
+        if (!URLUtil.isValidUrl(url)) throw InvalidUrlException()
+        val json = httpGet(url) ?: throw InvalidSurveyFormatException()
+        val survey = Survey.fromJson(json) ?: throw InvalidSurveyFormatException()
 
-    fun load(url: String) = viewModelScope.launch {
-        loadStatus.postValue(Status.loading())
-
-        try {
-            if (!URLUtil.isValidUrl(url)) throw InvalidUrlException()
-            val survey = withContext(Dispatchers.IO) {
-                val json = httpGet(url) ?: throw InvalidSurveyFormatException()
-                Survey.fromJson(json) ?: throw InvalidSurveyFormatException()
-            }
-            surveyLiveData.postValue(survey)
-            loadStatus.postValue(Status.success())
-        } catch (e: Exception) {
-            loadStatus.postValue(Status.failure(e))
-        }
+        surveyData.postValue(survey)
     }
+
+    override suspend fun onStore() { }
 }

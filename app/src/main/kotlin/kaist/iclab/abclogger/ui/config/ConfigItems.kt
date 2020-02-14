@@ -1,10 +1,8 @@
 package kaist.iclab.abclogger.ui.config
 
-import android.content.Intent
+open class ConfigData(open val title: String)
 
-interface ConfigData
-
-data class ConfigHeader(val title: String) : ConfigData
+data class ConfigHeader(override val title: String) : ConfigData(title)
 
 class ConfigHeaderBuilder {
     var title: String = ""
@@ -12,64 +10,64 @@ class ConfigHeaderBuilder {
     fun build() : ConfigHeader = ConfigHeader(title)
 }
 
-abstract class ConfigItem (
-    open val key: String,
-    open val title: String,
+
+open class ConfigItem (
+    override val title: String,
     open val description: String
-) : ConfigData
+) : ConfigData(title)
 
 data class SimpleConfigItem(
-        override val key: String,
         override val title: String,
-        override val description: String
-) : ConfigItem(key, title, description)
+        override val description: String,
+        var onAction: (() -> Unit)? = null
+) : ConfigItem(title, description) {
+    class Builder {
+        var title: String = ""
+        var description: String = ""
+        var onAction: (() -> Unit)? = null
 
-class SimpleConfigItemBuilder {
-    var key : String = ""
-    var title: String = ""
-    var description: String = ""
-
-    fun build() : SimpleConfigItem = SimpleConfigItem(key, title, description)
+        fun build() : SimpleConfigItem = SimpleConfigItem(title, description, onAction)
+    }
 }
 
 data class SwitchConfigItem(
-        override val key: String,
         override val title: String,
         override val description: String,
-        val isChecked: Boolean = false
-) : ConfigItem(key, title, description)
+        val isChecked: Boolean = false,
+        var onChange: ((Boolean) -> Unit)? = null
+) : ConfigItem(title, description) {
+    class Builder {
+        var title: String = ""
+        var description: String = ""
+        var isChecked: Boolean = false
+        var onChange: ((Boolean) -> Unit)? = null
 
-class SwitchConfigItemBuilder {
-    var key : String = ""
-    var title: String = ""
-    var description: String = ""
-    var isChecked: Boolean = false
-
-    fun build() : SwitchConfigItem = SwitchConfigItem(key, title, description, isChecked)
+        fun build() : SwitchConfigItem = SwitchConfigItem( title, description, isChecked, onChange)
+    }
 }
 
 data class DataConfigItem(
-        override val key: String,
         override val title: String,
         override val description: String,
         val isChecked: Boolean = false,
         val isAvailable: Boolean = false,
         val info: String = "",
-        val intentForSetup: Intent? = null
-) : ConfigItem(key, title, description)
+        val onAction: (() -> Unit)? = null,
+        val onChange: ((Boolean) -> Unit)? = null
+) : ConfigItem(title, description) {
+    class Builder {
+        var title: String = ""
+        var description: String = ""
+        var isChecked: Boolean = false
+        var isAvailable: Boolean = false
+        var info: String = ""
+        var onAction: (() -> Unit)? = null
+        var onChange: ((Boolean) -> Unit)? = null
 
-class DataConfigItemBuilder {
-    var key : String = ""
-    var title: String = ""
-    var description: String = ""
-    var isChecked: Boolean = false
-    var isAvailable: Boolean = false
-    var info: String = ""
-    var intent: Intent? = null
-
-    fun build() : DataConfigItem = DataConfigItem(
-            key, title, description, isChecked, isAvailable, info, intent
-    )
+        fun build() : DataConfigItem = DataConfigItem(
+                title, description, isChecked, isAvailable, info, onAction, onChange
+        )
+    }
 }
 
 /**
@@ -83,20 +81,20 @@ class Configs : ArrayList<ConfigData> () {
         add(builder.build())
     }
 
-    suspend fun simple(init: suspend SimpleConfigItemBuilder.() -> Unit) {
-        val builder = SimpleConfigItemBuilder()
+    suspend fun simple(init: suspend SimpleConfigItem.Builder.() -> Unit) {
+        val builder = SimpleConfigItem.Builder()
         builder.init()
         add(builder.build())
     }
 
-    suspend fun switch(init: suspend SwitchConfigItemBuilder.() -> Unit) {
-        val builder = SwitchConfigItemBuilder()
+    suspend fun switch(init: suspend SwitchConfigItem.Builder.() -> Unit) {
+        val builder = SwitchConfigItem.Builder()
         builder.init()
         add(builder.build())
     }
 
-    suspend fun data(init: suspend DataConfigItemBuilder.() -> Unit) {
-        val builder = DataConfigItemBuilder()
+    suspend fun data(init: suspend DataConfigItem.Builder.() -> Unit) {
+        val builder = DataConfigItem.Builder()
         builder.init()
         add(builder.build())
     }

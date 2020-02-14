@@ -165,14 +165,16 @@ object Debug {
         }
     })*/
 
-    suspend fun generateEntities(size: Int) {
+    fun generateEntities(size: Int) {
+        ObjBox.boxFor<PhysicalActivityTransitionEntity>()?.removeAll()
         (0..size).map {
             PhysicalActivityTransitionEntity(type = "ASDFASDFASDFASDFASDFASDFASDF", isEntered = true).fill(System.currentTimeMillis())
         }.let { ObjBox.put(it) }
         Log.d("ZXCV", "${ObjBox.boxFor<PhysicalActivityTransitionEntity>()?.count()}")
     }
 
-    suspend fun generateSurveyEntities (size: Int) {
+    fun generateSurveyEntities (size: Int) {
+        ObjBox.boxFor<SurveyEntity>()?.removeAll()
         val time = System.currentTimeMillis()
         (0..size).map {
             SurveyEntity(
@@ -183,16 +185,10 @@ object Debug {
                     deliveredTime = time + it * TimeUnit.MINUTES.toMillis(5),
                     json = testJson
             ).fill(System.currentTimeMillis())
-        }.let { ObjBox.put(it) }
-
-        val query = ObjBox.boxFor<SurveyEntity>()?.query()?.build() ?: return
-        val count = query.count()
-
-        for (offset in 0 until count step 5) {
-            val s = query.find(offset, 5)
-            if (s.isEmpty()) break
-            Log.d("Test", "First = ${s.firstOrNull()?.title}/Last = ${s.lastOrNull()?.title}")
+        }.let {
+            ObjBox.put(it)
         }
+
     }
 
     private val testJson = """

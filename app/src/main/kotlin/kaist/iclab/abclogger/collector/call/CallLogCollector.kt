@@ -12,30 +12,57 @@ import androidx.core.database.getStringOrNull
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.*
-import kotlinx.coroutines.GlobalScope
+import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.commons.safeRegisterContentObserver
+import kaist.iclab.abclogger.commons.safeUnregisterContentObserver
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
-class CallLogCollector(val context: Context) : BaseCollector {
+class CallLogCollector(private val context: Context) : BaseCollector<CallLogCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val lastTimeAccessed: Long? = null) : BaseStatus() {
         override fun info(): String = ""
     }
 
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_call_log)
+
+    override val description: String = context.getString(R.string.data_desc_call_log)
+
+    override val requiredPermissions: List<String> = listOf(
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.READ_CONTACTS
+    )
+
+    override val newIntentForSetUp: Intent? = null
+
+    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+
+    override suspend fun onStart() {
+        context.contentResolver.safeUnregisterContentObserver(callLogObserver)
+        context.contentResolver.safeRegisterContentObserver(CallLog.Calls.CONTENT_URI, true, callLogObserver)
+    }
+
+    override suspend fun onStop() {
+        context.contentResolver.safeUnregisterContentObserver(callLogObserver)
+    }
+
     private val callLogObserver: ContentObserver by lazy {
         object : ContentObserver(Handler()) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                GlobalScope.launch { handleObserver() }
+                handleCallLogRetrieval()
             }
         }
     }
 
-    private suspend fun handleObserver() {
+    private fun handleCallLogRetrieval() = launch {
         val curTime = System.currentTimeMillis()
         val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = (getStatus() as? Status)?.lastTimeAccessed
+        val lastTimeAccessed = getStatus()?.lastTimeAccessed
                 ?: curTime - TimeUnit.DAYS.toMillis(1)
 
         getRecentContents(
@@ -92,24 +119,4 @@ class CallLogCollector(val context: Context) : BaseCollector {
         CallLog.Calls.PRESENTATION_UNKNOWN -> "UNKNOWN"
         else -> "UNDEFINED"
     }
-
-    override suspend fun onStart() {
-        context.contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogObserver)
-    }
-
-    override suspend fun onStop() {
-        context.contentResolver.unregisterContentObserver(callLogObserver)
-    }
-
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override val requiredPermissions: List<String>
-        get() = listOf(
-                Manifest.permission.READ_CALL_LOG,
-                Manifest.permission.READ_CONTACTS
-        )
-
-    override val newIntentForSetUp: Intent?
-        get() = null
-
 }

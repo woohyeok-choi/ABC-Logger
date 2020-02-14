@@ -13,60 +13,35 @@ import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.collector.setStatus
-import kotlinx.coroutines.GlobalScope
+import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.commons.safeRegisterReceiver
+import kaist.iclab.abclogger.commons.safeUnregisterReceiver
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
-class WifiCollector(val context: Context) : BaseCollector {
+class WifiCollector(private val context: Context) : BaseCollector<WifiCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null) : BaseStatus() {
+                      override val lastTime: Long? = null,
+                      override val lastError: Throwable? = null) : BaseStatus() {
         override fun info(): String = ""
     }
 
-    private val wifiManager: WifiManager by lazy {
-        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    }
+    override val clazz: KClass<Status> = Status::class
 
-    private val alarmManager: AlarmManager by lazy {
-        context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    }
+    override val name: String = context.getString(R.string.data_name_wifi)
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                GlobalScope.launch { handleWifiUpdate() }
-            }
-        }
-    }
+    override val description: String = context.getString(R.string.data_desc_wifi)
 
-    private val intent: PendingIntent = PendingIntent.getBroadcast(
-            context, REQUEST_CODE_WIFI_SCAN,
-            Intent(ACTION_WIFI_SCAN), PendingIntent.FLAG_UPDATE_CURRENT
+    override val requiredPermissions: List<String> = listOf(
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
     )
 
-    private val filter = IntentFilter().apply {
-        addAction(ACTION_WIFI_SCAN)
-        addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
-    }
+    override val newIntentForSetUp: Intent? = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
-    private suspend fun handleWifiUpdate() {
-        val timestamp = System.currentTimeMillis()
-
-        try {
-            wifiManager.scanResults.map { result ->
-                WifiEntity(
-                        bssid = result.BSSID,
-                        ssid = result.SSID,
-                        frequency = result.frequency,
-                        rssi = result.level
-                ).fill(timeMillis = timestamp)
-            }.also { entity ->
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = timestamp))
-            }
-        } catch (e: SecurityException) { }
-    }
+    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
 
     override suspend fun onStart() {
         context.safeRegisterReceiver(receiver, filter)
@@ -85,17 +60,51 @@ class WifiCollector(val context: Context) : BaseCollector {
         alarmManager.cancel(intent)
     }
 
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+    private val wifiManager: WifiManager by lazy {
+        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    }
 
-    override val requiredPermissions: List<String>
-        get() = listOf(
-                Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-        )
+    private val alarmManager: AlarmManager by lazy {
+        context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    }
 
-    override val newIntentForSetUp: Intent?
-        get() = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+    private val receiver: BroadcastReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                handleWifiUpdate()
+            }
+        }
+    }
+
+    private val intent: PendingIntent = PendingIntent.getBroadcast(
+            context, REQUEST_CODE_WIFI_SCAN,
+            Intent(ACTION_WIFI_SCAN), PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
+    private val filter = IntentFilter().apply {
+        addAction(ACTION_WIFI_SCAN)
+        addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+    }
+
+    private fun handleWifiUpdate() = launch {
+        val timestamp = System.currentTimeMillis()
+
+        try {
+            wifiManager.scanResults.map { result ->
+                WifiEntity(
+                        bssid = result.BSSID,
+                        ssid = result.SSID,
+                        frequency = result.frequency,
+                        rssi = result.level
+                ).fill(timeMillis = timestamp)
+            }.also { entity ->
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = timestamp))
+            }
+        } catch (e: SecurityException) {
+            setStatus(Status(lastError = e))
+        } catch (e: Exception) { }
+    }
 
     companion object {
         private const val REQUEST_CODE_WIFI_SCAN = 0xf0

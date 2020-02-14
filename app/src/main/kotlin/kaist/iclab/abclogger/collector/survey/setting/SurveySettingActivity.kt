@@ -1,34 +1,59 @@
 package kaist.iclab.abclogger.collector.survey.setting
 
+import android.view.MenuItem
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
+import kaist.iclab.abclogger.BR
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.ui.base.BaseSettingActivity
+import kaist.iclab.abclogger.ui.base.BaseToolbarActivity
 import kaist.iclab.abclogger.databinding.LayoutSettingSurveyBinding
+import kaist.iclab.abclogger.commons.showToast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
-class SurveySettingActivity : BaseSettingActivity<LayoutSettingSurveyBinding, SurveySettingViewModel>() {
-    override val viewModel: SurveySettingViewModel by viewModel()
+class SurveySettingActivity : BaseToolbarActivity<LayoutSettingSurveyBinding, SurveySettingViewModel>(), SurveySettingNavigator {
+    override val viewModel: SurveySettingViewModel by viewModel { parametersOf(this) }
 
-    override val contentLayoutRes: Int
-        get() = R.layout.layout_setting_survey
+    override val layoutRes: Int = R.layout.layout_setting_survey
 
-    override val titleStringRes: Int
-        get() = R.string.data_name_survey
+    override val titleRes: Int = R.string.data_name_survey
 
-    override fun initialize() {
-        dataBinding.viewModel = viewModel
+    override val menuId: Int = R.menu.menu_activity_settings
 
-        val adapter = SurveySettingAdapter().apply {
+    override val viewModelVariable: Int = BR.viewModel
+
+    override fun beforeExecutePendingBindings() {
+        val adapter = SurveySettingListAdapter().apply {
             onPreviewClick = { url -> SurveyPreviewDialogFragment.showDialog(supportFragmentManager, url) }
             onRemoveClick = { item -> viewModel.removeItem(item) }
         }
 
         dataBinding.recyclerView.adapter = adapter
         dataBinding.btnAddItem.setOnClickListener { viewModel.addItem() }
-        viewModel.items.observe(this) { items -> if (items != null) adapter.items = items }
+        viewModel.items.observe(this) { items -> items?.let { adapter.items = it } }
     }
 
-    override fun onSaveSelected() {
-        viewModel.save { finish() }
+    override fun navigateStore() {
+        lifecycleScope.launch(Dispatchers.Main) { finish() }
+    }
+
+    override fun navigateError(throwable: Throwable) {
+        lifecycleScope.launch(Dispatchers.Main) { showToast(throwable) }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            R.id.menu_activity_settings_save -> {
+                viewModel.store()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }

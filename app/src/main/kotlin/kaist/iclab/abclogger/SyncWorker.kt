@@ -1,59 +1,46 @@
 package kaist.iclab.abclogger
 
+import android.app.ActivityManager
+import android.app.IntentService
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.work.*
 import io.grpc.ManagedChannel
 import io.grpc.android.AndroidChannelBuilder
-import io.objectbox.Property
-import io.objectbox.query.Query
 import kaist.iclab.abclogger.collector.Base
 import kaist.iclab.abclogger.collector.activity.PhysicalActivityEntity
-import kaist.iclab.abclogger.collector.activity.PhysicalActivityEntity_
 import kaist.iclab.abclogger.collector.activity.PhysicalActivityTransitionEntity
-import kaist.iclab.abclogger.collector.activity.PhysicalActivityTransitionEntity_
 import kaist.iclab.abclogger.collector.appusage.AppUsageEventEntity
-import kaist.iclab.abclogger.collector.appusage.AppUsageEventEntity_
 import kaist.iclab.abclogger.collector.battery.BatteryEntity
-import kaist.iclab.abclogger.collector.battery.BatteryEntity_
 import kaist.iclab.abclogger.collector.bluetooth.BluetoothEntity
-import kaist.iclab.abclogger.collector.bluetooth.BluetoothEntity_
 import kaist.iclab.abclogger.collector.call.CallLogEntity
-import kaist.iclab.abclogger.collector.call.CallLogEntity_
 import kaist.iclab.abclogger.collector.event.DeviceEventEntity
-import kaist.iclab.abclogger.collector.event.DeviceEventEntity_
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
-import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity_
 import kaist.iclab.abclogger.collector.install.InstalledAppEntity
-import kaist.iclab.abclogger.collector.install.InstalledAppEntity_
 import kaist.iclab.abclogger.collector.internalsensor.SensorEntity
-import kaist.iclab.abclogger.collector.internalsensor.SensorEntity_
 import kaist.iclab.abclogger.collector.keylog.KeyLogEntity
-import kaist.iclab.abclogger.collector.keylog.KeyLogEntity_
 import kaist.iclab.abclogger.collector.location.LocationEntity
-import kaist.iclab.abclogger.collector.location.LocationEntity_
 import kaist.iclab.abclogger.collector.media.MediaEntity
-import kaist.iclab.abclogger.collector.media.MediaEntity_
 import kaist.iclab.abclogger.collector.message.MessageEntity
-import kaist.iclab.abclogger.collector.message.MessageEntity_
 import kaist.iclab.abclogger.collector.notification.NotificationEntity
-import kaist.iclab.abclogger.collector.notification.NotificationEntity_
 import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatEntity
-import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatEntity_
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
-import kaist.iclab.abclogger.collector.survey.SurveyEntity_
 import kaist.iclab.abclogger.collector.traffic.DataTrafficEntity
-import kaist.iclab.abclogger.collector.traffic.DataTrafficEntity_
 import kaist.iclab.abclogger.collector.wifi.WifiEntity
-import kaist.iclab.abclogger.collector.wifi.WifiEntity_
+import kaist.iclab.abclogger.commons.Notifications
 import kaist.iclab.abclogger.grpc.DataOperationsCoroutineGrpc
 import kaist.iclab.abclogger.grpc.DatumProto
 import kotlinx.coroutines.*
-import java.lang.ref.WeakReference
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-
 class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    private val cancelIntent: PendingIntent = PendingIntent.getService(
+            applicationContext, REQUEST_CODE_CANCEL_SYNC, Intent(ACTION_CANCEL_SYNC), PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
     private val foregroundInfo = ForegroundInfo(
             Notifications.ID_SYNC_PROGRESS,
             Notifications.build(
@@ -62,15 +49,24 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                     title = applicationContext.getString(R.string.ntf_title_sync),
                     text = applicationContext.getString(R.string.ntf_text_sync),
                     progress = 0,
-                    indeterminate = true
+                    indeterminate = true,
+                    intent = cancelIntent,
+                    actions = listOf(
+                            NotificationCompat.Action.Builder(
+                                    R.drawable.baseline_close_white_24,
+                                    applicationContext.getString(R.string.ntf_action_sync_cancel),
+                                    WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
+                            ).build()
+                    )
             )
     )
 
-    override suspend fun doWork(): Result = withContext(Dispatchers.IO + SupervisorJob()) {
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         setForeground(foregroundInfo)
 
+
         val channel: ManagedChannel = AndroidChannelBuilder
-                .forTarget(BuildConfig.SERVER_ADDRESS)
+                .forTarget(if (BuildConfig.IS_TEST_MODE) BuildConfig.TEST_SERVER_ADDRESS else BuildConfig.SERVER_ADDRESS)
                 .usePlaintext()
                 .context(applicationContext)
                 .executor(Dispatchers.IO.asExecutor())
@@ -91,63 +87,66 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         return@withContext Result.success()
     }
 
-    private suspend inline fun <reified T : Base> upload(isUploadedProperty: Property<T>,
-                                                         stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) = coroutineScope {
-        try {
-            val deadlineStub = stub.withDeadlineAfter(5, TimeUnit.MINUTES)
+    private suspend inline fun <reified T : Base> upload(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) = coroutineScope {
+        val ids = ObjBox.query<T>()?.build()?.findIds() ?: return@coroutineScope
+        val size = ids.size
 
-            while(true) {
-                val query = query(isUploadedProperty, false) ?: throw Exception("No corresponding query")
-                if (query.count() == 0L) break
-
-                val entities: List<T> = if (T::class.java == SurveyEntity::class.java) {
-                    query.find(0, N_UPLOADS).filter { entity -> (entity as? SurveyEntity)?.isAvailable() == false }
-                } else {
-                    query.find(0, N_UPLOADS)
-                }
-
-                entities.map { entity ->
-                    async(Dispatchers.IO) {
-                        try {
-                            val proto = toProto(entity) ?: throw Exception("No corresponding Protobuf")
-                            deadlineStub.createDatum(proto)
-                            ObjBox.boxFor<T>()?.remove(entity)
-                        } catch (e: Exception) {
-                            null
-                        }
-                    }
-                }.awaitAll()
+        (0 until size step N_UPLOADS).forEach { offset ->
+            while(isLowMemory()) {
+                Log.d("SyncWorker", "isLowMemory...")
+                System.runFinalization()
+                System.gc()
+                delay(TimeUnit.SECONDS.toMillis(5))
             }
-        } catch (e: Exception) {
-            AppLog.ee(e)
-            e.printStackTrace()
+
+            val deadlineStub = stub.withDeadlineAfter(1, TimeUnit.MINUTES)
+
+            (offset..offset + N_UPLOADS).map { index ->
+                async {
+                    try {
+                        val id = ids[index]
+                        val entity = ObjBox.get<T>(id) ?: throw Exception("No corresponding entity.")
+                        val proto = toProto(entity) ?: throw Exception("No corresponding protobuf.")
+
+                        deadlineStub.createDatum(proto)
+                        ObjBox.remove(entity)
+                    } catch (e: Exception) { }
+                }
+            }.awaitAll()
         }
     }
 
-    private suspend fun uploadAll(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) {
-        upload<PhysicalActivityTransitionEntity>(PhysicalActivityTransitionEntity_.isUploaded, stub)
-        upload<PhysicalActivityEntity>(PhysicalActivityEntity_.isUploaded, stub)
-        upload<AppUsageEventEntity>(AppUsageEventEntity_.isUploaded, stub)
-        upload<BatteryEntity>(BatteryEntity_.isUploaded, stub)
-        upload<BluetoothEntity>(BluetoothEntity_.isUploaded, stub)
-        upload<CallLogEntity>(CallLogEntity_.isUploaded, stub)
-        upload<DeviceEventEntity>(DeviceEventEntity_.isUploaded, stub)
-        upload<ExternalSensorEntity>(ExternalSensorEntity_.isUploaded, stub)
-        upload<InstalledAppEntity>(InstalledAppEntity_.isUploaded, stub)
-        upload<KeyLogEntity>(KeyLogEntity_.isUploaded, stub)
-        upload<LocationEntity>(LocationEntity_.isUploaded, stub)
-        upload<MediaEntity>(MediaEntity_.isUploaded, stub)
-        upload<MessageEntity>(MessageEntity_.isUploaded, stub)
-        upload<NotificationEntity>(NotificationEntity_.isUploaded, stub)
-        upload<PhysicalStatEntity>(PhysicalStatEntity_.isUploaded, stub)
-        upload<SensorEntity>(SensorEntity_.isUploaded, stub)
-        upload<SurveyEntity>(SurveyEntity_.isUploaded, stub)
-        upload<DataTrafficEntity>(DataTrafficEntity_.isUploaded, stub)
-        upload<WifiEntity>(WifiEntity_.isUploaded, stub)
+    private fun isLowMemory() : Boolean {
+        val manager = applicationContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val maxHeapSize = manager.largeMemoryClass
+        val runtime = Runtime.getRuntime()
+        val usedMemory = runtime.totalMemory() - runtime.freeMemory()
+        val usedPercentage = usedMemory.toFloat() / (maxHeapSize * 1e6).toFloat()
+        Log.d("SyncWorker", "usedPercentage: $usedPercentage / maxHeapSize: $maxHeapSize" )
+
+        return usedPercentage > 0.5F
     }
 
-    private inline fun <reified T : Base> query(isUploadedProperty: Property<T>, isUploaded: Boolean): Query<T>? {
-        return ObjBox.boxFor<T>()?.query()?.equal(isUploadedProperty, isUploaded)?.build()
+    private suspend fun uploadAll(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) {
+        upload<PhysicalActivityTransitionEntity>(stub)
+        upload<PhysicalActivityEntity>(stub)
+        upload<AppUsageEventEntity>(stub)
+        upload<BatteryEntity>(stub)
+        upload<BluetoothEntity>(stub)
+        upload<CallLogEntity>(stub)
+        upload<DeviceEventEntity>(stub)
+        upload<ExternalSensorEntity>(stub)
+        upload<InstalledAppEntity>(stub)
+        upload<KeyLogEntity>(stub)
+        upload<LocationEntity>(stub)
+        upload<MediaEntity>(stub)
+        upload<MessageEntity>(stub)
+        upload<NotificationEntity>(stub)
+        upload<PhysicalStatEntity>(stub)
+        upload<SensorEntity>(stub)
+        upload<SurveyEntity>(stub)
+        upload<DataTrafficEntity>(stub)
+        upload<WifiEntity>(stub)
     }
 
     private fun <T> toProto(entity: T): DatumProto.Datum? {
@@ -257,8 +256,6 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                             .setDistance(entity.distance)
                             .setTimeTaken(entity.timeTaken)
                             .setKeyboardType(entity.keyboardType)
-                            .setPrevKey(entity.prevKey)
-                            .setCurrentKey(entity.currentKey)
                             .setPrevKeyType(entity.prevKeyType)
                             .setCurrentKeyType(entity.currentKeyType)
                             .build()
@@ -344,33 +341,58 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         }?.build()
     }
 
-    companion object {
-        private const val N_UPLOADS: Long = 100
-        private val INTERVAL_SYNC = TimeUnit.HOURS.toMillis(1)
+    class CancelIntentService: IntentService(CancelIntentService::class.java.name) {
+        override fun onHandleIntent(intent: Intent?) {
+            Log.d("CancelIntentService", "onHandleIntent()")
+            requestStop(this)
+        }
+    }
 
-        fun requestStart(context: Context, forceStart: Boolean, enableMetered: Boolean? = null) {
-            if (enableMetered != null) Prefs.canUploadMeteredNetwork = enableMetered
+    companion object {
+        private const val N_UPLOADS: Int = 100
+        private val INTERVAL_SYNC = TimeUnit.HOURS.toMillis(1)
+        private const val REQUEST_CODE_CANCEL_SYNC = 0x12
+        private const val ACTION_CANCEL_SYNC = "${BuildConfig.APPLICATION_ID}.ACTION_CANCEL_SYNC "
+        private val WORKER_NAME = SyncWorker::class.java.name
+
+        fun requestStart(context: Context, forceStart: Boolean, enableMetered: Boolean, isPeriodic: Boolean) {
+            Log.d("SyncWorker", "requestStart(): forceStart = $forceStart, enableMetered = $enableMetered, isPeriodic = $isPeriodic")
+            val manager = WorkManager.getInstance(context)
 
             val constraints = Constraints.Builder()
-                    .setRequiredNetworkType(if (Prefs.canUploadMeteredNetwork) NetworkType.NOT_ROAMING else NetworkType.UNMETERED)
+                    .setRequiredNetworkType(if (enableMetered) NetworkType.NOT_ROAMING else NetworkType.UNMETERED)
                     .build()
 
-            val initDelay = if (forceStart) 0L else INTERVAL_SYNC
+            if (isPeriodic) {
+                val request = PeriodicWorkRequestBuilder<SyncWorker>(INTERVAL_SYNC, TimeUnit.MILLISECONDS)
+                        .setConstraints(constraints)
+                        .setInitialDelay(if (forceStart) 0L else INTERVAL_SYNC, TimeUnit.MILLISECONDS)
+                        .build()
 
-            val request = PeriodicWorkRequestBuilder<SyncWorker>(INTERVAL_SYNC, TimeUnit.MILLISECONDS)
-                    .setConstraints(constraints)
-                    .setInitialDelay(initDelay, TimeUnit.MILLISECONDS)
-                    .build()
+                manager.enqueueUniquePeriodicWork(
+                        WORKER_NAME,
+                        if (forceStart) ExistingPeriodicWorkPolicy.REPLACE else ExistingPeriodicWorkPolicy.KEEP,
+                        request
+                )
+            } else {
+                if (forceStart) {
+                    val request = OneTimeWorkRequestBuilder<SyncWorker>()
+                            .setConstraints(constraints)
+                            .build()
 
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                    SyncWorker::class.java.name,
-                    if (forceStart) ExistingPeriodicWorkPolicy.REPLACE else ExistingPeriodicWorkPolicy.KEEP,
-                    request
-            )
+                    manager.enqueueUniqueWork(
+                            WORKER_NAME,
+                            ExistingWorkPolicy.REPLACE,
+                            request
+                    )
+                } else {
+                    requestStop(context)
+                }
+            }
         }
 
         fun requestStop(context: Context) {
-            WorkManager.getInstance(context).cancelUniqueWork(SyncWorker::class.java.name)
+            WorkManager.getInstance(context).cancelUniqueWork(WORKER_NAME)
         }
     }
 }

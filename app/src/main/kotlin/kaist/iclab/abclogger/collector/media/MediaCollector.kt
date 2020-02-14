@@ -10,12 +10,14 @@ import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
+import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.commons.safeRegisterContentObserver
+import kaist.iclab.abclogger.commons.safeUnregisterContentObserver
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
-class MediaCollector(val context: Context) : BaseCollector {
+class MediaCollector(private val context: Context) : BaseCollector<MediaCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val lastTimeAccessedInternalPhoto: Long = 0,
@@ -25,9 +27,40 @@ class MediaCollector(val context: Context) : BaseCollector {
         override fun info(): String = ""
     }
 
-    private suspend fun handleObserver(type: Int) {
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_media)
+
+    override val description: String = context.getString(R.string.data_desc_media)
+
+    override val requiredPermissions: List<String> = listOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+
+    override val newIntentForSetUp: Intent? = null
+
+    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+
+    override suspend fun onStart() {
+        context.contentResolver.safeUnregisterContentObserver(internalPhotoObserver)
+        context.contentResolver.safeUnregisterContentObserver(internalVideoObserver)
+        context.contentResolver.safeUnregisterContentObserver(externalPhotoObserver)
+        context.contentResolver.safeUnregisterContentObserver(externalVideoObserver)
+
+        context.contentResolver.safeRegisterContentObserver(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalPhotoObserver)
+        context.contentResolver.safeRegisterContentObserver(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true, internalVideoObserver)
+        context.contentResolver.safeRegisterContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, externalPhotoObserver)
+        context.contentResolver.safeRegisterContentObserver(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, externalVideoObserver)
+    }
+
+    override suspend fun onStop() {
+        context.contentResolver.safeUnregisterContentObserver(internalPhotoObserver)
+        context.contentResolver.safeUnregisterContentObserver(internalVideoObserver)
+        context.contentResolver.safeUnregisterContentObserver(externalPhotoObserver)
+        context.contentResolver.safeUnregisterContentObserver(externalVideoObserver)
+    }
+
+    private fun handleMediaRetrieval(type: Int) = launch {
         val curTime = System.currentTimeMillis()
-        val lastTimeAccessed = (getStatus() as? Status)?.let { status ->
+        val lastTimeAccessed = getStatus()?.let { status ->
             when(type) {
                 TYPE_INTERNAL_PHOTO -> status.lastTimeAccessedInternalPhoto
                 TYPE_INTERNAL_VIDEO -> status.lastTimeAccessedInternalVideo
@@ -79,7 +112,7 @@ class MediaCollector(val context: Context) : BaseCollector {
                     lastTime = lastTimeAccessed
             )
             else -> null
-        } ?: return
+        } ?: return@launch
 
         val timestamps = mutableListOf<Long>()
         val entities = cursor.use { cs ->
@@ -118,7 +151,7 @@ class MediaCollector(val context: Context) : BaseCollector {
         object : ContentObserver(Handler()) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                GlobalScope.launch { handleObserver(TYPE_INTERNAL_PHOTO) }
+                handleMediaRetrieval(TYPE_INTERNAL_PHOTO)
             }
         }
     }
@@ -127,7 +160,7 @@ class MediaCollector(val context: Context) : BaseCollector {
         object : ContentObserver(Handler()) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                GlobalScope.launch { handleObserver(TYPE_INTERNAL_VIDEO) }
+                handleMediaRetrieval(TYPE_INTERNAL_VIDEO)
             }
         }
     }
@@ -136,7 +169,7 @@ class MediaCollector(val context: Context) : BaseCollector {
         object : ContentObserver(Handler()) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                GlobalScope.launch { handleObserver(TYPE_EXTERNAL_PHOTO) }
+                handleMediaRetrieval(TYPE_EXTERNAL_PHOTO)
             }
         }
     }
@@ -145,32 +178,10 @@ class MediaCollector(val context: Context) : BaseCollector {
         object : ContentObserver(Handler()) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                GlobalScope.launch { handleObserver(TYPE_EXTERNAL_VIDEO) }
+                handleMediaRetrieval(TYPE_EXTERNAL_VIDEO)
             }
         }
     }
-
-    override suspend fun onStart() {
-        context.contentResolver.registerContentObserver(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalPhotoObserver)
-        context.contentResolver.registerContentObserver(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true, internalVideoObserver)
-        context.contentResolver.registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, externalPhotoObserver)
-        context.contentResolver.registerContentObserver(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, externalVideoObserver)
-    }
-
-    override suspend fun onStop() {
-        context.contentResolver.unregisterContentObserver(internalPhotoObserver)
-        context.contentResolver.unregisterContentObserver(internalVideoObserver)
-        context.contentResolver.unregisterContentObserver(externalPhotoObserver)
-        context.contentResolver.unregisterContentObserver(externalVideoObserver)
-    }
-
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override val requiredPermissions: List<String>
-        get() = listOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-
-    override val newIntentForSetUp: Intent?
-        get() = null
 
     companion object {
         private const val TYPE_INTERNAL_PHOTO = 0x01

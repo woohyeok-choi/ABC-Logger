@@ -37,10 +37,11 @@
     <string name="config_category_general">General</string>
     <string name="config_category_collector">Collector</string>
     <string name="config_category_others">Others</string>
-
     <string name="config_title_user_name">User name</string>
-    <string name="config_title_upload_setting">Upload setting</string>
-    <string name="config_desc_upload_setting">Data can be uploaded even when a metered-network (e.g., 5G, LTE) is connected.</string>
+    <string name="config_title_network_constraints">Network constraints</string>
+    <string name="config_desc_network_constraints">Data can be uploaded even when a metered-network (e.g., 5G, LTE) is connected.</string>
+    <string name="config_title_auto_sync">Auto sync</string>
+    <string name="config_desc_auto_sync">Data can be automatically uploaded every hour.</string>
     <string name="config_title_email">Email</string>
     <string name="config_title_sync">Sync</string>
     <string name="config_title_flush_data">Flush local data</string>
@@ -49,6 +50,7 @@
     <string name="config_title_permission">Permissions</string>
     <string name="config_msg_available">Available.</string>
     <string name="config_msg_require_setting">Permission or additional setting required. Touch to grant.</string>
+
 
     <string name="btn_sign_in">Sign in</string>
     <string name="btn_participate">Participate</string>
@@ -59,12 +61,12 @@
     <string name="ntf_title_service_running">ABC Logger is running in background&#8230;</string>
     <string name="ntf_title_sync">Sync</string>
     <string name="ntf_text_sync">Sync in progress&#8230;</string>
-    <string name="ntf_text_sync_complete">Sync complete!</string>
-    <string name="ntf_text_sync_failed">Sync failed</string>
+    <string name="ntf_action_sync_cancel">Cancel</string>
     <string name="ntf_title_flush">Flush local data</string>
     <string name="ntf_text_flush">Flush in progress&#8230;</string>
-    <string name="ntf_text_flush_complete">Flush complete!</string>
-    <string name="ntf_text_flush_failed">Flush failed</string>
+    <string name="ntf_title_logout">Logout</string>
+    <string name="ntf_text_logout">Logout in progress&#8230;</string>
+
 
     <string name="error_general">Unknown error occurs.</string>
     <string name="error_google_api_exception">Error occurs during signing in a Google account</string>

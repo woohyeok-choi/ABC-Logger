@@ -1,8 +1,7 @@
-package kaist.iclab.abclogger
+package kaist.iclab.abclogger.commons
 
 import android.app.Notification
 import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.media.AudioAttributes
@@ -15,6 +14,8 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.R
 
 object Notifications {
     const val CHANNEL_ID_SURVEY = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_SURVEY"
@@ -70,7 +71,7 @@ object Notifications {
                     showWhen = false,
                     hasSound = false,
                     hasVibration = false,
-                    alertOnce = false
+                    alertOnce = true
             ),
             CHANNEL_ID_REQUIRE_SETTING to NotificationSetting(
                     name = "Require setting",
@@ -156,6 +157,10 @@ object Notifications {
         buildNotificationChannels(context)
     }
 
+    fun notify(context: Context, id: Int, ntf: Notification) {
+        NotificationManagerCompat.from(context).notify(id, ntf)
+    }
+
     fun cancel(context: Context, id: Int) {
         NotificationManagerCompat.from(context).cancel(id)
     }
@@ -173,7 +178,8 @@ object Notifications {
               @IntRange(from = 0, to = 100) progress: Int? = null,
               indeterminate: Boolean = false,
               timeoutMs: Long? = null,
-              removeViews: RemoteViews? = null): Notification {
+              removeViews: RemoteViews? = null,
+              actions: Collection<NotificationCompat.Action>? = null): Notification {
         val setting = NOTIFICATION_SETTINGS[channelId]
                 ?: throw IllegalArgumentException("Invalid channel ID.")
         val timestamp = System.currentTimeMillis()
@@ -201,6 +207,7 @@ object Notifications {
                         setCustomContentView(removeViews)
                         setStyle(NotificationCompat.DecoratedCustomViewStyle())
                     }
+                    actions?.forEach { addAction(it) }
                 }.build()
     }
 }
