@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger
+package kaist.iclab.abclogger.commons
 
 import android.accessibilityservice.AccessibilityService
 import android.app.*
@@ -9,10 +9,13 @@ import android.net.*
 import android.os.*
 import android.provider.Settings
 import android.text.format.DateUtils
+import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.*
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.google.android.gms.tasks.Task
@@ -22,6 +25,7 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import java.io.Serializable
 import kotlin.coroutines.*
+import kotlin.random.Random
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
@@ -312,3 +316,8 @@ inline fun <reified T : AccessibilityService> checkAccessibilityService(context:
 
     return isEnabled && isIncluded
 }
+
+fun safeRandom(n: Long) = if (n <= 0L) 0 else Random.nextLong(n)
+
+fun safeRandom(n: Int) = if (n <= 0) 0 else Random.nextInt(n)
+

@@ -1,14 +1,14 @@
-package kaist.iclab.abclogger
+package kaist.iclab.abclogger.commons
 
 import android.content.Context
 import com.github.kittinunf.fuel.core.FuelError
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.Status
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import kaist.iclab.abclogger.R
 import polar.com.sdk.api.errors.*
 
 abstract class ABCException (override val message: String?): Exception(message) {

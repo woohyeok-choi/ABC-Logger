@@ -8,7 +8,7 @@ import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.databinding.SurveySettingListItemBinding
 
-class SurveySettingAdapter : RecyclerView.Adapter<SurveySettingAdapter.ViewHolder>() {
+class SurveySettingListAdapter : RecyclerView.Adapter<SurveySettingListAdapter.ViewHolder>() {
     var onPreviewClick: ((String?) -> Unit)? = null
     var onRemoveClick: ((SurveyCollector.Status.Setting) -> Unit)? = null
 

@@ -1,12 +1,9 @@
-package kaist.iclab.abclogger
+package kaist.iclab.abclogger.commons
 
 import android.graphics.Typeface
-import android.view.View
 import android.widget.TextView
 import androidx.core.widget.ContentLoadingProgressBar
 import androidx.databinding.BindingAdapter
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import kaist.iclab.abclogger.ui.Status
 
 @BindingAdapter("isBold")
 fun isBold(view: TextView, isBold: Boolean) {

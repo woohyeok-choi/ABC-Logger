@@ -10,17 +10,15 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.collector.setStatus
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
-class SensorCollector(val context: Context) : BaseCollector, SensorEventListener {
+class InternalSensorCollector(private val context: Context) : BaseCollector<InternalSensorCollector.Status>(context), SensorEventListener {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val isProximityAvailable: Boolean? = null,
@@ -29,15 +27,18 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
                 "Proximity: ${if (isProximityAvailable == true) "On" else "Off"}; Light: ${if (isLightAvailable == true) "On" else "Off"}"
     }
 
-    private val sensorManager: SensorManager by lazy { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
-    private val subject: PublishSubject<SensorEntity> = PublishSubject.create()
-    private val disposables: CompositeDisposable = CompositeDisposable()
+    override val clazz: KClass<Status> = Status::class
 
-    private fun accuracyToString(accuracy: Int) = when (accuracy) {
-        SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "HIGH"
-        SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "MEDIUM"
-        else -> "LOW"
-    }
+    override val name: String = context.getString(R.string.data_name_sensor)
+
+    override val description: String = context.getString(R.string.data_desc_sensor)
+
+    override val requiredPermissions: List<String> = listOf()
+
+    override val newIntentForSetUp: Intent? = null
+
+    override suspend fun checkAvailability(): Boolean = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null
+            || sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null
 
     override suspend fun onStart() {
         disposables.clear()
@@ -60,12 +61,14 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
         ).subscribeOn(
                 Schedulers.io()
         ).subscribe { entities ->
-            GlobalScope.launch {
+            launch {
                 ObjBox.put(entities)
+
                 if (entities.isNotEmpty()) setStatus(Status(lastTime = System.currentTimeMillis()))
             }
         }
-        disposables.addAll(disposable)
+
+        disposables.add(disposable)
     }
 
     override suspend fun onStop() {
@@ -74,13 +77,17 @@ class SensorCollector(val context: Context) : BaseCollector, SensorEventListener
         sensorManager.unregisterListener(this)
     }
 
-    override suspend fun checkAvailability(): Boolean = true
+    private val sensorManager: SensorManager by lazy { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
 
-    override val requiredPermissions: List<String>
-        get() = listOf()
+    private val subject: PublishSubject<SensorEntity> = PublishSubject.create()
 
-    override val newIntentForSetUp: Intent?
-        get() = null
+    private val disposables: CompositeDisposable = CompositeDisposable()
+
+    private fun accuracyToString(accuracy: Int) = when (accuracy) {
+        SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "HIGH"
+        SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "MEDIUM"
+        else -> "LOW"
+    }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
