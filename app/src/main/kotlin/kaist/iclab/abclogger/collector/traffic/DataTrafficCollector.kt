@@ -6,18 +6,38 @@ import android.net.TrafficStats
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.collector.setStatus
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.reflect.KClass
 
-class DataTrafficCollector(val context: Context) : BaseCollector {
+class DataTrafficCollector(private val context: Context) : BaseCollector<DataTrafficCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null) : BaseStatus() {
         override fun info(): String = ""
+    }
+
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_traffic)
+
+    override val description: String = context.getString(R.string.data_desc_traffic)
+
+    override val requiredPermissions: List<String> = listOf()
+
+    override val newIntentForSetUp: Intent? = null
+
+    override suspend fun checkAvailability(): Boolean = true
+
+    override suspend fun onStart() {
+        telephonyManager.listen(dataListener, PhoneStateListener.LISTEN_DATA_ACTIVITY)
+    }
+
+    override suspend fun onStop() {
+        telephonyManager.listen(dataListener, PhoneStateListener.LISTEN_NONE)
     }
 
     private val telephonyManager: TelephonyManager by lazy {
@@ -36,7 +56,7 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
             TelephonyManager.DATA_ACTIVITY_INOUT
     )
 
-    private suspend fun handleDataActivity() {
+    private fun handleTrafficRetrieval() = launch {
         val curTime = System.currentTimeMillis()
         val curTotalRxBytes = TrafficStats.getTotalRxBytes()
         val curTotalTxBytes = TrafficStats.getTotalTxBytes()
@@ -75,25 +95,9 @@ class DataTrafficCollector(val context: Context) : BaseCollector {
             override fun onDataActivity(direction: Int) {
                 super.onDataActivity(direction)
                 if (direction in directions) {
-                    GlobalScope.launch { handleDataActivity() }
+                    handleTrafficRetrieval()
                 }
             }
         }
     }
-
-    override suspend fun onStart() {
-        telephonyManager.listen(dataListener, PhoneStateListener.LISTEN_DATA_ACTIVITY)
-    }
-
-    override suspend fun onStop() {
-        telephonyManager.listen(dataListener, PhoneStateListener.LISTEN_NONE)
-    }
-
-    override val requiredPermissions: List<String>
-        get() = listOf()
-
-    override val newIntentForSetUp: Intent?
-        get() = null
-
-    override suspend fun checkAvailability(): Boolean = true
 }

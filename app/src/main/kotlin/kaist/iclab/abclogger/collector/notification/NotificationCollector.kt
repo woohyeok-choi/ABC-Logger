@@ -10,25 +10,44 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import kotlin.reflect.KClass
 
-class NotificationCollector(val context: Context) : BaseCollector {
+class NotificationCollector(private val context: Context) : BaseCollector<NotificationCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null) : BaseStatus() {
         override fun info(): String = ""
     }
+
+    override val clazz: KClass<Status>  = Status::class
+
+    override val name: String = context.getString(R.string.data_name_notification)
+
+    override val description: String = context.getString(R.string.data_desc_notification)
+
+    override val requiredPermissions: List<String> = listOf()
+
+    override val newIntentForSetUp: Intent? = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+
+    override suspend fun checkAvailability(): Boolean =
+            Settings.Secure.getString(
+                    context.contentResolver, "enabled_notification_listeners"
+            )?.contains(context.packageName) == true
+
+    override suspend fun onStart() { }
+
+    override suspend fun onStop() { }
 
     class NotificationCollectorService: NotificationListenerService() {
         private val collector : NotificationCollector by inject()
 
         override fun onNotificationPosted(sbn: StatusBarNotification?) {
             super.onNotificationPosted(sbn)
-            GlobalScope.launch {
+            collector.launch {
                 if (collector.getStatus()?.hasStarted == true && sbn != null) {
                     store(sbn, true)
-                    ABCEvent.post(sbn.postTime, ABCEvent.NOTIFICATION_POSTED)
+                    AbcEvent.post(sbn.postTime, AbcEvent.NOTIFICATION_POSTED)
                 }
             }
         }
@@ -36,10 +55,10 @@ class NotificationCollector(val context: Context) : BaseCollector {
         override fun onNotificationRemoved(sbn: StatusBarNotification?) {
             super.onNotificationRemoved(sbn)
 
-            GlobalScope.launch {
+            collector.launch {
                 if (collector.getStatus()?.hasStarted == true && sbn != null) {
                     store(sbn, false)
-                    ABCEvent.post(sbn.postTime, ABCEvent.NOTIFICATION_POSTED)
+                    AbcEvent.post(sbn.postTime, AbcEvent.NOTIFICATION_REMOVED)
                 }
             }
         }
@@ -98,18 +117,5 @@ class NotificationCollector(val context: Context) : BaseCollector {
         }
     }
 
-    override suspend fun onStart() { }
 
-    override suspend fun onStop() { }
-
-    override suspend fun checkAvailability(): Boolean =
-            Settings.Secure.getString(
-                    context.contentResolver, "enabled_notification_listeners"
-            )?.contains(context.packageName) == true
-
-    override val requiredPermissions: List<String>
-        get() = listOf()
-
-    override val newIntentForSetUp: Intent?
-        get() = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
 }

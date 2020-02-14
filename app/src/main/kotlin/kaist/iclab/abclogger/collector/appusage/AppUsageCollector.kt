@@ -15,15 +15,63 @@ import android.provider.Settings
 import android.os.Process
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
-import kotlinx.coroutines.GlobalScope
+import kaist.iclab.abclogger.commons.safeRegisterReceiver
+import kaist.iclab.abclogger.commons.safeUnregisterReceiver
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
-class AppUsageCollector(val context: Context) : BaseCollector {
+class AppUsageCollector(private val context: Context) : BaseCollector<AppUsageCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val lastTimeAccessed: Long? = null) : BaseStatus() {
         override fun info(): String = ""
+    }
+
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_app_usage)
+
+    override val description: String = context.getString(R.string.data_desc_app_usage)
+
+    override val requiredPermissions: List<String> = listOf()
+
+    override val newIntentForSetUp: Intent? = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+
+    override suspend fun onStart() {
+        val currentTime = System.currentTimeMillis()
+        val threeHour = TimeUnit.HOURS.toMillis(3)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessed ?: 0
+
+        val triggerTime = if (lastTimeAccessed > 0 && lastTimeAccessed + threeHour >= currentTime) {
+            lastTimeAccessed + threeHour
+        } else {
+            currentTime + TimeUnit.SECONDS.toMillis(10)
+        }
+
+        context.safeRegisterReceiver(receiver, filter)
+
+        alarmManager.cancel(intent)
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime, threeHour, intent)
+    }
+
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
+
+        alarmManager.cancel(intent)
+    }
+
+    override suspend fun checkAvailability(): Boolean {
+        val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            appOpsManager.checkOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
+            )
+        } else {
+            appOpsManager.unsafeCheckOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
+            )
+        } == AppOpsManager.MODE_ALLOWED
     }
 
     private val usageStatManager: UsageStatsManager by lazy {
@@ -47,6 +95,15 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         addAction(ACTION_RETRIEVE_APP_USAGE)
     }
 
+    private val receiver: BroadcastReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != ACTION_RETRIEVE_APP_USAGE) return
+                handleRetrieval()
+            }
+        }
+    }
+
     private fun eventTypeToString(typeInt: Int?) = when (typeInt) {
         UsageEvents.Event.ACTIVITY_PAUSED -> "ACTIVITY_PAUSED"
         UsageEvents.Event.ACTIVITY_RESUMED -> "ACTIVITY_RESUMED"
@@ -66,12 +123,12 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         else -> "NONE"
     }
 
-    private suspend fun handleRetrieveAppUsage() {
+    private fun handleRetrieval() = launch {
         val curTime = System.currentTimeMillis()
-        val lastTimeAccessed = (getStatus() as? Status)?.lastTimeAccessed ?: curTime - TimeUnit.DAYS.toMillis(1)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessed ?: curTime - TimeUnit.DAYS.toMillis(1)
 
         if (lastTimeAccessed > 0) {
-            val events = usageStatManager.queryEvents(lastTimeAccessed, curTime) ?: return
+            val events = usageStatManager.queryEvents(lastTimeAccessed, curTime) ?: return@launch
             val event = UsageEvents.Event()
             val entities = mutableListOf<AppUsageEventEntity>()
 
@@ -95,58 +152,10 @@ class AppUsageCollector(val context: Context) : BaseCollector {
         setStatus(Status(lastTimeAccessed = curTime))
     }
 
-    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action != ACTION_RETRIEVE_APP_USAGE) return
-
-            GlobalScope.launch { handleRetrieveAppUsage() }
-        }
-    }
-
-    override suspend fun onStart() {
-        val currentTime = System.currentTimeMillis()
-        val threeHour = TimeUnit.HOURS.toMillis(3)
-        val lastTimeAccessed = Prefs.statusAppUsage?.lastTimeAccessed ?: 0
-
-        val triggerTime = if (lastTimeAccessed > 0 && lastTimeAccessed + threeHour >= currentTime) {
-            lastTimeAccessed + threeHour
-        } else {
-            currentTime + TimeUnit.SECONDS.toMillis(10)
-        }
-
-        context.safeRegisterReceiver(receiver, filter)
-
-        alarmManager.cancel(intent)
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime, threeHour, intent)
-    }
-
-    override suspend fun onStop() {
-        context.safeUnregisterReceiver(receiver)
-
-        alarmManager.cancel(intent)
-    }
-
-    override val requiredPermissions: List<String>
-        get() = listOf()
-
-    override val newIntentForSetUp: Intent?
-        get() = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-
-    override suspend fun checkAvailability(): Boolean {
-        val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            appOpsManager.checkOpNoThrow(
-                    AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
-            )
-        } else {
-            appOpsManager.unsafeCheckOpNoThrow(
-                    AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName
-            )
-        } == AppOpsManager.MODE_ALLOWED
-    }
-
     companion object {
         private const val ACTION_RETRIEVE_APP_USAGE = "${BuildConfig.APPLICATION_ID}.ACTION_RETRIEVE_APP_USAGE"
         private const val REQUEST_CODE_APP_USAGE = 0xee
     }
+
+
 }

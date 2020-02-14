@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
         <import type="kaist.iclab.abclogger.ui.Status" />
@@ -25,8 +24,7 @@
             <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/load_progress_bar"
                 style="?android:attr/progressBarStyle"
-                showToast="@{viewModel.loadStatus}"
-                status="@{viewModel.loadStatus}"
+                isLoading="@{viewModel.loadStatus.loading}"
                 android:layout_width="@dimen/progress_bar_size"
                 android:layout_height="@dimen/progress_bar_size"
                 android:layout_gravity="center"
@@ -39,7 +37,7 @@
                 android:layout_gravity="center"
                 android:text="@string/msg_fail_to_load_contents"
                 android:textSize="@dimen/txt_size_text"
-                android:visibility="@{viewModel.loadStatus.state == Status.STATE_FAILURE ? View.VISIBLE : View.GONE}" />
+                android:visibility="@{viewModel.loadStatus.failed ? View.VISIBLE : View.GONE}" />
 
             <androidx.core.widget.NestedScrollView
                 android:id="@+id/scroll_view"
@@ -51,7 +49,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="@{viewModel.loadStatus.state == Status.STATE_SUCCESS ? View.VISIBLE : View.GONE}">
+                    android:visibility="@{viewModel.loadStatus.succeeded ? View.VISIBLE : View.GONE}">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -92,7 +90,7 @@
                         <TextView
                             android:id="@+id/txt_delivered_time"
                             isBold="@{true}"
-                            timestamp="@{System.currentTimeMillis()}"
+                            formattedTime="@{System.currentTimeMillis()}"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:textColor="@color/color_blue"

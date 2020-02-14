@@ -14,14 +14,41 @@ import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.collector.setStatus
-import kotlinx.coroutines.GlobalScope
+import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.commons.safeRegisterReceiver
+import kaist.iclab.abclogger.commons.safeUnregisterReceiver
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
-class LocationCollector(val context: Context) : BaseCollector {
+class LocationCollector(private val context: Context) : BaseCollector<LocationCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null) : BaseStatus() {
         override fun info(): String = ""
+    }
+
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_location)
+
+    override val description: String = context.getString(R.string.data_desc_location)
+
+    override val requiredPermissions: List<String> = listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
+    override val newIntentForSetUp: Intent? = null
+
+    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+
+    override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, filter)
+        client.requestLocationUpdates(request, intent)
+    }
+
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
+        client.removeLocationUpdates(intent)
     }
 
     private val client : FusedLocationProviderClient by lazy {
@@ -32,21 +59,7 @@ class LocationCollector(val context: Context) : BaseCollector {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action != ACTION_LOCATION_UPDATE || !LocationResult.hasResult(intent)) return
-
-                LocationResult.extractResult(intent)?.lastLocation?.let { loc ->
-                    LocationEntity(
-                            latitude = loc.latitude,
-                            longitude = loc.longitude,
-                            altitude = loc.altitude,
-                            accuracy = loc.accuracy,
-                            speed = loc.speed
-                    ).fill(timeMillis = loc.time)
-                }?.also { entity ->
-                    GlobalScope.launch {
-                        ObjBox.put(entity)
-                        setStatus(Status(lastTime = System.currentTimeMillis()))
-                    }
-                }
+                handleLocationRetrieval(intent)
             }
         }
     }
@@ -64,26 +77,22 @@ class LocationCollector(val context: Context) : BaseCollector {
             .setSmallestDisplacement(5.0F)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
-    override suspend fun onStart() {
-        context.safeRegisterReceiver(receiver, filter)
-        client.requestLocationUpdates(request, intent)
+    private fun handleLocationRetrieval(intent: Intent) {
+        LocationResult.extractResult(intent)?.lastLocation?.let { loc ->
+            LocationEntity(
+                    latitude = loc.latitude,
+                    longitude = loc.longitude,
+                    altitude = loc.altitude,
+                    accuracy = loc.accuracy,
+                    speed = loc.speed
+            ).fill(timeMillis = loc.time)
+        }?.also { entity ->
+            launch {
+                ObjBox.put(entity)
+                setStatus(Status(lastTime = System.currentTimeMillis()))
+            }
+        }
     }
-
-    override suspend fun onStop() {
-        context.safeUnregisterReceiver(receiver)
-        client.removeLocationUpdates(intent)
-    }
-
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override val requiredPermissions: List<String>
-        get() = listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-        )
-
-    override val newIntentForSetUp: Intent?
-        get() = null
 
     companion object {
         private const val ACTION_LOCATION_UPDATE = "${BuildConfig.APPLICATION_ID}.ACTION_LOCATION_UPDATE"

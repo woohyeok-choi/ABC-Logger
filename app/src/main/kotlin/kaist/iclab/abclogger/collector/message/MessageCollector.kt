@@ -14,11 +14,14 @@ import androidx.core.database.getStringOrNull
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.*
-import kotlinx.coroutines.GlobalScope
+import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.commons.safeRegisterContentObserver
+import kaist.iclab.abclogger.commons.safeUnregisterContentObserver
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
-class MessageCollector(val context: Context) : BaseCollector {
+class MessageCollector(private val context: Context) : BaseCollector<MessageCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val lastTimeAccessedSms: Long? = null,
@@ -26,10 +29,38 @@ class MessageCollector(val context: Context) : BaseCollector {
         override fun info(): String = ""
     }
 
-    private suspend fun handleSmsObserver() {
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_message)
+
+    override val description: String = context.getString(R.string.data_desc_message)
+
+    override val requiredPermissions: List<String> = listOf(
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.READ_SMS
+        )
+
+    override val newIntentForSetUp: Intent? = null
+
+    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+
+    override suspend fun onStart() {
+        context.contentResolver.safeUnregisterContentObserver(smsObserver)
+        context.contentResolver.safeUnregisterContentObserver(mmsObserver)
+
+        context.contentResolver.safeRegisterContentObserver(Telephony.Sms.CONTENT_URI, true, smsObserver)
+        context.contentResolver.safeRegisterContentObserver(Telephony.Mms.CONTENT_URI, true, mmsObserver)
+    }
+
+    override suspend fun onStop() {
+        context.contentResolver.safeUnregisterContentObserver(smsObserver)
+        context.contentResolver.safeUnregisterContentObserver(mmsObserver)
+    }
+
+    private fun handleSmsRetrieval() = launch {
         val curTime = System.currentTimeMillis()
         val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = (getStatus() as? Status)?.lastTimeAccessedSms ?: curTime - TimeUnit.DAYS.toMillis(1)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessedSms ?: curTime - TimeUnit.DAYS.toMillis(1)
 
         getRecentContents(
                 contentResolver = context.contentResolver,
@@ -62,10 +93,10 @@ class MessageCollector(val context: Context) : BaseCollector {
         timestamps.max()?.also { timestamp -> setStatus(Status(lastTimeAccessedSms = timestamp)) }
     }
 
-    private suspend fun handleMmsObserver() {
+    private fun handleMmsRetrieval() = launch {
         val curTime = System.currentTimeMillis()
         val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = (getStatus() as? Status)?.lastTimeAccessedMms ?: curTime - TimeUnit.DAYS.toMillis(1)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessedMms ?: curTime - TimeUnit.DAYS.toMillis(1)
 
         getRecentContents(
                 contentResolver = context.contentResolver,
@@ -103,7 +134,7 @@ class MessageCollector(val context: Context) : BaseCollector {
         object : ContentObserver(Handler()) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                GlobalScope.launch { handleSmsObserver() }
+                handleSmsRetrieval()
             }
         }
     }
@@ -112,7 +143,7 @@ class MessageCollector(val context: Context) : BaseCollector {
         object : ContentObserver(Handler()) {
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                GlobalScope.launch { handleMmsObserver() }
+                handleMmsRetrieval()
             }
         }
     }
@@ -138,25 +169,4 @@ class MessageCollector(val context: Context) : BaseCollector {
         Telephony.TextBasedSmsColumns.MESSAGE_TYPE_SENT -> "SENT"
         else -> "UNDEFINED"
     }
-
-    override suspend fun onStart() {
-        context.contentResolver.registerContentObserver(Telephony.Sms.CONTENT_URI, true, smsObserver)
-        context.contentResolver.registerContentObserver(Telephony.Mms.CONTENT_URI, true, mmsObserver)
-    }
-
-    override suspend fun onStop() {
-        context.contentResolver.unregisterContentObserver(smsObserver)
-        context.contentResolver.unregisterContentObserver(mmsObserver)
-    }
-
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override val requiredPermissions: List<String>
-        get() = listOf(
-                Manifest.permission.READ_CONTACTS,
-                Manifest.permission.READ_SMS
-        )
-
-    override val newIntentForSetUp: Intent?
-        get() = null
 }

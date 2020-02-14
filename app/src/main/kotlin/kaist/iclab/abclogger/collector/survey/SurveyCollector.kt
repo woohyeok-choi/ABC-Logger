@@ -8,22 +8,23 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.text.format.DateUtils
-
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.collector.survey.setting.SurveySettingActivity
+import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.ui.question.SurveyResponseActivity
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
+import kotlin.math.max
+import kotlin.reflect.KClass
 
-class SurveyCollector(val context: Context) : BaseCollector {
+class SurveyCollector(private val context: Context) : BaseCollector<SurveyCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val startTime: Long? = null,
@@ -42,21 +43,112 @@ class SurveyCollector(val context: Context) : BaseCollector {
         )
     }
 
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_survey)
+
+    override val description: String = context.getString(R.string.data_desc_survey)
+
+    override val requiredPermissions: List<String> = listOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
+    override val newIntentForSetUp: Intent? = Intent(context, SurveySettingActivity::class.java)
+
+    override suspend fun checkAvailability(): Boolean =
+            !getStatus()?.settings.isNullOrEmpty() && context.checkPermission(requiredPermissions)
+
+    override suspend fun onStart() {
+        AbcEvent.register(this)
+
+        val prevStartTime = getStatus()?.startTime ?: 0
+        if (prevStartTime <= 0) setStatus(Status(startTime = System.currentTimeMillis()))
+
+        cancelAll()
+        scheduleAll()
+
+        context.safeRegisterReceiver(receiver, filter)
+    }
+
+    override suspend fun onStop() {
+        AbcEvent.unregister(this)
+        cancelAll()
+
+        context.safeUnregisterReceiver(receiver)
+    }
+
     private val receiver: BroadcastReceiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(ctx: Context?, intent: Intent?) {
                 if (intent?.action != ACTION_SURVEY_TRIGGER) return
 
-                GlobalScope.launch(Dispatchers.IO) {
-                    handleTrigger(intent.getStringExtra(EXTRA_SURVEY_UUID))
-                    cancelAll()
-                    scheduleAll()
-                }
+                handleSurveyTrigger(intent.getStringExtra(EXTRA_SURVEY_UUID))
             }
         }
     }
 
     private val filter = IntentFilter().apply { addAction(ACTION_SURVEY_TRIGGER) }
+
+    private fun handleSurveyTrigger(uuid: String?) = launch {
+        val curTime = System.currentTimeMillis()
+        val settings = getStatus()?.settings ?: return@launch
+
+        val updatedSettings = settings.map { setting ->
+            if (setting.uuid == uuid) setting.copy(lastTimeTriggered = curTime) else setting.copy()
+        }
+
+        setStatus(Status(lastTime = curTime, settings = updatedSettings))
+
+        cancelAll()
+        scheduleAll()
+
+        val curSetting = settings.find { setting -> setting.uuid == uuid } ?: return@launch
+        val json = curSetting.json ?: return@launch
+        val survey = json.let { Survey.fromJson(it) } ?: return@launch
+
+        val shouldNotify = when (survey) {
+            is IntervalBasedSurvey -> checkTriggerCondition(
+                    curTime = curTime,
+                    dailyStartTimeHour = survey.dailyStartTimeHour,
+                    dailyStartTimeMinute = survey.dailyStartTimeMinute,
+                    dailyEndTimeHour = survey.dailyEndTimeHour,
+                    dailyEndTimeMinute = survey.dailyEndTimeMinute,
+                    daysOfWeek = survey.daysOfWeek
+            )
+            is EventBasedSurvey -> checkTriggerCondition(
+                    curTime = curTime,
+                    dailyStartTimeHour = survey.dailyStartTimeHour,
+                    dailyStartTimeMinute = survey.dailyStartTimeMinute,
+                    dailyEndTimeHour = survey.dailyEndTimeHour,
+                    dailyEndTimeMinute = survey.dailyEndTimeMinute,
+                    daysOfWeek = survey.daysOfWeek
+            )
+            else -> true
+        }
+
+        if (shouldNotify) {
+            notify(curTime, survey, json)
+
+            val nDelivered = getStatus()?.nReceived ?: 0
+
+            setStatus(Status(nReceived = nDelivered + 1))
+        }
+    }
+
+    private suspend fun scheduleAll(event: AbcEvent? = null) {
+        val settings = updateSettings(event)
+        setStatus(Status(settings = settings))
+
+        settings?.forEach { setting -> scheduleSurvey(setting) }
+    }
+
+    private suspend fun cancelAll() {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        getStatus()?.settings?.forEach { setting ->
+            alarmManager.cancel(getPendingIntent(id = setting.id, uuid = setting.uuid ?: ""))
+        }
+    }
 
     private fun checkTriggerCondition(curTime: Long,
                                       dailyStartTimeHour: Int,
@@ -81,7 +173,7 @@ class SurveyCollector(val context: Context) : BaseCollector {
         return true
     }
 
-    private suspend fun notify(curTime: Long, survey: Survey, json: String) {
+    private fun notify(curTime: Long, survey: Survey, json: String) {
         val id = SurveyEntity(
                 title = survey.title,
                 message = survey.message,
@@ -122,59 +214,6 @@ class SurveyCollector(val context: Context) : BaseCollector {
         NotificationManagerCompat.from(context).notify(Notifications.ID_SURVEY_DELIVERED, notification)
     }
 
-    private suspend fun handleTrigger(uuid: String?) {
-        val settings = (getStatus() as? Status)?.settings ?: return
-        val curSetting = settings.find { setting -> setting.uuid == uuid } ?: return
-        val json = curSetting.json ?: return
-        val survey = json.let { Survey.fromJson(it) } ?: return
-        val curTime = System.currentTimeMillis()
-
-        val updatedSettings = settings.map { setting ->
-            if (setting.uuid == uuid) setting.copy(lastTimeTriggered = curTime) else setting.copy()
-        }
-
-        setStatus(Status(lastTime = curTime, settings = updatedSettings))
-
-        val shouldNotify = when(survey) {
-            is IntervalBasedSurvey -> checkTriggerCondition(
-                    curTime = curTime,
-                    dailyStartTimeHour = survey.dailyStartTimeHour,
-                    dailyStartTimeMinute = survey.dailyStartTimeMinute,
-                    dailyEndTimeHour = survey.dailyEndTimeHour,
-                    dailyEndTimeMinute = survey.dailyEndTimeMinute,
-                    daysOfWeek = survey.daysOfWeek
-            )
-            is EventBasedSurvey -> checkTriggerCondition(
-                    curTime = curTime,
-                    dailyStartTimeHour = survey.dailyStartTimeHour,
-                    dailyStartTimeMinute = survey.dailyStartTimeMinute,
-                    dailyEndTimeHour = survey.dailyEndTimeHour,
-                    dailyEndTimeMinute = survey.dailyEndTimeMinute,
-                    daysOfWeek = survey.daysOfWeek
-            )
-            else -> true
-        }
-
-        if (shouldNotify) {
-            notify(curTime, survey, json)
-
-            val nDelivered = (getStatus() as? Status)?.nReceived ?: 0
-
-            setStatus(Status(nReceived = nDelivered + 1))
-        }
-    }
-
-    private suspend fun scheduleAll(event: ABCEvent? = null) {
-        updateSettings(event)?.forEach { setting -> scheduleSurvey(setting) }
-    }
-
-    private suspend fun cancelAll() {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        (getStatus() as? Status)?.settings?.forEach { setting ->
-            alarmManager.cancel(getPendingIntent(id = setting.id, uuid = setting.uuid ?: ""))
-        }
-    }
-
     private fun getPendingIntent(id: Int, uuid: String) = PendingIntent.getBroadcast(
             context, id,
             Intent(ACTION_SURVEY_TRIGGER).putExtra(EXTRA_SURVEY_UUID, uuid),
@@ -188,21 +227,17 @@ class SurveyCollector(val context: Context) : BaseCollector {
 
         if (nextTimeTriggered > 0) {
             val curTime = System.currentTimeMillis()
-            val triggerTime = if (nextTimeTriggered < curTime + TimeUnit.SECONDS.toMillis(10)) {
-                curTime + TimeUnit.SECONDS.toMillis(10)
-            } else {
-                nextTimeTriggered
-            }
+            val triggerTime = max(curTime + TimeUnit.SECONDS.toMillis(10), nextTimeTriggered)
             AlarmManagerCompat.setExactAndAllowWhileIdle(alarmManager, AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
         } else {
             alarmManager.cancel(pendingIntent)
         }
     }
 
-    private suspend fun updateSettings(event: ABCEvent? = null) : List<Status.Setting>? {
-        val startTime = (getStatus() as? Status)?.startTime ?: return null
+    private suspend fun updateSettings(event: AbcEvent? = null) : List<Status.Setting>? {
+        val startTime = getStatus()?.startTime ?: return null
 
-        val settings = (getStatus() as? Status)?.settings?.mapNotNull { setting ->
+        return getStatus()?.settings?.mapNotNull { setting ->
             setting.json?.let { json -> Survey.fromJson(json) }?.let { survey ->
                 when (survey) {
                     is IntervalBasedSurvey -> updateIntervalBasedSurvey(survey = survey, setting = setting, startTime = startTime)
@@ -212,8 +247,6 @@ class SurveyCollector(val context: Context) : BaseCollector {
                 }
             }
         }
-        setStatus(Status(settings = settings))
-        return settings
     }
 
     private fun updateIntervalBasedSurvey(survey: IntervalBasedSurvey,
@@ -221,46 +254,60 @@ class SurveyCollector(val context: Context) : BaseCollector {
                                           startTime: Long): Status.Setting {
         val curTime = System.currentTimeMillis()
 
-        val initDelayMs = if (survey.initialDelaySec > 0) {
-            TimeUnit.SECONDS.toMillis(survey.initialDelaySec)
-        } else {
-            0
-        }
-        val intervalMs = if (survey.intervalSec > 0) {
-            TimeUnit.SECONDS.toMillis(survey.intervalSec)
-        } else {
-            0
-        }
-        val flexMs = if (survey.flexIntervalSec > 0) {
-            TimeUnit.SECONDS.toMillis(Random.nextLong(survey.flexIntervalSec))
-        } else {
-            0
-        }
+        val initDelayMs = TimeUnit.SECONDS.toMillis(max(survey.initialDelaySec, 0))
+        val intervalMs = TimeUnit.SECONDS.toMillis(max(survey.intervalSec, 0))
+        val flexMs = TimeUnit.SECONDS.toMillis(max(safeRandom(survey.flexIntervalSec), 0))
 
         val initialTriggerAt: Long = startTime + initDelayMs
-        val lastTimeTriggered: Long = setting.lastTimeTriggered ?: 0
+        val lastTimeTriggered: Long = setting.lastTimeTriggered ?: initialTriggerAt
         val nextTimeTriggered: Long = setting.nextTimeTriggered ?: 0
 
-        return when {
-            curTime < initialTriggerAt -> setting.copy(nextTimeTriggered = initialTriggerAt)
-            curTime in (initialTriggerAt..nextTimeTriggered) -> setting.copy()
-            else -> setting.copy(nextTimeTriggered = lastTimeTriggered + intervalMs + flexMs)
+        /**
+         * Case 1: curTime < initialTriggerAt
+         * - nextTriggeredTime = initialTriggerAt
+         *
+         * Case 2: curTime >= initial
+         * * Case 2.1: lastTimeTriggered == null && nextTimeTriggered == null
+         *   - lastTimeTriggered = initialTriggerAt
+         *   - nextTimeTriggered = initialTriggerAt + intervals
+         *
+         * * Case 2.2: lastTimeTriggered != null && nextTimeTriggered == null
+         *   - nextTimeTriggered = lastTimeTriggered + intervals
+         *
+         * * Case 2.3: lastTimeTriggered == null && nextTimeTriggered != null
+         *   * Case 2.3.1: nextTimeTriggered >= curTime
+         *     - Just copy the previous setting
+         *   * Case 2.3.2: nextTimeTriggered < curTime
+         *     - nextTimeTriggered = initialTriggerAt + intervals
+         *
+         * * Case 2.4: lastTimeTriggered != null && nextTimeTriggered != null
+         *   * Case 2.3.1: nextTimeTriggered >= curTime
+         *     - Just copy the previous setting
+         *   * Case 2.3.2: nextTimeTriggered < curTime
+         *     - nextTimeTriggered = lastTimeTriggered + intervals
+         */
+
+        return if (curTime < initialTriggerAt) {
+            setting.copy(
+                    nextTimeTriggered = initialTriggerAt,
+                    lastTimeTriggered = null
+            )
+        } else {
+            if (curTime <= nextTimeTriggered) {
+                setting.copy()
+            } else {
+                setting.copy(
+                        nextTimeTriggered = lastTimeTriggered + intervalMs + flexMs
+                )
+            }
         }
     }
 
     private fun updateEventBasedSurvey(survey: EventBasedSurvey,
                                        setting: Status.Setting,
-                                       event: ABCEvent? = null): Status.Setting {
-        val intervalMs = if (survey.delayAfterTriggerEventSec > 0) {
-            TimeUnit.SECONDS.toMillis(survey.delayAfterTriggerEventSec)
-        } else {
-            0
-        }
-        val flexMs = if (survey.flexDelayAfterTriggerEventSec > 0) {
-            TimeUnit.SECONDS.toMillis(Random.nextLong(survey.flexDelayAfterTriggerEventSec))
-        } else {
-            0
-        }
+                                       event: AbcEvent? = null): Status.Setting {
+        val intervalMs = max(TimeUnit.SECONDS.toMillis(survey.delayAfterTriggerEventSec), 0)
+        val flexMs = TimeUnit.SECONDS.toMillis(max(safeRandom(survey.flexDelayAfterTriggerEventSec), 0))
 
         return when (event?.eventType) {
             in survey.triggerEvents -> setting.copy(
@@ -304,37 +351,9 @@ class SurveyCollector(val context: Context) : BaseCollector {
         return setting.copy(nextTimeTriggered = nextTimeTriggered)
     }
 
-    override suspend fun onStart() {
-        ABCEvent.register(this)
-
-        val prevStartTime = (getStatus() as? Status)?.startTime ?: 0
-        if (prevStartTime <= 0) setStatus(Status(startTime = System.currentTimeMillis()))
-
-        cancelAll()
-        scheduleAll()
-
-        context.safeRegisterReceiver(receiver, filter)
-    }
-
-    override suspend fun onStop() {
-        ABCEvent.unregister(this)
-        cancelAll()
-
-        context.safeUnregisterReceiver(receiver)
-    }
-
-    override suspend fun checkAvailability(): Boolean =
-            !(getStatus() as? Status)?.settings.isNullOrEmpty() && context.checkPermission(requiredPermissions)
-
-    override val requiredPermissions: List<String>
-        get() = listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-
-    override val newIntentForSetUp: Intent?
-        get() = Intent(context, SurveySettingActivity::class.java)
-
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onEvent(event: ABCEvent) {
-        GlobalScope.launch(Dispatchers.IO) { scheduleAll(event) }
+    fun onEvent(event: AbcEvent) {
+        launch { scheduleAll(event) }
     }
 
     companion object {

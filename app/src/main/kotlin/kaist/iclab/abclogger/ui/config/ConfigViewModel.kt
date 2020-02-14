@@ -1,75 +1,92 @@
 package kaist.iclab.abclogger.ui.config
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.provider.Settings
 import android.text.format.DateUtils
 import android.text.format.Formatter
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.*
-import kaist.iclab.abclogger.ui.Status
+import kaist.iclab.abclogger.AbcCollector
+import kaist.iclab.abclogger.commons.Notifications
+import kaist.iclab.abclogger.Prefs
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.commons.toCoroutine
+import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class ConfigViewModel(
         private val context: Context,
-        private val abcLogger: ABC
-) : ViewModel() {
-    val errorStatus: MutableLiveData<Status> = MutableLiveData(Status.init())
+        private val abc: AbcCollector,
+        navigator: ConfigNavigator
+) : BaseViewModel<ConfigNavigator>(navigator) {
     val configs: MutableLiveData<ArrayList<ConfigData>> = MutableLiveData()
+    override suspend fun onLoad(extras: Bundle?) {
+        configs.postValue(arrayListOf<ConfigData>().apply {
+            addAll(generalConfig() + dataConfig() + otherConfig())
+        })
+    }
 
-    fun update() = viewModelScope.launch(Dispatchers.IO + viewModelScope.coroutineContext) {
+    override suspend fun onStore() { }
+
+    fun flush() = viewModelScope.launch(Dispatchers.IO) {
+        val ntf = Notifications.build(
+                context = context,
+                channelId = Notifications.CHANNEL_ID_PROGRESS,
+                title = context.getString(R.string.ntf_title_flush),
+                text = context.getString(R.string.ntf_text_flush),
+                progress = 0,
+                indeterminate = true
+        )
+        NotificationManagerCompat.from(context).notify(Notifications.ID_FLUSH_PROGRESS, ntf)
         try {
-            errorStatus.postValue(Status.init())
-            configs.postValue(
-                    arrayListOf<ConfigData>().apply {
-                        (generalConfig() + dataConfig() + otherConfig()).forEach { add(it) }
-                    }
-            )
+            ObjBox.flush(context)
         } catch (e: Exception) {
-            errorStatus.postValue(Status.failure(e))
+            nav?.navigateError(e)
         }
+        NotificationManagerCompat.from(context).cancel(Notifications.ID_FLUSH_PROGRESS)
     }
 
-    fun setUploadSetting(enableMetered: Boolean) {
-        SyncWorker.requestStart(context, false, enableMetered)
-    }
+    fun logout() = viewModelScope.launch(Dispatchers.IO) {
+        val ntf = Notifications.build(
+                context = context,
+                channelId = Notifications.CHANNEL_ID_PROGRESS,
+                title = context.getString(R.string.ntf_title_logout),
+                text = context.getString(R.string.ntf_text_logout),
+                progress = 0,
+                indeterminate = true
+        )
+        Notifications.notify(context, Notifications.ID_FLUSH_PROGRESS, ntf)
 
-    fun requestStart(prefKey: String) = viewModelScope.launch {
-        abcLogger.collectors.find { it.prefKey() == prefKey }?.start { _, throwable ->
-            if (throwable != null) errorStatus.postValue(Status.failure(throwable))
+        try {
+            GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().toCoroutine()
+            FirebaseAuth.getInstance().signOut()
+
+            AbcCollector.stop(context)
+            abc.stopAll()
+            abc.collectors.forEach { it.clear() }
+            SyncWorker.requestStop(context)
+            Notifications.cancelAll(context)
+
+            ObjBox.flush(context)
+            Prefs.clear()
+            Notifications.cancel(context, Notifications.ID_FLUSH_PROGRESS)
+
+            nav?.navigateAfterLogout()
+        } catch (e: Exception) {
+            Notifications.cancel(context, Notifications.ID_FLUSH_PROGRESS)
+
+            nav?.navigateError(e)
         }
-    }
-
-    fun requestStop(prefKey: String) = viewModelScope.launch {
-        abcLogger.collectors.find { it.prefKey() == prefKey }?.stop { _, throwable ->
-            if (throwable != null) errorStatus.postValue(Status.failure(throwable))
-        }
-    }
-
-    fun sync() {
-        SyncWorker.requestStart(context, true)
-    }
-
-    fun flush() = GlobalScope.launch (Dispatchers.IO) {
-        ObjBox.flush(context, true)
-    }
-
-    fun logout(onComplete: () -> Unit) = GlobalScope.launch (Dispatchers.IO) {
-        ObjBox.flush(context, true)
-        Prefs.clear()
-        FirebaseAuth.getInstance().signOut()
-        GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().toCoroutine()
-        abcLogger.stopAll()
-        ABC.stopService(context)
-        Notifications.cancelAll(context)
-        SyncWorker.requestStop(context)
-        onComplete.invoke()
     }
 
     private suspend fun generalConfig() = configs {
@@ -85,34 +102,65 @@ class ConfigViewModel(
             description = FirebaseAuth.getInstance().currentUser?.email ?: "Unknown"
         }
         simple {
-            key = PrefKeys.PERMISSION
             title = context.getString(R.string.config_title_permission)
-            description = if (context.checkPermission(abcLogger.getAllRequiredPermissions())) {
+            description = if (context.checkPermission(abc.getAllRequiredPermissions())) {
                 context.getString(R.string.general_granted)
             } else {
                 context.getString(R.string.general_denied)
             }
+            onAction = {
+                nav?.navigateIntent(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        .setData(Uri.parse("package:${context.packageName}"))
+                )
+            }
         }
         simple {
-            key = PrefKeys.LAST_TIME_SYNC
             title = context.getString(R.string.config_title_sync)
-            description = if (Prefs.lastTimeDataSync > 0) {
-                String.format("%s: %s",
-                        context.getString(R.string.general_last_sync_time),
-                        DateUtils.formatDateTime(
-                                context, Prefs.lastTimeDataSync,
-                                DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
-                        )
+            description = String.format("%s: %s",
+                    context.getString(R.string.general_last_sync_time),
+                    if (Prefs.lastTimeDataSync > 0) {
+                        DateUtils.formatDateTime(context, Prefs.lastTimeDataSync, DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
+                    } else {
+                        context.getString(R.string.general_none)
+                    }
+            )
+            onAction = {
+                SyncWorker.requestStart(
+                        context = context,
+                        forceStart = true,
+                        enableMetered = Prefs.canUploadMeteredNetwork,
+                        isPeriodic = Prefs.isAutoSync
                 )
-            } else {
-                context.getString(R.string.general_none)
             }
         }
         switch {
-            key = PrefKeys.CAN_UPLOAD_METERED_NETWORK
-            title = context.getString(R.string.config_title_upload_setting)
-            description = context.getString(R.string.config_desc_upload_setting)
+            title = context.getString(R.string.config_title_auto_sync)
+            description = context.getString(R.string.config_desc_auto_sync)
+            isChecked = Prefs.isAutoSync
+            onChange = { isChecked ->
+                Prefs.isAutoSync = isChecked
+                SyncWorker.requestStart(
+                        context = context,
+                        forceStart = false,
+                        enableMetered = Prefs.canUploadMeteredNetwork,
+                        isPeriodic = Prefs.isAutoSync
+                )
+            }
+        }
+        switch {
+            title = context.getString(R.string.config_title_network_constraints)
+            description = context.getString(R.string.config_desc_network_constraints)
             isChecked = Prefs.canUploadMeteredNetwork
+            onChange = { isChecked ->
+                Prefs.canUploadMeteredNetwork = isChecked
+                SyncWorker.requestStart(
+                        context = context,
+                        forceStart = false,
+                        enableMetered = Prefs.canUploadMeteredNetwork,
+                        isPeriodic = Prefs.isAutoSync
+                )
+            }
         }
     }
 
@@ -120,15 +168,23 @@ class ConfigViewModel(
         header {
             title = context.getString(R.string.config_category_collector)
         }
-        abcLogger.collectors.forEach { collector ->
+
+        abc.collectors.forEach { collector ->
             data {
-                key = collector.prefKey() ?: ""
-                title = collector.nameRes()?.let { context.getString(it) } ?: ""
-                description = collector.descriptionRes()?.let { context.getString(it) } ?: ""
+                title = collector.name
+                description = collector.description
                 isChecked = collector.getStatus()?.hasStarted ?: false
                 isAvailable = collector.checkAvailability()
-                info = collector.getStatus()?.toInfo() ?: ""
-                intent = collector.newIntentForSetUp
+                info = BaseStatus.information(collector.getStatus())
+                collector.newIntentForSetUp?.let {
+                    onAction = { nav?.navigateIntent(it) }
+                }
+                onChange = { isChecked ->
+                    if (isChecked)
+                        collector.start { t -> t?.let { nav?.navigateError(t) } }
+                    else
+                        collector.stop { t -> t?.let { nav?.navigateError(t) } }
+                }
             }
         }
     }
@@ -138,17 +194,21 @@ class ConfigViewModel(
             title = context.getString(R.string.config_category_others)
         }
         simple {
-            key = PrefKeys.MAX_DB_SIZE
             title = context.getString(R.string.config_title_flush_data)
             description = listOf(
                     context.getString(R.string.general_current_db_size),
                     "${Formatter.formatFileSize(context, ObjBox.size(context))} / ${Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())}"
             ).joinToString(": ")
+            onAction = {
+                nav?.navigateBeforeFlush()
+            }
         }
         simple {
-            key = PrefKeys.LOGOUT
             title = context.getString(R.string.config_title_logout)
             description = context.getString(R.string.config_desc_logout)
+            onAction = {
+                nav?.navigateBeforeLogout()
+            }
         }
     }
 }

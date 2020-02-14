@@ -9,15 +9,57 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
-import kotlinx.coroutines.GlobalScope
+import kaist.iclab.abclogger.commons.safeRegisterReceiver
+import kaist.iclab.abclogger.commons.safeUnregisterReceiver
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
-class InstalledAppCollector (val context: Context) : BaseCollector {
+class InstalledAppCollector (private val context: Context) : BaseCollector<InstalledAppCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val lastTimeAccessed: Long? = null) : BaseStatus() {
         override fun info(): String = ""
+    }
+
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_installed_app)
+
+    override val description: String = context.getString(R.string.data_desc_installed_app)
+
+    override val requiredPermissions: List<String> = listOf()
+
+    override val newIntentForSetUp: Intent? = null
+
+    override suspend fun checkAvailability(): Boolean = true
+
+    override suspend fun onStart() {
+        val currentTime = System.currentTimeMillis()
+        val halfDayHour : Long = TimeUnit.HOURS.toMillis(12)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessed ?: 0
+
+        val triggerTime = if (lastTimeAccessed > 0 && lastTimeAccessed + halfDayHour >= currentTime) {
+            lastTimeAccessed + halfDayHour
+        } else {
+            currentTime + TimeUnit.SECONDS.toMillis(10)
+        }
+
+        context.safeRegisterReceiver(receiver, filter)
+
+        alarmManager.cancel(intent)
+        alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                halfDayHour,
+                intent
+        )
+    }
+
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
+
+        alarmManager.cancel(intent)
     }
 
     private val packageManager: PackageManager by lazy { context.applicationContext.packageManager }
@@ -44,12 +86,13 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
                             lastUpdateTime = info.lastUpdateTime
                     ).fill(timeMillis = curTime)
                 }.also { entity ->
-                    GlobalScope.launch {
+                    launch {
                         ObjBox.put(entity)
                         setStatus(Status(lastTime = curTime))
                     }
                 }
-                GlobalScope.launch {
+
+                launch {
                     setStatus(Status(lastTimeAccessed = curTime))
                 }
             }
@@ -64,43 +107,6 @@ class InstalledAppCollector (val context: Context) : BaseCollector {
     private val filter = IntentFilter().apply {
         addAction(ACTION_RETRIEVE_PACKAGES)
     }
-
-    override suspend fun onStart() {
-        val currentTime = System.currentTimeMillis()
-        val halfDayHour : Long = TimeUnit.HOURS.toMillis(12)
-        val lastTimeAccessed = (getStatus() as? Status)?.lastTimeAccessed ?: 0
-
-        val triggerTime = if (lastTimeAccessed > 0 && lastTimeAccessed + halfDayHour >= currentTime) {
-            lastTimeAccessed + halfDayHour
-        } else {
-            currentTime + TimeUnit.SECONDS.toMillis(10)
-        }
-
-        context.safeRegisterReceiver(receiver, filter)
-
-        alarmManager.cancel(intent)
-        alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                halfDayHour,
-                intent
-        )
-    }
-
-    override suspend fun onStop() {
-        context.safeUnregisterReceiver(receiver)
-
-        alarmManager.cancel(intent)
-    }
-
-    override suspend fun checkAvailability(): Boolean = true
-
-    override val requiredPermissions: List<String>
-        get() = listOf()
-
-    override val newIntentForSetUp: Intent?
-        get() = null
-
 
     companion object {
         private const val ACTION_RETRIEVE_PACKAGES = "${BuildConfig.APPLICATION_ID}.ACTION_RETRIEVE_PACKAGES"

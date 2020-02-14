@@ -1,58 +1,62 @@
 package kaist.iclab.abclogger.collector.survey.setting
 
+import android.os.Bundle
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kaist.iclab.abclogger.InvalidSurveyFormatException
-import kaist.iclab.abclogger.InvalidUrlException
-import kaist.iclab.abclogger.collector.getStatus
-import kaist.iclab.abclogger.collector.setStatus
+import kaist.iclab.abclogger.commons.InvalidSurveyFormatException
+import kaist.iclab.abclogger.commons.InvalidUrlException
 import kaist.iclab.abclogger.collector.survey.Survey
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
-import kaist.iclab.abclogger.httpGet
-import kaist.iclab.abclogger.ui.Status
+import kaist.iclab.abclogger.commons.httpGet
+import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kotlinx.coroutines.*
-import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 
-class SurveySettingViewModel(val collector: SurveyCollector) : ViewModel() {
-    val loadStatus: MutableLiveData<Status> = MutableLiveData(Status.init())
-    val storeStatus: MutableLiveData<Status> = MutableLiveData(Status.init())
-
-    /**
-     * items are used only in a way of programs.
-     */
+class SurveySettingViewModel(val collector: SurveyCollector,
+                             navigator: SurveySettingNavigator) : BaseViewModel<SurveySettingNavigator>(navigator) {
     val items: MutableLiveData<ArrayList<SurveyCollector.Status.Setting>> = MutableLiveData()
 
-    init {
-        viewModelScope.launch {
-            loadStatus.postValue(Status.loading())
-            try {
-                val settings: ArrayList<SurveyCollector.Status.Setting> = arrayListOf<SurveyCollector.Status.Setting>().apply {
-                    val savedSettings = (collector.getStatus() as? SurveyCollector.Status)?.settings
-                    if (savedSettings.isNullOrEmpty()) {
-                        add(SurveyCollector.Status.Setting(id = 1, uuid = UUID.randomUUID().toString()))
-                    } else {
-                        addAll(savedSettings)
-                    }
-                }
-                items.postValue(settings)
-                loadStatus.postValue(Status.success())
-            } catch (e: Exception) {
-                loadStatus.postValue(Status.failure(e))
+    override suspend fun onLoad(extras: Bundle?) {
+        val settings: ArrayList<SurveyCollector.Status.Setting> = arrayListOf<SurveyCollector.Status.Setting>().apply {
+            val savedSettings = collector.getStatus()?.settings
+            if (savedSettings.isNullOrEmpty()) {
+                add(SurveyCollector.Status.Setting(id = 1, uuid = UUID.randomUUID().toString()))
+            } else {
+                addAll(savedSettings)
             }
         }
+        items.postValue(settings)
     }
 
-    fun removeItem(setting: SurveyCollector.Status.Setting) = viewModelScope.launch {
-        if (items.value?.size == 1) return@launch
+    override suspend fun onStore() {
+        items.value?.map { item ->
+            item.copy(
+                    url = item.url,
+                    json = withContext(Dispatchers.IO) { download(item.url) },
+                    nextTimeTriggered = null,
+                    lastTimeTriggered = null
+            )
+        }?.let { settings ->
+            collector.setStatus(
+                    SurveyCollector.Status(
+                            nReceived = 0,
+                            nAnswered = 0,
+                            startTime = 0,
+                            settings = settings
+                    )
+            )
+        }
+        nav?.navigateStore()
+    }
+
+    fun removeItem(setting: SurveyCollector.Status.Setting) {
+        if (items.value?.size == 1) return
 
         items.value?.apply { remove(setting) }?.let { settings -> items.postValue(settings) }
     }
 
-    fun addItem() = viewModelScope.launch {
+    fun addItem() {
         items.value?.apply {
             add(SurveyCollector.Status.Setting(id = size + 1, uuid = UUID.randomUUID().toString()))
         }?.let { entities ->
@@ -60,37 +64,10 @@ class SurveySettingViewModel(val collector: SurveyCollector) : ViewModel() {
         }
     }
 
-    private suspend fun download(url: String?): String = withContext(Dispatchers.IO) {
+    private suspend fun download(url: String?): String {
         if (url == null || !URLUtil.isValidUrl(url)) throw InvalidUrlException()
         val json = httpGet(url) ?: throw InvalidSurveyFormatException()
         Survey.fromJson(json) ?: throw InvalidSurveyFormatException()
-        return@withContext json
-    }
-
-    fun save(onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
-        storeStatus.postValue(Status.loading())
-        try {
-            items.value?.map { item ->
-                item.copy(
-                        url = item.url,
-                        json = download(item.url),
-                        nextTimeTriggered = null,
-                        lastTimeTriggered = null
-                )
-            }?.let { settings ->
-                collector.setStatus(
-                        SurveyCollector.Status(
-                                nReceived = 0,
-                                nAnswered = 0,
-                                startTime = 0,
-                                settings = settings
-                        )
-                )
-            }
-            storeStatus.postValue(Status.success())
-            onSuccess?.invoke()
-        } catch (e: Exception) {
-            storeStatus.postValue(Status.failure(e))
-        }
+        return json
     }
 }

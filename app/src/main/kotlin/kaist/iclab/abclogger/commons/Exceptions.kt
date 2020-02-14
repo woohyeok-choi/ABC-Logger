@@ -91,8 +91,6 @@ class GoogleApiException(private val statusCode: Int) : ABCException() {
         get() = R.string.error_google_api_exception
 }
 
-
-
 class FirebaseInvalidUserException : ABCException() {
     override val stringRes: Int
         get() = R.string.error_firebase_auth_invalid_user

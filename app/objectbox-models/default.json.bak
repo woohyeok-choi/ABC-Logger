@@ -10,47 +10,58 @@
       "properties": [
         {
           "id": "1:704371489649118496",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:8304591751629480070",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:3560471233081341995",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:3916311510168096802",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:478574998513921112",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:3036374616977976360",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:4928991800818798812",
-          "name": "name"
+          "name": "name",
+          "type": 9
         },
         {
           "id": "9:7414780408365353536",
-          "name": "packageName"
+          "name": "packageName",
+          "type": 9
         },
         {
           "id": "10:6754896920193662279",
-          "name": "type"
+          "name": "type",
+          "type": 9
         },
         {
           "id": "11:4120313942226300733",
-          "name": "isSystemApp"
+          "name": "isSystemApp",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "12:1671016009095271716",
-          "name": "isUpdatedSystemApp"
+          "name": "isUpdatedSystemApp",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": []
@@ -62,55 +73,70 @@
       "properties": [
         {
           "id": "1:4656273505901812595",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:130413030397013229",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:7400667079562161508",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:7788065290147404224",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:171351420227353807",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:9166426228699522215",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:7485302240165859303",
-          "name": "level"
+          "name": "level",
+          "type": 5,
+          "flags": 4
         },
         {
           "id": "9:269831760320728426",
-          "name": "scale"
+          "name": "scale",
+          "type": 5,
+          "flags": 4
         },
         {
           "id": "10:2844726941885669816",
-          "name": "temperature"
+          "name": "temperature",
+          "type": 5,
+          "flags": 4
         },
         {
           "id": "11:8153896228280808117",
-          "name": "voltage"
+          "name": "voltage",
+          "type": 5,
+          "flags": 4
         },
         {
           "id": "12:4703289347884811979",
-          "name": "health"
+          "name": "health",
+          "type": 9
         },
         {
           "id": "13:4964347778445047035",
-          "name": "pluggedType"
+          "name": "pluggedType",
+          "type": 9
         },
         {
           "id": "14:1236241628203427437",
-          "name": "status"
+          "name": "status",
+          "type": 9
         }
       ],
       "relations": []
@@ -122,39 +148,47 @@
       "properties": [
         {
           "id": "1:6179719808290019668",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:4122340958764507436",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:338733139770724984",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:2993238867547306068",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:9220092596306367906",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:5483891281740835030",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:210929857107328383",
-          "name": "deviceName"
+          "name": "deviceName",
+          "type": 9
         },
         {
           "id": "9:641625605932914487",
-          "name": "address"
+          "name": "address",
+          "type": 9
         },
         {
           "id": "10:243566090731686110",
-          "name": "rssi"
+          "name": "rssi",
+          "type": 5,
+          "flags": 4
         }
       ],
       "relations": []
@@ -166,59 +200,75 @@
       "properties": [
         {
           "id": "1:7742238894476622533",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:276102545359271724",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:1854440186477264879",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:6843147566370230721",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:7673531394053308902",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:8554306890949689513",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:581920105894845701",
-          "name": "duration"
+          "name": "duration",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "9:5376433981532490221",
-          "name": "number"
+          "name": "number",
+          "type": 9
         },
         {
           "id": "10:2994917826461827440",
-          "name": "type"
+          "name": "type",
+          "type": 9
         },
         {
           "id": "11:4844485378391661210",
-          "name": "presentation"
+          "name": "presentation",
+          "type": 9
         },
         {
           "id": "12:5407500574990803188",
-          "name": "dataUsage"
+          "name": "dataUsage",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "13:4812465237434815175",
-          "name": "contactType"
+          "name": "contactType",
+          "type": 9
         },
         {
           "id": "14:4252763408328042467",
-          "name": "isStarred"
+          "name": "isStarred",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "15:8086539639599187709",
-          "name": "isPinned"
+          "name": "isPinned",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": []
@@ -230,51 +280,67 @@
       "properties": [
         {
           "id": "1:6259874556950076062",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:6032169008050346226",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:2875843083833705702",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:7416462324082225131",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:7279355260614416535",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:3037623066580555738",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:5182085241682652345",
-          "name": "fromTime"
+          "name": "fromTime",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "9:1711663105656355886",
-          "name": "rxBytes"
+          "name": "rxBytes",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "10:7165777620241587221",
-          "name": "txBytes"
+          "name": "txBytes",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "11:4028518491103196044",
-          "name": "mobileRxBytes"
+          "name": "mobileRxBytes",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "12:1468610930011348141",
-          "name": "mobileTxBytes"
+          "name": "mobileTxBytes",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "13:3944081941854360063",
-          "name": "toTime"
+          "name": "toTime",
+          "type": 6,
+          "flags": 4
         }
       ],
       "relations": []
@@ -286,31 +352,36 @@
       "properties": [
         {
           "id": "1:8501720349637031266",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:7831774022789140874",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:3681568378422425564",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:1852680964153391827",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:5737689553088667000",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:6227451213385940735",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:86095182619433895",
-          "name": "type"
+          "name": "type",
+          "type": 9
         }
       ],
       "relations": []
@@ -322,51 +393,65 @@
       "properties": [
         {
           "id": "1:6827947515291344134",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:6799896859242715640",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:7655600281244052949",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:680095542874861218",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:8279458883426679947",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:859617273231228374",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:8468967268368590264",
-          "name": "name"
+          "name": "name",
+          "type": 9
         },
         {
           "id": "9:34532357819928516",
-          "name": "packageName"
+          "name": "packageName",
+          "type": 9
         },
         {
           "id": "10:2449822020839905760",
-          "name": "isSystemApp"
+          "name": "isSystemApp",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "11:8415694684876715538",
-          "name": "isUpdatedSystemApp"
+          "name": "isUpdatedSystemApp",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "12:3089657717421229358",
-          "name": "firstInstallTime"
+          "name": "firstInstallTime",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "13:3765384676859528411",
-          "name": "lastUpdateTime"
+          "name": "lastUpdateTime",
+          "type": 6,
+          "flags": 4
         }
       ],
       "relations": []
@@ -378,47 +463,61 @@
       "properties": [
         {
           "id": "1:6634351903010000840",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:4628720990057954298",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:1240465286637251884",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:8419275452313023003",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:7016709344239939590",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:950647487466205370",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:3340912319227187932",
-          "name": "latitude"
+          "name": "latitude",
+          "type": 8,
+          "flags": 4
         },
         {
           "id": "9:4076655186454739798",
-          "name": "longitude"
+          "name": "longitude",
+          "type": 8,
+          "flags": 4
         },
         {
           "id": "10:1834876177635807845",
-          "name": "altitude"
+          "name": "altitude",
+          "type": 8,
+          "flags": 4
         },
         {
           "id": "11:6345462265401864349",
-          "name": "accuracy"
+          "name": "accuracy",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "12:826480933058752934",
-          "name": "speed"
+          "name": "speed",
+          "type": 7,
+          "flags": 4
         }
       ],
       "relations": []
@@ -430,31 +529,36 @@
       "properties": [
         {
           "id": "1:5214229662384226065",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:7718420897772634827",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:7472387286641974058",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:3507155081873285758",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:1632863681927381294",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:8956753562347954950",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:1348114983299514695",
-          "name": "mimeType"
+          "name": "mimeType",
+          "type": 9
         }
       ],
       "relations": []
@@ -466,51 +570,63 @@
       "properties": [
         {
           "id": "1:8192125399879091371",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:7019094082410344920",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:5609462583575698143",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:2825211144228686864",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:2198594333348117191",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:2244412886878113093",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:1081526692837598350",
-          "name": "number"
+          "name": "number",
+          "type": 9
         },
         {
           "id": "9:4524919037548777925",
-          "name": "messageClass"
+          "name": "messageClass",
+          "type": 9
         },
         {
           "id": "10:688577547849513657",
-          "name": "messageBox"
+          "name": "messageBox",
+          "type": 9
         },
         {
           "id": "11:6993260962086569800",
-          "name": "contactType"
+          "name": "contactType",
+          "type": 9
         },
         {
           "id": "12:3443753232368109235",
-          "name": "isStarred"
+          "name": "isStarred",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "13:4865735879223817132",
-          "name": "isPinned"
+          "name": "isPinned",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": []
@@ -522,71 +638,89 @@
       "properties": [
         {
           "id": "1:5209503407054325405",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:1987779488142547076",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:1929109104140216126",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:7508303410856217277",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:706497203315147030",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:6938767616159991922",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:6533355588897456042",
-          "name": "name"
+          "name": "name",
+          "type": 9
         },
         {
           "id": "9:7183948814147082705",
-          "name": "packageName"
+          "name": "packageName",
+          "type": 9
         },
         {
           "id": "10:4457704610903415308",
-          "name": "isSystemApp"
+          "name": "isSystemApp",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "11:8567252609011026088",
-          "name": "isUpdatedSystemApp"
+          "name": "isUpdatedSystemApp",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "12:838030792871170548",
-          "name": "title"
+          "name": "title",
+          "type": 9
         },
         {
           "id": "13:2834613660330094346",
-          "name": "visibility"
+          "name": "visibility",
+          "type": 9
         },
         {
           "id": "14:7363109422459565409",
-          "name": "category"
+          "name": "category",
+          "type": 9
         },
         {
           "id": "15:5522675813072225575",
-          "name": "vibrate"
+          "name": "vibrate",
+          "type": 9
         },
         {
           "id": "16:7397411219087784726",
-          "name": "sound"
+          "name": "sound",
+          "type": 9
         },
         {
           "id": "17:6728129723276362538",
-          "name": "lightColor"
+          "name": "lightColor",
+          "type": 9
         },
         {
           "id": "19:4665250547484801158",
-          "name": "isPosted"
+          "name": "isPosted",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": []
@@ -598,35 +732,42 @@
       "properties": [
         {
           "id": "1:7342660837435811362",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:3852215199854689328",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:4056410852313781141",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:69797873474144643",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:4594895837808793313",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:4273578758557398982",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:115597785177609375",
-          "name": "type"
+          "name": "type",
+          "type": 9
         },
         {
           "id": "9:2646498593903343272",
-          "name": "confidence"
+          "name": "confidence",
+          "type": 5,
+          "flags": 4
         }
       ],
       "relations": []
@@ -638,35 +779,42 @@
       "properties": [
         {
           "id": "1:3477833906620990834",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:4753805823628182983",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:1501979473427165233",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:237138429059912940",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:4577913947884185460",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:4541625880572395911",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:4088831550354229773",
-          "name": "type"
+          "name": "type",
+          "type": 9
         },
         {
           "id": "9:3803879012769277485",
-          "name": "isEntered"
+          "name": "isEntered",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": []
@@ -678,115 +826,150 @@
       "properties": [
         {
           "id": "1:2612647158969467191",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:2596385722868976348",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:1173876294268774600",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:5289774287996523541",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:4194711741554819125",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:6025001404903907859",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "12:679544373158806493",
-          "name": "firstValue"
+          "name": "firstValue",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "13:5556258705553047149",
-          "name": "secondValue"
+          "name": "secondValue",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "14:4644669149040674991",
-          "name": "thirdValue"
+          "name": "thirdValue",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "15:7531711628662715146",
-          "name": "fourthValue"
+          "name": "fourthValue",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "16:3892068127333587285",
-          "name": "type"
+          "name": "type",
+          "type": 9
         },
         {
           "id": "17:1692385555357260194",
-          "name": "accuracy"
+          "name": "accuracy",
+          "type": 9
         }
       ],
       "relations": []
     },
     {
       "id": "17:5201448255066438458",
-      "lastPropertyId": "16:5568131226874511775",
+      "lastPropertyId": "17:6314950974659642784",
       "name": "SurveyEntity",
       "properties": [
         {
           "id": "1:1713544438866572937",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:6513606919404061434",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:5975954828330343011",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:7897412566425014905",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:4623662961299194454",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:929324376506956077",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:3676541921264711104",
-          "name": "title"
+          "name": "title",
+          "type": 9
         },
         {
           "id": "9:5262708718025091939",
-          "name": "message"
+          "name": "message",
+          "type": 9
         },
         {
           "id": "10:7247674255745678092",
-          "name": "timeoutPolicy"
+          "name": "timeoutPolicy",
+          "type": 9
         },
         {
           "id": "11:6115675279887594688",
-          "name": "timeoutSec"
+          "name": "timeoutSec",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "12:2938975099328916986",
-          "name": "deliveredTime"
+          "name": "deliveredTime",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "13:5277019131701159714",
-          "name": "reactionTime"
+          "name": "reactionTime",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "15:2832421301879032596",
-          "name": "responseTime"
+          "name": "responseTime",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "16:5568131226874511775",
-          "name": "json"
+          "name": "json",
+          "type": 9
+        },
+        {
+          "id": "17:6314950974659642784",
+          "name": "instruction",
+          "type": 9
         }
       ],
       "relations": []
@@ -798,43 +981,53 @@
       "properties": [
         {
           "id": "1:3875205354467305698",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:6891816813907383668",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:6256561867584309163",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:7619101283350147245",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:1285435240816685289",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:3315443384237767477",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:7562799874232819703",
-          "name": "bssid"
+          "name": "bssid",
+          "type": 9
         },
         {
           "id": "9:2948511981089043092",
-          "name": "ssid"
+          "name": "ssid",
+          "type": 9
         },
         {
           "id": "10:8605545629820143875",
-          "name": "frequency"
+          "name": "frequency",
+          "type": 5,
+          "flags": 4
         },
         {
           "id": "11:8628489500856959182",
-          "name": "rssi"
+          "name": "rssi",
+          "type": 5,
+          "flags": 4
         }
       ],
       "relations": []
@@ -846,131 +1039,170 @@
       "properties": [
         {
           "id": "1:3497112856966801256",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:5284323404934225763",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:3033181186520287798",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:144007151487007477",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:6627244357201138614",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:8478344564654657002",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:2669259452640695823",
-          "name": "name"
+          "name": "name",
+          "type": 9
         },
         {
           "id": "9:8801707382207532916",
-          "name": "packageName"
+          "name": "packageName",
+          "type": 9
         },
         {
           "id": "10:3752836929176722830",
-          "name": "isSystemApp"
+          "name": "isSystemApp",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "11:1124909152816329324",
-          "name": "isUpdatedSystemApp"
+          "name": "isUpdatedSystemApp",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "12:1572325253326650838",
-          "name": "distance"
+          "name": "distance",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "13:2548804805895703031",
-          "name": "timeTaken"
+          "name": "timeTaken",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "14:8303813939620144283",
-          "name": "keyboardType"
+          "name": "keyboardType",
+          "type": 9
         },
         {
           "id": "15:4021103132584122297",
-          "name": "prevKey"
+          "name": "prevKey",
+          "type": 9
         },
         {
           "id": "16:76248790266375771",
-          "name": "currentKey"
+          "name": "currentKey",
+          "type": 9
         },
         {
           "id": "17:695562707719824292",
-          "name": "prevKeyType"
+          "name": "prevKeyType",
+          "type": 9
         },
         {
           "id": "18:4873364239876570130",
-          "name": "currentKeyType"
+          "name": "currentKeyType",
+          "type": 9
         }
       ],
       "relations": []
     },
     {
       "id": "22:5094520727689055866",
-      "lastPropertyId": "14:8354720909191942070",
+      "lastPropertyId": "15:2843438322382556903",
       "name": "ExternalSensorEntity",
       "properties": [
         {
           "id": "1:476749963743861262",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:8626149930469934010",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:3733724363609064219",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:6774998632519438284",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "6:2747170057400167030",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "7:4235451395354468046",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "8:5083495413852321128",
-          "name": "sensorId"
+          "name": "sensorId",
+          "type": 9
         },
         {
           "id": "9:5431394728193339053",
-          "name": "name"
+          "name": "name",
+          "type": 9
         },
         {
           "id": "10:7424082313942916682",
-          "name": "description"
+          "name": "description",
+          "type": 9
         },
         {
           "id": "11:6034790879935390237",
-          "name": "firstValue"
+          "name": "firstValue",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "12:1705258008245488160",
-          "name": "secondValue"
+          "name": "secondValue",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "13:7647599617528710548",
-          "name": "thirdValue"
+          "name": "thirdValue",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "14:8354720909191942070",
-          "name": "fourthValue"
+          "name": "fourthValue",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "15:2843438322382556903",
+          "name": "collection",
+          "type": 9
         }
       ],
       "relations": []
@@ -982,43 +1214,54 @@
       "properties": [
         {
           "id": "1:3898970556952209726",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:6080704813390982838",
-          "name": "timestamp"
+          "name": "timestamp",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "3:7837090828391804859",
-          "name": "utcOffset"
+          "name": "utcOffset",
+          "type": 7,
+          "flags": 4
         },
         {
           "id": "4:3001052869946040968",
-          "name": "subjectEmail"
+          "name": "subjectEmail",
+          "type": 9
         },
         {
           "id": "5:8647718092040112819",
-          "name": "deviceInfo"
-        },
-        {
-          "id": "6:6584685521572670325",
-          "name": "isUploaded"
+          "name": "deviceInfo",
+          "type": 9
         },
         {
           "id": "7:1793588202237857127",
-          "name": "type"
+          "name": "type",
+          "type": 9
         },
         {
           "id": "8:4564574142043632509",
-          "name": "startTime"
+          "name": "startTime",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "9:8820096036515731216",
-          "name": "endTime"
+          "name": "endTime",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "10:3200746810490659916",
-          "name": "value"
+          "name": "value",
+          "type": 7,
+          "flags": 4
         }
       ],
       "relations": []
@@ -1028,8 +1271,8 @@
   "lastIndexId": "23:8572453880263911372",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [
     3802820391488506601,
     2981933535377807450,
@@ -1127,7 +1370,26 @@
     505742251223574387,
     1217953408299244902,
     7421471615030858472,
-    4222805707908719440
+    4222805707908719440,
+    8478344564654657002,
+    6584685521572670325,
+    950647487466205370,
+    3315443384237767477,
+    2244412886878113093,
+    9166426228699522215,
+    4273578758557398982,
+    5483891281740835030,
+    6938767616159991922,
+    4235451395354468046,
+    6227451213385940735,
+    859617273231228374,
+    8554306890949689513,
+    3036374616977976360,
+    3037623066580555738,
+    8956753562347954950,
+    4541625880572395911,
+    6025001404903907859,
+    929324376506956077
   ],
   "retiredRelationUids": [],
   "version": 1

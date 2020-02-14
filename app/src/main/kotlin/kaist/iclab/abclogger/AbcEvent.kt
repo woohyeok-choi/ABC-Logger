@@ -2,13 +2,13 @@ package kaist.iclab.abclogger
 
 import org.greenrobot.eventbus.EventBus
 
-data class ABCEvent(
+data class AbcEvent(
         val timestamp: Long,
         val eventType: String
 ) {
     companion object {
         fun post(timestamp: Long, eventType: String) {
-            EventBus.getDefault().post(ABCEvent(timestamp, eventType))
+            EventBus.getDefault().post(AbcEvent(timestamp, eventType))
         }
 
         fun register(subscriber: Any) {

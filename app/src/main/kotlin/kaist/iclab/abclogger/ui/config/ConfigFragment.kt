@@ -3,133 +3,92 @@ package kaist.iclab.abclogger.ui.config
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.Uri
-import android.os.Bundle
-import android.provider.Settings
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
+import android.util.Log
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.commons.showToast
 import kaist.iclab.abclogger.ui.base.BaseFragment
 import kaist.iclab.abclogger.databinding.FragmentConfigBinding
 import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment
 import kaist.iclab.abclogger.ui.splash.SplashActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
-class ConfigFragment : BaseFragment(), SharedPreferences.OnSharedPreferenceChangeListener {
-    private val viewModel: ConfigViewModel by viewModel()
-    private lateinit var dataBinding: FragmentConfigBinding
+class ConfigFragment : BaseFragment<FragmentConfigBinding, ConfigViewModel>(),
+        SharedPreferences.OnSharedPreferenceChangeListener, ConfigNavigator {
+    override val layoutId: Int = R.layout.fragment_config
 
-    private fun startPermissionActivity() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                .setData(Uri.parse("package:${requireContext().packageName}"))
-        startActivityForResult(intent, REQUEST_CODE_SETTING)
-    }
+    override val viewModelVariable: Int = BR.viewModel
 
-    private fun startSplashActivity() {
-        val intent = Intent(requireContext(), SplashActivity::class.java)
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        startActivity(intent)
-    }
+    override val viewModel: ConfigViewModel by viewModel { parametersOf(this) }
 
-    private fun registerPreferenceListener(context: Context) {
-        context.getSharedPreferences(
-                BuildConfig.PREF_NAME, Context.MODE_PRIVATE
-        ).registerOnSharedPreferenceChangeListener(this)
-    }
-
-    private fun unregisterPreferenceListener(context: Context) {
-        context.getSharedPreferences(
-                BuildConfig.PREF_NAME, Context.MODE_PRIVATE
-        ).unregisterOnSharedPreferenceChangeListener(this)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(false)
-        registerPreferenceListener(requireContext())
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        dataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_config, container, false)
-        return dataBinding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        dataBinding.viewModel = viewModel
-        dataBinding.lifecycleOwner = this
-
+    override fun beforeExecutePendingBindings() {
         val adapter = ConfigListAdapter()
-
-        adapter.onCheckedChanged = { key, item, isChecked ->
-            if (item is DataConfigItem) {
-                if (isChecked) {
-                    viewModel.requestStart(key)
-                } else {
-                    viewModel.requestStop(key)
-                }
-            } else {
-                when(key) {
-                    PrefKeys.CAN_UPLOAD_METERED_NETWORK -> viewModel.setUploadSetting(isChecked)
-                }
-            }
-        }
-
-        adapter.onClick = { key, item ->
-            if (item is DataConfigItem) {
-                item.intentForSetup?.let { startActivity(it) }
-            } else {
-                when(key) {
-                    PrefKeys.LAST_TIME_SYNC -> viewModel.sync()
-                    PrefKeys.PERMISSION -> startPermissionActivity()
-                    PrefKeys.MAX_DB_SIZE -> {
-                        YesNoDialogFragment.showDialog(
-                                parentFragmentManager,
-                                getString(R.string.dialog_title_flush_data),
-                                getString(R.string.dialog_message_flush_data)
-                        ) { viewModel.flush() }
-                    }
-                    PrefKeys.LOGOUT -> {
-                        YesNoDialogFragment.showDialog(
-                                parentFragmentManager,
-                                getString(R.string.dialog_title_sign_out),
-                                getString(R.string.dialog_message_sign_out)
-                        ) { viewModel.logout { startSplashActivity() } }
-                    }
-                }
-            }
-        }
 
         dataBinding.recyclerView.adapter = adapter
         dataBinding.recyclerView.itemAnimator = null
 
-        viewModel.configs.observe(this) { configs ->
-            if(configs != null) adapter.items = configs
-        }
-
-        viewModel.errorStatus.observe(this) { status ->
-            if (status.error != null) showToast(status.error)
+        viewModel.configs.observe(this) { data ->
+            data?.let { adapter.items = data }
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.update()
+    override fun onStart() {
+        super.onStart()
+        context?.getSharedPreferences(
+                BuildConfig.PREF_NAME,
+                Context.MODE_PRIVATE
+        )?.registerOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterPreferenceListener(requireContext())
-    }
-
-    companion object {
-        private const val REQUEST_CODE_SETTING = 0x0f
+    override fun onStop() {
+        super.onStop()
+        context?.getSharedPreferences(
+                BuildConfig.PREF_NAME,
+                Context.MODE_PRIVATE
+        )?.unregisterOnSharedPreferenceChangeListener(this)
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        viewModel.update()
+        viewModel.load()
+    }
+
+    override fun navigateError(throwable: Throwable) {
+        lifecycleScope.launch(Dispatchers.Main) { showToast(throwable) }
+    }
+
+    override fun navigateIntent(intent: Intent) {
+        lifecycleScope.launch(Dispatchers.Main) { startActivity(intent) }
+    }
+
+    override fun navigateBeforeFlush() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            YesNoDialogFragment.showDialog(
+                    parentFragmentManager,
+                    getString(R.string.dialog_title_flush_data),
+                    getString(R.string.dialog_message_flush_data)
+            ) { viewModel.flush() }
+        }
+    }
+
+    override fun navigateBeforeLogout() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            YesNoDialogFragment.showDialog(
+                    parentFragmentManager,
+                    getString(R.string.dialog_title_sign_out),
+                    getString(R.string.dialog_message_sign_out)
+            ) { viewModel.logout() }
+        }
+    }
+
+    override fun navigateAfterLogout() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            val intent = Intent(requireContext(), SplashActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            startActivity(intent)
+        }
     }
 }

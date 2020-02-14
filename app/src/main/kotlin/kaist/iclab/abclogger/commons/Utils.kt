@@ -4,44 +4,24 @@ import android.accessibilityservice.AccessibilityService
 import android.app.*
 import android.content.*
 import android.content.pm.PackageManager
-import android.media.AudioAttributes
-import android.media.RingtoneManager
+import android.database.ContentObserver
 import android.net.*
 import android.os.*
 import android.provider.Settings
 import android.text.format.DateUtils
-import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.work.Constraints
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.Worker
 import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.HttpException
-import com.github.kittinunf.fuel.core.awaitResponseResult
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
-import com.gun0912.tedpermission.PermissionListener
-import com.gun0912.tedpermission.TedPermission
-import io.reactivex.Flowable
 import io.reactivex.Single
 import kotlinx.coroutines.withContext
 import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.math.log10
 import java.io.Serializable
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.coroutines.*
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.memberExtensionProperties
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
@@ -101,6 +81,15 @@ fun View.setVerticalPadding(pixelSize: Int) {
 
 
 fun Context.checkPermission(permissions: Collection<String>): Boolean =
+        if (permissions.isEmpty()) {
+            true
+        } else {
+            permissions.all { permission ->
+                ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+            }
+        }
+
+fun Context.checkPermission(permissions: Array<String>): Boolean =
         if (permissions.isEmpty()) {
             true
         } else {
@@ -258,13 +247,20 @@ suspend fun httpGet(url: String, vararg params: Pair<String, Any?>): String? {
 
 fun Context.safeRegisterReceiver(receiver: BroadcastReceiver, filter: IntentFilter) = try {
     registerReceiver(receiver, filter)
-} catch (e: IllegalArgumentException) {
-}
+} catch (e: IllegalArgumentException) { }
 
 fun Context.safeUnregisterReceiver(receiver: BroadcastReceiver) = try {
     unregisterReceiver(receiver)
-} catch (e: IllegalArgumentException) {
-}
+} catch (e: IllegalArgumentException) { }
+
+fun ContentResolver.safeRegisterContentObserver(uri: Uri, notifyForDescendants: Boolean, observer: ContentObserver) = try {
+        registerContentObserver(uri, notifyForDescendants, observer)
+    } catch (e: Exception) { }
+
+fun ContentResolver.safeUnregisterContentObserver(observer: ContentObserver) = try {
+    unregisterContentObserver(observer)
+} catch (e: Exception) { }
+
 
 suspend fun <T : Any> Single<T>.toCoroutine(context: CoroutineContext = EmptyCoroutineContext, throwable: Throwable? = null) = withContext(context) {
     suspendCoroutine<T> { continuation ->

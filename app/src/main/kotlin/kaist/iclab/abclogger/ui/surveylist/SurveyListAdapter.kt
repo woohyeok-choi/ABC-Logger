@@ -15,7 +15,11 @@ import kaist.iclab.abclogger.ui.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.sharedViewNameForTitle
 
 class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
-    var onItemClick : ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null
+    fun setOnItemClick(listener: ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null) {
+        onItemClick = listener
+    }
+
+    private var onItemClick : ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null
 
     override fun getItemId(position: Int): Long = getItem(position)?.id ?: -1
 

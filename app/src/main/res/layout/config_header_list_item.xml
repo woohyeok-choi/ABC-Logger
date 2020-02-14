@@ -15,7 +15,7 @@
         android:paddingRight="@dimen/item_default_horizontal_padding"
         android:paddingTop="@dimen/item_default_horizontal_padding"
         android:paddingBottom="@dimen/item_default_horizontal_padding"
-        android:background="@color/color_hint">
+        android:background="@color/color_header_background">
 
         <TextView
             android:layout_width="match_parent"

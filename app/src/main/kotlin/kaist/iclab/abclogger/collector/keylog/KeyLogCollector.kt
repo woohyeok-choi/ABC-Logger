@@ -8,20 +8,38 @@ import android.view.accessibility.AccessibilityNodeInfo
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.collector.keylog.setting.KeyLogSettingActivity
-import kotlinx.coroutines.GlobalScope
+import kaist.iclab.abclogger.commons.checkAccessibilityService
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.hypot
+import kotlin.reflect.KClass
 
-class KeyLogCollector(val context: Context) : BaseCollector {
+class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val keyboardType: String? = null) : BaseStatus() {
         override fun info(): String = "Keyboard: ${keyboardType ?: "UNKNOWN"}"
     }
+
+    override val clazz: KClass<Status> = Status::class
+
+    override val name: String = context.getString(R.string.data_name_key_log)
+
+    override val description: String = context.getString(R.string.data_desc_key_log)
+
+    override val requiredPermissions: List<String> = listOf()
+
+    override val newIntentForSetUp: Intent? = Intent(context, KeyLogSettingActivity::class.java)
+
+    override suspend fun checkAvailability(): Boolean =
+            checkAccessibilityService<KeyLogCollectorService>(context) && !getStatus()?.keyboardType.isNullOrBlank()
+
+    override suspend fun onStart() { }
+
+    override suspend fun onStop() { }
 
     data class KeyLog(
             val timestamp: Long = 0,
@@ -45,7 +63,9 @@ class KeyLogCollector(val context: Context) : BaseCollector {
 
         private suspend fun handleAccessibilityEvent(packageName: String, source: AccessibilityNodeInfo, eventTime: Long, eventType: Int)  {
             if(collector.getStatus()?.hasStarted != true) return
-            val isChunjiin = (collector.getStatus() as? Status)?.keyboardType == KEYBOARD_TYPE_CHUNJIIN
+
+            val isChunjiin = collector.getStatus()?.keyboardType == KEYBOARD_TYPE_CHUNJIIN
+
             if (hasMask(eventType, AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED)) {
                 trackNewInput(
                         node = source,
@@ -85,7 +105,7 @@ class KeyLogCollector(val context: Context) : BaseCollector {
                         isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
                         distance = distance,
                         timeTaken = newKeyLog.timestamp - oldKeyLog.timestamp,
-                        keyboardType = (collector.getStatus() as? Status)?.keyboardType ?: KEYBOARD_TYPE_OTHERS,
+                        keyboardType = collector.getStatus()?.keyboardType ?: KEYBOARD_TYPE_OTHERS,
                         prevKey = oldKeyLog.key,
                         prevKeyType = oldKeyLog.type.name,
                         currentKey = newKeyLog.key,
@@ -201,24 +221,12 @@ class KeyLogCollector(val context: Context) : BaseCollector {
             val time = accessibilityEvent.eventTime
             val eventType = accessibilityEvent.eventType
 
-            GlobalScope.launch {
+            collector.launch {
                 handleAccessibilityEvent(packageName, source, time, eventType)
             }
         }
     }
 
-    override suspend fun onStart() { }
-
-    override suspend fun onStop() { }
-
-    override suspend fun checkAvailability(): Boolean {
-        return checkAccessibilityService<KeyLogCollectorService>(context) && !(getStatus() as? Status)?.keyboardType.isNullOrBlank()
-    }
-
-    override val requiredPermissions: List<String>
-        get() = listOf()
-
-    override val newIntentForSetUp: Intent? = Intent(context, KeyLogSettingActivity::class.java)
 
     companion object {
         const val KEYBOARD_TYPE_CHUNJIIN = "CHUNJIIN"
@@ -246,6 +254,4 @@ class KeyLogCollector(val context: Context) : BaseCollector {
         private val JOONGSUNG = arrayOf(0x314f.toChar(), 0x3150.toChar(), 0x3151.toChar(), 0x3152.toChar(), 0x3153.toChar(), 0x3154.toChar(), 0x3155.toChar(), 0x3156.toChar(), 0x3157.toChar(), 0x3158.toChar(), 0x3159.toChar(), 0x315a.toChar(), 0x315b.toChar(), 0x315c.toChar(), 0x315d.toChar(), 0x315e.toChar(), 0x315f.toChar(), 0x3160.toChar(), 0x3161.toChar(), 0x3162.toChar(), 0x3163.toChar())
         private val JONGSUNG = arrayOf(0.toChar(), 0x3131.toChar(), 0x3132.toChar(), 0x3133.toChar(), 0x3134.toChar(), 0x3135.toChar(), 0x3136.toChar(), 0x3137.toChar(), 0x3139.toChar(), 0x313a.toChar(), 0x313b.toChar(), 0x313c.toChar(), 0x313d.toChar(), 0x313e.toChar(), 0x313f.toChar(), 0x3140.toChar(), 0x3141.toChar(), 0x3142.toChar(), 0x3144.toChar(), 0x3145.toChar(), 0x3146.toChar(), 0x3147.toChar(), 0x3148.toChar(), 0x314a.toChar(), 0x314b.toChar(), 0x314c.toChar(), 0x314d.toChar(), 0x314e.toChar())
     }
-
-
 }

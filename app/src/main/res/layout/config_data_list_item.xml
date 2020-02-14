@@ -80,7 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:src="@drawable/baseline_more_horiz_24"
-            android:visibility="@{item.intentForSetup == null ? View.GONE : View.VISIBLE}"
+            android:visibility="@{item.onAction == null ? View.GONE : View.VISIBLE}"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toLeftOf="@id/divider"/>
@@ -90,7 +90,7 @@
             android:layout_width="1dp"
             android:layout_height="32dp"
             android:background="@color/color_gray"
-            android:visibility="@{item.intentForSetup == null ? View.GONE : View.VISIBLE}"
+            android:visibility="@{item.onAction == null ? View.GONE : View.VISIBLE}"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="3dp"
             app:layout_constraintTop_toTopOf="parent"

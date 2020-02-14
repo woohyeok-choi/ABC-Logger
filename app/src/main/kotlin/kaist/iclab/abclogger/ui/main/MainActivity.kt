@@ -1,39 +1,33 @@
 package kaist.iclab.abclogger.ui.main
 
-import android.os.Bundle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.SyncWorker
-import kaist.iclab.abclogger.ui.base.BaseAppCompatActivity
+import kaist.iclab.abclogger.commons.showToast
+import kaist.iclab.abclogger.databinding.ActivityMainBinding
+import kaist.iclab.abclogger.ui.base.BaseActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : BaseAppCompatActivity() {
+class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
     private var backPressedTime : Long = 0
-    private lateinit var crashlytics: FirebaseCrashlytics
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    override val layoutId: Int = R.layout.activity_main
 
-        crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.setUserId(FirebaseAuth.getInstance().currentUser?.email ?: "")
-        crashlytics.sendUnsentReports()
+    override val viewModelVariable: Int = BR.viewModel
 
-        ABC.startService(this)
-        SyncWorker.requestStart(this, false)
+    override val viewModel: MainViewModel by viewModel()
 
-        val navController = navigation_host_fragment.findNavController()
+    override fun beforeExecutePendingBindings() {
+        val navController = nav_host_fragment.findNavController()
         val config = AppBarConfiguration(
                 setOf(R.id.navigation_survey_list, R.id.navigation_config)
         )
         setupActionBarWithNavController(navController, config)
-        navigation.setupWithNavController(navController)
-        navigation.setOnNavigationItemReselectedListener {  }
+        dataBinding.navigationBottom.setupWithNavController(navController)
+        dataBinding.navigationBottom.setOnNavigationItemReselectedListener {  }
     }
 
     override fun onBackPressed() {
