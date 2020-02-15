@@ -10,9 +10,13 @@ import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
 import com.google.android.gms.location.*
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.AbcEvent
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.*
+import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
 import kaist.iclab.abclogger.commons.checkPermission
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
 import kaist.iclab.abclogger.commons.safeUnregisterReceiver
@@ -31,17 +35,17 @@ class ActivityCollector(private val context: Context) : BaseCollector<ActivityCo
     override val description: String = context.getString(R.string.data_desc_physical_activity)
 
     override val requiredPermissions: List<String> = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            listOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-            )
-        } else {
-            listOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACTIVITY_RECOGNITION
-            )
-        }
+        listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    } else {
+        listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACTIVITY_RECOGNITION
+        )
+    }
 
     override val newIntentForSetUp: Intent? = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
@@ -73,12 +77,11 @@ class ActivityCollector(private val context: Context) : BaseCollector<ActivityCo
         ActivityRecognition.getClient(context)
     }
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) = when (intent?.action) {
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
                 ACTION_ACTIVITY_UPDATE -> handleActivityRetrieval(intent)
                 ACTION_ACTIVITY_TRANSITION_UPDATE -> handleActivityTransitionRetrieval(intent)
-                else -> { }
             }
         }
     }

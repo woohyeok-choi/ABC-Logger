@@ -7,7 +7,7 @@ import androidx.databinding.BindingAdapter
 
 @BindingAdapter("isBold")
 fun isBold(view: TextView, isBold: Boolean) {
-    view.setTypeface(null, if(isBold) Typeface.BOLD else Typeface.NORMAL)
+    view.setTypeface(null, if (isBold) Typeface.BOLD else Typeface.NORMAL)
 }
 
 @BindingAdapter("formattedTime")

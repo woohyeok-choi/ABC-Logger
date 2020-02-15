@@ -10,8 +10,9 @@ import android.media.AudioManager
 import android.os.PowerManager
 import android.provider.Telephony
 import android.telephony.TelephonyManager
-import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.AbcEvent
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
@@ -80,12 +81,10 @@ class DeviceEventCollector(private val context: Context) : BaseCollector<DeviceE
         IntentFilter().apply { intents.forEach { addAction(it) } }
     }
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                intent ?: return
-                handleEventRetrieval(intent)
-            }
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent ?: return
+            handleEventRetrieval(intent)
         }
     }
 

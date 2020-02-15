@@ -83,7 +83,7 @@ open class Survey(
             return true
         }
 
-        fun isCorrectlyAnswered() : Boolean = !shouldAnswer || responses.any { !it.isBlank() }
+        fun isCorrectlyAnswered(): Boolean = !shouldAnswer || responses.any { !it.isBlank() }
     }
 
     companion object {
@@ -103,17 +103,17 @@ open class Survey(
 
         private val moshi by lazy {
             Moshi.Builder().add(
-                PolymorphicJsonAdapterFactory.of(Survey::class.java, "type")
-                        .withSubtype(IntervalBasedSurvey::class.java, TYPE_INTERVAL)
-                        .withSubtype(EventBasedSurvey::class.java, TYPE_EVENT)
-                        .withSubtype(ScheduleBasedSurvey::class.java, TYPE_SCHEDULE)
+                    PolymorphicJsonAdapterFactory.of(Survey::class.java, "type")
+                            .withSubtype(IntervalBasedSurvey::class.java, TYPE_INTERVAL)
+                            .withSubtype(EventBasedSurvey::class.java, TYPE_EVENT)
+                            .withSubtype(ScheduleBasedSurvey::class.java, TYPE_SCHEDULE)
             ).add(KotlinJsonAdapterFactory()).build()
         }
 
         suspend fun fromJson(jsonString: String) = withContext(Dispatchers.IO) { moshi.adapter(Survey::class.java).fromJson(jsonString) }
     }
 
-    suspend fun toJson() : String {
+    suspend fun toJson(): String {
         val survey = this
         return withContext(Dispatchers.IO) { moshi.adapter(Survey::class.java).toJson(survey) }
     }

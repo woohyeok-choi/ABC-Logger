@@ -5,8 +5,8 @@ import androidx.paging.DataSource
 import androidx.paging.PositionalDataSource
 import io.objectbox.query.Query
 import io.objectbox.reactive.DataObserver
-import kaist.iclab.abclogger.commons.EmptySurveyException
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
+import kaist.iclab.abclogger.commons.EmptySurveyException
 import kaist.iclab.abclogger.ui.Status
 
 class SurveyEntityDataSource(private val query: Query<SurveyEntity>?) : PositionalDataSource<SurveyEntity>() {

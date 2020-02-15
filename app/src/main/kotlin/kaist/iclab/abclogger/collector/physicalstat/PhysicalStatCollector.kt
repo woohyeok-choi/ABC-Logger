@@ -18,8 +18,12 @@ import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.tasks.Tasks
-import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.*
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
 import kaist.iclab.abclogger.commons.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -122,12 +126,10 @@ class PhysicalStatCollector(private val context: Context) : BaseCollector<Physic
         addAction(ACTION_UPDATE_PHYSICAL_STATUS)
     }
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action != ACTION_UPDATE_PHYSICAL_STATUS) return
-                handlePhysicalStatRetrieval()
-            }
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != ACTION_UPDATE_PHYSICAL_STATUS) return
+            handlePhysicalStatRetrieval()
         }
     }
 

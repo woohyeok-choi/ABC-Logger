@@ -21,7 +21,7 @@ class SurveySettingListAdapter : RecyclerView.Adapter<SurveySettingListAdapter.V
     class ViewHolder(val binding: SurveySettingListItemBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding : SurveySettingListItemBinding = DataBindingUtil.inflate(
+        val binding: SurveySettingListItemBinding = DataBindingUtil.inflate(
                 LayoutInflater.from(parent.context), R.layout.survey_setting_list_item, parent, false
         )
         return ViewHolder(binding)

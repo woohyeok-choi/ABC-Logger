@@ -14,18 +14,18 @@ import kaist.iclab.abclogger.ui.sharedViewNameForDeliveredTime
 import kaist.iclab.abclogger.ui.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.sharedViewNameForTitle
 
-class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
+class SurveyListAdapter : PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHolder>(DIFF_CALLBACK) {
     fun setOnItemClick(listener: ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null) {
         onItemClick = listener
     }
 
-    private var onItemClick : ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null
+    private var onItemClick: ((item: SurveyEntity?, binding: SurveyListItemBinding) -> Unit)? = null
 
     override fun getItemId(position: Int): Long = getItem(position)?.id ?: -1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding : SurveyListItemBinding = DataBindingUtil.inflate(
-                LayoutInflater.from(parent.context), R.layout.survey_list_item, parent,false
+        val binding: SurveyListItemBinding = DataBindingUtil.inflate(
+                LayoutInflater.from(parent.context), R.layout.survey_list_item, parent, false
         )
 
         return ViewHolder(binding) { position ->
@@ -53,7 +53,7 @@ class SurveyListAdapter: PagedListAdapter<SurveyEntity, SurveyListAdapter.ViewHo
         )
     }
 
-    class ViewHolder (val binding: SurveyListItemBinding, private val onClick: ((position: Int) -> Unit)): RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(val binding: SurveyListItemBinding, private val onClick: ((position: Int) -> Unit)) : RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener { onClick.invoke(adapterPosition) }
         }

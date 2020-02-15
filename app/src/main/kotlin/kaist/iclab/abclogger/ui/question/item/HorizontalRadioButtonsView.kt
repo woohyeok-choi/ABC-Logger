@@ -80,7 +80,7 @@ class HorizontalRadioButtonsView(context: Context, attributeSet: AttributeSet?) 
                 id = View.generateViewId()
                 text = option
                 buttonDrawable = null
-                if(typedValue.resourceId != 0) setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(context, typedValue.resourceId), null, null)
+                if (typedValue.resourceId != 0) setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(context, typedValue.resourceId), null, null)
                 gravity = Gravity.CENTER
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
             }
@@ -107,7 +107,7 @@ class HorizontalRadioButtonsView(context: Context, attributeSet: AttributeSet?) 
             }
         }
         set(value) {
-            if(field.firstOrNull() == value.firstOrNull()) return
+            if (field.firstOrNull() == value.firstOrNull()) return
 
             val response = value.firstOrNull()
             if (response.isNullOrBlank()) return

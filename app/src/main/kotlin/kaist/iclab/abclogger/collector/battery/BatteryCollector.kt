@@ -5,7 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
@@ -40,14 +41,11 @@ class BatteryCollector(private val context: Context) : BaseCollector<BatteryColl
         context.safeUnregisterReceiver(receiver)
     }
 
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
-
-                handleBatteryRetrieval(intent)
-            }
+            handleBatteryRetrieval(intent)
         }
     }
 

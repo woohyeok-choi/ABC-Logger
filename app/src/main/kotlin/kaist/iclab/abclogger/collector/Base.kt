@@ -2,7 +2,6 @@ package kaist.iclab.abclogger.collector
 
 import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
 
 @BaseEntity
 abstract class Base(

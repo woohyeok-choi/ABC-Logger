@@ -97,7 +97,7 @@ class RadioButtonsView(context: Context, attributeSet: AttributeSet?) : Question
             }
         }
         set(value) {
-            if(field.firstOrNull() == value.firstOrNull()) return
+            if (field.firstOrNull() == value.firstOrNull()) return
 
             val response = value.firstOrNull()
             if (response.isNullOrBlank()) return

@@ -11,8 +11,8 @@ import android.provider.Telephony
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.checkPermission
 import kaist.iclab.abclogger.commons.safeRegisterContentObserver
@@ -36,9 +36,9 @@ class MessageCollector(private val context: Context) : BaseCollector<MessageColl
     override val description: String = context.getString(R.string.data_desc_message)
 
     override val requiredPermissions: List<String> = listOf(
-                Manifest.permission.READ_CONTACTS,
-                Manifest.permission.READ_SMS
-        )
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.READ_SMS
+    )
 
     override val newIntentForSetUp: Intent? = null
 
@@ -60,7 +60,8 @@ class MessageCollector(private val context: Context) : BaseCollector<MessageColl
     private fun handleSmsRetrieval() = launch {
         val curTime = System.currentTimeMillis()
         val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = getStatus()?.lastTimeAccessedSms ?: curTime - TimeUnit.DAYS.toMillis(1)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessedSms ?: curTime
+        -TimeUnit.DAYS.toMillis(1)
 
         getRecentContents(
                 contentResolver = context.contentResolver,
@@ -96,7 +97,8 @@ class MessageCollector(private val context: Context) : BaseCollector<MessageColl
     private fun handleMmsRetrieval() = launch {
         val curTime = System.currentTimeMillis()
         val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = getStatus()?.lastTimeAccessedMms ?: curTime - TimeUnit.DAYS.toMillis(1)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessedMms ?: curTime
+        -TimeUnit.DAYS.toMillis(1)
 
         getRecentContents(
                 contentResolver = context.contentResolver,
@@ -130,21 +132,17 @@ class MessageCollector(private val context: Context) : BaseCollector<MessageColl
         timestamps.max()?.also { timestamp -> setStatus(Status(lastTimeAccessedMms = timestamp)) }
     }
 
-    private val smsObserver: ContentObserver by lazy {
-        object : ContentObserver(Handler()) {
-            override fun onChange(selfChange: Boolean) {
-                super.onChange(selfChange)
-                handleSmsRetrieval()
-            }
+    private val smsObserver: ContentObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            handleSmsRetrieval()
         }
     }
 
-    private val mmsObserver: ContentObserver by lazy {
-        object : ContentObserver(Handler()) {
-            override fun onChange(selfChange: Boolean) {
-                super.onChange(selfChange)
-                handleMmsRetrieval()
-            }
+    private val mmsObserver: ContentObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            handleMmsRetrieval()
         }
     }
 

@@ -8,10 +8,11 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import kaist.iclab.abclogger.commons.AppLog
 
-abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel<*>>: AppCompatActivity() {
+abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel<*>> : AppCompatActivity() {
     protected val TAG: String = javaClass.name
 
-    @get:LayoutRes abstract val layoutId: Int
+    @get:LayoutRes
+    abstract val layoutId: Int
     abstract val viewModelVariable: Int
     abstract val viewModel: VM
     lateinit var dataBinding: T

@@ -11,8 +11,13 @@ import android.text.format.DateUtils
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
-import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.*
+import kaist.iclab.abclogger.AbcEvent
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.collector.fill
 import kaist.iclab.abclogger.collector.survey.setting.SurveySettingActivity
 import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.ui.question.SurveyResponseActivity
@@ -77,13 +82,11 @@ class SurveyCollector(private val context: Context) : BaseCollector<SurveyCollec
         context.safeUnregisterReceiver(receiver)
     }
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(ctx: Context?, intent: Intent?) {
-                if (intent?.action != ACTION_SURVEY_TRIGGER) return
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(ctx: Context?, intent: Intent?) {
+            if (intent?.action != ACTION_SURVEY_TRIGGER) return
 
-                handleSurveyTrigger(intent.getStringExtra(EXTRA_SURVEY_UUID))
-            }
+            handleSurveyTrigger(intent.getStringExtra(EXTRA_SURVEY_UUID))
         }
     }
 
@@ -155,7 +158,7 @@ class SurveyCollector(private val context: Context) : BaseCollector<SurveyCollec
                                       dailyStartTimeMinute: Int,
                                       dailyEndTimeHour: Int,
                                       dailyEndTimeMinute: Int,
-                                      daysOfWeek: Array<DayOfWeek>) : Boolean {
+                                      daysOfWeek: Array<DayOfWeek>): Boolean {
         val curCalendar = GregorianCalendar.getInstance(TimeZone.getDefault()).apply {
             timeInMillis = curTime
         }
@@ -234,7 +237,7 @@ class SurveyCollector(private val context: Context) : BaseCollector<SurveyCollec
         }
     }
 
-    private suspend fun updateSettings(event: AbcEvent? = null) : List<Status.Setting>? {
+    private suspend fun updateSettings(event: AbcEvent? = null): List<Status.Setting>? {
         val startTime = getStatus()?.startTime ?: return null
 
         return getStatus()?.settings?.mapNotNull { setting ->

@@ -4,7 +4,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.BR
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.commons.showToast
 import kaist.iclab.abclogger.databinding.ActivityMainBinding
 import kaist.iclab.abclogger.ui.base.BaseActivity
@@ -12,7 +13,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
-    private var backPressedTime : Long = 0
+    private var backPressedTime: Long = 0
 
     override val layoutId: Int = R.layout.activity_main
 
@@ -27,7 +28,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         )
         setupActionBarWithNavController(navController, config)
         dataBinding.navigationBottom.setupWithNavController(navController)
-        dataBinding.navigationBottom.setOnNavigationItemReselectedListener {  }
+        dataBinding.navigationBottom.setOnNavigationItemReselectedListener { }
     }
 
     override fun onBackPressed() {

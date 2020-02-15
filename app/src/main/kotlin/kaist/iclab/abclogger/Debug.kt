@@ -173,7 +173,7 @@ object Debug {
         Log.d("ZXCV", "${ObjBox.boxFor<PhysicalActivityTransitionEntity>()?.count()}")
     }
 
-    fun generateSurveyEntities (size: Int) {
+    fun generateSurveyEntities(size: Int) {
         ObjBox.boxFor<SurveyEntity>()?.removeAll()
         val time = System.currentTimeMillis()
         (0..size).map {

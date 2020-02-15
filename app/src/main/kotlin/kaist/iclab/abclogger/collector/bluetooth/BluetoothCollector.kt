@@ -12,14 +12,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.app.AlarmManagerCompat
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
 import kaist.iclab.abclogger.commons.checkPermission
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
 import kaist.iclab.abclogger.commons.safeUnregisterReceiver
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -38,11 +41,11 @@ class BluetoothCollector(private val context: Context) : BaseCollector<Bluetooth
     override val description: String = context.getString(R.string.data_desc_bluetooth)
 
     override val requiredPermissions: List<String> = listOf(
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        )
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    )
 
     override val newIntentForSetUp: Intent? = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
 
@@ -70,23 +73,19 @@ class BluetoothCollector(private val context: Context) : BaseCollector<Bluetooth
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
 
-    private val scanCallback: ScanCallback by lazy {
-        object : ScanCallback() {
-            override fun onScanResult(callbackType: Int, result: ScanResult?) {
-                super.onScanResult(callbackType, result)
-                handleBLERetrieval(result)
-            }
+    private val scanCallback: ScanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult?) {
+            super.onScanResult(callbackType, result)
+            handleBLERetrieval(result)
         }
     }
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                when (intent?.action) {
-                    BluetoothDevice.ACTION_FOUND -> handleBluetoothRetrieval(intent)
-                    BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> handleBluetoothDiscovered()
-                    ACTION_BLUETOOTH_SCAN -> handleBluetoothScanRequest()
-                }
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                BluetoothDevice.ACTION_FOUND -> handleBluetoothRetrieval(intent)
+                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> handleBluetoothDiscovered()
+                ACTION_BLUETOOTH_SCAN -> handleBluetoothScanRequest()
             }
         }
     }

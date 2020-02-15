@@ -1,7 +1,10 @@
 package kaist.iclab.abclogger.ui.surveylist
 
 import android.content.Context
-import androidx.lifecycle.*
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import kaist.iclab.abclogger.ObjBox
@@ -21,7 +24,7 @@ class SurveyListViewModel(private val context: Context,
 
     private val factory = SurveyEntityDataSource.Factory(ObjBox.query<SurveyEntity>()?.orderDesc(SurveyEntity_.deliveredTime)?.build())
 
-    val responseRates : MutableLiveData<String> = MutableLiveData()
+    val responseRates: MutableLiveData<String> = MutableLiveData()
 
     val surveys = LivePagedListBuilder(
             factory,

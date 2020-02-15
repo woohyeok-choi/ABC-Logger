@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.Intent
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
-import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.*
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
 import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10SettingActivity
-import kaist.iclab.abclogger.commons.ABCException
+import kaist.iclab.abclogger.collector.fill
 import kaist.iclab.abclogger.commons.PolarH10Exception
 import kaist.iclab.abclogger.commons.checkPermission
 import kotlinx.coroutines.launch
@@ -19,7 +21,6 @@ import polar.com.sdk.api.PolarBleApiDefaultImpl
 import polar.com.sdk.api.errors.PolarDeviceDisconnected
 import polar.com.sdk.api.model.PolarDeviceInfo
 import polar.com.sdk.api.model.PolarHrData
-import java.lang.Exception
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
@@ -80,17 +81,23 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
         ecgDisposable?.dispose()
         hrDisposable?.dispose()
 
-        try { api.disconnectFromDevice(getStatus()?.deviceId ?: "") } catch (e: Exception) { }
-        try { api.setApiCallback(null) } catch (e: Exception) { }
+        try {
+            api.disconnectFromDevice(getStatus()?.deviceId ?: "")
+        } catch (e: Exception) {
+        }
+        try {
+            api.setApiCallback(null)
+        } catch (e: Exception) {
+        }
     }
 
-    private val isRequestedStop : AtomicBoolean = AtomicBoolean(false)
+    private val isRequestedStop: AtomicBoolean = AtomicBoolean(false)
 
     private val hrSubject: PublishSubject<ExternalSensorEntity> = PublishSubject.create()
 
-    private var ecgDisposable : Disposable? = null
+    private var ecgDisposable: Disposable? = null
 
-    private var hrDisposable : Disposable? = null
+    private var hrDisposable: Disposable? = null
 
     private val api: PolarBleApi by lazy {
         PolarBleApiDefaultImpl.defaultImplementation(
@@ -105,37 +112,35 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
         }
     }
 
-    private val callback : PolarBleApiCallback by lazy {
-        object : PolarBleApiCallback() {
-            override fun ecgFeatureReady(identifier: String) {
-                handleEcgFeatureReady(identifier)
-            }
+    private val callback: PolarBleApiCallback = object : PolarBleApiCallback() {
+        override fun ecgFeatureReady(identifier: String) {
+            handleEcgFeatureReady(identifier)
+        }
 
-            override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
-                handleConnectionRetrieval(CONNECTED)
-            }
+        override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
+            handleConnectionRetrieval(CONNECTED)
+        }
 
-            override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
-                handleConnectionRetrieval(CONNECTING)
-            }
+        override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
+            handleConnectionRetrieval(CONNECTING)
+        }
 
-            override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
-                handleConnectionRetrieval(DISCONNECTED)
-            }
+        override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
+            handleConnectionRetrieval(DISCONNECTED)
+        }
 
-            override fun batteryLevelReceived(identifier: String, level: Int) {
-                handleBatteryRetrieval(level)
-            }
+        override fun batteryLevelReceived(identifier: String, level: Int) {
+            handleBatteryRetrieval(level)
+        }
 
-            override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
-                handleHeartRateRetrieval(identifier, data)
-            }
+        override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
+            handleHeartRateRetrieval(identifier, data)
         }
     }
 
     private fun handleConnectionRetrieval(connection: Int?) {
         launch {
-            when(connection) {
+            when (connection) {
                 DISCONNECTED -> R.string.general_disconnected
                 CONNECTING -> R.string.general_connecting
                 CONNECTED -> R.string.general_connected
@@ -232,6 +237,5 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
         private const val DISCONNECTED = 0x0
         private const val CONNECTING = 0x1
         private const val CONNECTED = 0x2
-
     }
 }

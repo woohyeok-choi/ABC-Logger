@@ -4,10 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.lifecycle.observe
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.BR
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.commons.showToast
-import kaist.iclab.abclogger.ui.base.BaseFragment
 import kaist.iclab.abclogger.databinding.FragmentConfigBinding
+import kaist.iclab.abclogger.ui.base.BaseFragment
 import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment
 import kaist.iclab.abclogger.ui.splash.SplashActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel

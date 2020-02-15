@@ -4,21 +4,22 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
-import android.widget.*
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
 import androidx.core.widget.addTextChangedListener
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import kaist.iclab.abclogger.R
 
-class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(context, attrs) {
+class CheckBoxesView(context: Context, attrs: AttributeSet?) : QuestionView(context, attrs) {
     private val layoutCheckGroup = LinearLayout(context).apply {
         id = View.generateViewId()
         orientation = LinearLayout.VERTICAL
     }
 
-    private val btnEtc : CheckBox = CheckBox(context).apply {
+    private val btnEtc: CheckBox = CheckBox(context).apply {
         id = View.generateViewId()
         text = context.getString(R.string.general_etc)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
@@ -35,7 +36,7 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
         addTextChangedListener({ _, _, _, _ -> }, { _, _, _, _ -> attrChanged?.onChange() }, {})
     }
 
-   init {
+    init {
         addView(layoutCheckGroup, LayoutParams(0, LayoutParams.WRAP_CONTENT))
         addView(btnEtc, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
         addView(edtEtc, LayoutParams(0, LayoutParams.WRAP_CONTENT))
@@ -89,11 +90,11 @@ class CheckBoxesView (context: Context, attrs: AttributeSet?) : QuestionView(con
                 } else {
                     null
                 }
-            } + if(btnEtc.isChecked) edtEtc.text?.toString() else null
+            } + if (btnEtc.isChecked) edtEtc.text?.toString() else null
             return checkedItems.filterNotNull().filter { !it.isBlank() }.toSet().toTypedArray()
         }
         set(value) {
-            if(field.contentEquals(value)) return
+            if (field.contentEquals(value)) return
 
             value.firstOrNull { text ->
                 val checkBox = layoutCheckGroup.children.find { view ->

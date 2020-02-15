@@ -1,7 +1,6 @@
 package kaist.iclab.abclogger.collector.survey
 
 import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Transient
 import kaist.iclab.abclogger.collector.Base
 import java.util.concurrent.TimeUnit
 
@@ -16,13 +15,13 @@ data class SurveyEntity(
         var responseTime: Long = 0,
         var json: String = ""
 ) : Base() {
-    private fun isAnswered() : Boolean = responseTime > 0
+    private fun isAnswered(): Boolean = responseTime > 0
 
-    private fun isExpired() : Boolean = timeoutPolicy == Survey.TIMEOUT_DISABLED &&
+    private fun isExpired(): Boolean = timeoutPolicy == Survey.TIMEOUT_DISABLED &&
             System.currentTimeMillis() > deliveredTime + TimeUnit.SECONDS.toMillis(timeoutSec)
 
-    fun isAvailable() : Boolean = !isAnswered() && !isExpired()
+    fun isAvailable(): Boolean = !isAnswered() && !isExpired()
 
-    fun showAltText() : Boolean = timeoutPolicy == Survey.TIMEOUT_ALT_TEXT &&
+    fun showAltText(): Boolean = timeoutPolicy == Survey.TIMEOUT_ALT_TEXT &&
             System.currentTimeMillis() > deliveredTime + TimeUnit.SECONDS.toMillis(timeoutSec)
 }

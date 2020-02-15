@@ -5,7 +5,6 @@ import android.text.InputType
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
-import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.addTextChangedListener
@@ -14,11 +13,11 @@ import com.google.android.material.textfield.TextInputLayout
 import kaist.iclab.abclogger.R
 
 
-class FreeTextView (context: Context, attributeSet: AttributeSet?) : QuestionView(context, attributeSet) {
+class FreeTextView(context: Context, attributeSet: AttributeSet?) : QuestionView(context, attributeSet) {
     private val edtResponse: TextInputEditText = TextInputEditText(context, attributeSet).apply {
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL or InputType.TYPE_TEXT_FLAG_MULTI_LINE
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-        addTextChangedListener({_, _, _, _ -> }, {_, _, _, _ -> attrChanged?.onChange()}, {})
+        addTextChangedListener({ _, _, _, _ -> }, { _, _, _, _ -> attrChanged?.onChange() }, {})
     }
 
     private val layoutText = TextInputLayout(context).apply {
@@ -44,14 +43,14 @@ class FreeTextView (context: Context, attributeSet: AttributeSet?) : QuestionVie
         edtResponse.isEnabled = isAvailable
     }
 
-    override fun setShowEtc(showEtc: Boolean) { }
+    override fun setShowEtc(showEtc: Boolean) {}
 
-    override fun setOptions(options: Array<String>) { }
+    override fun setOptions(options: Array<String>) {}
 
     override var responses: Array<String> = arrayOf()
         get() = arrayOf(edtResponse.text?.toString() ?: "")
         set(value) {
-            if(field.firstOrNull() == value.firstOrNull()) return
+            if (field.firstOrNull() == value.firstOrNull()) return
 
             edtResponse.setText(value.firstOrNull() ?: "")
         }

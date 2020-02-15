@@ -11,8 +11,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.DialogFragment
-import kaist.iclab.abclogger.commons.AppLog
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.commons.AppLog
 
 abstract class BaseCustomViewDialogFragment<T : ViewDataBinding, VM : BaseViewModel<*>> : DialogFragment() {
     protected val TAG: String = javaClass.simpleName

@@ -97,12 +97,14 @@ fun <T : Base> T.fillContact(number: String?, contentResolver: ContentResolver):
         if (cursor?.moveToFirst() == true) {
             when (this) {
                 is MessageEntity -> this.apply {
-                    contactType = contactTypeToString(cursor.getIntOrNull(0)) ?: cursor.getStringOrNull(1) ?: "UNKNOWN"
+                    contactType = contactTypeToString(cursor.getIntOrNull(0))
+                            ?: cursor.getStringOrNull(1) ?: "UNKNOWN"
                     isStarred = cursor.getInt(2) == 1
                     isPinned = cursor.getInt(3) == 1
                 }
                 is CallLogEntity -> this.apply {
-                    contactType = contactTypeToString(cursor.getIntOrNull(0)) ?: cursor.getStringOrNull(1)  ?: "UNKNOWN"
+                    contactType = contactTypeToString(cursor.getIntOrNull(0))
+                            ?: cursor.getStringOrNull(1) ?: "UNKNOWN"
                     isStarred = cursor.getInt(2) == 1
                     isPinned = cursor.getInt(3) == 1
                 }

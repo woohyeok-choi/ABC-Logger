@@ -44,11 +44,20 @@ class DataTrafficCollector(private val context: Context) : BaseCollector<DataTra
         context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     }
 
-    private val timestamp : AtomicLong = AtomicLong(0)
-    private val totalRxBytes : AtomicLong = AtomicLong(0)
-    private val totalTxBytes : AtomicLong = AtomicLong(0)
-    private val mobileRxBytes : AtomicLong = AtomicLong(0)
-    private val mobileTxBytes : AtomicLong = AtomicLong(0)
+    private val dataListener = object : PhoneStateListener() {
+        override fun onDataActivity(direction: Int) {
+            super.onDataActivity(direction)
+            if (direction in directions) {
+                handleTrafficRetrieval()
+            }
+        }
+    }
+
+    private val timestamp: AtomicLong = AtomicLong(0)
+    private val totalRxBytes: AtomicLong = AtomicLong(0)
+    private val totalTxBytes: AtomicLong = AtomicLong(0)
+    private val mobileRxBytes: AtomicLong = AtomicLong(0)
+    private val mobileTxBytes: AtomicLong = AtomicLong(0)
 
     private val directions = arrayOf(
             TelephonyManager.DATA_ACTIVITY_IN,
@@ -89,15 +98,5 @@ class DataTrafficCollector(private val context: Context) : BaseCollector<DataTra
         }
     }
 
-    private val dataListener by lazy {
-        object : PhoneStateListener() {
 
-            override fun onDataActivity(direction: Int) {
-                super.onDataActivity(direction)
-                if (direction in directions) {
-                    handleTrafficRetrieval()
-                }
-            }
-        }
-    }
 }

@@ -10,7 +10,9 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
@@ -51,20 +53,18 @@ class LocationCollector(private val context: Context) : BaseCollector<LocationCo
         client.removeLocationUpdates(intent)
     }
 
-    private val client : FusedLocationProviderClient by lazy {
+    private val client: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(context)
     }
 
-    private val receiver : BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action != ACTION_LOCATION_UPDATE || !LocationResult.hasResult(intent)) return
-                handleLocationRetrieval(intent)
-            }
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != ACTION_LOCATION_UPDATE || !LocationResult.hasResult(intent)) return
+            handleLocationRetrieval(intent)
         }
     }
 
-    private val intent : PendingIntent = PendingIntent.getBroadcast(
+    private val intent: PendingIntent = PendingIntent.getBroadcast(
             context, REQUEST_CODE_LOCATION_UPDATE, Intent(ACTION_LOCATION_UPDATE), PendingIntent.FLAG_UPDATE_CURRENT
     )
 

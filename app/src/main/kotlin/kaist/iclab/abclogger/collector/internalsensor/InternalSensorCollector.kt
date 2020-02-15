@@ -25,7 +25,7 @@ class InternalSensorCollector(private val context: Context) : BaseCollector<Inte
                       val isLightAvailable: Boolean? = null) : BaseStatus() {
         override fun info(): Map<String, Any> = mapOf(
                 "Proximity" to if (isProximityAvailable == true) "On" else "Off",
-                "Light" to if(isLightAvailable == true) "On" else "Off"
+                "Light" to if (isLightAvailable == true) "On" else "Off"
         )
     }
 

@@ -1,18 +1,16 @@
 package kaist.iclab.abclogger.ui.surveylist
 
 import android.content.Intent
-import android.util.Log
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.observe
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.survey.SurveyEntity
+import kaist.iclab.abclogger.BR
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.commons.fillExtras
-import kaist.iclab.abclogger.ui.base.BaseFragment
 import kaist.iclab.abclogger.databinding.FragmentSurveyListBinding
+import kaist.iclab.abclogger.ui.base.BaseFragment
 import kaist.iclab.abclogger.ui.question.SurveyResponseActivity
 import kaist.iclab.abclogger.ui.sharedViewNameForDeliveredTime
 import kaist.iclab.abclogger.ui.sharedViewNameForMessage
@@ -20,7 +18,7 @@ import kaist.iclab.abclogger.ui.sharedViewNameForTitle
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.core.util.Pair as UtilPair
 
-class SurveyListFragment : BaseFragment<FragmentSurveyListBinding, SurveyListViewModel>(){
+class SurveyListFragment : BaseFragment<FragmentSurveyListBinding, SurveyListViewModel>() {
     override val layoutId: Int = R.layout.fragment_survey_list
 
     override val viewModelVariable: Int = BR.viewModel

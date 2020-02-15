@@ -11,9 +11,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
-import android.provider.Settings
 import android.os.Process
-import kaist.iclab.abclogger.*
+import android.provider.Settings
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
 import kaist.iclab.abclogger.commons.safeUnregisterReceiver
@@ -95,12 +97,10 @@ class AppUsageCollector(private val context: Context) : BaseCollector<AppUsageCo
         addAction(ACTION_RETRIEVE_APP_USAGE)
     }
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action != ACTION_RETRIEVE_APP_USAGE) return
-                handleRetrieval()
-            }
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != ACTION_RETRIEVE_APP_USAGE) return
+            handleRetrieval()
         }
     }
 

@@ -9,7 +9,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.wifi.WifiManager
 import android.provider.Settings
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
@@ -67,11 +69,9 @@ class WifiCollector(private val context: Context) : BaseCollector<WifiCollector.
         context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
 
-    private val receiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                handleWifiUpdate()
-            }
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            handleWifiUpdate()
         }
     }
 

@@ -26,8 +26,7 @@ object Notifications {
     const val ID_SURVEY_DELIVERED = 0x01
     const val ID_FOREGROUND = 0x02
     const val ID_SYNC_PROGRESS = 0x03
-    const val ID_FLUSH_PROGRESS = 0x04
-    const val ID_REQUIRE_SETTING = 0x05
+    const val ID_REQUIRE_SETTING = 0x04
 
     private val DEFAULT_VIBRATION_PATTERN = longArrayOf(1000, 10, 1000, 10)
 
@@ -74,7 +73,7 @@ object Notifications {
                     alertOnce = true
             ),
             CHANNEL_ID_REQUIRE_SETTING to NotificationSetting(
-                    name = "Require setting",
+                    name = "Error occurs",
                     priority = NotificationCompat.PRIORITY_MAX,
                     visibility = NotificationCompat.VISIBILITY_PRIVATE,
                     importance = NotificationManagerCompat.IMPORTANCE_MAX,
@@ -84,7 +83,7 @@ object Notifications {
                     showWhen = false,
                     hasSound = true,
                     hasVibration = true,
-                    alertOnce = true
+                    alertOnce = false
             )
     )
 

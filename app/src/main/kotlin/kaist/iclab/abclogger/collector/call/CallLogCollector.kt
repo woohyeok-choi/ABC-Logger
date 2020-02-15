@@ -9,8 +9,8 @@ import android.provider.CallLog
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.collector.BaseCollector
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.checkPermission
 import kaist.iclab.abclogger.commons.safeRegisterContentObserver
@@ -50,12 +50,10 @@ class CallLogCollector(private val context: Context) : BaseCollector<CallLogColl
         context.contentResolver.safeUnregisterContentObserver(callLogObserver)
     }
 
-    private val callLogObserver: ContentObserver by lazy {
-        object : ContentObserver(Handler()) {
-            override fun onChange(selfChange: Boolean) {
-                super.onChange(selfChange)
-                handleCallLogRetrieval()
-            }
+    private val callLogObserver: ContentObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            handleCallLogRetrieval()
         }
     }
 
