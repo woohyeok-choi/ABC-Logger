@@ -34,7 +34,7 @@ android {
         buildConfigField("String", "DB_NAME", "\"abc-logger\"")
         buildConfigField("String", "PREF_NAME", "\"abc-logger-pref\"")
         buildConfigField("Long", "DB_MAX_SIZE", "3145728L")
-        buildConfigField("Boolean", "IS_TEST_MODE", "false")
+        buildConfigField("Boolean", "IS_TEST_MODE", "true")
         buildConfigField("String", "SERVER_ADDRESS", "\"143.248.100.24:50052\"")
         buildConfigField("String", "TEST_SERVER_ADDRESS", "\"143.248.90.87:50055\"")
     }

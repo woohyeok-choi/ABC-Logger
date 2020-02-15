@@ -1,13 +1,12 @@
 package kaist.iclab.abclogger
 
 import android.app.ActivityManager
-import android.app.IntentService
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.*
+import com.google.common.util.concurrent.MoreExecutors
 import io.grpc.ManagedChannel
 import io.grpc.android.AndroidChannelBuilder
 import kaist.iclab.abclogger.collector.Base
@@ -31,16 +30,14 @@ import kaist.iclab.abclogger.collector.survey.SurveyEntity
 import kaist.iclab.abclogger.collector.traffic.DataTrafficEntity
 import kaist.iclab.abclogger.collector.wifi.WifiEntity
 import kaist.iclab.abclogger.commons.Notifications
-import kaist.iclab.abclogger.grpc.DataOperationsCoroutineGrpc
+import kaist.iclab.abclogger.grpc.DataOperationsGrpc
 import kaist.iclab.abclogger.grpc.DatumProto
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
-class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
-    private val cancelIntent: PendingIntent = PendingIntent.getService(
-            applicationContext, REQUEST_CODE_CANCEL_SYNC, Intent(ACTION_CANCEL_SYNC), PendingIntent.FLAG_UPDATE_CURRENT
-    )
-
+class SyncWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
     private val foregroundInfo = ForegroundInfo(
             Notifications.ID_SYNC_PROGRESS,
             Notifications.build(
@@ -50,7 +47,6 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                     text = applicationContext.getString(R.string.ntf_text_sync),
                     progress = 0,
                     indeterminate = true,
-                    intent = cancelIntent,
                     actions = listOf(
                             NotificationCompat.Action.Builder(
                                     R.drawable.baseline_close_white_24,
@@ -61,9 +57,8 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             )
     )
 
-    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        setForeground(foregroundInfo)
-
+    override fun doWork(): Result {
+        setForegroundAsync(foregroundInfo)
 
         val channel: ManagedChannel = AndroidChannelBuilder
                 .forTarget(if (BuildConfig.IS_TEST_MODE) BuildConfig.TEST_SERVER_ADDRESS else BuildConfig.SERVER_ADDRESS)
@@ -72,7 +67,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 .executor(Dispatchers.IO.asExecutor())
                 .build()
 
-        val stub = DataOperationsCoroutineGrpc.newStubWithContext(channel)
+        val stub = DataOperationsGrpc.newFutureStub(channel)
 
         uploadAll(stub)
 
@@ -84,37 +79,45 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
             e.printStackTrace()
         }
 
-        return@withContext Result.success()
+        return Result.success()
     }
 
-    private suspend inline fun <reified T : Base> upload(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) = coroutineScope {
-        val ids = ObjBox.query<T>()?.build()?.findIds() ?: return@coroutineScope
-        val size = ids.size
 
-        (0 until size step N_UPLOADS).forEach { offset ->
-            while (isLowMemory()) {
-                Log.d("SyncWorker", "isLowMemory...")
-                System.runFinalization()
-                System.gc()
-                delay(TimeUnit.SECONDS.toMillis(5))
+    private inline fun <reified T : Base> upload(stub: DataOperationsGrpc.DataOperationsFutureStub) {
+        val limiter = Semaphore(N_UPLOADS)
+        val ids = ObjBox.query<T>()?.build()?.findIds() ?: return
+
+        ids.forEach { id ->
+            if (isStopped) {
+                return
             }
 
             val deadlineStub = stub.withDeadlineAfter(1, TimeUnit.MINUTES)
-
-            (offset..offset + N_UPLOADS).map { index ->
-                async {
-                    try {
-                        val id = ids[index]
-                        val entity = ObjBox.get<T>(id)
-                                ?: throw Exception("No corresponding entity.")
-                        val proto = toProto(entity) ?: throw Exception("No corresponding protobuf.")
-
-                        deadlineStub.createDatum(proto)
-                        ObjBox.remove(entity)
-                    } catch (e: Exception) {
-                    }
+            try {
+                while (isLowMemory()) {
+                    System.runFinalization()
+                    System.gc()
+                    SystemClock.sleep(TimeUnit.SECONDS.toMillis(10))
                 }
-            }.awaitAll()
+
+                limiter.acquire()
+
+                val entity = ObjBox.get<T>(id) ?: throw Exception("No corresponding entity.")
+                val proto = toProto(entity) ?: throw Exception("No corresponding protobuf.")
+
+                deadlineStub.createDatum(proto).addListener({
+                    ObjBox.remove(entity)
+                    limiter.release()
+                }, { runnable: Runnable ->
+                    MoreExecutors.directExecutor().execute(runnable)
+                })
+            } catch (e: Exception) { }
+        }
+
+        val startTime = SystemClock.elapsedRealtime()
+
+        while (limiter.availablePermits() < N_UPLOADS && SystemClock.elapsedRealtime() - startTime < WAIT_TIME_RELEASE) {
+            SystemClock.sleep(TimeUnit.SECONDS.toMillis(5))
         }
     }
 
@@ -124,12 +127,11 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         val runtime = Runtime.getRuntime()
         val usedMemory = runtime.totalMemory() - runtime.freeMemory()
         val usedPercentage = usedMemory.toFloat() / (maxHeapSize * 1e6).toFloat()
-        Log.d("SyncWorker", "usedPercentage: $usedPercentage / maxHeapSize: $maxHeapSize")
 
         return usedPercentage > 0.5F
     }
 
-    private suspend fun uploadAll(stub: DataOperationsCoroutineGrpc.DataOperationsCoroutineStub) {
+    private fun uploadAll(stub: DataOperationsGrpc.DataOperationsFutureStub) {
         upload<PhysicalActivityTransitionEntity>(stub)
         upload<PhysicalActivityEntity>(stub)
         upload<AppUsageEventEntity>(stub)
@@ -343,18 +345,10 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         }?.build()
     }
 
-    class CancelIntentService : IntentService(CancelIntentService::class.java.name) {
-        override fun onHandleIntent(intent: Intent?) {
-            Log.d("CancelIntentService", "onHandleIntent()")
-            requestStop(this)
-        }
-    }
-
     companion object {
-        private const val N_UPLOADS: Int = 100
+        private const val N_UPLOADS: Int = 250
+        private val WAIT_TIME_RELEASE: Long = TimeUnit.MINUTES.toMillis(1)
         private val INTERVAL_SYNC = TimeUnit.HOURS.toMillis(1)
-        private const val REQUEST_CODE_CANCEL_SYNC = 0x12
-        private const val ACTION_CANCEL_SYNC = "${BuildConfig.APPLICATION_ID}.ACTION_CANCEL_SYNC "
         private val WORKER_NAME = SyncWorker::class.java.name
 
         fun requestStart(context: Context, forceStart: Boolean, enableMetered: Boolean, isPeriodic: Boolean) {
