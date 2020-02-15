@@ -24,7 +24,7 @@ class MediaCollector(private val context: Context) : BaseCollector<MediaCollecto
                       val lastTimeAccessedInternalVideo: Long = 0,
                       val lastTimeAccessedExternalPhoto: Long = 0,
                       val lastTimeAccessedExternalVideo: Long = 0) : BaseStatus() {
-        override fun info(): String = ""
+        override fun info(): Map<String, Any> = mapOf()
     }
 
     override val clazz: KClass<Status> = Status::class

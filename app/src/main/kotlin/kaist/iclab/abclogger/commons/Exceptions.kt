@@ -18,7 +18,7 @@ abstract class ABCException (override val message: String?): Exception(message) 
 
     fun toString(context: Context): String = listOf(
             context.getString(stringRes), message
-    ).filter { !it.isNullOrEmpty() }.joinToString(separator = ": ")
+    ).filter { !it.isNullOrEmpty() }.joinToString(separator = " - ")
 
     companion object {
         fun wrap(t: Throwable?) = when(t) {

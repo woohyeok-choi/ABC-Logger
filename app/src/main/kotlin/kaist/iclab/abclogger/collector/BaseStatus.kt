@@ -4,9 +4,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 abstract class BaseStatus(open val hasStarted: Boolean? = null,
-                          open val lastTime: Long? = null,
-                          open val lastError: Throwable? = null) {
-    abstract fun info() : String
+                          open val lastTime: Long? = null) {
+    abstract fun info() : Map<String, Any>
 
     companion object {
         private val timeFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US)
@@ -19,7 +18,9 @@ abstract class BaseStatus(open val hasStarted: Boolean? = null,
                 timeFormat.format(time.time)
             } ?: "Unknown"
 
-            return listOf("Last time: $timeStr", status?.info()).filter { !it.isNullOrBlank() }.joinToString(System.lineSeparator())
+            val info = status?.info() ?: mapOf()
+            val allInfo = listOf("Last time: $timeStr") + info.map { (k, v) -> "$k: $v" }
+            return allInfo.filter { !it.isBlank() }.joinToString(System.lineSeparator()) { "- $it" }
         }
     }
 }

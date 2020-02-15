@@ -23,8 +23,10 @@ class InternalSensorCollector(private val context: Context) : BaseCollector<Inte
                       override val lastTime: Long? = null,
                       val isProximityAvailable: Boolean? = null,
                       val isLightAvailable: Boolean? = null) : BaseStatus() {
-        override fun info(): String =
-                "Proximity: ${if (isProximityAvailable == true) "On" else "Off"}; Light: ${if (isLightAvailable == true) "On" else "Off"}"
+        override fun info(): Map<String, Any> = mapOf(
+                "Proximity" to if (isProximityAvailable == true) "On" else "Off",
+                "Light" to if(isLightAvailable == true) "On" else "Off"
+        )
     }
 
     override val clazz: KClass<Status> = Status::class

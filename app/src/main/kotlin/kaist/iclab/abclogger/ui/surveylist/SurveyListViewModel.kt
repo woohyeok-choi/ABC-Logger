@@ -48,10 +48,10 @@ class SurveyListViewModel(private val context: Context,
         val nReceived = status?.nReceived ?: 0
         val rates = if (nReceived > 0) nAnswered.toFloat() / nReceived.toFloat() * 100 else 0.0F
 
-        val msg = "${context.getString(R.string.general_n_answered)}: $nAnswered" +
-                "/ ${context.getString(R.string.general_n_received)}: $nReceived " +
-                String.format("(%.1f%%)", rates)
-
+        val msg = context.getString(
+                R.string.general_response_rates,
+                nAnswered, nReceived, String.format("%.1f%%", rates)
+        )
         responseRates.postValue(msg)
     }
 

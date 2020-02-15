@@ -2,15 +2,12 @@ package kaist.iclab.abclogger.collector.survey.setting
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.commons.showToast
 import kaist.iclab.abclogger.databinding.FragmentSurveyPreviewBinding
 import kaist.iclab.abclogger.ui.base.BaseCustomViewDialogFragment
 import kaist.iclab.abclogger.ui.question.SurveyQuestionListAdapter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
@@ -28,8 +25,12 @@ class SurveyPreviewDialogFragment : BaseCustomViewDialogFragment<FragmentSurveyP
         dataBinding.recyclerView.adapter = adapter
 
         viewModel.questions.observe(this) { questions ->
-            questions?.let { adapter.bind(questions, true, false) }
+            questions?.let { adapter.bind(questions = questions, isAvailable = true, showAltText = false) }
         }
+    }
+
+    override fun navigateError(throwable: Throwable) {
+        showToast(throwable)
     }
 
     companion object {
@@ -42,9 +43,5 @@ class SurveyPreviewDialogFragment : BaseCustomViewDialogFragment<FragmentSurveyP
                 }
             }.show(fragmentManager, "${SurveyPreviewDialogFragment::class.java.canonicalName}")
         }
-    }
-
-    override fun navigateError(throwable: Throwable) {
-        showToast(throwable)
     }
 }

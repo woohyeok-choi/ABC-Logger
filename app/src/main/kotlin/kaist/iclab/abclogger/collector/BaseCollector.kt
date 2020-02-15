@@ -1,5 +1,6 @@
 package kaist.iclab.abclogger.collector
 
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -7,6 +8,10 @@ import androidx.core.content.edit
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.commons.ABCException
+import kaist.iclab.abclogger.commons.Notifications
+import kaist.iclab.abclogger.ui.main.MainActivity
 import kotlinx.coroutines.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
@@ -92,6 +97,7 @@ abstract class BaseCollector<T : BaseStatus>(private val context: Context) : Cor
             onComplete?.invoke(null)
         } catch (e: Exception) {
             onComplete?.invoke(e)
+            notifyError(e)
         }
     }
 
@@ -113,6 +119,19 @@ abstract class BaseCollector<T : BaseStatus>(private val context: Context) : Cor
         } catch (e: Exception) {
 
         }
+    }
+
+    fun notifyError(throwable: Throwable?) {
+        val ntf = Notifications.build(
+                context = context,
+                channelId = Notifications.CHANNEL_ID_REQUIRE_SETTING,
+                title = context.getString(R.string.ntf_title_collector_runtime_error, name),
+                bigText = context.getString(R.string.ntf_text_collector_runtime_error,
+                        name, ABCException.wrap(throwable).toString(context), name
+                ),
+                intent = PendingIntent.getActivity(context, REQUEST_CODE_MAIN_ACTIVITY, Intent(context, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
+        )
+        Notifications.notify(context, Notifications.ID_REQUIRE_SETTING, ntf)
     }
 
     private fun buildDefaultStatus(hasStarted: Boolean) : T {
@@ -138,5 +157,9 @@ abstract class BaseCollector<T : BaseStatus>(private val context: Context) : Cor
             return@associateWith property.get(other) ?: property.get(one)
         }
         return primaryConstructor.callBy(args)
+    }
+
+    companion object {
+        const val REQUEST_CODE_MAIN_ACTIVITY = 0xf1
     }
 }
