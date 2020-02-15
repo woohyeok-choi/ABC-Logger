@@ -17,24 +17,30 @@ abstract class BaseViewModel<N : BaseNavigator>(navigator: N? = null) : ViewMode
     val storeStatus: MutableLiveData<Status> = MutableLiveData(Status.init())
     val nav: N? = refNavigator.get()
 
-    fun load(extras: Bundle? = null) = viewModelScope.launch(Dispatchers.IO) {
+    fun launch(call: suspend () -> Unit) = viewModelScope.launch { call() }
+
+    suspend fun io(call: suspend () -> Unit) = withContext(Dispatchers.IO) { call() }
+
+    suspend fun ui(call: suspend () -> Unit) = withContext(Dispatchers.Main) { call() }
+
+    fun load(extras: Bundle? = null) = launch {
         loadStatus.postValue(Status.loading())
         try {
-            onLoad(extras)
+            io { onLoad(extras) }
             loadStatus.postValue(Status.success())
         } catch (e: Exception) {
-            nav?.navigateError(e)
+            ui { nav?.navigateError(e) }
             loadStatus.postValue(Status.failure(e))
         }
     }
 
-    fun store() = viewModelScope.launch(Dispatchers.IO) {
+    fun store() = launch {
         storeStatus.postValue(Status.loading())
         try {
-            onStore()
+            io { onStore() }
             storeStatus.postValue(Status.success())
         } catch (e: Exception) {
-            nav?.navigateError(e)
+            ui { nav?.navigateError(e) }
             storeStatus.postValue(Status.failure(e))
         }
     }

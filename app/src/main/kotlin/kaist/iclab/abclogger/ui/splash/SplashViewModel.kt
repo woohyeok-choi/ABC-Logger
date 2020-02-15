@@ -29,7 +29,7 @@ class SplashViewModel(private val permissions: Array<String>,
 
     override suspend fun onStore() { }
 
-    fun doGoogleSignIn() = viewModelScope.launch {
+    fun doGoogleSignIn() = launch {
         try {
             GoogleApiAvailability.getInstance()
                     .makeGooglePlayServicesAvailable(activity).toCoroutine(throwable = GooglePlayServiceOutdatedException())
@@ -41,13 +41,12 @@ class SplashViewModel(private val permissions: Array<String>,
             val client = GoogleSignIn.getClient(activity, options)
 
             nav?.navigateGoogleSignIn(client.signInIntent)
-
         } catch (e: Exception) {
             nav?.navigateError(e)
         }
     }
 
-    fun doFirebaseAuth(intent: Intent?) = viewModelScope.launch {
+    fun doFirebaseAuth(intent: Intent?) = launch {
         try {
             val account = GoogleSignIn.getSignedInAccountFromIntent(intent).toCoroutine() ?: throw NoSignedGoogleAccountException()
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
@@ -59,7 +58,7 @@ class SplashViewModel(private val permissions: Array<String>,
         }
     }
 
-    fun doPermissions(title: String, message: String) = viewModelScope.launch {
+    fun doPermissions(title: String, message: String) = launch {
         val result= TedRx2Permission.with(activity)
                 .setRationaleTitle(title)
                 .setRationaleMessage(message)
@@ -74,7 +73,7 @@ class SplashViewModel(private val permissions: Array<String>,
         nav?.navigatePermission(result?.isGranted == true, intent)
     }
 
-    fun doPermissionsAgain() = viewModelScope.launch {
+    fun doPermissionsAgain() = launch {
         val result = activity.checkPermission(permissions)
         if (!result) {
             nav?.navigateError(PermissionDeniedException())
@@ -84,7 +83,7 @@ class SplashViewModel(private val permissions: Array<String>,
     }
 
     @SuppressLint("BatteryLife")
-    fun doWhiteList() = viewModelScope.launch {
+    fun doWhiteList() = launch {
         val packageName = activity.packageName
         val result = checkWhiteList(packageName)
         if (!result) {
@@ -98,7 +97,7 @@ class SplashViewModel(private val permissions: Array<String>,
         }
     }
 
-    fun doWhiteListAgain() = viewModelScope.launch {
+    fun doWhiteListAgain() = launch {
         val packageName = activity.packageName
         val result = checkWhiteList(packageName)
         if (!result) {

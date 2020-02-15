@@ -36,11 +36,11 @@ class SurveySettingActivity : BaseToolbarActivity<LayoutSettingSurveyBinding, Su
     }
 
     override fun navigateStore() {
-        lifecycleScope.launch(Dispatchers.Main) { finish() }
+        finish()
     }
 
     override fun navigateError(throwable: Throwable) {
-        lifecycleScope.launch(Dispatchers.Main) { showToast(throwable) }
+        showToast(throwable)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

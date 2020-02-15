@@ -36,6 +36,6 @@ class KeyLogViewModel(private val context: Context,
             else -> null
         }
         collector.setStatus(KeyLogCollector.Status(keyboardType = keyboardType))
-        nav?.navigateStore()
+        ui { nav?.navigateStore() }
     }
 }

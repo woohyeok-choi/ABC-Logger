@@ -43,7 +43,7 @@ class PolarH10SettingActivity : BaseToolbarActivity<LayoutSettingPolarH10Binding
     }
 
     override fun navigateError(throwable: Throwable) {
-        lifecycleScope.launch(Dispatchers.Main) { showToast(throwable) }
+        showToast(throwable)
     }
 
     override fun navigateStore() {

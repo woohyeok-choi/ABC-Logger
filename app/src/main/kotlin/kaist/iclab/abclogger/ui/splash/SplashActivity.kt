@@ -1,6 +1,7 @@
 package kaist.iclab.abclogger.ui.splash
 
 import android.content.Intent
+import android.os.SystemClock
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.*
 import kaist.iclab.abclogger.*
@@ -32,62 +33,46 @@ class SplashActivity : BaseActivity<ActivitySplashBinding, SplashViewModel>(), S
     }
 
     override fun navigateFirebaseAuth(user: FirebaseUser) {
-        lifecycleScope.launch(Dispatchers.Main) {
-            val msg = listOf(
-                    getString(R.string.msg_sign_in_success),
-                    user.displayName ?: user.email ?: ""
-            ).joinToString(" ")
+        val msg = listOf(
+                getString(R.string.msg_sign_in_success),
+                user.displayName ?: user.email ?: ""
+        ).joinToString(" ")
 
-            showToast(msg)
+        showToast(msg)
 
-            viewModel.doPermissions(
-                    title = getString(R.string.dialog_title_permission_request),
-                    message = getString(R.string.dialog_message_permission_request)
-            )
-        }
-
+        viewModel.doPermissions(
+                title = getString(R.string.dialog_title_permission_request),
+                message = getString(R.string.dialog_message_permission_request)
+        )
     }
 
     override fun navigatePermission(isGranted: Boolean, intent: Intent) {
-        lifecycleScope.launch(Dispatchers.Main) {
-            if (isGranted) {
-                viewModel.doWhiteList()
-            } else {
-                showToast(R.string.msg_permission_setting_required, false)
-                startActivityForResult(intent, REQUEST_CODE_PERMISSION_SETTING)
-            }
+        if (isGranted) {
+            viewModel.doWhiteList()
+        } else {
+            showToast(R.string.msg_permission_setting_required, false)
+            startActivityForResult(intent, REQUEST_CODE_PERMISSION_SETTING)
         }
-
     }
 
     override fun navigatePermissionAgain() {
-        lifecycleScope.launch(Dispatchers.Main) {
-            viewModel.doWhiteList()
-        }
-
+        viewModel.doWhiteList()
     }
 
     override fun navigateWhiteList(intent: Intent) {
-        lifecycleScope.launch(Dispatchers.Main) {
-            startActivityForResult(intent, REQUEST_CODE_WHITE_LIST)
-        }
+        startActivityForResult(intent, REQUEST_CODE_WHITE_LIST)
     }
 
     override fun navigateSuccess() {
-        val intent = Intent(this, MainActivity::class.java)
-        lifecycleScope.launch {
-            delay(1000)
-            finish()
-            startActivity(intent)
-        }
+        SystemClock.sleep(1000)
+        finish()
+        startActivity(Intent(this, MainActivity::class.java))
     }
 
     override fun navigateError(throwable: Throwable) {
-        lifecycleScope.launch {
-            showToast(throwable)
-            delay(1000)
-            finish()
-        }
+        showToast(throwable)
+        SystemClock.sleep(1000)
+        finish()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -58,15 +58,13 @@ class SurveyResponseActivity : BaseToolbarActivity<LayoutSurveyResponseBinding, 
     }
 
     override fun navigateStore() {
-        lifecycleScope.launch(Dispatchers.Main){
-            val showFromList : Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
+        val showFromList : Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
 
-            if (showFromList) supportFinishAfterTransition() else finish()
-        }
+        if (showFromList) supportFinishAfterTransition() else finish()
     }
 
     override fun navigateError(throwable: Throwable) {
-        lifecycleScope.launch(Dispatchers.Main){ showToast(throwable) }
+        showToast(throwable)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

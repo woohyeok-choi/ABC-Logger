@@ -2,6 +2,7 @@ package kaist.iclab.abclogger.collector.keylog.setting
 
 import android.content.Intent
 import android.provider.Settings
+import android.view.MenuItem
 import androidx.lifecycle.lifecycleScope
 import kaist.iclab.abclogger.BR
 import kaist.iclab.abclogger.R
@@ -47,16 +48,30 @@ class KeyLogSettingActivity : BaseToolbarActivity<LayoutSettingKeyLogBinding, Ke
     }
 
     override fun navigateStore() {
-        lifecycleScope.launch(Dispatchers.Main) { finish() }
+        finish()
     }
 
     override fun navigateError(throwable: Throwable) {
-        lifecycleScope.launch(Dispatchers.Main) { showToast(throwable) }
+        showToast(throwable)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_ACCESSIBILITY_SETTING) viewModel.load()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            R.id.menu_activity_settings_save -> {
+                viewModel.store()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     companion object {

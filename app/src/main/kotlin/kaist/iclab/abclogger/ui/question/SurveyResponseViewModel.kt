@@ -60,6 +60,6 @@ class SurveyResponseViewModel(private val collector: SurveyCollector,
         val nResponded = collector.getStatus()?.nAnswered ?: 0
         collector.setStatus(SurveyCollector.Status(nAnswered = nResponded + 1))
 
-        nav?.navigateStore()
+        ui { nav?.navigateStore() }
     }
 }

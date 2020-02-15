@@ -47,7 +47,7 @@ class SurveySettingViewModel(val collector: SurveyCollector,
                     )
             )
         }
-        nav?.navigateStore()
+        ui { nav?.navigateStore() }
     }
 
     fun removeItem(setting: SurveyCollector.Status.Setting) {

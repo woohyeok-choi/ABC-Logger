@@ -45,6 +45,6 @@ class SurveyPreviewDialogFragment : BaseCustomViewDialogFragment<FragmentSurveyP
     }
 
     override fun navigateError(throwable: Throwable) {
-        lifecycleScope.launch(Dispatchers.Main) { showToast(throwable) }
+        showToast(throwable)
     }
 }

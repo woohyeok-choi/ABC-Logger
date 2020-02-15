@@ -31,7 +31,7 @@ class PolarH10ViewModel(private val context: Context,
     override suspend fun onStore() {
         disconnect()
         collector.setStatus(PolarH10Collector.Status(deviceId = deviceId.value))
-        nav?.navigateStore()
+        ui { nav?.navigateStore() }
     }
 
     private val api: PolarBleApi by lazy {
@@ -61,7 +61,13 @@ class PolarH10ViewModel(private val context: Context,
                         api.startEcgStreaming(identifier, setting.maxSettings())
                     }.subscribe({ data ->
                         ecg.postValue(data.samples.lastOrNull()?.toString())
-                    }, { t -> nav?.navigateError(t) })
+                    }, { t ->
+                        launch {
+                            ui {
+                                nav?.navigateError(t)
+                            }
+                        }
+                    })
         }
 
         override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
@@ -93,13 +99,13 @@ class PolarH10ViewModel(private val context: Context,
 
     private var ecgDisposable : Disposable? = null
 
-    fun connect() {
+    fun connect() = launch {
         try {
             ecgDisposable?.dispose()
             api.setApiCallback(callback)
             api.connectToDevice(deviceId.value ?: "")
         } catch (e: Exception) {
-            nav?.navigateError(e)
+            ui { nav?.navigateError(e) }
             state.postValue(context.getString(R.string.general_disconnected))
             battery.postValue(null)
             heartRate.postValue(null)
@@ -108,12 +114,12 @@ class PolarH10ViewModel(private val context: Context,
         }
     }
 
-    fun disconnect() {
+    fun disconnect() = launch {
         try {
             api.disconnectFromDevice(deviceId.value ?: "")
             api.setApiCallback(null)
         } catch (e: Exception) {
-            nav?.navigateError(e)
+            ui { nav?.navigateError(e) }
         }
 
         state.postValue(context.getString(R.string.general_disconnected))
