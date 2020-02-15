@@ -28,12 +28,11 @@ import kotlin.reflect.KClass
 class PhysicalStatCollector(private val context: Context) : BaseCollector<PhysicalStatCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
-                      override val lastError: Throwable? = null,
                       val lastTimeAccessed: Long? = null,
                       val lastTimeAccessedStepCount: Long? = null,
                       val lastTimeAccessedDistance: Long? = null,
                       val lastTimeAccessedCalories: Long? = null) : BaseStatus() {
-        override fun info(): String = ""
+        override fun info(): Map<String, Any> = mapOf()
     }
 
     override val clazz: KClass<Status> = Status::class
@@ -212,7 +211,7 @@ class PhysicalStatCollector(private val context: Context) : BaseCollector<Physic
                     )
             )
         } catch (e: Exception) {
-            setStatus(Status(lastError = e))
+            notifyError(e)
         }
     }
 

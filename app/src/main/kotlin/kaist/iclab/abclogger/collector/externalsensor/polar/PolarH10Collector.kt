@@ -9,29 +9,33 @@ import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
 import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10SettingActivity
+import kaist.iclab.abclogger.commons.ABCException
 import kaist.iclab.abclogger.commons.PolarH10Exception
 import kaist.iclab.abclogger.commons.checkPermission
 import kotlinx.coroutines.launch
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
 import polar.com.sdk.api.PolarBleApiDefaultImpl
+import polar.com.sdk.api.errors.PolarDeviceDisconnected
 import polar.com.sdk.api.model.PolarDeviceInfo
 import polar.com.sdk.api.model.PolarHrData
 import java.lang.Exception
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
 
 class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Collector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
-                      override val lastError: Throwable? = null,
                       val deviceId: String? = null,
                       val connection: String? = null,
                       val batteryLevel: Int? = null) : BaseStatus() {
 
-        override fun info(): String = "Id: ${deviceId ?: "UNKNOWN"}; " +
-                "Connected: ${connection ?: "UNKNOWN"}; " +
-                "Battery: ${batteryLevel ?: "UNKNOWN"}"
+        override fun info(): Map<String, Any> = mapOf(
+                "Id" to (deviceId ?: "Unknown"),
+                "Connected" to (connection ?: "Unknown"),
+                "Battery" to (batteryLevel ?: "Unknown")
+        )
     }
 
     override val clazz: KClass<Status> = Status::class
@@ -52,6 +56,8 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
     override suspend fun checkAvailability(): Boolean = !getStatus()?.deviceId.isNullOrBlank() && context.checkPermission(requiredPermissions)
 
     override suspend fun onStart() {
+        isRequestedStop.set(false)
+
         ecgDisposable?.dispose()
         hrDisposable?.dispose()
 
@@ -69,12 +75,16 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
     }
 
     override suspend fun onStop() {
+        isRequestedStop.set(true)
+
         ecgDisposable?.dispose()
         hrDisposable?.dispose()
 
         try { api.disconnectFromDevice(getStatus()?.deviceId ?: "") } catch (e: Exception) { }
         try { api.setApiCallback(null) } catch (e: Exception) { }
     }
+
+    private val isRequestedStop : AtomicBoolean = AtomicBoolean(false)
 
     private val hrSubject: PublishSubject<ExternalSensorEntity> = PublishSubject.create()
 
@@ -102,15 +112,15 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
             }
 
             override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
-                handleConnectionRetrieval(context.getString(R.string.general_connected))
+                handleConnectionRetrieval(CONNECTED)
             }
 
             override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
-                handleConnectionRetrieval(context.getString(R.string.general_connecting))
+                handleConnectionRetrieval(CONNECTING)
             }
 
             override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
-                handleConnectionRetrieval(context.getString(R.string.general_disconnected))
+                handleConnectionRetrieval(DISCONNECTED)
             }
 
             override fun batteryLevelReceived(identifier: String, level: Int) {
@@ -123,9 +133,18 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
         }
     }
 
-    private fun handleConnectionRetrieval(connection: String?) {
+    private fun handleConnectionRetrieval(connection: Int?) {
         launch {
-            setStatus(Status(connection = connection))
+            when(connection) {
+                DISCONNECTED -> R.string.general_disconnected
+                CONNECTING -> R.string.general_connecting
+                CONNECTED -> R.string.general_connected
+                else -> null
+            }?.let { setStatus(Status(connection = context.getString(it))) }
+
+            if (connection == DISCONNECTED && !isRequestedStop.get()) {
+                notifyError(PolarDeviceDisconnected())
+            }
         }
     }
 
@@ -204,8 +223,15 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
                     }
                 }, { throwable ->
                     launch {
-                        setStatus(Status(lastError = throwable))
+                        notifyError(throwable)
                     }
                 })
+    }
+
+    companion object {
+        private const val DISCONNECTED = 0x0
+        private const val CONNECTING = 0x1
+        private const val CONNECTED = 0x2
+
     }
 }

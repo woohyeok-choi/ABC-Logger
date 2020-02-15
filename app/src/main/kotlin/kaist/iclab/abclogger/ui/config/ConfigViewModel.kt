@@ -163,7 +163,9 @@ class ConfigViewModel(
                 isAvailable = collector.checkAvailability()
                 info = BaseStatus.information(collector.getStatus())
                 collector.newIntentForSetUp?.let {
-                    onAction = { nav?.navigateIntent(it) }
+                    onAction = {
+                        nav?.navigateIntent(it)
+                    }
                 }
                 onChange = { isChecked ->
                     if (isChecked)

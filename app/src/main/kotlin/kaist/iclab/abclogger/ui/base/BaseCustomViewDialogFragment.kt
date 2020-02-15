@@ -48,7 +48,6 @@ abstract class BaseCustomViewDialogFragment<T : ViewDataBinding, VM : BaseViewMo
         dataBinding.lifecycleOwner = this
 
         beforeExecutePendingBindings()
-        viewModel.load(arguments)
 
         return AlertDialog.Builder(requireContext())
                 .setTitle(titleRes)
@@ -67,6 +66,10 @@ abstract class BaseCustomViewDialogFragment<T : ViewDataBinding, VM : BaseViewMo
     override fun onStart() {
         super.onStart()
         AppLog.d(TAG, "onStart()")
+
+        viewModel.load(arguments)
+
+        dataBinding.executePendingBindings()
     }
 
     @CallSuper

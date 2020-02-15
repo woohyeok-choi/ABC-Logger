@@ -116,7 +116,7 @@ val viewModelModules = module {
                 navigator = navigator
         )
     }
-    viewModel { (url: String, navigator: SurveyPreviewNavigator) ->
+    viewModel { (navigator: SurveyPreviewNavigator) ->
         SurveyPreviewViewModel(
                 navigator = navigator
         )

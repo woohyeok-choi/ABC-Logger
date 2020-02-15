@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
 class BatteryCollector(private val context: Context) : BaseCollector<BatteryCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null) : BaseStatus() {
-        override fun info(): String = ""
+        override fun info(): Map<String, Any> = mapOf()
     }
 
     override val clazz: KClass<Status> = Status::class

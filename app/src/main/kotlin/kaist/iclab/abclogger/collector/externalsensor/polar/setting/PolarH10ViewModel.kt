@@ -118,9 +118,7 @@ class PolarH10ViewModel(private val context: Context,
         try {
             api.disconnectFromDevice(deviceId.value ?: "")
             api.setApiCallback(null)
-        } catch (e: Exception) {
-            ui { nav?.navigateError(e) }
-        }
+        } catch (e: Exception) { }
 
         state.postValue(context.getString(R.string.general_disconnected))
         battery.postValue(null)

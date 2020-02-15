@@ -173,6 +173,7 @@ object Notifications {
               channelId: String,
               title: String? = null,
               text: String? = null,
+              bigText: String? = null,
               subText: String? = null,
               intent: PendingIntent? = null,
               @IntRange(from = 0, to = 100) progress: Int? = null,
@@ -200,6 +201,7 @@ object Notifications {
                     title?.let { setContentTitle(it) }
                     text?.let { setContentText(it) }
                     subText?.let { setSubText(it) }
+                    bigText?.let { setStyle(NotificationCompat.BigTextStyle().bigText(it)) }
                     intent?.let { setContentIntent(it) }
                     timeoutMs?.let { setTimeoutAfter(it) }
                     progress?.let { setProgress(100, it, indeterminate) }

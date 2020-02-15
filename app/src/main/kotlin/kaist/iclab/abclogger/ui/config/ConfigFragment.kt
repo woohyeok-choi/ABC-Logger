@@ -57,7 +57,7 @@ class ConfigFragment : BaseFragment<FragmentConfigBinding, ConfigViewModel>(),
     }
 
     override fun navigateIntent(intent: Intent) {
-        startActivity(intent)
+        startActivityForResult(intent, 0xFF)
     }
 
     override fun navigateBeforeFlush() {
@@ -74,12 +74,16 @@ class ConfigFragment : BaseFragment<FragmentConfigBinding, ConfigViewModel>(),
                 getString(R.string.dialog_title_sign_out),
                 getString(R.string.dialog_message_sign_out)
         ) { viewModel.logout() }
-
     }
 
     override fun navigateAfterLogout() {
         val intent = Intent(requireContext(), SplashActivity::class.java)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        viewModel.load()
     }
 }

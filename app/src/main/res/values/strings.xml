@@ -31,8 +31,7 @@
     <string name="general_disconnected">Disconnected</string>
     <string name="general_connecting">Connecting</string>
     <string name="general_unknown">Unknown</string>
-    <string name="general_n_received"># Received</string>
-    <string name="general_n_answered"># Answered</string>
+    <string name="general_response_rates">%1d answered / %2d received (%3s)</string>
 
     <string name="config_category_general">General</string>
     <string name="config_category_collector">Collector</string>
@@ -51,7 +50,6 @@
     <string name="config_msg_available">Available.</string>
     <string name="config_msg_require_setting">Permission or additional setting required. Touch to grant.</string>
 
-
     <string name="btn_sign_in">Sign in</string>
     <string name="btn_participate">Participate</string>
     <string name="btn_save">Save</string>
@@ -66,9 +64,11 @@
     <string name="ntf_text_flush">Flush in progress&#8230;</string>
     <string name="ntf_title_logout">Logout</string>
     <string name="ntf_text_logout">Logout in progress&#8230;</string>
+    <string name="ntf_title_collector_runtime_error">Error in %1s collection</string>
+    <string name="ntf_text_collector_runtime_error">Collection of %1s does not work well because %2s. Touch to check the setting and/or restart collection of %3s.</string>
 
 
-    <string name="error_general">Unknown error occurs.</string>
+    <string name="error_general">Unknown error occurs</string>
     <string name="error_google_api_exception">Error occurs during signing in a Google account</string>
     <string name="error_firebase_auth_invalid_user">This account was disabled</string>
     <string name="error_firebase_auth_invalid_credential">Credential was expired</string>
@@ -83,7 +83,7 @@
     <string name="error_invalid_url">Invalid URL</string>
     <string name="error_invalid_value">Contents are not correctly loaded</string>
     <string name="error_polar_h10">Error occurs on Polar H10</string>
-    <string name="error_require_to_update_google_play_service">Please update Google Play service to use this app</string>
+    <string name="error_require_to_update_google_play_service">Google Play service is outdated</string>
     <string name="error_survey_incorrectly_answered">Some questions required to be answered is not answered</string>
 
     <string name="dialog_title_permission_request">Permission Request</string>

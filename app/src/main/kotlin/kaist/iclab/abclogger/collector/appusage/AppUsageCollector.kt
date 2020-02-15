@@ -25,7 +25,7 @@ class AppUsageCollector(private val context: Context) : BaseCollector<AppUsageCo
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val lastTimeAccessed: Long? = null) : BaseStatus() {
-        override fun info(): String = ""
+        override fun info(): Map<String, Any> = mapOf()
     }
 
     override val clazz: KClass<Status> = Status::class

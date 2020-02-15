@@ -21,7 +21,7 @@ class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollec
     data class Status(override val hasStarted: Boolean? = null,
                       override val lastTime: Long? = null,
                       val keyboardType: String? = null) : BaseStatus() {
-        override fun info(): String = "Keyboard: ${keyboardType ?: "UNKNOWN"}"
+        override fun info(): Map<String, Any> = mapOf("Keyboard" to (keyboardType ?: "Unknown"))
     }
 
     override val clazz: KClass<Status> = Status::class

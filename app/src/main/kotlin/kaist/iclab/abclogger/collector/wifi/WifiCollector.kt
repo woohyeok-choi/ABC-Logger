@@ -22,9 +22,8 @@ import kotlin.reflect.KClass
 
 class WifiCollector(private val context: Context) : BaseCollector<WifiCollector.Status>(context) {
     data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null,
-                      override val lastError: Throwable? = null) : BaseStatus() {
-        override fun info(): String = ""
+                      override val lastTime: Long? = null) : BaseStatus() {
+        override fun info(): Map<String, Any> = mapOf()
     }
 
     override val clazz: KClass<Status> = Status::class
@@ -101,9 +100,9 @@ class WifiCollector(private val context: Context) : BaseCollector<WifiCollector.
                 ObjBox.put(entity)
                 setStatus(Status(lastTime = timestamp))
             }
-        } catch (e: SecurityException) {
-            setStatus(Status(lastError = e))
-        } catch (e: Exception) { }
+        } catch (e: Exception) {
+            notifyError(e)
+        }
     }
 
     companion object {
