@@ -3,15 +3,15 @@ package kaist.iclab.abclogger.collector.survey.setting
 import android.os.Bundle
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
-import kaist.iclab.abclogger.commons.InvalidSurveyFormatException
-import kaist.iclab.abclogger.commons.InvalidUrlException
 import kaist.iclab.abclogger.collector.survey.Survey
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
+import kaist.iclab.abclogger.commons.InvalidSurveyFormatException
+import kaist.iclab.abclogger.commons.InvalidUrlException
 import kaist.iclab.abclogger.commons.httpGet
 import kaist.iclab.abclogger.ui.base.BaseViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.*
-import kotlin.collections.ArrayList
 
 class SurveySettingViewModel(val collector: SurveyCollector,
                              navigator: SurveySettingNavigator) : BaseViewModel<SurveySettingNavigator>(navigator) {

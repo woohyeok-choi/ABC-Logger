@@ -3,7 +3,6 @@ package kaist.iclab.abclogger.collector.install
 import io.objectbox.annotation.Entity
 import kaist.iclab.abclogger.collector.Base
 
-
 @Entity
 data class InstalledAppEntity(
         var name: String = "",

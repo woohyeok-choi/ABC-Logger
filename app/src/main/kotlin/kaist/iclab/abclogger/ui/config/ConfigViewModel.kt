@@ -7,23 +7,17 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.format.DateUtils
 import android.text.format.Formatter
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.AbcCollector
-import kaist.iclab.abclogger.commons.Notifications
-import kaist.iclab.abclogger.Prefs
 import kaist.iclab.abclogger.collector.BaseStatus
+import kaist.iclab.abclogger.commons.Notifications
 import kaist.iclab.abclogger.commons.checkPermission
 import kaist.iclab.abclogger.commons.toCoroutine
 import kaist.iclab.abclogger.ui.Status
 import kaist.iclab.abclogger.ui.base.BaseViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class ConfigViewModel(
         private val context: Context,
@@ -38,7 +32,7 @@ class ConfigViewModel(
         })
     }
 
-    override suspend fun onStore() { }
+    override suspend fun onStore() {}
 
     fun flush() = launch {
         storeStatus.postValue(Status.loading())
@@ -95,20 +89,24 @@ class ConfigViewModel(
                 context.getString(R.string.general_denied)
             }
             onAction = {
-                nav?.navigateIntent(
-                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        .setData(Uri.parse("package:${context.packageName}"))
-                )
+                launch {
+                    ui {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                .setData(Uri.parse("package:${context.packageName}"))
+                        nav?.navigateIntent(intent)
+                    }
+                }
+
             }
         }
         simple {
             title = context.getString(R.string.config_title_sync)
-            description = String.format("%s: %s",
-                    context.getString(R.string.general_last_sync_time),
+            description = context.getString(
+                    R.string.general_last_sync_time,
                     if (Prefs.lastTimeDataSync > 0) {
                         DateUtils.formatDateTime(context, Prefs.lastTimeDataSync, DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME)
                     } else {
-                        context.getString(R.string.general_none)
+                        context.getString(R.string.general_unknown)
                     }
             )
             onAction = {
@@ -164,14 +162,13 @@ class ConfigViewModel(
                 info = BaseStatus.information(collector.getStatus())
                 collector.newIntentForSetUp?.let {
                     onAction = {
-                        nav?.navigateIntent(it)
+                        launch {
+                            ui { nav?.navigateIntent(it) }
+                        }
                     }
                 }
                 onChange = { isChecked ->
-                    if (isChecked)
-                        collector.start { t -> t?.let { nav?.navigateError(t) } }
-                    else
-                        collector.stop { t -> t?.let { nav?.navigateError(t) } }
+                    if (isChecked) collector.start() else collector.stop()
                 }
             }
         }
@@ -182,20 +179,30 @@ class ConfigViewModel(
             title = context.getString(R.string.config_category_others)
         }
         simple {
+            title = context.getString(R.string.config_title_version)
+            description = BuildConfig.VERSION_NAME
+        }
+        simple {
             title = context.getString(R.string.config_title_flush_data)
-            description = listOf(
-                    context.getString(R.string.general_current_db_size),
-                    "${Formatter.formatFileSize(context, ObjBox.size(context))} / ${Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())}"
-            ).joinToString(": ")
+            description = context.getString(
+                    R.string.general_current_db_size,
+                    Formatter.formatFileSize(context, ObjBox.size(context)),
+                    Formatter.formatFileSize(context, ObjBox.maxSizeInBytes())
+            )
             onAction = {
-                nav?.navigateBeforeFlush()
+                launch {
+                    ui { nav?.navigateBeforeFlush() }
+                }
+
             }
         }
         simple {
             title = context.getString(R.string.config_title_logout)
             description = context.getString(R.string.config_desc_logout)
             onAction = {
-                nav?.navigateBeforeLogout()
+                launch {
+                    ui { nav?.navigateBeforeLogout() }
+                }
             }
         }
     }

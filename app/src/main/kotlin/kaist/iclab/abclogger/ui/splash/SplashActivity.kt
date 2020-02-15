@@ -2,17 +2,13 @@ package kaist.iclab.abclogger.ui.splash
 
 import android.content.Intent
 import android.os.SystemClock
-import androidx.lifecycle.lifecycleScope
-import com.google.firebase.auth.*
-import kaist.iclab.abclogger.*
+import com.google.firebase.auth.FirebaseUser
+import kaist.iclab.abclogger.BR
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.commons.showToast
 import kaist.iclab.abclogger.databinding.ActivitySplashBinding
 import kaist.iclab.abclogger.ui.base.BaseActivity
 import kaist.iclab.abclogger.ui.main.MainActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 

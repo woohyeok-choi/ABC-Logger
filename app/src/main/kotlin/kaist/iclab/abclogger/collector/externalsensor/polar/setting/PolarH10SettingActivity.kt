@@ -1,15 +1,12 @@
 package kaist.iclab.abclogger.collector.externalsensor.polar.setting
 
 import android.view.MenuItem
-import androidx.lifecycle.lifecycleScope
 import kaist.iclab.abclogger.BR
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.ui.base.BaseToolbarActivity
-import kaist.iclab.abclogger.databinding.LayoutSettingPolarH10Binding
 import kaist.iclab.abclogger.commons.showToast
+import kaist.iclab.abclogger.databinding.LayoutSettingPolarH10Binding
+import kaist.iclab.abclogger.ui.base.BaseToolbarActivity
 import kaist.iclab.abclogger.ui.dialog.EditTextDialogFragment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
@@ -38,7 +35,7 @@ class PolarH10SettingActivity : BaseToolbarActivity<LayoutSettingPolarH10Binding
         }
 
         dataBinding.switchOnOff.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked) viewModel.connect() else viewModel.disconnect()
+            if (isChecked) viewModel.connect() else viewModel.disconnect()
         }
     }
 

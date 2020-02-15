@@ -6,7 +6,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import kaist.iclab.abclogger.R
 
-class SimpleMessageDialogFragment: DialogFragment() {
+class SimpleMessageDialogFragment : DialogFragment() {
     companion object {
         private val ARG_TITLE = "${SimpleMessageDialogFragment::class.java.canonicalName}.ARG_TITLE"
         private val ARG_MESSAGE = "${SimpleMessageDialogFragment::class.java.canonicalName}.ARG_MESSAGE"
@@ -22,10 +22,10 @@ class SimpleMessageDialogFragment: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return context?.let { context ->
             AlertDialog.Builder(context)
-                .setTitle(arguments?.getString(ARG_TITLE) ?: "")
-                .setMessage(arguments?.getString(ARG_MESSAGE) ?: "")
-                .setNeutralButton(R.string.general_close) { _, _ -> dismiss() }
-                .create()
+                    .setTitle(arguments?.getString(ARG_TITLE) ?: "")
+                    .setMessage(arguments?.getString(ARG_MESSAGE) ?: "")
+                    .setNeutralButton(R.string.general_close) { _, _ -> dismiss() }
+                    .create()
         } ?: super.onCreateDialog(savedInstanceState)
     }
 }

@@ -1,32 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="general_hour">hour(s)</string>
-    <string name="general_day">day(s)</string>
-    <string name="general_week">week(s)</string>
-    <string name="general_month">month(s)</string>
-    <string name="general_year">year(s)</string>
     <string name="general_etc">Others</string>
-    <string name="general_last_sync_time">Last sync time</string>
-    <string name="general_current_db_size">Local data</string>
+    <string name="general_last_sync_time">Last sync time: %1s</string>
+    <string name="general_current_db_size">Current local data: %1s / %2s</string>
     <string name="general_free_text">Freely type it.</string>
-    <string name="general_email">Email</string>
-    <string name="general_gender">Gender</string>
-    <string name="general_name">Name</string>
-    <string name="general_birth_date">Birth date</string>
-    <string name="general_phone_number">Phone number</string>
-    <string name="general_affiliation">Affiliation</string>
-    <string name="general_experiment_name">Experiment name</string>
-    <string name="general_gender_male">Male</string>
-    <string name="general_gender_female">Female</string>
-    <string name="general_loading">Loading&#8230;</string>
     <string name="general_survey_instruction">(Questions marked as * should be answered.)</string>
     <string name="general_asterisk" translatable="false">(*) </string>
     <string name="general_close">Dismiss</string>
-    <string name="general_undo">Undo</string>
-    <string name="general_none">None</string>
     <string name="general_granted">Granted</string>
     <string name="general_denied">Denied</string>
-    <string name="general_touch_to_set">Touch to set</string>
     <string name="general_connected">Connected</string>
     <string name="general_disconnected">Disconnected</string>
     <string name="general_connecting">Connecting</string>
@@ -47,44 +29,33 @@
     <string name="config_title_logout">Logout</string>
     <string name="config_desc_logout">Remove all data, stop data collection, and logout.</string>
     <string name="config_title_permission">Permissions</string>
+    <string name="config_title_version">Version</string>
     <string name="config_msg_available">Available.</string>
     <string name="config_msg_require_setting">Permission or additional setting required. Touch to grant.</string>
-
-    <string name="btn_sign_in">Sign in</string>
-    <string name="btn_participate">Participate</string>
-    <string name="btn_save">Save</string>
-    <string name="btn_dropout">Dropout</string>
-    <string name="btn_preview">Preview</string>
 
     <string name="ntf_title_service_running">ABC Logger is running in background&#8230;</string>
     <string name="ntf_title_sync">Sync</string>
     <string name="ntf_text_sync">Sync in progress&#8230;</string>
     <string name="ntf_action_sync_cancel">Cancel</string>
-    <string name="ntf_title_flush">Flush local data</string>
-    <string name="ntf_text_flush">Flush in progress&#8230;</string>
-    <string name="ntf_title_logout">Logout</string>
-    <string name="ntf_text_logout">Logout in progress&#8230;</string>
     <string name="ntf_title_collector_runtime_error">Error in %1s collection</string>
     <string name="ntf_text_collector_runtime_error">Collection of %1s does not work well because %2s. Touch to check the setting and/or restart collection of %3s.</string>
 
 
-    <string name="error_general">Unknown error occurs</string>
-    <string name="error_google_api_exception">Error occurs during signing in a Google account</string>
-    <string name="error_firebase_auth_invalid_user">This account was disabled</string>
-    <string name="error_firebase_auth_invalid_credential">Credential was expired</string>
-    <string name="error_firebase_auth_collision">This account already exists</string>
-    <string name="error_empty_survey">There is no survey</string>
+    <string name="error_general">Error occurs</string>
+    <string name="error_google_api_exception">Failed to sign in a Google account</string>
+    <string name="error_firebase_auth_invalid_user">Disabled account.</string>
+    <string name="error_firebase_auth_collision">Account already exists</string>
+    <string name="error_empty_survey">No survey</string>
     <string name="error_invalid_survey_format">Invalid survey format</string>
-    <string name="error_invalid_entity_id">There is no matched survey</string>
-    <string name="error_permission_denied">Some permissions are denied</string>
-    <string name="error_not_white_listed">Request for whitelist is denied</string>
-    <string name="error_http_error">Error occurs during Http connection</string>
+    <string name="error_invalid_entity_id">No matched survey</string>
+    <string name="error_permission_denied">Permissions denied</string>
+    <string name="error_not_white_listed">Whitelist request denied</string>
+    <string name="error_http_error">Failed in http connection</string>
     <string name="error_no_signed_google_account">No signed google account</string>
     <string name="error_invalid_url">Invalid URL</string>
-    <string name="error_invalid_value">Contents are not correctly loaded</string>
-    <string name="error_polar_h10">Error occurs on Polar H10</string>
-    <string name="error_require_to_update_google_play_service">Google Play service is outdated</string>
-    <string name="error_survey_incorrectly_answered">Some questions required to be answered is not answered</string>
+    <string name="error_polar_h10">Failed to connect Polar H10</string>
+    <string name="error_require_to_update_google_play_service">Outdated Google Play service</string>
+    <string name="error_survey_incorrectly_answered">Mandatory questions not answered</string>
 
     <string name="dialog_title_permission_request">Permission Request</string>
     <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
@@ -97,15 +68,8 @@
     <string name="dialog_message_save_immutable">You cannot edit responses after saving them.</string>
 
     <string name="msg_sign_in_success">Welcome</string>
-    <string name="msg_auth_password_changed">Password changed.</string>
-    <string name="msg_verify_success">Verification success.</string>
-    <string name="msg_set_app_usage">Please allow ABC Platform to access usage data.</string>
-    <string name="msg_set_notification">Please allow ABC Platform to access notifications.</string>
-    <string name="msg_set_google_fitness">Please allow ABC Platform to access your Google Fitness data.</string>
     <string name="msg_permission_setting_required">Some permissions are denied. Please grant permissions in setting.</string>
-    <string name="msg_white_list_required">Please put this app into a whitelist.</string>
     <string name="msg_back_twice_exit">Press back again to exit.</string>
-    <string name="msg_save_complete">The response is saved.</string>
     <string name="msg_fail_to_load_contents">Failed to load contents.</string>
 
     <string name="title_survey_list">Survey</string>
@@ -152,11 +116,6 @@
     <string name="data_name_sensor">Sensor</string>
     <string name="data_desc_sensor">It collects data from sensors equipped on your smartphone.</string>
 
-    <string name="permission_title_general">Permissions</string>
-    <string name="permission_title_notification">Notification Access</string>
-    <string name="permission_title_app_usage">App Usage Data Access</string>
-    <string name="permission_title_google_fitness">Google Fitness Account Access</string>
-
     <!-- Here, define strings for setting activity of each collector -->
     <string name="setting_key_log_collector_keyboard_type_header">Type of Korean Soft-Keyboard</string>
     <string name="setting_key_log_collector_chunjiin">Chun-ji-in</string>
@@ -167,9 +126,6 @@
 
     <string name="setting_polar_h10_collector_device_id_header">Polar Device ID</string>
     <string name="setting_polar_h10_collector_state_header">State</string>
-    <string name="setting_polar_h10_collector_nearby_devices_header">Nearby Devices</string>
-    <string name="setting_polar_h10_collector_nearby_devices_button">Scan</string>
-    <string name="setting_polar_h10_collector_connect_hint">Device ID</string>
     <string name="setting_polar_h10_collector_connection_state">Connection</string>
     <string name="setting_polar_h10_collector_battery">Battery (%)</string>
     <string name="setting_polar_h10_collector_heart_rate">Heart-rate (bpm)</string>
@@ -178,7 +134,6 @@
     <string name="setting_polar_h10_collector_device_id_dialog_title">Type your Polar H10 device ID.</string>
 
     <string name="setting_survey_collector_instruction">Survey URLs</string>
-    <string name="setting_survey_collector_preview">Preview</string>
     <string name="setting_survey_collector_url_hint">Enter a survey URL.</string>
 </resources>
 

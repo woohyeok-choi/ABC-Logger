@@ -12,7 +12,10 @@ import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.commons.ABCException
 import kaist.iclab.abclogger.commons.Notifications
 import kaist.iclab.abclogger.ui.main.MainActivity
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -40,12 +43,12 @@ abstract class BaseCollector<T : BaseStatus>(private val context: Context) : Cor
      * Check whether a given collector can operate (e.g., permissions).
      * If not available (even after started), it will be stopped.
      */
-    abstract suspend fun checkAvailability() : Boolean
+    abstract suspend fun checkAvailability(): Boolean
 
     /**
      * List of permissions (Manifest.permissions.XXX) for this collector.
      */
-    abstract val requiredPermissions : List<String>
+    abstract val requiredPermissions: List<String>
 
     /**
      * Intent to make this collector available;
@@ -72,42 +75,41 @@ abstract class BaseCollector<T : BaseStatus>(private val context: Context) : Cor
         val mergedStatus = merge(oldStatus, newStatus)
 
         try {
-            val json = serializer.adapter(clazz.java).toJson(mergedStatus) ?: throw Exception("Failed to serialize")
+            val json = serializer.adapter(clazz.java).toJson(mergedStatus)
+                    ?: throw Exception("Failed to serialize")
             preference.edit { putString(clazz.java.name, json) }
         } catch (e: Exception) {
 
         }
     }
 
-    suspend fun getStatus() : T? =
-        try {
-            preference.getString(clazz.java.name, null)?.let { json ->
-                withContext(Dispatchers.IO) {
-                    serializer.adapter(clazz.java).fromJson(json)
+    suspend fun getStatus(): T? =
+            try {
+                preference.getString(clazz.java.name, null)?.let { json ->
+                    withContext(Dispatchers.IO) {
+                        serializer.adapter(clazz.java).fromJson(json)
+                    }
                 }
+            } catch (e: Exception) {
+                null
             }
-        } catch (e: Exception) {
-            null
-        }
 
-    fun start(onComplete: ((throwable: Throwable?) -> Unit)? = null) = launch {
+    fun start() = launch {
         try {
             onStart()
             setStatus(buildDefaultStatus(true))
-            onComplete?.invoke(null)
         } catch (e: Exception) {
-            onComplete?.invoke(e)
+            e.printStackTrace()
             notifyError(e)
         }
     }
 
-    fun stop(onComplete: ((throwable: Throwable?) -> Unit)? = null) = launch {
+    fun stop() = launch {
         try {
             onStop()
             setStatus(buildDefaultStatus(false))
-            onComplete?.invoke(null)
         } catch (e: Exception) {
-            onComplete?.invoke(e)
+            e.printStackTrace()
         }
     }
 
@@ -134,21 +136,19 @@ abstract class BaseCollector<T : BaseStatus>(private val context: Context) : Cor
         Notifications.notify(context, Notifications.ID_REQUIRE_SETTING, ntf)
     }
 
-    private fun buildDefaultStatus(hasStarted: Boolean) : T {
+    private fun buildDefaultStatus(hasStarted: Boolean): T {
         val primaryConstructor = clazz.primaryConstructor!!
         val hasStartedParameter = primaryConstructor.parameters.find { it.name == "hasStarted" }!!
         val lastTimeParameter = primaryConstructor.parameters.find { it.name == "lastTime" }!!
-        val lastErrorParameter = primaryConstructor.parameters.find { it.name == "lastError" }!!
         val args = mapOf(
                 hasStartedParameter to hasStarted,
-                lastTimeParameter to null,
-                lastErrorParameter to null
+                lastTimeParameter to null
         )
         return primaryConstructor.callBy(args)
     }
 
-    private fun merge(one: T?, other: T) : T {
-        if(one == null) return other
+    private fun merge(one: T?, other: T): T {
+        if (one == null) return other
 
         val nameToProperty = clazz.memberProperties.associateBy { it.name }
         val primaryConstructor = other::class.primaryConstructor!!

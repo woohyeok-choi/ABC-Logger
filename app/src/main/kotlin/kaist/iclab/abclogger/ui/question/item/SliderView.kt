@@ -4,24 +4,27 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
-import android.widget.*
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.addTextChangedListener
 import kaist.iclab.abclogger.R
 import io.techery.progresshint.addition.widget.SeekBar as IndicatorSeekBar
 
-class SliderView (context: Context, attrs: AttributeSet?) : QuestionView(context, attrs) {
+class SliderView(context: Context, attrs: AttributeSet?) : QuestionView(context, attrs) {
     private var offset = 0
 
-    private val seekBar : IndicatorSeekBar = IndicatorSeekBar(context).apply {
+    private val seekBar: IndicatorSeekBar = IndicatorSeekBar(context).apply {
         id = View.generateViewId()
         hintDelegate.isPopupAlwaysShown = false
         hintDelegate.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 attrChanged?.onChange()
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) { }
-            override fun onStopTrackingTouch(seekBar: SeekBar?) { }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
         hintDelegate.setHintAdapter { _, progress -> "${offset + progress}" }
     }
@@ -85,7 +88,8 @@ class SliderView (context: Context, attrs: AttributeSet?) : QuestionView(context
     }
 
     override var responses: Array<String> = arrayOf()
-        get() = arrayOf((if (btnEtc.isChecked) edtEtc.text?.toString() else (seekBar.progress + offset).toString()) ?: "")
+        get() = arrayOf((if (btnEtc.isChecked) edtEtc.text?.toString() else (seekBar.progress + offset).toString())
+                ?: "")
         set(value) {
             if (field.firstOrNull() == value.firstOrNull()) return
             val response = value.firstOrNull() ?: return

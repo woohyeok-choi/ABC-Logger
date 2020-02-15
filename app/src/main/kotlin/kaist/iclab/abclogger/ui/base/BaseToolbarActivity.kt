@@ -9,16 +9,19 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import kaist.iclab.abclogger.commons.AppLog
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.commons.AppLog
 import kotlinx.android.synthetic.main.activity_base_toolbar.*
 
-abstract class BaseToolbarActivity<T : ViewDataBinding, VM : BaseViewModel<*>>: AppCompatActivity() {
+abstract class BaseToolbarActivity<T : ViewDataBinding, VM : BaseViewModel<*>> : AppCompatActivity() {
     protected val TAG: String = javaClass.name
 
-    @get:MenuRes abstract val menuId: Int
-    @get:LayoutRes abstract val layoutRes : Int
-    @get:StringRes abstract val titleRes : Int
+    @get:MenuRes
+    abstract val menuId: Int
+    @get:LayoutRes
+    abstract val layoutRes: Int
+    @get:StringRes
+    abstract val titleRes: Int
 
     abstract val viewModelVariable: Int
     abstract val viewModel: VM

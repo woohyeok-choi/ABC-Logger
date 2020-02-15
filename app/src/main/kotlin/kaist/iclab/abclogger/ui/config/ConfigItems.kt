@@ -7,13 +7,13 @@ data class ConfigHeader(override val title: String) : ConfigData(title)
 class ConfigHeaderBuilder {
     var title: String = ""
 
-    fun build() : ConfigHeader = ConfigHeader(title)
+    fun build(): ConfigHeader = ConfigHeader(title)
 }
 
 
-open class ConfigItem (
-    override val title: String,
-    open val description: String
+open class ConfigItem(
+        override val title: String,
+        open val description: String
 ) : ConfigData(title)
 
 data class SimpleConfigItem(
@@ -26,7 +26,7 @@ data class SimpleConfigItem(
         var description: String = ""
         var onAction: (() -> Unit)? = null
 
-        fun build() : SimpleConfigItem = SimpleConfigItem(title, description, onAction)
+        fun build(): SimpleConfigItem = SimpleConfigItem(title, description, onAction)
     }
 }
 
@@ -42,7 +42,7 @@ data class SwitchConfigItem(
         var isChecked: Boolean = false
         var onChange: ((Boolean) -> Unit)? = null
 
-        fun build() : SwitchConfigItem = SwitchConfigItem( title, description, isChecked, onChange)
+        fun build(): SwitchConfigItem = SwitchConfigItem(title, description, isChecked, onChange)
     }
 }
 
@@ -64,7 +64,7 @@ data class DataConfigItem(
         var onAction: (() -> Unit)? = null
         var onChange: ((Boolean) -> Unit)? = null
 
-        fun build() : DataConfigItem = DataConfigItem(
+        fun build(): DataConfigItem = DataConfigItem(
                 title, description, isChecked, isAvailable, info, onAction, onChange
         )
     }
@@ -74,7 +74,7 @@ data class DataConfigItem(
  * DSL for build configuration
  */
 
-class Configs : ArrayList<ConfigData> () {
+class Configs : ArrayList<ConfigData>() {
     suspend fun header(init: suspend ConfigHeaderBuilder.() -> Unit) {
         val builder = ConfigHeaderBuilder()
         builder.init()
@@ -100,7 +100,7 @@ class Configs : ArrayList<ConfigData> () {
     }
 }
 
-suspend fun configs(init: suspend Configs.() -> Unit) : ArrayList<ConfigData> {
+suspend fun configs(init: suspend Configs.() -> Unit): ArrayList<ConfigData> {
     val c = Configs()
     c.init()
     return c

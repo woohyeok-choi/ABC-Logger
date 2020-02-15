@@ -84,7 +84,8 @@ class AbcCollector(vararg collector: BaseCollector<*>) {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     })
                 }, Random.nextLong(3000))
-            } catch (e: PackageManager.NameNotFoundException) { }
+            } catch (e: PackageManager.NameNotFoundException) {
+            }
 
             start(context)
             AbcEvent.post(timestamp, AbcEvent.BOOT_COMPLETED)
@@ -93,12 +94,12 @@ class AbcCollector(vararg collector: BaseCollector<*>) {
 
     companion object {
         fun start(context: Context) {
-            if(!checkServiceRunning<LoggerService>(context) && FirebaseAuth.getInstance().currentUser != null)
+            if (!checkServiceRunning<LoggerService>(context) && FirebaseAuth.getInstance().currentUser != null)
                 ContextCompat.startForegroundService(context, Intent(context, LoggerService::class.java))
         }
 
         fun stop(context: Context) {
-            if(checkServiceRunning<LoggerService>(context))
+            if (checkServiceRunning<LoggerService>(context))
                 context.stopService(Intent(context, LoggerService::class.java))
         }
 

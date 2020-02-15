@@ -5,8 +5,8 @@ import android.os.Bundle
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kaist.iclab.abclogger.AbcCollector
-import kaist.iclab.abclogger.SyncWorker
 import kaist.iclab.abclogger.Prefs
+import kaist.iclab.abclogger.SyncWorker
 import kaist.iclab.abclogger.ui.base.BaseNavigator
 import kaist.iclab.abclogger.ui.base.BaseViewModel
 

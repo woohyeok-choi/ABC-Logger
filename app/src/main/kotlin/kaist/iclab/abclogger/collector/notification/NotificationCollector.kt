@@ -8,7 +8,9 @@ import android.os.Build
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.AbcEvent
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -20,7 +22,7 @@ class NotificationCollector(private val context: Context) : BaseCollector<Notifi
         override fun info(): Map<String, Any> = mapOf()
     }
 
-    override val clazz: KClass<Status>  = Status::class
+    override val clazz: KClass<Status> = Status::class
 
     override val name: String = context.getString(R.string.data_name_notification)
 
@@ -35,12 +37,12 @@ class NotificationCollector(private val context: Context) : BaseCollector<Notifi
                     context.contentResolver, "enabled_notification_listeners"
             )?.contains(context.packageName) == true
 
-    override suspend fun onStart() { }
+    override suspend fun onStart() {}
 
-    override suspend fun onStop() { }
+    override suspend fun onStop() {}
 
-    class NotificationCollectorService: NotificationListenerService() {
-        private val collector : NotificationCollector by inject()
+    class NotificationCollectorService : NotificationListenerService() {
+        private val collector: NotificationCollector by inject()
 
         override fun onNotificationPosted(sbn: StatusBarNotification?) {
             super.onNotificationPosted(sbn)
@@ -63,7 +65,7 @@ class NotificationCollector(private val context: Context) : BaseCollector<Notifi
             }
         }
 
-        private fun visibilityToString (typeInt: Int) = when(typeInt) {
+        private fun visibilityToString(typeInt: Int) = when (typeInt) {
             Notification.VISIBILITY_PRIVATE -> "PRIVATE"
             Notification.VISIBILITY_PUBLIC -> "PUBLIC"
             Notification.VISIBILITY_SECRET -> "SECRET"
@@ -74,7 +76,8 @@ class NotificationCollector(private val context: Context) : BaseCollector<Notifi
             val notification = sbn.notification
             val postTime = sbn.postTime
             val packageName = sbn.packageName
-            val title = notification.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
+            val title = notification.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()
+                    ?: ""
             val visibility = visibilityToString(notification.visibility)
             val category = notification.category ?: ""
 
@@ -116,6 +119,4 @@ class NotificationCollector(private val context: Context) : BaseCollector<Notifi
             }
         }
     }
-
-
 }

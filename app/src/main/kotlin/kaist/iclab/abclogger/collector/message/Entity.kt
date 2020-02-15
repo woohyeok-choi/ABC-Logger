@@ -4,7 +4,7 @@ import io.objectbox.annotation.Entity
 import kaist.iclab.abclogger.collector.Base
 
 @Entity
-data class MessageEntity (
+data class MessageEntity(
         var number: String = "",
         var messageClass: String = "",
         var messageBox: String = "",

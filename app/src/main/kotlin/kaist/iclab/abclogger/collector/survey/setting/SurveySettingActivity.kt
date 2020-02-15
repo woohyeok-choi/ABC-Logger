@@ -1,15 +1,12 @@
 package kaist.iclab.abclogger.collector.survey.setting
 
 import android.view.MenuItem
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import kaist.iclab.abclogger.BR
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.ui.base.BaseToolbarActivity
-import kaist.iclab.abclogger.databinding.LayoutSettingSurveyBinding
 import kaist.iclab.abclogger.commons.showToast
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kaist.iclab.abclogger.databinding.LayoutSettingSurveyBinding
+import kaist.iclab.abclogger.ui.base.BaseToolbarActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 

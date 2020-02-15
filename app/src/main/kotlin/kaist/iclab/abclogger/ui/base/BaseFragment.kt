@@ -13,10 +13,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import kaist.iclab.abclogger.commons.AppLog
 
-abstract class BaseFragment<T : ViewDataBinding, VM : ViewModel>: Fragment() {
+abstract class BaseFragment<T : ViewDataBinding, VM : ViewModel> : Fragment() {
     protected val TAG: String = javaClass.simpleName
 
-    @get:LayoutRes abstract val layoutId: Int
+    @get:LayoutRes
+    abstract val layoutId: Int
     abstract val viewModelVariable: Int
     abstract val viewModel: VM
     lateinit var dataBinding: T

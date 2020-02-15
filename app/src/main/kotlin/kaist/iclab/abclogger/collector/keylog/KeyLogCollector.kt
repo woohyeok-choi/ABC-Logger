@@ -5,7 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.collector.keylog.setting.KeyLogSettingActivity
 import kaist.iclab.abclogger.commons.checkAccessibilityService
@@ -37,9 +38,9 @@ class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollec
     override suspend fun checkAvailability(): Boolean =
             checkAccessibilityService<KeyLogCollectorService>(context) && !getStatus()?.keyboardType.isNullOrBlank()
 
-    override suspend fun onStart() { }
+    override suspend fun onStart() {}
 
-    override suspend fun onStop() { }
+    override suspend fun onStop() {}
 
     data class KeyLog(
             val timestamp: Long = 0,
@@ -55,14 +56,14 @@ class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollec
         SPECIAL;
     }
 
-    class KeyLogCollectorService: AccessibilityService() {
-        private val collector : KeyLogCollector by inject()
-        private val keyLog : AtomicReference<KeyLog> = AtomicReference(KeyLog())
+    class KeyLogCollectorService : AccessibilityService() {
+        private val collector: KeyLogCollector by inject()
+        private val keyLog: AtomicReference<KeyLog> = AtomicReference(KeyLog())
 
         private fun hasMask(input: Int, mask: Int) = input and mask == mask
 
-        private suspend fun handleAccessibilityEvent(packageName: String, source: AccessibilityNodeInfo, eventTime: Long, eventType: Int)  {
-            if(collector.getStatus()?.hasStarted != true) return
+        private suspend fun handleAccessibilityEvent(packageName: String, source: AccessibilityNodeInfo, eventTime: Long, eventType: Int) {
+            if (collector.getStatus()?.hasStarted != true) return
 
             val isChunjiin = collector.getStatus()?.keyboardType == KEYBOARD_TYPE_CHUNJIIN
 
@@ -122,7 +123,7 @@ class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollec
             }
         }
 
-        private fun handleFocused(nodeText: CharSequence?, eventTime: Long) : KeyLog {
+        private fun handleFocused(nodeText: CharSequence?, eventTime: Long): KeyLog {
             val text = nodeText?.toString() ?: ""
             val decomposedText = decomposeText(text)
             val key = text.lastOrNull()?.toString() ?: ""
@@ -137,7 +138,7 @@ class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollec
             )
         }
 
-        private fun handleTextChanged(nodeText: CharSequence?, eventTime: Long, prevKeyLog: KeyLog?) : KeyLog {
+        private fun handleTextChanged(nodeText: CharSequence?, eventTime: Long, prevKeyLog: KeyLog?): KeyLog {
             if (nodeText.isNullOrEmpty() || prevKeyLog == null) return KeyLog(timestamp = eventTime)
 
             val text = nodeText.toString()
@@ -158,11 +159,13 @@ class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollec
             )
         }
 
-        private fun calculateDistance(fromKey: String, fromKeyType: KeyType, toKey: String, toKeyType: KeyType, isChunjiin: Boolean) : Float {
+        private fun calculateDistance(fromKey: String, fromKeyType: KeyType, toKey: String, toKeyType: KeyType, isChunjiin: Boolean): Float {
             if (fromKeyType != toKeyType || toKeyType in arrayOf(KeyType.SPECIAL, KeyType.NUMBER) || fromKey.isEmpty() || toKey.isEmpty()) return 0.0F
 
-            val (fromX, fromY) = findPosition(key = fromKey, keyType = fromKeyType, isChunjiin = isChunjiin) ?: return 0.0F
-            val (toX, toY) = findPosition(key = toKey, keyType = toKeyType, isChunjiin = isChunjiin) ?: return 0.0F
+            val (fromX, fromY) = findPosition(key = fromKey, keyType = fromKeyType, isChunjiin = isChunjiin)
+                    ?: return 0.0F
+            val (toX, toY) = findPosition(key = toKey, keyType = toKeyType, isChunjiin = isChunjiin)
+                    ?: return 0.0F
 
             val distX = abs(fromX - toX)
             val distY = abs(fromY - toY)
@@ -170,7 +173,7 @@ class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollec
             return hypot(distY, distX)
         }
 
-        private fun findPosition(key: String, keyType: KeyType, isChunjiin: Boolean) : Pair<Float, Float>? {
+        private fun findPosition(key: String, keyType: KeyType, isChunjiin: Boolean): Pair<Float, Float>? {
             val setting = when {
                 keyType == KeyType.KOR && isChunjiin -> CHUNJIIN
                 keyType == KeyType.KOR && !isChunjiin -> QWERTY_KOR

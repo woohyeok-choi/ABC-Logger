@@ -3,7 +3,6 @@ package kaist.iclab.abclogger.collector.location
 import io.objectbox.annotation.Entity
 import kaist.iclab.abclogger.collector.Base
 
-
 @Entity
 data class LocationEntity(
         var latitude: Double = Double.MIN_VALUE,

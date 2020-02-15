@@ -2,11 +2,11 @@ package kaist.iclab.abclogger.collector.externalsensor.polar.setting
 
 import android.content.Context
 import android.os.Bundle
-import androidx.lifecycle.*
+import androidx.lifecycle.MutableLiveData
 import io.reactivex.disposables.Disposable
-import kaist.iclab.abclogger.commons.PolarH10Exception
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
+import kaist.iclab.abclogger.commons.PolarH10Exception
 import kaist.iclab.abclogger.ui.base.BaseViewModel
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
@@ -16,10 +16,10 @@ import polar.com.sdk.api.model.PolarHrData
 
 class PolarH10ViewModel(private val context: Context,
                         private val collector: PolarH10Collector,
-                        navigator: PolarH10Navigator): BaseViewModel<PolarH10Navigator>(navigator) {
-    val deviceId : MutableLiveData<String> = MutableLiveData()
-    val state : MutableLiveData<String> = MutableLiveData(context.getString(R.string.general_disconnected))
-    val battery : MutableLiveData<String> = MutableLiveData()
+                        navigator: PolarH10Navigator) : BaseViewModel<PolarH10Navigator>(navigator) {
+    val deviceId: MutableLiveData<String> = MutableLiveData()
+    val state: MutableLiveData<String> = MutableLiveData(context.getString(R.string.general_disconnected))
+    val battery: MutableLiveData<String> = MutableLiveData()
     val heartRate: MutableLiveData<String> = MutableLiveData()
     val rrInterval: MutableLiveData<String> = MutableLiveData()
     val ecg: MutableLiveData<String> = MutableLiveData()
@@ -54,7 +54,8 @@ class PolarH10ViewModel(private val context: Context,
 
             ecgDisposable = api.requestEcgSettings(identifier)
                     .map { setting ->
-                        setting.maxSettings() ?: throw PolarH10Exception("Sensor is incorrectly set. Please try once again.")
+                        setting.maxSettings()
+                                ?: throw PolarH10Exception("Sensor is incorrectly set. Please try once again.")
                     }.retry { throwable ->
                         throwable is PolarH10Exception
                     }.flatMapPublisher { setting ->
@@ -97,7 +98,7 @@ class PolarH10ViewModel(private val context: Context,
         }
     }
 
-    private var ecgDisposable : Disposable? = null
+    private var ecgDisposable: Disposable? = null
 
     fun connect() = launch {
         try {
@@ -118,7 +119,8 @@ class PolarH10ViewModel(private val context: Context,
         try {
             api.disconnectFromDevice(deviceId.value ?: "")
             api.setApiCallback(null)
-        } catch (e: Exception) { }
+        } catch (e: Exception) {
+        }
 
         state.postValue(context.getString(R.string.general_disconnected))
         battery.postValue(null)

@@ -11,17 +11,17 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import kaist.iclab.abclogger.R
 import polar.com.sdk.api.errors.*
 
-abstract class ABCException (override val message: String?): Exception(message) {
+abstract class ABCException(override val message: String?) : Exception(message) {
     constructor() : this(null)
 
-    abstract val stringRes : Int
+    abstract val stringRes: Int
 
     fun toString(context: Context): String = listOf(
             context.getString(stringRes), message
     ).filter { !it.isNullOrEmpty() }.joinToString(separator = " - ")
 
     companion object {
-        fun wrap(t: Throwable?) = when(t) {
+        fun wrap(t: Throwable?) = when (t) {
             is ApiException -> GoogleApiException(t.statusCode)
             is FirebaseAuthInvalidUserException -> FirebaseInvalidUserException()
             is FirebaseAuthInvalidCredentialsException -> FirebaseInvalidCredentialException()
@@ -70,13 +70,13 @@ class WhiteListDeniedException : ABCException() {
 
 class GoogleApiException(private val statusCode: Int) : ABCException() {
     override val message: String?
-        get() = when(statusCode) {
+        get() = when (statusCode) {
             CommonStatusCodes.API_NOT_CONNECTED -> "API is not connected."
             CommonStatusCodes.CANCELED -> "Request is canceled."
             CommonStatusCodes.DEVELOPER_ERROR -> "API is incorrectly configured."
             CommonStatusCodes.ERROR -> "Unknown error occurs."
             CommonStatusCodes.INTERNAL_ERROR -> "Internal error occurs"
-            CommonStatusCodes.INTERRUPTED-> "Request is interrupted."
+            CommonStatusCodes.INTERRUPTED -> "Request is interrupted."
             CommonStatusCodes.INVALID_ACCOUNT -> "Invalid account name."
             CommonStatusCodes.NETWORK_ERROR -> "Network error occurs."
             CommonStatusCodes.RESOLUTION_REQUIRED -> "Resolution is required."
@@ -111,17 +111,17 @@ class HttpRequestException(message: String?) : ABCException(message) {
         get() = R.string.error_http_error
 }
 
-class NoSignedGoogleAccountException: ABCException() {
+class NoSignedGoogleAccountException : ABCException() {
     override val stringRes: Int
         get() = R.string.error_no_signed_google_account
 }
 
-class InvalidUrlException: ABCException() {
+class InvalidUrlException : ABCException() {
     override val stringRes: Int
         get() = R.string.error_invalid_url
 }
 
-class PolarH10Exception(message: String?): ABCException(message) {
+class PolarH10Exception(message: String?) : ABCException(message) {
     override val stringRes: Int
         get() = R.string.error_polar_h10
 }

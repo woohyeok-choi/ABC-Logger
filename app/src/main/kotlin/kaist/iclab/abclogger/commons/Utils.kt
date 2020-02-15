@@ -1,29 +1,30 @@
 package kaist.iclab.abclogger.commons
 
 import android.accessibilityservice.AccessibilityService
-import android.app.*
+import android.app.ActivityManager
 import android.content.*
 import android.content.pm.PackageManager
 import android.database.ContentObserver
-import android.net.*
-import android.os.*
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.Uri
+import android.os.Bundle
+import android.os.Parcelable
+import android.os.PowerManager
 import android.provider.Settings
 import android.text.format.DateUtils
-import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Single
 import kotlinx.coroutines.withContext
-import java.util.*
 import java.io.Serializable
+import java.util.*
 import kotlin.coroutines.*
 import kotlin.random.Random
 import kotlin.reflect.full.memberProperties
@@ -174,7 +175,7 @@ fun Context.isWhitelisted(): Boolean {
     return manager.isIgnoringBatteryOptimizations(packageName)
 }
 
-fun Intent.fillExtras(vararg params: Pair<String, Any?>) : Intent {
+fun Intent.fillExtras(vararg params: Pair<String, Any?>): Intent {
     params.forEach { (key, value) ->
         when (value) {
             null -> putExtra(key, null as Serializable?)
@@ -208,7 +209,7 @@ fun Intent.fillExtras(vararg params: Pair<String, Any?>) : Intent {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun Bundle.fillArguments(vararg params: Pair<String, Any?>) : Bundle {
+fun Bundle.fillArguments(vararg params: Pair<String, Any?>): Bundle {
     params.forEach { (key, value) ->
         when (value) {
             null -> putSerializable(key, null as Serializable?)
@@ -251,19 +252,23 @@ suspend fun httpGet(url: String, vararg params: Pair<String, Any?>): String? {
 
 fun Context.safeRegisterReceiver(receiver: BroadcastReceiver, filter: IntentFilter) = try {
     registerReceiver(receiver, filter)
-} catch (e: IllegalArgumentException) { }
+} catch (e: IllegalArgumentException) {
+}
 
 fun Context.safeUnregisterReceiver(receiver: BroadcastReceiver) = try {
     unregisterReceiver(receiver)
-} catch (e: IllegalArgumentException) { }
+} catch (e: IllegalArgumentException) {
+}
 
 fun ContentResolver.safeRegisterContentObserver(uri: Uri, notifyForDescendants: Boolean, observer: ContentObserver) = try {
-        registerContentObserver(uri, notifyForDescendants, observer)
-    } catch (e: Exception) { }
+    registerContentObserver(uri, notifyForDescendants, observer)
+} catch (e: Exception) {
+}
 
 fun ContentResolver.safeUnregisterContentObserver(observer: ContentObserver) = try {
     unregisterContentObserver(observer)
-} catch (e: Exception) { }
+} catch (e: Exception) {
+}
 
 
 suspend fun <T : Any> Single<T>.toCoroutine(context: CoroutineContext = EmptyCoroutineContext, throwable: Throwable? = null) = withContext(context) {
@@ -290,8 +295,8 @@ suspend fun <T : Any> Task<T?>.toCoroutine(context: CoroutineContext = EmptyCoro
     }
 }
 
-inline infix fun <reified T: Any> T?.merge(other: T): T {
-    if(this == null) return other
+inline infix fun <reified T : Any> T?.merge(other: T): T {
+    if (this == null) return other
 
     val nameToProperty = T::class.memberProperties.associateBy { it.name }
     val primaryConstructor = other::class.primaryConstructor!!
@@ -303,7 +308,7 @@ inline infix fun <reified T: Any> T?.merge(other: T): T {
     return primaryConstructor.callBy(args)
 }
 
-inline fun <reified T : AccessibilityService> checkAccessibilityService(context: Context) : Boolean {
+inline fun <reified T : AccessibilityService> checkAccessibilityService(context: Context): Boolean {
     val serviceName = "${context.packageName}/${T::class.java.name}"
     val isEnabled = Settings.Secure.getInt(
             context.contentResolver,

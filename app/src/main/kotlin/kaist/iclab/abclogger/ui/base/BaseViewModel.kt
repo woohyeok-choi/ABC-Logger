@@ -2,8 +2,9 @@ package kaist.iclab.abclogger.ui.base
 
 import android.os.Bundle
 import androidx.annotation.CallSuper
-import androidx.lifecycle.*
-
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kaist.iclab.abclogger.ui.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

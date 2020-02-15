@@ -92,7 +92,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         val size = ids.size
 
         (0 until size step N_UPLOADS).forEach { offset ->
-            while(isLowMemory()) {
+            while (isLowMemory()) {
                 Log.d("SyncWorker", "isLowMemory...")
                 System.runFinalization()
                 System.gc()
@@ -105,24 +105,26 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 async {
                     try {
                         val id = ids[index]
-                        val entity = ObjBox.get<T>(id) ?: throw Exception("No corresponding entity.")
+                        val entity = ObjBox.get<T>(id)
+                                ?: throw Exception("No corresponding entity.")
                         val proto = toProto(entity) ?: throw Exception("No corresponding protobuf.")
 
                         deadlineStub.createDatum(proto)
                         ObjBox.remove(entity)
-                    } catch (e: Exception) { }
+                    } catch (e: Exception) {
+                    }
                 }
             }.awaitAll()
         }
     }
 
-    private fun isLowMemory() : Boolean {
+    private fun isLowMemory(): Boolean {
         val manager = applicationContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val maxHeapSize = manager.largeMemoryClass
         val runtime = Runtime.getRuntime()
         val usedMemory = runtime.totalMemory() - runtime.freeMemory()
         val usedPercentage = usedMemory.toFloat() / (maxHeapSize * 1e6).toFloat()
-        Log.d("SyncWorker", "usedPercentage: $usedPercentage / maxHeapSize: $maxHeapSize" )
+        Log.d("SyncWorker", "usedPercentage: $usedPercentage / maxHeapSize: $maxHeapSize")
 
         return usedPercentage > 0.5F
     }
@@ -341,7 +343,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         }?.build()
     }
 
-    class CancelIntentService: IntentService(CancelIntentService::class.java.name) {
+    class CancelIntentService : IntentService(CancelIntentService::class.java.name) {
         override fun onHandleIntent(intent: Intent?) {
             Log.d("CancelIntentService", "onHandleIntent()")
             requestStop(this)

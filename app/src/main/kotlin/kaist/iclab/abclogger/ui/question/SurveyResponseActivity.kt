@@ -1,21 +1,20 @@
 package kaist.iclab.abclogger.ui.question
 
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.LinearLayoutManager
-import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.BR
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.commons.showToast
 import kaist.iclab.abclogger.databinding.LayoutSurveyResponseBinding
 import kaist.iclab.abclogger.ui.base.BaseToolbarActivity
 import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment
 import kaist.iclab.abclogger.ui.sharedViewNameForDeliveredTime
 import kaist.iclab.abclogger.ui.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.sharedViewNameForTitle
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
@@ -44,10 +43,10 @@ class SurveyResponseActivity : BaseToolbarActivity<LayoutSurveyResponseBinding, 
             invalidateOptionsMenu()
         }
 
-        val showFromList : Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
+        val showFromList: Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
 
         if (showFromList) {
-            val entityId : Long = intent.getLongExtra(EXTRA_ENTITY_ID, 0)
+            val entityId: Long = intent.getLongExtra(EXTRA_ENTITY_ID, 0)
 
             ViewCompat.setTransitionName(dataBinding.txtHeader, sharedViewNameForTitle(entityId))
             ViewCompat.setTransitionName(dataBinding.txtMessage, sharedViewNameForMessage(entityId))
@@ -58,7 +57,7 @@ class SurveyResponseActivity : BaseToolbarActivity<LayoutSurveyResponseBinding, 
     }
 
     override fun navigateStore() {
-        val showFromList : Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
+        val showFromList: Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
 
         if (showFromList) supportFinishAfterTransition() else finish()
     }
@@ -74,13 +73,13 @@ class SurveyResponseActivity : BaseToolbarActivity<LayoutSurveyResponseBinding, 
     }
 
     override fun onBackPressed() {
-        val showFromList : Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
+        val showFromList: Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
 
         if (showFromList) supportFinishAfterTransition() else finish()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val showFromList : Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
+        val showFromList: Boolean = intent.getBooleanExtra(EXTRA_SHOW_FROM_LIST, false)
 
         return when (item.itemId) {
             android.R.id.home -> {
@@ -89,8 +88,8 @@ class SurveyResponseActivity : BaseToolbarActivity<LayoutSurveyResponseBinding, 
             }
             R.id.menu_activity_survey_question_save -> {
                 YesNoDialogFragment.showDialog(
-                        fragmentManager =  supportFragmentManager,
-                        title =  getString(R.string.dialog_title_save_immutable),
+                        fragmentManager = supportFragmentManager,
+                        title = getString(R.string.dialog_title_save_immutable),
                         message = getString(R.string.dialog_message_save_immutable)
                 ) { viewModel.store() }
                 true

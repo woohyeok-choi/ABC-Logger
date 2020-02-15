@@ -1,20 +1,19 @@
 package kaist.iclab.abclogger.ui.config
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.databinding.ConfigDataListItemBinding
 import kaist.iclab.abclogger.databinding.ConfigHeaderListItemBinding
 import kaist.iclab.abclogger.databinding.ConfigSimpleListItemBinding
 import kaist.iclab.abclogger.databinding.ConfigSwitchListItemBinding
 
 class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
-    private fun getDiffCallback(oldValue: ArrayList<ConfigData>, newValue: ArrayList<ConfigData>) : DiffUtil.Callback = object : DiffUtil.Callback() {
+    private fun getDiffCallback(oldValue: ArrayList<ConfigData>, newValue: ArrayList<ConfigData>): DiffUtil.Callback = object : DiffUtil.Callback() {
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val oldItem = oldValue.getOrNull(oldItemPosition) ?: return false
             val newItem = newValue.getOrNull(newItemPosition) ?: return false

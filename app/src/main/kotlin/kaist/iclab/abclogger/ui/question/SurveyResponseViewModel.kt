@@ -1,9 +1,9 @@
 package kaist.iclab.abclogger.ui.question
 
 import android.os.Bundle
-import androidx.lifecycle.*
-import kaist.iclab.abclogger.*
-
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.collector.survey.Survey
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.survey.SurveyEntity
@@ -11,11 +11,10 @@ import kaist.iclab.abclogger.commons.InvalidEntityIdException
 import kaist.iclab.abclogger.commons.InvalidSurveyFormatException
 import kaist.iclab.abclogger.commons.SurveyIncorrectlyAnsweredException
 import kaist.iclab.abclogger.ui.base.BaseViewModel
-import kotlinx.coroutines.delay
 
 class SurveyResponseViewModel(private val collector: SurveyCollector,
                               navigator: SurveyResponseNavigator) : BaseViewModel<SurveyResponseNavigator>(navigator) {
-    private val surveyInternal : MutableLiveData<Pair<SurveyEntity, Survey>> = MutableLiveData()
+    private val surveyInternal: MutableLiveData<Pair<SurveyEntity, Survey>> = MutableLiveData()
 
     val title: MutableLiveData<String> = MutableLiveData()
     val message: MutableLiveData<String> = MutableLiveData()

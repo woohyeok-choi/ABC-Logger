@@ -9,6 +9,7 @@ import androidx.databinding.InverseBindingListener
 
 abstract class QuestionView(context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
     constructor(context: Context) : this(context, null)
+
     private var isBound: Boolean = false
     var attrChanged: InverseBindingListener? = null
 

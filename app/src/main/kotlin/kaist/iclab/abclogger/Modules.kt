@@ -1,6 +1,5 @@
 package kaist.iclab.abclogger
 
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import kaist.iclab.abclogger.collector.activity.ActivityCollector
 import kaist.iclab.abclogger.collector.appusage.AppUsageCollector
@@ -8,19 +7,19 @@ import kaist.iclab.abclogger.collector.battery.BatteryCollector
 import kaist.iclab.abclogger.collector.bluetooth.BluetoothCollector
 import kaist.iclab.abclogger.collector.call.CallLogCollector
 import kaist.iclab.abclogger.collector.event.DeviceEventCollector
+import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
+import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10Navigator
+import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10ViewModel
 import kaist.iclab.abclogger.collector.install.InstalledAppCollector
+import kaist.iclab.abclogger.collector.internalsensor.InternalSensorCollector
 import kaist.iclab.abclogger.collector.keylog.KeyLogCollector
+import kaist.iclab.abclogger.collector.keylog.setting.KeyLogNavigator
 import kaist.iclab.abclogger.collector.keylog.setting.KeyLogViewModel
 import kaist.iclab.abclogger.collector.location.LocationCollector
 import kaist.iclab.abclogger.collector.media.MediaCollector
 import kaist.iclab.abclogger.collector.message.MessageCollector
 import kaist.iclab.abclogger.collector.notification.NotificationCollector
 import kaist.iclab.abclogger.collector.physicalstat.PhysicalStatCollector
-import kaist.iclab.abclogger.collector.externalsensor.polar.PolarH10Collector
-import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10Navigator
-import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10ViewModel
-import kaist.iclab.abclogger.collector.internalsensor.InternalSensorCollector
-import kaist.iclab.abclogger.collector.keylog.setting.KeyLogNavigator
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
 import kaist.iclab.abclogger.collector.survey.setting.SurveyPreviewNavigator
 import kaist.iclab.abclogger.collector.survey.setting.SurveyPreviewViewModel
@@ -31,12 +30,11 @@ import kaist.iclab.abclogger.collector.wifi.WifiCollector
 import kaist.iclab.abclogger.ui.config.ConfigNavigator
 import kaist.iclab.abclogger.ui.config.ConfigViewModel
 import kaist.iclab.abclogger.ui.main.MainViewModel
-import kaist.iclab.abclogger.ui.question.SurveyResponseActivity
 import kaist.iclab.abclogger.ui.question.SurveyResponseNavigator
-import kaist.iclab.abclogger.ui.surveylist.SurveyListViewModel
 import kaist.iclab.abclogger.ui.question.SurveyResponseViewModel
 import kaist.iclab.abclogger.ui.splash.SplashNavigator
 import kaist.iclab.abclogger.ui.splash.SplashViewModel
+import kaist.iclab.abclogger.ui.surveylist.SurveyListViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module

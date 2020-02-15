@@ -8,7 +8,8 @@ import android.os.Handler
 import android.provider.MediaStore
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import kaist.iclab.abclogger.*
+import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.checkPermission
 import kaist.iclab.abclogger.commons.safeRegisterContentObserver
@@ -61,7 +62,7 @@ class MediaCollector(private val context: Context) : BaseCollector<MediaCollecto
     private fun handleMediaRetrieval(type: Int) = launch {
         val curTime = System.currentTimeMillis()
         val lastTimeAccessed = getStatus()?.let { status ->
-            when(type) {
+            when (type) {
                 TYPE_INTERNAL_PHOTO -> status.lastTimeAccessedInternalPhoto
                 TYPE_INTERNAL_VIDEO -> status.lastTimeAccessedInternalVideo
                 TYPE_EXTERNAL_PHOTO -> status.lastTimeAccessedExternalPhoto
@@ -70,7 +71,7 @@ class MediaCollector(private val context: Context) : BaseCollector<MediaCollecto
             }
         } ?: curTime - TimeUnit.DAYS.toMillis(1)
 
-        val cursor = when(type) {
+        val cursor = when (type) {
             TYPE_INTERNAL_PHOTO -> getRecentContents(
                     contentResolver = context.contentResolver,
                     uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI,
@@ -116,7 +117,7 @@ class MediaCollector(private val context: Context) : BaseCollector<MediaCollecto
 
         val timestamps = mutableListOf<Long>()
         val entities = cursor.use { cs ->
-            val data : MutableList<MediaEntity> = mutableListOf()
+            val data: MutableList<MediaEntity> = mutableListOf()
             while (cs.moveToNext()) {
                 val timestamp = cs.getLongOrNull(0) ?: 0
                 val defaultMimeType = if (type == TYPE_INTERNAL_PHOTO || type == TYPE_EXTERNAL_PHOTO) {
@@ -138,7 +139,7 @@ class MediaCollector(private val context: Context) : BaseCollector<MediaCollecto
         setStatus(Status(lastTime = curTime))
 
         timestamps.max()?.also { timestamp ->
-            when(type) {
+            when (type) {
                 TYPE_INTERNAL_PHOTO -> setStatus(Status(lastTimeAccessedInternalPhoto = timestamp))
                 TYPE_INTERNAL_VIDEO -> setStatus(Status(lastTimeAccessedInternalPhoto = timestamp))
                 TYPE_EXTERNAL_PHOTO -> setStatus(Status(lastTimeAccessedInternalPhoto = timestamp))
@@ -147,39 +148,31 @@ class MediaCollector(private val context: Context) : BaseCollector<MediaCollecto
         }
     }
 
-    private val internalPhotoObserver: ContentObserver by lazy {
-        object : ContentObserver(Handler()) {
-            override fun onChange(selfChange: Boolean) {
-                super.onChange(selfChange)
-                handleMediaRetrieval(TYPE_INTERNAL_PHOTO)
-            }
+    private val internalPhotoObserver: ContentObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            handleMediaRetrieval(TYPE_INTERNAL_PHOTO)
         }
     }
 
-    private val internalVideoObserver: ContentObserver by lazy {
-        object : ContentObserver(Handler()) {
-            override fun onChange(selfChange: Boolean) {
-                super.onChange(selfChange)
-                handleMediaRetrieval(TYPE_INTERNAL_VIDEO)
-            }
+    private val internalVideoObserver: ContentObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            handleMediaRetrieval(TYPE_INTERNAL_VIDEO)
         }
     }
 
-    private val externalPhotoObserver: ContentObserver by lazy {
-        object : ContentObserver(Handler()) {
-            override fun onChange(selfChange: Boolean) {
-                super.onChange(selfChange)
-                handleMediaRetrieval(TYPE_EXTERNAL_PHOTO)
-            }
+    private val externalPhotoObserver: ContentObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            handleMediaRetrieval(TYPE_EXTERNAL_PHOTO)
         }
     }
 
-    private val externalVideoObserver: ContentObserver by lazy {
-        object : ContentObserver(Handler()) {
-            override fun onChange(selfChange: Boolean) {
-                super.onChange(selfChange)
-                handleMediaRetrieval(TYPE_EXTERNAL_VIDEO)
-            }
+    private val externalVideoObserver: ContentObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
+            handleMediaRetrieval(TYPE_EXTERNAL_VIDEO)
         }
     }
 
