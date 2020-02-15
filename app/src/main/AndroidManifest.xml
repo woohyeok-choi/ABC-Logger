@@ -104,7 +104,6 @@
         </service>
 
         <service android:name=".AbcCollector$LoggerService" />
-        <service android:name=".SyncWorker$CancelIntentService" />
 
         <receiver
             android:name=".AbcCollector$BootReceiver"
