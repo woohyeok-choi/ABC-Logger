@@ -56,8 +56,6 @@ class PolarH10ViewModel(private val context: Context,
                     .map { setting ->
                         setting.maxSettings()
                                 ?: throw PolarH10Exception("Sensor is incorrectly set. Please try once again.")
-                    }.retry { throwable ->
-                        throwable is PolarH10Exception
                     }.flatMapPublisher { setting ->
                         api.startEcgStreaming(identifier, setting.maxSettings())
                     }.subscribe({ data ->

@@ -208,8 +208,6 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
                 .map { setting ->
                     setting.maxSettings()
                             ?: throw PolarH10Exception("Sensor is incorrectly set. Please try once again.")
-                }.retry { throwable ->
-                    throwable is PolarH10Exception
                 }.flatMapPublisher { setting ->
                     api.startEcgStreaming(identifier, setting.maxSettings())
                 }.map { data ->
