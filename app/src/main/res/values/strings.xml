@@ -14,6 +14,7 @@
     <string name="general_connecting">Connecting</string>
     <string name="general_unknown">Unknown</string>
     <string name="general_response_rates">%1d answered / %2d received (%3s)</string>
+    <string name="general_sync_in_progress">Sync in progress&#8230;</string>
 
     <string name="config_category_general">General</string>
     <string name="config_category_collector">Collector</string>
@@ -30,7 +31,7 @@
     <string name="config_desc_logout">Remove all data, stop data collection, and logout.</string>
     <string name="config_title_permission">Permissions</string>
     <string name="config_title_version">Version</string>
-    <string name="config_msg_available">Available.</string>
+    <string name="config_msg_available">Available</string>
     <string name="config_msg_require_setting">Permission or additional setting required. Touch to grant.</string>
 
     <string name="ntf_title_service_running">ABC Logger is running in background&#8230;</string>
@@ -43,7 +44,7 @@
 
     <string name="error_general">Error occurs</string>
     <string name="error_google_api_exception">Failed to sign in a Google account</string>
-    <string name="error_firebase_auth_invalid_user">Disabled account.</string>
+    <string name="error_firebase_auth_invalid_user">Disabled account</string>
     <string name="error_firebase_auth_collision">Account already exists</string>
     <string name="error_empty_survey">No survey</string>
     <string name="error_invalid_survey_format">Invalid survey format</string>
@@ -84,29 +85,29 @@
     <string name="data_name_app_usage">App Usage</string>
     <string name="data_desc_app_usage">It collects a duration of app usage.</string>
     <string name="data_name_battery">Battery Usage</string>
-    <string name="data_desc_battery">It collects a status of battery (e.g., voltage, temperature)</string>
+    <string name="data_desc_battery">It collects a status of battery (e.g., voltage, temperature, level)</string>
     <string name="data_name_bluetooth">Bluetooth</string>
-    <string name="data_desc_bluetooth">It collects a nearby Bluetooth APs.</string>
+    <string name="data_desc_bluetooth">It collects nearby Bluetooth devices.</string>
     <string name="data_name_call_log">Call Log</string>
-    <string name="data_desc_call_log">It collects a history of calls.</string>
+    <string name="data_desc_call_log">It collects a history of calls (e.g., duration, # calls, first four numbers)</string>
     <string name="data_name_traffic">Data Traffic</string>
     <string name="data_desc_traffic">It collects an amount of data usage.</string>
     <string name="data_name_device_event">Device Event</string>
-    <string name="data_desc_device_event">It collects general events on the smartphone.</string>
+    <string name="data_desc_device_event">It collects general events on the smartphone (e.g., screen on/off)</string>
     <string name="data_name_installed_app">Installed App</string>
     <string name="data_desc_installed_app">It collects installed apps on your smartphone.</string>
-    <string name="data_name_key_log">Touch</string>
-    <string name="data_desc_key_log">It collects a speed of touch interactions.</string>
+    <string name="data_name_key_log">Typing Speed</string>
+    <string name="data_desc_key_log">It collects a typing speed.</string>
     <string name="data_name_location">Location</string>
     <string name="data_desc_location">It collects locations you visited.</string>
     <string name="data_name_media">Media</string>
     <string name="data_desc_media">It collects the number of photos and videos you took.</string>
     <string name="data_name_message">Message</string>
-    <string name="data_desc_message">It collects the number of SMS/MMSes you received/sent.</string>
+    <string name="data_desc_message">It collects the number of SMS/MMSes you received/sent (e.g., # messages, first four number)</string>
     <string name="data_name_notification">Notification</string>
     <string name="data_desc_notification">It collects a history of notifications you received.</string>
     <string name="data_name_physical_stat">Physical Stat</string>
-    <string name="data_desc_physical_stat">It collects your physiological stats (e.g., step counts, calories) using Google Fitness.</string>
+    <string name="data_desc_physical_stat">It collects your physical stats (e.g., step counts, calories) using Google Fitness.</string>
     <string name="data_name_polar_h10">Polar H10</string>
     <string name="data_desc_polar_h10">It collects your physiological signals using Polar H10 (e.g., heart-rate, ECG).</string>
     <string name="data_name_survey">Survey</string>
@@ -129,7 +130,7 @@
     <string name="setting_polar_h10_collector_connection_state">Connection</string>
     <string name="setting_polar_h10_collector_battery">Battery (%)</string>
     <string name="setting_polar_h10_collector_heart_rate">Heart-rate (bpm)</string>
-    <string name="setting_polar_h10_collector_rr_interval">RR Interval (sec)</string>
+    <string name="setting_polar_h10_collector_rr_interval">RR Interval (sec.)</string>
     <string name="setting_polar_h10_collector_ecg">ECG (mV)</string>
     <string name="setting_polar_h10_collector_device_id_dialog_title">Type your Polar H10 device ID.</string>
 
