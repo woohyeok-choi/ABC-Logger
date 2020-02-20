@@ -115,6 +115,7 @@ class PolarH10ViewModel(private val context: Context,
 
     fun disconnect() = launch {
         try {
+            ecgDisposable?.dispose()
             api.disconnectFromDevice(deviceId.value ?: "")
             api.setApiCallback(null)
         } catch (e: Exception) {
