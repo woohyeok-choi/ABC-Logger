@@ -103,6 +103,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 limiter.acquire()
 
                 val entity = ObjBox.get<T>(id) ?: throw Exception("No corresponding entity.")
+                if (entity is SurveyEntity && entity.isAvailable()) throw Exception("This survey is available to answer.")
                 val proto = toProto(entity) ?: throw Exception("No corresponding protobuf.")
 
                 deadlineStub.createDatum(proto).addListener({
@@ -111,7 +112,11 @@ class SyncWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 }, { runnable: Runnable ->
                     MoreExecutors.directExecutor().execute(runnable)
                 })
-            } catch (e: Exception) { }
+            } catch (e: Exception) {
+
+            } finally {
+                limiter.release()
+            }
         }
 
         val startTime = SystemClock.elapsedRealtime()

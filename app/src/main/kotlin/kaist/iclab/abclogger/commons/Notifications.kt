@@ -28,8 +28,7 @@ object Notifications {
     const val ID_SYNC_PROGRESS = 0x03
     const val ID_REQUIRE_SETTING = 0x04
 
-    private val DEFAULT_VIBRATION_PATTERN = longArrayOf(1000, 10, 1000, 10)
-
+    private val DEFAULT_VIBRATION_PATTERN = longArrayOf(1000, 10, 1000, 10, 1000, 10, 1000, 10, 1000)
     private val DEFAULT_RINGTONE_URI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
     private val NOTIFICATION_SETTINGS = mapOf(
