@@ -1,10 +1,16 @@
 package kaist.iclab.abclogger.collector.externalsensor.polar
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import androidx.core.app.AlarmManagerCompat
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
+import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.BaseCollector
@@ -12,8 +18,7 @@ import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.externalsensor.ExternalSensorEntity
 import kaist.iclab.abclogger.collector.externalsensor.polar.setting.PolarH10SettingActivity
 import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.commons.PolarH10Exception
-import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.commons.*
 import kotlinx.coroutines.launch
 import polar.com.sdk.api.PolarBleApi
 import polar.com.sdk.api.PolarBleApiCallback
@@ -57,6 +62,7 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
     override suspend fun checkAvailability(): Boolean = !getStatus()?.deviceId.isNullOrBlank() && context.checkPermission(requiredPermissions)
 
     override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, intentFilter)
         isRequestedStop.set(false)
 
         ecgDisposable?.dispose()
@@ -76,6 +82,8 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
     }
 
     override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
+
         isRequestedStop.set(true)
 
         ecgDisposable?.dispose()
@@ -114,6 +122,7 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
 
     private val callback: PolarBleApiCallback = object : PolarBleApiCallback() {
         override fun ecgFeatureReady(identifier: String) {
+            cancelError()
             handleEcgFeatureReady(identifier)
         }
 
@@ -138,6 +147,34 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
         }
     }
 
+    private val alarmManager : AlarmManager by lazy {  context.getSystemService(Context.ALARM_SERVICE) as AlarmManager }
+
+    private fun errorIntent(throwable: Throwable? = null): PendingIntent = PendingIntent.getBroadcast(
+            context, REQUEST_CODE_DELAYED_ERROR_NOTIFICATION,
+            Intent(ACTION_DELAYED_ERROR_NOTIFICATION).putExtra(EXTRA_ERROR_MESSAGE, ABCException.wrap(throwable).toString(context)),
+            PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
+    private val intentFilter: IntentFilter = IntentFilter().apply {
+        addAction(ACTION_DELAYED_ERROR_NOTIFICATION)
+    }
+
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_DELAYED_ERROR_NOTIFICATION) {
+                notifyError(intent.getStringExtra(EXTRA_ERROR_MESSAGE))
+            }
+        }
+    }
+
+    private fun scheduleError(triggerAt: Long, throwable: Throwable) {
+        AlarmManagerCompat.setExactAndAllowWhileIdle(alarmManager, AlarmManager.RTC_WAKEUP, triggerAt, errorIntent(throwable))
+    }
+
+    private fun cancelError() {
+        alarmManager.cancel(errorIntent())
+    }
+
     private fun handleConnectionRetrieval(connection: Int?) {
         launch {
             when (connection) {
@@ -148,7 +185,7 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
             }?.let { setStatus(Status(connection = context.getString(it))) }
 
             if (connection == DISCONNECTED && !isRequestedStop.get()) {
-                notifyError(PolarDeviceDisconnected())
+                scheduleError(triggerAt = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5), throwable = PolarDeviceDisconnected())
             }
         }
     }
@@ -226,7 +263,7 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
                     }
                 }, { throwable ->
                     launch {
-                        notifyError(throwable)
+                        scheduleError(triggerAt = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5), throwable = throwable)
                     }
                 })
     }
@@ -235,5 +272,9 @@ class PolarH10Collector(private val context: Context) : BaseCollector<PolarH10Co
         private const val DISCONNECTED = 0x0
         private const val CONNECTING = 0x1
         private const val CONNECTED = 0x2
+
+        private const val REQUEST_CODE_DELAYED_ERROR_NOTIFICATION = 0xf1
+        private const val ACTION_DELAYED_ERROR_NOTIFICATION = "${BuildConfig.APPLICATION_ID}.ACTION_DELAYED_ERROR_NOTIFICATION"
+        private const val EXTRA_ERROR_MESSAGE = "${BuildConfig.APPLICATION_ID}.EXTRA_ERROR_MESSAGE"
     }
 }

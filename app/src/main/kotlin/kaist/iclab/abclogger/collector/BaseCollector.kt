@@ -136,6 +136,19 @@ abstract class BaseCollector<T : BaseStatus>(private val context: Context) : Cor
         Notifications.notify(context, Notifications.ID_REQUIRE_SETTING, ntf)
     }
 
+    fun notifyError(message: String?) {
+        val ntf = Notifications.build(
+                context = context,
+                channelId = Notifications.CHANNEL_ID_REQUIRE_SETTING,
+                title = context.getString(R.string.ntf_title_collector_runtime_error, name),
+                bigText = context.getString(R.string.ntf_text_collector_runtime_error,
+                        name, message, name
+                ),
+                intent = PendingIntent.getActivity(context, REQUEST_CODE_MAIN_ACTIVITY, Intent(context, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
+        )
+        Notifications.notify(context, Notifications.ID_REQUIRE_SETTING, ntf)
+    }
+
     private fun buildDefaultStatus(hasStarted: Boolean): T {
         val primaryConstructor = clazz.primaryConstructor!!
         val hasStartedParameter = primaryConstructor.parameters.find { it.name == "hasStarted" }!!
