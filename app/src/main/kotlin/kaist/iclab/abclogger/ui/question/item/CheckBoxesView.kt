@@ -2,6 +2,7 @@ package kaist.iclab.abclogger.ui.question.item
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.widget.CheckBox
@@ -23,17 +24,19 @@ class CheckBoxesView(context: Context, attrs: AttributeSet?) : QuestionView(cont
         id = View.generateViewId()
         text = context.getString(R.string.general_etc)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-        setOnCheckedChangeListener { _, isChecked ->
-            edtEtc.isEnabled = isChecked
+        setOnCheckedChangeListener { view, isChecked ->
+            edtEtc.isEnabled = isChecked && view.isEnabled
+            edtEtc.hint = if (edtEtc.isEnabled) context.getString(R.string.general_free_text) else null
             attrChanged?.onChange()
         }
     }
 
     private val edtEtc: TextInputEditText = TextInputEditText(context).apply {
         id = View.generateViewId()
-        setHint(R.string.general_free_text)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
         addTextChangedListener({ _, _, _, _ -> }, { _, _, _, _ -> attrChanged?.onChange() }, {})
+        isEnabled = false
+        hint = null
     }
 
     init {
@@ -59,7 +62,7 @@ class CheckBoxesView(context: Context, attrs: AttributeSet?) : QuestionView(cont
     }
 
     override fun setAvailable(isAvailable: Boolean) {
-        (layoutCheckGroup.children + btnEtc + edtEtc).forEach { view -> view.isEnabled = isAvailable }
+        (layoutCheckGroup.children + btnEtc).forEach { view -> view.isEnabled = isAvailable }
     }
 
     override fun setShowEtc(showEtc: Boolean) {

@@ -34,6 +34,7 @@ object Notifications {
     private val NOTIFICATION_SETTINGS = mapOf(
             CHANNEL_ID_SURVEY to NotificationSetting(
                     name = "Survey",
+                    category = NotificationCompat.CATEGORY_REMINDER,
                     priority = NotificationCompat.PRIORITY_MAX,
                     visibility = NotificationCompat.VISIBILITY_PUBLIC,
                     importance = NotificationManagerCompat.IMPORTANCE_MAX,
@@ -47,6 +48,7 @@ object Notifications {
             ),
             CHANNEL_ID_FOREGROUND to NotificationSetting(
                     name = "Experiment in progress",
+                    category = NotificationCompat.CATEGORY_PROGRESS,
                     priority = NotificationCompat.PRIORITY_MIN,
                     visibility = NotificationCompat.VISIBILITY_SECRET,
                     importance = NotificationManagerCompat.IMPORTANCE_MIN,
@@ -60,6 +62,7 @@ object Notifications {
             ),
             CHANNEL_ID_PROGRESS to NotificationSetting(
                     name = "Upload",
+                    category = NotificationCompat.CATEGORY_PROGRESS,
                     priority = NotificationCompat.PRIORITY_HIGH,
                     visibility = NotificationCompat.VISIBILITY_PRIVATE,
                     importance = NotificationManagerCompat.IMPORTANCE_HIGH,
@@ -73,6 +76,7 @@ object Notifications {
             ),
             CHANNEL_ID_REQUIRE_SETTING to NotificationSetting(
                     name = "Error occurs",
+                    category = NotificationCompat.CATEGORY_REMINDER,
                     priority = NotificationCompat.PRIORITY_MAX,
                     visibility = NotificationCompat.VISIBILITY_PRIVATE,
                     importance = NotificationManagerCompat.IMPORTANCE_MAX,
@@ -89,6 +93,7 @@ object Notifications {
 
     private data class NotificationSetting(
             val name: String,
+            val category: String,
             val priority: Int,
             val visibility: Int,
             val importance: Int,
@@ -129,6 +134,7 @@ object Notifications {
             } else {
                 setSound(null, null)
             }
+
         }
         notificationManager.createNotificationChannel(newChannel)
     }
@@ -193,6 +199,7 @@ object Notifications {
                 .setShowWhen(setting.showWhen)
                 .setWhen(timestamp)
                 .setAutoCancel(setting.autoCancel)
+                .setCategory(setting.category)
                 .apply {
                     if (setting.hasSound) setSound(DEFAULT_RINGTONE_URI)
                     if (setting.hasVibration) setVibrate(DEFAULT_VIBRATION_PATTERN)

@@ -139,10 +139,10 @@ class SurveyCollector(private val context: Context) : BaseCollector<SurveyCollec
     }
 
     private suspend fun scheduleAll(event: AbcEvent? = null) {
-        val settings = updateSettings(event)
-        setStatus(Status(settings = settings))
-
-        settings?.forEach { setting -> scheduleSurvey(setting) }
+        updateSettings(event)?.let { updatedSettings ->
+            setStatus(Status(settings = updatedSettings))
+            updatedSettings.forEach { setting -> scheduleSurvey(setting) }
+        }
     }
 
     private suspend fun cancelAll() {
@@ -239,8 +239,8 @@ class SurveyCollector(private val context: Context) : BaseCollector<SurveyCollec
 
     private suspend fun updateSettings(event: AbcEvent? = null): List<Status.Setting>? {
         val startTime = getStatus()?.startTime ?: return null
-
-        return getStatus()?.settings?.mapNotNull { setting ->
+        val prevSettings = getStatus()?.settings
+        val newSettings = prevSettings?.mapNotNull { setting ->
             setting.json?.let { json -> Survey.fromJson(json) }?.let { survey ->
                 when (survey) {
                     is IntervalBasedSurvey -> updateIntervalBasedSurvey(survey = survey, setting = setting, startTime = startTime)
@@ -250,6 +250,13 @@ class SurveyCollector(private val context: Context) : BaseCollector<SurveyCollec
                 }
             }
         }
+
+        val isUpdated = prevSettings?.any{ prevSetting ->
+            val newSetting= newSettings?.find { setting -> prevSetting.id == setting.id }
+            newSetting != prevSetting
+        } ?: false
+
+        return if (isUpdated) newSettings else prevSettings
     }
 
     private fun updateIntervalBasedSurvey(survey: IntervalBasedSurvey,

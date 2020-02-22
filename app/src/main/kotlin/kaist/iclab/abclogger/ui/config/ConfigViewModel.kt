@@ -96,7 +96,6 @@ class ConfigViewModel(
                         nav?.navigateIntent(intent)
                     }
                 }
-
             }
         }
         simple {

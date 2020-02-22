@@ -72,7 +72,7 @@ fun toHash(input: String, start: Int = 0, end: Int = input.length, algorithm: St
 
     if (safeStart >= safeEnd || safeEnd > input.length) return input
 
-    val subString = input.substring(safeEnd, input.length - 1).toByteArray()
+    val subString = try { input.substring(safeEnd, input.length - 1).toByteArray() } catch (e: Exception) { return input }
     val bytes = MessageDigest.getInstance(algorithm).digest(subString)
 
     return input.substring(safeStart, safeEnd) + "\$" +

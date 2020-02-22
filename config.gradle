@@ -1,0 +1,13 @@
+ext.config = [:]
+def config = [:]
+
+config.version_code = 26
+config.version_name = "0.9.9-c"
+config.is_test_mode = false
+config.server_address = "143.248.100.24:50052"
+config.test_server_address = "143.248.100.24:50052"
+config.db_max_size = 3145728L
+config.db_name = "abc-logger"
+config.pref_name = "abc-logger-pref"
+
+ext.config = config

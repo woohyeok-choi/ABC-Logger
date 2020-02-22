@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.database.ContentObserver
 import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
 import android.provider.MediaStore
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
@@ -14,6 +16,7 @@ import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.checkPermission
 import kaist.iclab.abclogger.commons.safeRegisterContentObserver
 import kaist.iclab.abclogger.commons.safeUnregisterContentObserver
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
@@ -148,28 +151,35 @@ class MediaCollector(private val context: Context) : BaseCollector<MediaCollecto
         }
     }
 
-    private val internalPhotoObserver: ContentObserver = object : ContentObserver(Handler()) {
+    private val handler : Handler
+        get() {
+            val thread = HandlerThread(this::class.java.name)
+            thread.start()
+            return Handler(thread.looper)
+        }
+
+    private val internalPhotoObserver: ContentObserver = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
             super.onChange(selfChange)
             handleMediaRetrieval(TYPE_INTERNAL_PHOTO)
         }
     }
 
-    private val internalVideoObserver: ContentObserver = object : ContentObserver(Handler()) {
+    private val internalVideoObserver: ContentObserver = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
             super.onChange(selfChange)
             handleMediaRetrieval(TYPE_INTERNAL_VIDEO)
         }
     }
 
-    private val externalPhotoObserver: ContentObserver = object : ContentObserver(Handler()) {
+    private val externalPhotoObserver: ContentObserver = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
             super.onChange(selfChange)
             handleMediaRetrieval(TYPE_EXTERNAL_PHOTO)
         }
     }
 
-    private val externalVideoObserver: ContentObserver = object : ContentObserver(Handler()) {
+    private val externalVideoObserver: ContentObserver = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
             super.onChange(selfChange)
             handleMediaRetrieval(TYPE_EXTERNAL_VIDEO)

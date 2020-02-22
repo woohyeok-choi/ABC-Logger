@@ -1,4 +1,5 @@
 buildscript {
+    apply from: 'config.gradle'
     repositories {
         google()
         jcenter()

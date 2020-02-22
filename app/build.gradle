@@ -28,15 +28,15 @@ android {
         applicationId 'kaist.iclab.abclogger'
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 24
-        versionName "0.9.9-a"
+        versionCode config.version_code
+        versionName config.version_name
         setProperty('archivesBaseName', applicationId + "-v" + versionName)
-        buildConfigField("String", "DB_NAME", "\"abc-logger\"")
-        buildConfigField("String", "PREF_NAME", "\"abc-logger-pref\"")
-        buildConfigField("Long", "DB_MAX_SIZE", "3145728L")
-        buildConfigField("Boolean", "IS_TEST_MODE", "false")
-        buildConfigField("String", "SERVER_ADDRESS", "\"143.248.100.24:50052\"")
-        buildConfigField("String", "TEST_SERVER_ADDRESS", "\"143.248.90.87:50055\"")
+        buildConfigField("String", "DB_NAME", "\"${config.db_name}\"")
+        buildConfigField("String", "PREF_NAME", "\"${config.pref_name}\"")
+        buildConfigField("Long", "DB_MAX_SIZE", "${config.db_max_size}L")
+        buildConfigField("Boolean", "IS_TEST_MODE", "${config.is_test_mode}")
+        buildConfigField("String", "SERVER_ADDRESS", "\"${config.server_address}\"")
+        buildConfigField("String", "TEST_SERVER_ADDRESS", "\"${config.test_server_address}\"")
     }
     buildTypes {
         release {

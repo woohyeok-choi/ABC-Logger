@@ -53,6 +53,8 @@ class SplashViewModel(private val permissions: Array<String>,
 
             ui { nav?.navigateFirebaseAuth(user) }
         } catch (e: Exception) {
+            e.printStackTrace()
+
             ui { nav?.navigateError(e) }
         }
     }

@@ -11,6 +11,7 @@ import kaist.iclab.abclogger.collector.BaseCollector
 import kaist.iclab.abclogger.collector.BaseStatus
 import kaist.iclab.abclogger.collector.fill
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.reflect.KClass
 
@@ -44,7 +45,7 @@ class DataTrafficCollector(private val context: Context) : BaseCollector<DataTra
         context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     }
 
-    private val dataListener = object : PhoneStateListener() {
+    private val dataListener = object : PhoneStateListener(Executors.newSingleThreadExecutor()) {
         override fun onDataActivity(direction: Int) {
             super.onDataActivity(direction)
             if (direction in directions) {

@@ -21,7 +21,7 @@ class AbcApplication : Application() {
             AbcCollector.bind(this@AbcApplication)
 
             if (BuildConfig.IS_TEST_MODE) {
-                Debug.generateEntities(500000)
+                Debug.generateSurveyEntities(50)
             }
         }
     }

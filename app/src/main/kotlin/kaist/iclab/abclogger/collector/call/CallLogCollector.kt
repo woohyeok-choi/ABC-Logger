@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.database.ContentObserver
 import android.os.Handler
+import android.os.HandlerThread
 import android.provider.CallLog
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
@@ -50,7 +51,14 @@ class CallLogCollector(private val context: Context) : BaseCollector<CallLogColl
         context.contentResolver.safeUnregisterContentObserver(callLogObserver)
     }
 
-    private val callLogObserver: ContentObserver = object : ContentObserver(Handler()) {
+    private val handler : Handler
+        get() {
+            val thread = HandlerThread(this::class.java.name)
+            thread.start()
+            return Handler(thread.looper)
+        }
+
+    private val callLogObserver: ContentObserver = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
             super.onChange(selfChange)
             handleCallLogRetrieval()

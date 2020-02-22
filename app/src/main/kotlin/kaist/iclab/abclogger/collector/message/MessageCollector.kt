@@ -7,6 +7,7 @@ import android.content.Intent
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
+import android.os.HandlerThread
 import android.provider.Telephony
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
@@ -132,14 +133,21 @@ class MessageCollector(private val context: Context) : BaseCollector<MessageColl
         timestamps.max()?.also { timestamp -> setStatus(Status(lastTimeAccessedMms = timestamp)) }
     }
 
-    private val smsObserver: ContentObserver = object : ContentObserver(Handler()) {
+    private val handler : Handler
+        get() {
+            val thread = HandlerThread(this::class.java.name)
+            thread.start()
+            return Handler(thread.looper)
+        }
+
+    private val smsObserver: ContentObserver = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
             super.onChange(selfChange)
             handleSmsRetrieval()
         }
     }
 
-    private val mmsObserver: ContentObserver = object : ContentObserver(Handler()) {
+    private val mmsObserver: ContentObserver = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
             super.onChange(selfChange)
             handleMmsRetrieval()

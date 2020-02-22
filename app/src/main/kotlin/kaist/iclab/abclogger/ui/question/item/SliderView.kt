@@ -33,8 +33,9 @@ class SliderView(context: Context, attrs: AttributeSet?) : QuestionView(context,
         id = View.generateViewId()
         text = context.getString(R.string.general_etc)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
-        setOnCheckedChangeListener { _, isChecked ->
-            edtEtc.isEnabled = isChecked
+        setOnCheckedChangeListener { view, isChecked ->
+            edtEtc.isEnabled = isChecked && view.isEnabled
+            edtEtc.hint = if (isChecked) context.getString(R.string.general_free_text) else null
             seekBar.isEnabled = !isChecked
             attrChanged?.onChange()
         }
@@ -42,9 +43,10 @@ class SliderView(context: Context, attrs: AttributeSet?) : QuestionView(context,
 
     private val edtEtc: EditText = EditText(context).apply {
         id = View.generateViewId()
-        setHint(R.string.general_free_text)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.txt_size_text))
         addTextChangedListener({ _, _, _, _ -> }, { _, _, _, _ -> attrChanged?.onChange() }, {})
+        isEnabled = false
+        hint = null
     }
 
     init {
@@ -70,7 +72,6 @@ class SliderView(context: Context, attrs: AttributeSet?) : QuestionView(context,
     }
 
     override fun setAvailable(isAvailable: Boolean) {
-        edtEtc.isEnabled = isAvailable
         btnEtc.isEnabled = isAvailable
         seekBar.isEnabled = isAvailable
     }
