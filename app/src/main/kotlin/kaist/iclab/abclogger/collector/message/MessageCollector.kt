@@ -61,8 +61,8 @@ class MessageCollector(private val context: Context) : BaseCollector<MessageColl
     private fun handleSmsRetrieval() = launch {
         val curTime = System.currentTimeMillis()
         val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = getStatus()?.lastTimeAccessedSms ?: curTime
-        -TimeUnit.DAYS.toMillis(1)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessedSms
+                ?: curTime-TimeUnit.DAYS.toMillis(1)
 
         getRecentContents(
                 contentResolver = context.contentResolver,
@@ -98,8 +98,8 @@ class MessageCollector(private val context: Context) : BaseCollector<MessageColl
     private fun handleMmsRetrieval() = launch {
         val curTime = System.currentTimeMillis()
         val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = getStatus()?.lastTimeAccessedMms ?: curTime
-        -TimeUnit.DAYS.toMillis(1)
+        val lastTimeAccessed = getStatus()?.lastTimeAccessedMms
+                ?: curTime-TimeUnit.DAYS.toMillis(1)
 
         getRecentContents(
                 contentResolver = context.contentResolver,

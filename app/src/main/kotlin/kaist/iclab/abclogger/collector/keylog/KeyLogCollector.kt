@@ -221,7 +221,8 @@ class KeyLogCollector(private val context: Context) : BaseCollector<KeyLogCollec
         override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
             val packageName = accessibilityEvent.packageName?.toString() ?: return
             val source = accessibilityEvent.source ?: return
-            val time = accessibilityEvent.eventTime
+            //val time = accessibilityEvent.eventTime
+            val time = System.currentTimeMillis()
             val eventType = accessibilityEvent.eventType
 
             collector.launch {

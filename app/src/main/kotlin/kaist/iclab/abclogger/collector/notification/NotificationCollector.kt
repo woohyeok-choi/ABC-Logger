@@ -60,7 +60,7 @@ class NotificationCollector(private val context: Context) : BaseCollector<Notifi
             collector.launch {
                 if (collector.getStatus()?.hasStarted == true && sbn != null) {
                     store(sbn, false)
-                    AbcEvent.post(sbn.postTime, AbcEvent.NOTIFICATION_REMOVED)
+                    AbcEvent.post(System.currentTimeMillis(), AbcEvent.NOTIFICATION_REMOVED)
                 }
             }
         }
@@ -85,6 +85,8 @@ class NotificationCollector(private val context: Context) : BaseCollector<Notifi
             val sound: String
             val lightColor: String
 
+            val curTime = System.currentTimeMillis()
+
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 vibrate = notification?.vibrate?.joinToString(",") ?: ""
                 sound = notification?.sound?.toString() ?: ""
@@ -100,23 +102,44 @@ class NotificationCollector(private val context: Context) : BaseCollector<Notifi
                 lightColor = channel?.lightColor.toString()
             }
 
-            NotificationEntity(
-                    name = getApplicationName(packageManager = packageManager, packageName = packageName)
-                            ?: "",
-                    packageName = packageName ?: "",
-                    isSystemApp = isSystemApp(packageManager = packageManager, packageName = packageName),
-                    isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
-                    title = title,
-                    visibility = visibility,
-                    category = category,
-                    vibrate = vibrate,
-                    sound = sound,
-                    lightColor = lightColor,
-                    isPosted = isPosted
-            ).fill(timeMillis = postTime).also { entity ->
-                ObjBox.put(entity)
-                collector.setStatus(Status(lastTime = postTime))
+            if (isPosted) {
+                NotificationEntity(
+                        name = getApplicationName(packageManager = packageManager, packageName = packageName)
+                                ?: "",
+                        packageName = packageName ?: "",
+                        isSystemApp = isSystemApp(packageManager = packageManager, packageName = packageName),
+                        isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
+                        title = title,
+                        visibility = visibility,
+                        category = category,
+                        vibrate = vibrate,
+                        sound = sound,
+                        lightColor = lightColor,
+                        isPosted = isPosted
+                ).fill(timeMillis = postTime).also { entity ->
+                    ObjBox.put(entity)
+                    collector.setStatus(Status(lastTime = postTime))
+                }
+            } else {
+                NotificationEntity(
+                        name = getApplicationName(packageManager = packageManager, packageName = packageName)
+                                ?: "",
+                        packageName = packageName ?: "",
+                        isSystemApp = isSystemApp(packageManager = packageManager, packageName = packageName),
+                        isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
+                        title = title,
+                        visibility = visibility,
+                        category = category,
+                        vibrate = vibrate,
+                        sound = sound,
+                        lightColor = lightColor,
+                        isPosted = isPosted
+                ).fill(timeMillis = curTime).also { entity ->
+                    ObjBox.put(entity)
+                    collector.setStatus(Status(lastTime = curTime))
+                }
             }
+
         }
     }
 }
