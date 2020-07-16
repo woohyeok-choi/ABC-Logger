@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -34,10 +35,18 @@ class LocationCollector(private val context: Context) : BaseCollector<LocationCo
 
     override val description: String = context.getString(R.string.data_desc_location)
 
-    override val requiredPermissions: List<String> = listOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-    )
+    override val requiredPermissions: List<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        )
+    } else {
+        listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    }
 
     override val newIntentForSetUp: Intent? = null
 
