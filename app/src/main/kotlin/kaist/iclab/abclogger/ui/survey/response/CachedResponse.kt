@@ -3,19 +3,30 @@ package kaist.iclab.abclogger.ui.survey.response
 import android.os.Parcel
 import android.os.Parcelable
 import kaist.iclab.abclogger.collector.survey.InternalResponseEntity
-import kaist.iclab.abclogger.collector.survey.InternalSurveyEntity
 
-data class SurveyResponse(
-    val survey: InternalSurveyEntity,
+data class CachedResponse(
+    val id: Long,
+    val triggerTime: Long,
+    val reactionTime: Long,
+    val title: String?,
+    val message: String?,
     val responses: List<InternalResponseEntity>
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readParcelable(InternalSurveyEntity::class.java.classLoader) ?: InternalSurveyEntity(),
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readString(),
+        parcel.readString(),
         parcel.createTypedArrayList(InternalResponseEntity) ?: listOf()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeParcelable(survey, flags)
+        parcel.writeLong(id)
+        parcel.writeLong(triggerTime)
+        parcel.writeLong(reactionTime)
+        parcel.writeString(title)
+        parcel.writeString(message)
         parcel.writeTypedList(responses)
     }
 
@@ -23,12 +34,12 @@ data class SurveyResponse(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<SurveyResponse> {
-        override fun createFromParcel(parcel: Parcel): SurveyResponse {
-            return SurveyResponse(parcel)
+    companion object CREATOR : Parcelable.Creator<CachedResponse> {
+        override fun createFromParcel(parcel: Parcel): CachedResponse {
+            return CachedResponse(parcel)
         }
 
-        override fun newArray(size: Int): Array<SurveyResponse?> {
+        override fun newArray(size: Int): Array<CachedResponse?> {
             return arrayOfNulls(size)
         }
     }

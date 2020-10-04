@@ -1,75 +1,81 @@
 package kaist.iclab.abclogger.structure.survey
 
+import android.os.Parcel
+import android.os.Parcelable
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 
-data class Schedule(
-    val interDaySchedule: InterDaySchedule = DailySchedule,
-    val intraDaySchedule: IntraDaySchedule = NoneIntraDaySchedule
-)
-
-sealed class InterDaySchedule(val type: Type) {
+sealed class InterDaySchedule(val type: Type) : Parcelable {
     enum class Type {
         DATE,
         DAY_OF_WEEK,
         DAILY
     }
 
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(type.name)
+    }
+
+    override fun describeContents(): Int = 0
+
     companion object {
         val Factory: PolymorphicJsonAdapterFactory<InterDaySchedule> = PolymorphicJsonAdapterFactory.of(InterDaySchedule::class.java, "type")
             .withSubtype(DateSchedule::class.java, Type.DATE.name)
             .withSubtype(DayOfWeekSchedule::class.java, Type.DAY_OF_WEEK.name)
-            .withDefaultValue(DailySchedule)
+            .withSubtype(DailySchedule::class.java, Type.DAILY.name)
+            .withDefaultValue(DailySchedule())
     }
 }
 
 data class DateSchedule(
     val dates: List<LocalDate> = listOf()
-) : InterDaySchedule(Type.DATE)
+) : InterDaySchedule(Type.DATE) {
+    constructor(parcel: Parcel) : this(parcel.createTypedArrayList(LocalDate) ?: listOf())
 
-data class DayOfWeekSchedule(
-    val daysOfWeek: List<DayOfWeek> = listOf()
-) : InterDaySchedule(Type.DAY_OF_WEEK)
-
-object DailySchedule: InterDaySchedule(Type.DAILY)
-
-sealed class IntraDaySchedule(val type: Type) {
-    enum class Type {
-        NONE,
-        INTERVAL,
-        EVENT,
-        TIME
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        super.writeToParcel(parcel, flags)
+        parcel.writeTypedList(dates)
     }
 
-    companion object {
-        val Factory: PolymorphicJsonAdapterFactory<IntraDaySchedule> = PolymorphicJsonAdapterFactory.of(IntraDaySchedule::class.java, "type")
-            .withSubtype(TimeSchedule::class.java, Type.TIME.name)
-            .withSubtype(IntervalSchedule::class.java, Type.INTERVAL.name)
-            .withSubtype(EventSchedule::class.java, Type.EVENT.name)
-            .withDefaultValue(NoneIntraDaySchedule)
+    companion object CREATOR : Parcelable.Creator<DateSchedule> {
+        override fun createFromParcel(parcel: Parcel): DateSchedule {
+            return DateSchedule(parcel)
+        }
+
+        override fun newArray(size: Int): Array<DateSchedule?> {
+            return arrayOfNulls(size)
+        }
     }
 }
 
-object NoneIntraDaySchedule: IntraDaySchedule(Type.NONE)
+data class DayOfWeekSchedule(
+    val daysOfWeek: List<DayOfWeek> = listOf()
+) : InterDaySchedule(Type.DAY_OF_WEEK) {
+    constructor(parcel: Parcel) : this(parcel.createTypedArrayList(DayOfWeek) ?: listOf())
 
-data class TimeSchedule(
-    val times: List<LocalTime> = listOf()
-): IntraDaySchedule(Type.TIME)
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        super.writeToParcel(parcel, flags)
+        parcel.writeTypedList(daysOfWeek)
+    }
 
-data class IntervalSchedule(
-    val timeFrom: LocalTime = LocalTime.MIN,
-    val timeTo: LocalTime = LocalTime.MAX,
-    val intervalDefault: Duration,
-    val intervalFlex: Duration
-) : IntraDaySchedule(Type.INTERVAL)
+    companion object CREATOR : Parcelable.Creator<DayOfWeekSchedule> {
+        override fun createFromParcel(parcel: Parcel): DayOfWeekSchedule {
+            return DayOfWeekSchedule(parcel)
+        }
 
-data class EventSchedule(
-    val timeFrom: LocalTime,
-    val timeTo: LocalTime,
-    val delayDefault: Duration,
-    val delayFlex: Duration,
-    val eventsTrigger: List<String> = listOf(),
-    val eventsCancel: List<String> = listOf()
-) : IntraDaySchedule(Type.EVENT)
+        override fun newArray(size: Int): Array<DayOfWeekSchedule?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 
+class DailySchedule : InterDaySchedule(Type.DAILY) {
+    companion object CREATOR : Parcelable.Creator<DailySchedule> {
+        override fun createFromParcel(parcel: Parcel): DailySchedule {
+            return DailySchedule()
+        }
 
-
+        override fun newArray(size: Int): Array<DailySchedule?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

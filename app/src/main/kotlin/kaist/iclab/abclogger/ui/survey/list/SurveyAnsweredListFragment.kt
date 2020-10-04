@@ -7,15 +7,22 @@ import kaist.iclab.abclogger.R
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-class SurveyAnswerableListFragment : SurveyListFragment() {
-    override val typeStringRes: Int = R.string.label_survey_answered_list
-    override val isEnabled: Boolean? = true
+class SurveyAnsweredListFragment : SurveyListFragment() {
+    override val typeStringRes: Int = R.string.menu_drawer_survey_answered_list
+    override val listType: Int = LIST_TYPE_ANSWERED
 
-    override fun getDirection(id: Long, title: String?, message: String?, triggerTime: Long?): NavDirections =
-            SurveyAnswerableListFragmentDirections.actionSurveyAnswerableListToSurveyResponse(
-                    title = title,
-                    message = message,
-                    triggerTime = triggerTime ?: -1,
-                    entityId = id
-            )
+    override fun getDirection(
+        id: Long,
+        title: String?,
+        message: String?,
+        triggerTime: Long?,
+        restore: Boolean
+    ): NavDirections =
+        SurveyAnsweredListFragmentDirections.actionSurveyAnsweredListToSurveyResponse(
+            title = title,
+            message = message,
+            triggerTime = triggerTime ?: -1,
+            entityId = id,
+            restore = restore
+        )
 }

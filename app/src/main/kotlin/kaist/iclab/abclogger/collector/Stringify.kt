@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.commons
+package kaist.iclab.abclogger.collector
 
 import android.app.Notification
 import android.app.NotificationManager
@@ -20,6 +20,7 @@ import android.telephony.TelephonyManager
 import android.view.KeyEvent
 import com.google.android.gms.fitness.data.Device
 import com.google.android.gms.location.DetectedActivity
+import com.google.api.Usage
 
 private const val UNKNOWN = "UNKNOWN"
 
@@ -139,6 +140,24 @@ internal fun stringifyAppUsageEvent(flag: Int?, bucket: Int? = null, default: St
         else -> "STANDBY_BUCKET_CHANGED_NEVER"
     }
     UsageEvents.Event.USER_INTERACTION -> "USER_INTERACTION"
+    /**
+     * Event types below are hidden in API level; but, it actually is reported.
+     */
+    3 -> "END_OF_DAY"
+    4 -> "CONTINUE_PREVIOUS_DAY"
+    6 -> "SYSTEM_INTERACTION"
+    9 -> "CHOOSER_ACTION"
+    10 -> "NOTIFICATION_SEEN"
+    12 -> "NOTIFICATION_INTERRUPTION"
+    13 -> "SLICE_PINNED_PRIV"
+    14 -> "SLICE_PINNED"
+    21 -> "CONTINUING_FOREGROUND_SERVICE"
+    22 -> "ROLLOVER_FOREGROUND_SERVICE"
+    24 -> "ACTIVITY_DESTROYED"
+    25 -> "FLUSH_TO_DISK"
+    28 -> "USER_UNLOCKED"
+    29 -> "USER_STOPPED"
+    30 -> "LOCUS_ID_SET"
     else -> default
 }
 

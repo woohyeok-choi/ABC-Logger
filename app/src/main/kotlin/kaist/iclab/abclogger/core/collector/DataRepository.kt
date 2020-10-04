@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.core
+package kaist.iclab.abclogger.core.collector
 
 import android.content.Context
 import io.objectbox.BoxStore
@@ -9,7 +9,8 @@ import io.objectbox.query.Query
 import io.objectbox.query.QueryBuilder
 import kaist.iclab.abclogger.collector.MyObjectBox
 import kaist.iclab.abclogger.commons.EntityError
-import kaist.iclab.abclogger.commons.Log
+import kaist.iclab.abclogger.core.Log
+import kaist.iclab.abclogger.core.Preference
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -85,6 +86,10 @@ class DataRepository(private val context: Context) {
 
     suspend inline fun <reified T : Any> put(vararg entity: T) = op {
         boxFor<T>().put(*entity)
+    }
+
+    suspend inline fun <reified T : Any> put(entities: Collection<T>) = op {
+        boxFor<T>().put(entities)
     }
 
     suspend inline fun <reified T : Any> query(crossinline block: QueryBuilder<T>.() -> Unit): Query<T>? =

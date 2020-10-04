@@ -1,135 +1,106 @@
-package kaist.iclab.abclogger.ui.setting.polar
+package kaist.iclab.abclogger.ui.settings.polar
 
-import android.content.Context
-import android.os.Bundle
-import androidx.lifecycle.MutableLiveData
-import io.reactivex.disposables.Disposable
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.sensor.PolarH10Collector
-import kaist.iclab.abclogger.commons.PolarH10Exception
-import kaist.iclab.abclogger.ui.base.BaseViewModel
-import polar.com.sdk.api.PolarBleApi
-import polar.com.sdk.api.PolarBleApiCallback
-import polar.com.sdk.api.PolarBleApiDefaultImpl
-import polar.com.sdk.api.model.PolarDeviceInfo
-import polar.com.sdk.api.model.PolarHrData
+import android.app.Application
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import kaist.iclab.abclogger.collector.external.PolarH10Collector
+import kaist.iclab.abclogger.core.ui.BaseViewModel
+import kaist.iclab.abclogger.commons.AbcError
+import kaist.iclab.abclogger.commons.CollectorError
+import kaist.iclab.abclogger.core.collector.Status
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
-class PolarH10ViewModel(private val context: Context,
-                        private val collector: PolarH10Collector,
-                        navigator: PolarH10Navigator) : BaseViewModel<PolarH10Navigator>(navigator) {
-    val deviceId: MutableLiveData<String> = MutableLiveData()
-    val state: MutableLiveData<String> = MutableLiveData(context.getString(R.string.general_disconnected))
-    val battery: MutableLiveData<String> = MutableLiveData()
-    val heartRate: MutableLiveData<String> = MutableLiveData()
-    val rrInterval: MutableLiveData<String> = MutableLiveData()
-    val ecg: MutableLiveData<String> = MutableLiveData()
+class PolarH10ViewModel(
+    private val collector: PolarH10Collector,
+    savedStateHandle: SavedStateHandle,
+    application: Application
+) : BaseViewModel(savedStateHandle, application) {
+    private val statusChannel = Channel<Connection?>()
+    private val batteryChannel = Channel<Int?>()
+    private val hrChannel = Channel<HeartRate?>()
+    private val ecgChannel = Channel<Int?>()
+    private val accChannel = Channel<Triple<Int, Int, Int>?>()
+    private val errorChannel = Channel<Throwable>()
 
-    override suspend fun onLoad(extras: Bundle?) {
-        deviceId.postValue(collector.getStatus()?.deviceId)
-    }
+    private val callback = object : PolarH10Collector.Callback() {
+        override fun onConnectionStateChanged(identifier: String, name: String, address: String, rssi: Int, state: String) {
+            viewModelScope.launch(Dispatchers.IO) {
+                statusChannel.send(Connection(name, address, rssi, state))
+            }
+        }
 
-    override suspend fun onStore() {
-        disconnect()
-        collector.setStatus(PolarH10Collector.Status(deviceId = deviceId.value))
-        ui { nav?.navigateStore() }
-    }
+        override fun onBatteryChanged(identifier: String, level: Int) {
+            viewModelScope.launch(Dispatchers.IO) {
+                batteryChannel.send(level)
+            }
+        }
 
-    private val api: PolarBleApi by lazy {
-        PolarBleApiDefaultImpl.defaultImplementation(
-                context,
-                PolarBleApi.FEATURE_HR or
-                        PolarBleApi.FEATURE_BATTERY_INFO or
-                        PolarBleApi.FEATURE_DEVICE_INFO or
-                        PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING
-        ).apply {
-            setPolarFilter(false)
-            setAutomaticReconnection(true)
+        override fun onHeartRateReceived(identifier: String, heartRate: Int, rrAvailable: Boolean, rrIntervalInSec: List<Int>, rrIntervalInMillis: List<Int>, contactStatusSupported: Boolean, contactStatus: Boolean) {
+            viewModelScope.launch(Dispatchers.IO) {
+                hrChannel.send(HeartRate(heartRate, rrIntervalInSec, contactStatus))
+            }
+        }
+
+        override fun onEcgChanged(identifier: String, samples: List<Int>) {
+            viewModelScope.launch(Dispatchers.IO) {
+                ecgChannel.send(samples.lastOrNull())
+            }
+        }
+
+        override fun onAccelerometerChanged(identifier: String, samples: List<Triple<Int, Int, Int>>) {
+            viewModelScope.launch(Dispatchers.IO) {
+                accChannel.send(samples.lastOrNull())
+            }
+        }
+
+        override fun onError(identifier: String, throwable: Throwable) {
+            viewModelScope.launch(Dispatchers.IO) {
+                errorChannel.send(throwable)
+            }
         }
     }
 
-    private val callback = object : PolarBleApiCallback() {
-        override fun ecgFeatureReady(identifier: String) {
-            super.ecgFeatureReady(identifier)
-            if (ecgDisposable?.isDisposed != false) ecgDisposable?.dispose()
+    private val api = collector.getPolarApi(getApplication(), callback)
 
-            ecgDisposable = api.requestEcgSettings(identifier)
-                    .map { setting ->
-                        setting.maxSettings()
-                                ?: throw PolarH10Exception("Sensor is incorrectly set. Please try once again.")
-                    }.flatMapPublisher { setting ->
-                        api.startEcgStreaming(identifier, setting.maxSettings())
-                    }.subscribe({ data ->
-                        ecg.postValue(data.samples.lastOrNull()?.toString())
-                    }, { t ->
-                        launch {
-                            ui {
-                                nav?.navigateError(t)
-                            }
-                        }
-                    })
+    var deviceId: String
+        get() = collector.deviceId
+        set(value) {
+            collector.deviceId = value
         }
+    val status = statusChannel.receiveAsFlow()
+    val battery = batteryChannel.receiveAsFlow()
+    val heartRate = hrChannel.receiveAsFlow()
+    val ecg = ecgChannel.receiveAsFlow()
+    val accelerometer = accChannel.receiveAsFlow()
+    val error = errorChannel.receiveAsFlow()
 
-        override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
-            state.postValue(context.getString(R.string.general_connected))
-        }
+    private var lastConnectedId: String? = null
 
-        override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
-            state.postValue(context.getString(R.string.general_connecting))
-        }
-
-        override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
-            state.postValue(context.getString(R.string.general_disconnected))
-
-            battery.postValue(null)
-            heartRate.postValue(null)
-            rrInterval.postValue(null)
-            ecg.postValue(null)
-        }
-
-        override fun batteryLevelReceived(identifier: String, level: Int) {
-            battery.postValue(level.toString())
-        }
-
-        override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
-            heartRate.postValue(data.hr.toString())
-            rrInterval.postValue(data.rrs?.lastOrNull()?.toString())
-        }
-    }
-
-    private var ecgDisposable: Disposable? = null
-
-    fun connect() = launch {
+    fun connect(deviceId: String) {
+        lastConnectedId = deviceId
         try {
-            ecgDisposable?.dispose()
-            api.setApiCallback(callback)
-            api.connectToDevice(deviceId.value ?: "")
+            api.connect(deviceId)
         } catch (e: Exception) {
-            ui { nav?.navigateError(e) }
-            state.postValue(context.getString(R.string.general_disconnected))
-            battery.postValue(null)
-            heartRate.postValue(null)
-            rrInterval.postValue(null)
-            ecg.postValue(null)
+            errorChannel.offer(AbcError.wrap(e))
         }
     }
 
-    fun disconnect() = launch {
+    fun disconnect() {
         try {
-            ecgDisposable?.dispose()
-            api.disconnectFromDevice(deviceId.value ?: "")
-            api.setApiCallback(null)
+            lastConnectedId?.let { api.disconnect(it) }
+
+            viewModelScope.launch(Dispatchers.IO) {
+                statusChannel.send(null)
+                batteryChannel.send(null)
+                hrChannel.send(null)
+                accChannel.send(null)
+                ecgChannel.send(null)
+            }
         } catch (e: Exception) {
+            errorChannel.offer(AbcError.wrap(e))
         }
-
-        state.postValue(context.getString(R.string.general_disconnected))
-        battery.postValue(null)
-        heartRate.postValue(null)
-        rrInterval.postValue(null)
-        ecg.postValue(null)
-    }
-
-    override fun onCleared() {
-        ecgDisposable?.dispose()
-        super.onCleared()
     }
 }

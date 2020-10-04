@@ -1,133 +1,145 @@
-package kaist.iclab.abclogger.ui.question
+package kaist.iclab.abclogger.ui.survey.response
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.survey.Question
-import kaist.iclab.abclogger.collector.survey.ResponseEntity
+import kaist.iclab.abclogger.collector.survey.*
 import kaist.iclab.abclogger.databinding.*
+import kaist.iclab.abclogger.structure.survey.*
 
 class SurveyResponseListAdapter : RecyclerView.Adapter<SurveyResponseListAdapter.ViewHolder>() {
-    private var responses: Array<ResponseEntity> = arrayOf()
+    var responses: Array<InternalResponseEntity> = arrayOf()
+
     private var isAltTextShown: Boolean = false
+    private var isEnabled: Boolean = false
 
-    var isDisabled: Boolean = false
-
-    fun bind(responses: Collection<ResponseEntity>, isDisabled: Boolean, isAltTextShown: Boolean) {
+    fun bind(responses: Collection<InternalResponseEntity>, isEnabled: Boolean, isAltTextShown: Boolean) {
         this.responses = responses.sortedBy { it.index }.toTypedArray()
-        this.isDisabled = isDisabled
+        this.isEnabled = isEnabled
         this.isAltTextShown = isAltTextShown
 
         notifyDataSetChanged()
     }
 
-    fun getResponses() : List<ResponseEntity> = responses.toList()
+    fun setResponses(responses: Collection<InternalResponseEntity>) {
+        this.responses = responses.sortedBy { it.index }.toTypedArray()
+        notifyDataSetChanged()
+    }
+
+    fun setAltTextShown(isAltTextShown: Boolean) {
+        this.isAltTextShown = isAltTextShown
+        notifyDataSetChanged()
+    }
+
+    fun setIsEnabled(isEnabled: Boolean) {
+        this.isEnabled = isEnabled
+        notifyDataSetChanged()
+    }
 
     override fun getItemViewType(position: Int): Int =
-            responses.getOrNull(position)?.question?.type?.ordinal ?: Question.Type.NONE.ordinal
+            responses.getOrNull(position)?.question?.option?.type?.ordinal ?: Option.Type.NONE.ordinal
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
-            when (viewType) {
-                Question.Type.CHECK_BOX.ordinal -> CheckResponseViewHolder(
-                        DataBindingUtil.inflate(
-                                LayoutInflater.from(parent.context),
-                                R.layout.item_response_check,
-                                parent,
-                                false
-                        )
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val layoutId = when (viewType) {
+            Option.Type.FREE_TEXT.ordinal -> R.layout.item_response_free_text
+            Option.Type.RADIO_BUTTON.ordinal -> R.layout.item_response_radio
+            Option.Type.CHECK_BOX.ordinal -> R.layout.item_response_checkbox
+            Option.Type.SLIDER.ordinal -> R.layout.item_response_slider
+            Option.Type.RANGE.ordinal -> R.layout.item_response_range
+            Option.Type.LINEAR_SCALE.ordinal -> R.layout.item_response_linear_scale
+            Option.Type.DROPDOWN.ordinal -> R.layout.item_response_dropdown
+            else -> null
+        } ?: return NonResponseViewHolder(View(parent.context))
+
+        return ResponseViewHolder(
+                DataBindingUtil.inflate(
+                        LayoutInflater.from(parent.context),
+                        layoutId,
+                        parent,
+                        false
                 )
-                Question.Type.RADIO_BUTTON.ordinal -> RadioResponseViewHolder(
-                        DataBindingUtil.inflate(
-                                LayoutInflater.from(parent.context),
-                                R.layout.item_response_radio,
-                                parent,
-                                false
-                        )
-                )
-                Question.Type.FREE_TEXT.ordinal -> FreeTextResponseViewHolder(
-                        DataBindingUtil.inflate(
-                                LayoutInflater.from(parent.context),
-                                R.layout.item_response_free_text,
-                                parent,
-                                false
-                        )
-                )
-                Question.Type.LINEAR_SCALE.ordinal -> LinearScaleResponseViewHolder(
-                        DataBindingUtil.inflate(
-                                LayoutInflater.from(parent.context),
-                                R.layout.item_response_linear_scale,
-                                parent,
-                                false
-                        )
-                )
-                Question.Type.DROPDOWN.ordinal -> DropdownResponseViewHolder(
-                        DataBindingUtil.inflate(
-                                LayoutInflater.from(parent.context),
-                                R.layout.item_response_dropdown,
-                                parent,
-                                false
-                        )
-                )
-                else -> NonResponseViewHolder(View(parent.context))
-            }
+        )
+    }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val response = responses.getOrNull(position) ?: return
-        holder.onBind(response, isDisabled, isAltTextShown)
+        responses.getOrNull(position)?.let {
+            holder.onBind(it, isEnabled, isAltTextShown)
+        }
     }
 
     override fun getItemCount(): Int = responses.size
 
     abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        abstract fun onBind(response: ResponseEntity, isDisabled: Boolean, showAltText: Boolean)
+        abstract fun onBind(response: InternalResponseEntity, isEnabled: Boolean, isAltTextShown: Boolean)
     }
 
-    data class NonResponseViewHolder(private val view: View): ViewHolder(view) {
-        override fun onBind(response: ResponseEntity, isDisabled: Boolean, showAltText: Boolean) {
+    data class NonResponseViewHolder(private val view: View) : ViewHolder(view) {
+        override fun onBind(response: InternalResponseEntity, isEnabled: Boolean, isAltTextShown: Boolean) {
             view.visibility = View.GONE
         }
     }
 
-    data class CheckResponseViewHolder(private val binding: ItemResponseCheckBinding) : ViewHolder(binding.root) {
-        override fun onBind(response: ResponseEntity, isDisabled: Boolean, showAltText: Boolean) {
-            binding.response = response
-            binding.isDisabled = isDisabled
-            binding.isShowAltText = showAltText
-        }
-    }
+    data class ResponseViewHolder(private val binding: ViewDataBinding) : ViewHolder(binding.root) {
+        override fun onBind(response: InternalResponseEntity, isEnabled: Boolean, isAltTextShown: Boolean) {
+            if (binding is ItemResponseFreeTextBinding) {
+                binding.answer = response.answer
+                binding.isOthersShown = response.question.isOtherShown
+                binding.question = response.question.title.text(isAltTextShown)
+                binding.isEnabled = isEnabled
+                binding.option = response.question.option as? FreeTextOption
+            }
 
-    data class DropdownResponseViewHolder(private val binding: ItemResponseDropdownBinding) : ViewHolder(binding.root) {
-        override fun onBind(response: ResponseEntity, isDisabled: Boolean, showAltText: Boolean) {
-            binding.response = response
-            binding.isDisabled = isDisabled
-            binding.isShowAltText = showAltText
-        }
-    }
+            if (binding is ItemResponseRadioBinding) {
+                binding.answer = response.answer
+                binding.isOthersShown = response.question.isOtherShown
+                binding.question = response.question.title.text(isAltTextShown)
+                binding.isEnabled = isEnabled
+                binding.option = response.question.option as? RadioButtonOption
+            }
 
-    data class FreeTextResponseViewHolder(private val binding: ItemResponseFreeTextBinding) : ViewHolder(binding.root) {
-        override fun onBind(response: ResponseEntity, isDisabled: Boolean, showAltText: Boolean) {
-            binding.response = response
-            binding.isDisabled = isDisabled
-            binding.isShowAltText = showAltText
-        }
-    }
+            if (binding is ItemResponseCheckboxBinding) {
+                binding.answer = response.answer
+                binding.isOthersShown = response.question.isOtherShown
+                binding.question = response.question.title.text(isAltTextShown)
+                binding.isEnabled = isEnabled
+                binding.option = response.question.option as? CheckBoxOption
+            }
 
-    data class LinearScaleResponseViewHolder(private val binding: ItemResponseLinearScaleBinding) : ViewHolder(binding.root) {
-        override fun onBind(response: ResponseEntity, isDisabled: Boolean, showAltText: Boolean) {
-            binding.response = response
-            binding.isDisabled = isDisabled
-            binding.isShowAltText = showAltText
-        }
-    }
+            if (binding is ItemResponseSliderBinding) {
+                binding.answer = response.answer
+                binding.isOthersShown = response.question.isOtherShown
+                binding.question = response.question.title.text(isAltTextShown)
+                binding.isEnabled = isEnabled
+                binding.option = response.question.option as? SliderOption
+            }
 
-    data class RadioResponseViewHolder(private val binding: ItemResponseRadioBinding) : ViewHolder(binding.root) {
-        override fun onBind(response: ResponseEntity, isDisabled: Boolean, showAltText: Boolean) {
-            binding.response = response
-            binding.isDisabled = isDisabled
-            binding.isShowAltText = showAltText
+            if (binding is ItemResponseRangeBinding) {
+                binding.answer = response.answer
+                binding.isOthersShown = response.question.isOtherShown
+                binding.question = response.question.title.text(isAltTextShown)
+                binding.isEnabled = isEnabled
+                binding.option = response.question.option as? RangeOption
+            }
+
+            if (binding is ItemResponseLinearScaleBinding) {
+                binding.answer = response.answer
+                binding.isOthersShown = response.question.isOtherShown
+                binding.question = response.question.title.text(isAltTextShown)
+                binding.isEnabled = isEnabled
+                binding.option = response.question.option as? LinearScaleOption
+            }
+
+            if (binding is ItemResponseDropdownBinding) {
+                binding.answer = response.answer
+                binding.isOthersShown = response.question.isOtherShown
+                binding.question = response.question.title.text(isAltTextShown)
+                binding.isEnabled = isEnabled
+                binding.option = response.question.option as? DropdownOption
+            }
         }
     }
 }

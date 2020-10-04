@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.ui.config.list
+package kaist.iclab.abclogger.ui.config
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,32 +8,42 @@ import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.databinding.ItemConfigHeaderBinding
 import kaist.iclab.abclogger.databinding.ItemConfigItemBinding
-import kaist.iclab.abclogger.ui.config.ConfigData
-import kaist.iclab.abclogger.ui.config.ConfigHeader
-import kaist.iclab.abclogger.ui.config.ConfigItem
+import kaist.iclab.abclogger.structure.config.Config
+import kaist.iclab.abclogger.structure.config.ConfigData
+import kaist.iclab.abclogger.structure.config.ConfigHeader
+import kaist.iclab.abclogger.structure.config.ConfigItem
 
-class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
-    var items: Array<ConfigData> = arrayOf()
+
+class ConfigDataAdapter : RecyclerView.Adapter<ConfigDataAdapter.ViewHolder>() {
+    var config: Config = Config()
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
-    private var onItemClick: ((position: Int, item: ConfigItem<*>) -> Unit)? = null
-
-    private val internalListener: ((position: Int, item: ConfigItem<*>) -> Unit) = { position, item ->
-        onItemClick?.invoke(position, item)
+    interface OnItemClickListener {
+        fun onItemClick(position: Int, item: ConfigItem<*>)
     }
 
-    fun setOnItemClickListener(block: ((position: Int, item: ConfigItem<*>) -> Unit)?) {
-        onItemClick = block
+    private var onItemClickListener: OnItemClickListener? = null
+
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        onItemClickListener = listener
+    }
+
+    fun setOnItemClickListener(block: ((position: Int, item: ConfigItem<*>) -> Unit)) {
+        onItemClickListener = object : OnItemClickListener {
+            override fun onItemClick(position: Int, item: ConfigItem<*>) {
+                block.invoke(position, item)
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         when (viewType) {
             VIEW_TYPE_ITEM -> ConfigItemViewHolder(
                     DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.item_config_item, parent, false),
-                    internalListener
+                    onItemClickListener
             )
             else -> ConfigHeaderViewHolder(
                     DataBindingUtil.inflate(LayoutInflater.from(parent.context), R.layout.item_config_header, parent, false)
@@ -41,40 +51,39 @@ class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
         }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.onBind(position, items.getOrNull(position))
+        val item = config.getOrNull(position) ?: return
+        holder.onBind(position, item)
     }
 
     override fun getItemViewType(position: Int): Int =
-        when (items.getOrNull(position)) {
-            is ConfigItem<*> -> VIEW_TYPE_ITEM
-            else -> VIEW_TYPE_HEADER
+        when (config.getOrNull(position)) {
+            is ConfigHeader -> VIEW_TYPE_HEADER
+            else -> VIEW_TYPE_ITEM
         }
 
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int = config.size
 
     abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        abstract fun <T : ConfigData> onBind(position: Int, item: T?)
+        abstract fun onBind(position: Int, item: ConfigData)
     }
 
     data class ConfigHeaderViewHolder(private val binding: ItemConfigHeaderBinding) : ViewHolder(binding.root) {
-        override fun <T : ConfigData> onBind(position: Int, item: T?) {
+        override fun onBind(position: Int, item: ConfigData) {
             if (item !is ConfigHeader) return
             binding.item = item
-            binding.isFirstItem = position == 0
         }
     }
 
     data class ConfigItemViewHolder(
             private val binding: ItemConfigItemBinding,
-            private val onItemClick: (position: Int, item: ConfigItem<*>) -> Unit
+            private val listener: OnItemClickListener?
     ): ViewHolder(binding.root) {
-        override fun <T : ConfigData> onBind(position: Int, item: T?) {
+        @Suppress("UNCHECKED_CAST")
+        override fun onBind(position: Int, item: ConfigData) {
             if (item !is ConfigItem<*>) return
-
-            binding.item = item
-            binding.isClickable = item is ReadWriteConfigItem<*>
+            binding.item = item as ConfigItem<Any>
             binding.root.setOnClickListener {
-                onItemClick.invoke(position, item)
+                listener?.onItemClick(position, item)
             }
         }
     }
@@ -82,5 +91,6 @@ class ConfigListAdapter : RecyclerView.Adapter<ConfigListAdapter.ViewHolder>() {
     companion object {
         private const val VIEW_TYPE_HEADER = 0x0
         private const val VIEW_TYPE_ITEM = 0x1
+        private const val VIEW_TYPE_COLLECTOR_ITEM = 0x2
     }
 }

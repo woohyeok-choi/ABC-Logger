@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.base
+package kaist.iclab.abclogger.core.ui
 
 import android.content.Context
 import android.os.Bundle
@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
-import kaist.iclab.abclogger.commons.Log
+import kaist.iclab.abclogger.core.Log
 
 abstract class BaseFragment<T : ViewBinding> : Fragment() {
     lateinit var viewBinding: T

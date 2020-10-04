@@ -1,10 +1,14 @@
-package kaist.iclab.abclogger
+package kaist.iclab.abclogger.core
 
 import org.greenrobot.eventbus.EventBus as GreenRobotEventBus
 
-object EventBus {
-    fun <T> post(entity: T) {
-        GreenRobotEventBus.getDefault().post(entity)
+interface ToEvent {
+    fun toEvent(any: Any): Event
+}
+
+object EventBus: ToEvent {
+    fun post(any: Any) {
+        GreenRobotEventBus.getDefault().post(toEvent(any))
     }
 
     fun register(subscriber: Any) {
@@ -14,6 +18,11 @@ object EventBus {
     fun unregister(subscriber: Any) {
         GreenRobotEventBus.getDefault().unregister(subscriber)
     }
+
+    /**
+     * Here, change any into appropriate Event.
+     */
+    override fun toEvent(any: Any): Event = Event(0, "")
 }
 
 data class Event(

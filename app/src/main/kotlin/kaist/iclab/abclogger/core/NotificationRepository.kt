@@ -1,220 +1,391 @@
 package kaist.iclab.abclogger.core
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
+import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
-import android.widget.RemoteViews
-import androidx.annotation.IntRange
-import androidx.annotation.RequiresApi
+import android.provider.Settings
+import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
+import androidx.work.ForegroundInfo
 import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.commons.AbcError
+import kaist.iclab.abclogger.commons.Formatter
+import kaist.iclab.abclogger.commons.getColorFromAttr
+import kaist.iclab.abclogger.ui.config.ConfigCollectorFragment
+import kaist.iclab.abclogger.ui.config.ConfigGeneralFragment
+import kaist.iclab.abclogger.ui.survey.response.SurveyResponseFragment
 
-object Notifications {
-    const val CHANNEL_ID_SURVEY = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_SURVEY"
-    const val CHANNEL_ID_FOREGROUND = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_IN_PROGRESS"
-    const val CHANNEL_ID_PROGRESS = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_UPLOAD"
-    const val CHANNEL_ID_REQUIRE_SETTING = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_REQUIRE_SETTING"
+object NotificationRepository {
+    private data class Setting(
+        @StringRes val nameRes: Int,
+        val category: String,
+        val priority: Int,
+        val visibility: Int,
+        val importance: Int,
+        val hasSound: Boolean,
+        val hasVibration: Boolean
+    )
 
-    const val ID_SURVEY_DELIVERED = 0x01
-    const val ID_FOREGROUND = 0x02
-    const val ID_SYNC_PROGRESS = 0x03
-    const val ID_REQUIRE_SETTING = 0x04
+    private const val CHANNEL_ID_SURVEY_TRIGGERED =
+        "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_SURVEY_TRIGGERED"
+    private const val CHANNEL_ID_FOREGROUND = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_FOREGROUND"
+    private const val CHANNEL_ID_SYNC = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_SYNC"
+    private const val CHANNEL_ID_ERROR = "${BuildConfig.APPLICATION_ID}.CHANNEL_ID_ERROR"
 
-    private val DEFAULT_VIBRATION_PATTERN = longArrayOf(1000, 10, 1000, 10, 1000, 10, 1000, 10, 1000)
-    private val DEFAULT_RINGTONE_URI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+    private const val GROUP_ID_SURVEY = "${BuildConfig.APPLICATION_ID}.GROUP_ID_SURVEY"
+
+    private const val ID_SURVEY_TRIGGERED = 0x01
+    private const val ID_FOREGROUND = 0x02
+    private const val ID_SYNC = 0x03
+    private const val ID_ERROR = 0x04
+    private const val ID_COLLECTOR_ERROR = 0x04
+
+    private val DEFAULT_VIBRATION_PATTERN =
+        longArrayOf(0, 300, 50, 750, 1000, 300, 50, 750, 1000, 300, 50, 750)
+
+    private val DEFAULT_RINGTONE_URI =
+        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
     private val NOTIFICATION_SETTINGS = mapOf(
-            CHANNEL_ID_SURVEY to NotificationSetting(
-                    name = "Survey",
-                    category = NotificationCompat.CATEGORY_REMINDER,
-                    priority = NotificationCompat.PRIORITY_MAX,
-                    visibility = NotificationCompat.VISIBILITY_PUBLIC,
-                    importance = NotificationManagerCompat.IMPORTANCE_MAX,
-                    ongoing = false,
-                    showBadge = true,
-                    showWhen = true,
-                    autoCancel = true,
-                    hasSound = true,
-                    hasVibration = true,
-                    alertOnce = false
-            ),
-            CHANNEL_ID_FOREGROUND to NotificationSetting(
-                    name = "Experiment in progress",
-                    category = NotificationCompat.CATEGORY_PROGRESS,
-                    priority = NotificationCompat.PRIORITY_MIN,
-                    visibility = NotificationCompat.VISIBILITY_SECRET,
-                    importance = NotificationManagerCompat.IMPORTANCE_MIN,
-                    ongoing = true,
-                    showBadge = false,
-                    showWhen = false,
-                    autoCancel = false,
-                    hasSound = false,
-                    hasVibration = false,
-                    alertOnce = true
-            ),
-            CHANNEL_ID_PROGRESS to NotificationSetting(
-                    name = "Upload",
-                    category = NotificationCompat.CATEGORY_PROGRESS,
-                    priority = NotificationCompat.PRIORITY_HIGH,
-                    visibility = NotificationCompat.VISIBILITY_PRIVATE,
-                    importance = NotificationManagerCompat.IMPORTANCE_HIGH,
-                    ongoing = false,
-                    showBadge = false,
-                    autoCancel = false,
-                    showWhen = false,
-                    hasSound = false,
-                    hasVibration = false,
-                    alertOnce = true
-            ),
-            CHANNEL_ID_REQUIRE_SETTING to NotificationSetting(
-                    name = "Error occurs",
-                    category = NotificationCompat.CATEGORY_REMINDER,
-                    priority = NotificationCompat.PRIORITY_MAX,
-                    visibility = NotificationCompat.VISIBILITY_PRIVATE,
-                    importance = NotificationManagerCompat.IMPORTANCE_MAX,
-                    ongoing = false,
-                    showBadge = false,
-                    autoCancel = true,
-                    showWhen = false,
-                    hasSound = true,
-                    hasVibration = true,
-                    alertOnce = false
-            )
+        CHANNEL_ID_SURVEY_TRIGGERED to Setting(
+            nameRes = R.string.ntf_channel_survey,
+            category = NotificationCompat.CATEGORY_EVENT,
+            priority = NotificationCompat.PRIORITY_HIGH,
+            visibility = NotificationCompat.VISIBILITY_PUBLIC,
+            importance = NotificationManagerCompat.IMPORTANCE_HIGH,
+            hasSound = true,
+            hasVibration = true,
+        ),
+        CHANNEL_ID_FOREGROUND to Setting(
+            nameRes = R.string.ntf_channel_foreground,
+            category = NotificationCompat.CATEGORY_STATUS,
+            priority = NotificationCompat.PRIORITY_LOW,
+            visibility = NotificationCompat.VISIBILITY_SECRET,
+            importance = NotificationManagerCompat.IMPORTANCE_LOW,
+            hasSound = false,
+            hasVibration = false,
+        ),
+        CHANNEL_ID_SYNC to Setting(
+            nameRes = R.string.ntf_channel_sync,
+            category = NotificationCompat.CATEGORY_PROGRESS,
+            priority = NotificationCompat.PRIORITY_LOW,
+            visibility = NotificationCompat.VISIBILITY_PRIVATE,
+            importance = NotificationManagerCompat.IMPORTANCE_LOW,
+            hasSound = false,
+            hasVibration = false,
+        ),
+        CHANNEL_ID_ERROR to Setting(
+            nameRes = R.string.ntf_channel_error,
+            category = NotificationCompat.CATEGORY_EVENT,
+            priority = NotificationCompat.PRIORITY_HIGH,
+            visibility = NotificationCompat.VISIBILITY_PUBLIC,
+            importance = NotificationManagerCompat.IMPORTANCE_HIGH,
+            hasSound = true,
+            hasVibration = true,
+        )
     )
 
-
-    private data class NotificationSetting(
-            val name: String,
-            val category: String,
-            val priority: Int,
-            val visibility: Int,
-            val importance: Int,
-            val autoCancel: Boolean,
-            val ongoing: Boolean,
-            val showBadge: Boolean,
-            val showWhen: Boolean,
-            val alertOnce: Boolean,
-            val hasSound: Boolean,
-            val hasVibration: Boolean
-    )
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun buildChannel(notificationManager: NotificationManagerCompat,
-                             channelId: String,
-                             name: String,
-                             importance: Int,
-                             visibility: Int,
-                             showBadge: Boolean = true,
-                             vibrationPattern: LongArray? = null,
-                             soundUri: Uri? = null) {
-        val channel = notificationManager.getNotificationChannel(channelId)
-        if (channel != null) return
-
-        val newChannel = NotificationChannel(channelId, name, importance).apply {
-            lockscreenVisibility = visibility
-            setShowBadge(showBadge)
-            this.importance = importance
-
-            if (vibrationPattern != null) {
-                enableVibration(true)
-                setVibrationPattern(vibrationPattern)
-            } else {
-                enableVibration(false)
-            }
-            if (soundUri != null) {
-                setSound(soundUri, AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build())
-            } else {
-                setSound(null, null)
-            }
-
-        }
-        notificationManager.createNotificationChannel(newChannel)
-    }
-
-    private fun buildNotificationChannels(context: Context) {
+    fun getSettingIntent(context: Context): Intent {
+        val intent = Intent()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val manager = (NotificationManagerCompat.from(context))
-            NOTIFICATION_SETTINGS.forEach { (channelId, setting) ->
-                buildChannel(
-                        notificationManager = manager,
-                        channelId = channelId,
-                        name = setting.name,
-                        showBadge = setting.showBadge,
-                        importance = setting.importance,
-                        visibility = setting.visibility,
-                        vibrationPattern = if (setting.hasVibration) DEFAULT_VIBRATION_PATTERN else null,
-                        soundUri = if (setting.hasSound) DEFAULT_RINGTONE_URI else null
-                )
-            }
+            intent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        } else {
+            intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            intent.addCategory(Intent.CATEGORY_DEFAULT)
+            intent.data = Uri.parse("package:" + context.packageName)
         }
+        return intent
     }
 
     fun bind(context: Context) {
-        buildNotificationChannels(context)
-    }
-
-    fun notify(context: Context, id: Int, ntf: Notification) {
-        NotificationManagerCompat.from(context).notify(id, ntf)
-    }
-
-    fun cancel(context: Context, id: Int) {
-        NotificationManagerCompat.from(context).cancel(id)
-    }
-
-    fun cancelAll(context: Context) {
-        NotificationManagerCompat.from(context).cancelAll()
-    }
-
-    fun build(context: Context,
-              channelId: String,
-              title: String? = null,
-              text: String? = null,
-              bigText: String? = null,
-              subText: String? = null,
-              intent: PendingIntent? = null,
-              @IntRange(from = 0, to = 100) progress: Int? = null,
-              indeterminate: Boolean = false,
-              timeoutMs: Long? = null,
-              removeViews: RemoteViews? = null,
-              actions: Collection<NotificationCompat.Action>? = null): Notification {
-        val setting = NOTIFICATION_SETTINGS[channelId]
-                ?: throw IllegalArgumentException("Invalid channel ID.")
-        val timestamp = System.currentTimeMillis()
-
-        return NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(R.mipmap.ic_abc_notification)
-                .setColor(ContextCompat.getColor(context, R.color.color_primary))
-                .setPriority(setting.priority)
-                .setVisibility(setting.visibility)
-                .setOngoing(setting.ongoing)
-                .setOnlyAlertOnce(setting.alertOnce)
-                .setShowWhen(setting.showWhen)
-                .setWhen(timestamp)
-                .setAutoCancel(setting.autoCancel)
-                .setCategory(setting.category)
-                .apply {
-                    if (setting.hasSound) setSound(DEFAULT_RINGTONE_URI)
-                    if (setting.hasVibration) setVibrate(DEFAULT_VIBRATION_PATTERN)
-                    title?.let { setContentTitle(it) }
-                    text?.let { setContentText(it) }
-                    subText?.let { setSubText(it) }
-                    bigText?.let { setStyle(NotificationCompat.BigTextStyle().bigText(it)) }
-                    intent?.let { setContentIntent(it) }
-                    timeoutMs?.let { setTimeoutAfter(it) }
-                    progress?.let { setProgress(100, it, indeterminate) }
-                    if (removeViews != null) {
-                        setCustomContentView(removeViews)
-                        setStyle(NotificationCompat.DecoratedCustomViewStyle())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channels = NOTIFICATION_SETTINGS.map { (id, setting) ->
+                NotificationChannel(id, context.getString(setting.nameRes), setting.importance).apply {
+                    lockscreenVisibility = setting.visibility
+                    if (setting.hasVibration) vibrationPattern = DEFAULT_VIBRATION_PATTERN
+                    if (setting.hasSound) {
+                        setSound(
+                            DEFAULT_RINGTONE_URI,
+                            AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                                .build()
+                        )
                     }
-                    actions?.forEach { addAction(it) }
-                }.build()
+                }
+            }
+
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            notificationManager.createNotificationChannels(channels)
+        }
     }
+
+    fun notifySurvey(
+        context: Context,
+        timestamp: Long,
+        entityId: Long,
+        title: String,
+        message: String
+    ) {
+        val builder = getBuilder(context, CHANNEL_ID_SURVEY_TRIGGERED)
+        val primaryColor = getColorFromAttr(context, R.attr.colorPrimary)
+
+        val ntf = builder.apply {
+            setOngoing(false)
+            setAutoCancel(true)
+            if (primaryColor != null) color = primaryColor
+            setContentIntent(
+                SurveyResponseFragment.pendingIntent(
+                    context = context,
+                    entityId = entityId,
+                    title = title,
+                    message = message,
+                    triggerTime = timestamp
+                )
+            )
+            setSmallIcon(R.drawable.baseline_article_24)
+            setWhen(timestamp)
+            setContentTitle(title)
+            setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            setGroup(GROUP_ID_SURVEY)
+        }.build()
+
+        NotificationManagerCompat.from(context).notify(entityIdToTag(entityId), ID_SURVEY_TRIGGERED, ntf)
+    }
+
+    fun cancelSurvey(context: Context, entityId: Long) {
+        NotificationManagerCompat.from(context).cancel(entityIdToTag(entityId), ID_SURVEY_TRIGGERED)
+    }
+
+    fun notifyError(
+        context: Context,
+        timestamp: Long,
+        message: String
+    ) {
+        val builder = getBuilder(context, CHANNEL_ID_ERROR)
+        val errorColor = getColorFromAttr(context, R.attr.colorError)
+
+        val ntf = builder.apply {
+            setOngoing(false)
+            setAutoCancel(true)
+            if (errorColor != null) color = errorColor
+            setContentIntent(ConfigGeneralFragment.pendingIntent(context))
+            setSmallIcon(R.drawable.baseline_error_outline_24)
+            setWhen(timestamp)
+            setContentTitle(context.getString(R.string.ntf_error_title))
+            setStyle(NotificationCompat.BigTextStyle().bigText(message))
+        }.build()
+
+        NotificationManagerCompat.from(context).notify(ID_ERROR, ntf)
+    }
+
+    fun notifyCollectorError(
+        context: Context,
+        timestamp: Long,
+        message: String,
+        name: String,
+        qualifiedName: String,
+        description: String
+    ) {
+        val builder = getBuilder(context, CHANNEL_ID_ERROR)
+        val errorColor = getColorFromAttr(context, R.attr.colorError)
+
+        val ntf = builder.apply {
+            setOngoing(false)
+            setAutoCancel(true)
+            if (errorColor != null) color = errorColor
+            setContentIntent(ConfigCollectorFragment.pendingIntent(context, name, qualifiedName, description))
+            setSmallIcon(R.drawable.baseline_error_outline_24)
+            setWhen(timestamp)
+            setContentTitle(context.getString(R.string.ntf_error_title))
+            setStyle(NotificationCompat.BigTextStyle().bigText("($name) $message"))
+        }.build()
+
+        NotificationManagerCompat.from(context).notify(ID_COLLECTOR_ERROR, ntf)
+    }
+
+    private fun foreground(context: Context, recordsCollected: Long, recordsUploaded: Long) : Notification {
+        val builder = getBuilder(context, CHANNEL_ID_FOREGROUND)
+
+        val primaryColor = getColorFromAttr(context, R.attr.colorPrimary)
+        val compactFormatCollected = Formatter.formatCompactNumber(recordsCollected.coerceAtLeast(0))
+        val compactFormatUploaded = Formatter.formatCompactNumber(recordsUploaded.coerceAtLeast(0))
+
+        return builder.apply {
+            setOngoing(true)
+            setAutoCancel(false)
+            if (primaryColor != null) color = primaryColor
+            setSmallIcon(R.drawable.ic_ntf_abc)
+            setShowWhen(false)
+            setContentTitle(context.getString(R.string.ntf_foreground_title))
+            setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(
+                R.string.ntf_foreground_text,
+                compactFormatCollected,
+                compactFormatUploaded
+            )))
+        }.build()
+    }
+
+    fun notifyForeground(service: Service, recordsCollected: Long, recordsUploaded: Long) {
+        service.startForeground(ID_FOREGROUND, foreground(service, recordsCollected, recordsUploaded))
+    }
+
+    fun notifyForeground(context: Context, recordsCollected: Long, recordsUploaded: Long) {
+        NotificationManagerCompat.from(context).notify(ID_FOREGROUND, foreground(context, recordsCollected, recordsUploaded))
+    }
+
+    fun syncInitialize(context: Context, cancelIntent: PendingIntent) : ForegroundInfo {
+        val builder = getBuilder(context, CHANNEL_ID_SYNC)
+        val primaryColor = getColorFromAttr(context, R.attr.colorPrimary)
+        val ntf = builder.apply {
+            setOngoing(true)
+            setAutoCancel(false)
+            if (primaryColor != null) color = primaryColor
+            setSmallIcon(R.drawable.baseline_sync_24)
+            setShowWhen(true)
+            setContentTitle(context.getString(R.string.ntf_sync_text_initialize))
+            setProgress(0, 0, true)
+            addAction(
+                NotificationCompat.Action.Builder(
+                    R.drawable.baseline_remove_24, context.getString(R.string.ntf_sync_action_cancel), cancelIntent
+                ).build()
+            )
+        }.build()
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(ID_SYNC, ntf, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            ForegroundInfo(ID_SYNC, ntf)
+        }
+    }
+
+    fun syncProgress(context: Context, max: Long, progress: Long, cancelIntent: PendingIntent) : ForegroundInfo {
+        val builder = getBuilder(context, CHANNEL_ID_SYNC)
+        val primaryColor = getColorFromAttr(context, R.attr.colorPrimary)
+        val maxFormat = Formatter.formatCompactNumber(max)
+        val progressFormat = Formatter.formatCompactNumber(progress)
+        val normalizedProgress = (progress.toFloat() / max * 100).toInt()
+
+        val ntf = builder.apply {
+            setOngoing(true)
+            setAutoCancel(false)
+            setSmallIcon(R.drawable.baseline_sync_24)
+            setShowWhen(false)
+            if (primaryColor != null) color = primaryColor
+            setContentTitle(context.getString(R.string.ntf_sync_title))
+            setContentText(
+                context.getString(
+                    R.string.ntf_sync_text_progress,
+                    progressFormat,
+                    maxFormat
+                )
+            )
+            addAction(
+                NotificationCompat.Action.Builder(
+                    R.drawable.baseline_remove_24,
+                    context.getString(R.string.ntf_sync_action_cancel),
+                    cancelIntent
+                ).build()
+            )
+            setProgress(100, normalizedProgress, false)
+        }.build()
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(ID_SYNC, ntf, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            ForegroundInfo(ID_SYNC, ntf)
+        }
+    }
+
+    fun syncSuccess(context: Context) : ForegroundInfo {
+        val builder = getBuilder(context, CHANNEL_ID_SYNC)
+        val primaryColor = getColorFromAttr(context, R.attr.colorPrimary)
+
+        val ntf = builder.apply {
+            setOngoing(false)
+            setAutoCancel(true)
+            setSmallIcon(R.drawable.baseline_sync_24)
+            setShowWhen(true)
+            if (primaryColor != null) color = primaryColor
+            setContentTitle(context.getString(R.string.ntf_sync_title))
+            setContentText(context.getString(R.string.ntf_sync_text_complete))
+        }.build()
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(ID_SYNC, ntf, 0)
+        } else {
+            ForegroundInfo(ID_SYNC, ntf)
+        }
+    }
+
+    fun syncFailure(context: Context, throwable: Throwable?) : ForegroundInfo {
+        val builder = getBuilder(context, CHANNEL_ID_SYNC)
+        val errorColor = getColorFromAttr(context, R.attr.colorError)
+        val message = AbcError.wrap(throwable).toSimpleString(context)
+
+        val ntf = builder.apply {
+            setOngoing(false)
+            setAutoCancel(true)
+            setSmallIcon(R.drawable.baseline_sync_24)
+            setShowWhen(true)
+            if (errorColor != null) color = errorColor
+            if (errorColor != null) color = errorColor
+
+            setContentTitle(context.getString(R.string.ntf_sync_title))
+            setStyle(NotificationCompat.BigTextStyle().bigText(
+                context.getString(R.string.ntf_sync_text_error, message)
+            ))
+        }.build()
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(ID_SYNC, ntf, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            ForegroundInfo(ID_SYNC, ntf)
+        }
+    }
+
+
+    private fun getBuilder(context: Context, channelId: String): NotificationCompat.Builder {
+        val setting = NOTIFICATION_SETTINGS[channelId] ?: return NotificationCompat.Builder(
+            context,
+            channelId
+        ).apply {
+            setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            priority = NotificationCompat.PRIORITY_DEFAULT
+        }
+
+        return NotificationCompat.Builder(context, channelId).apply {
+            setVisibility(setting.visibility)
+            priority = setting.priority
+            setCategory(setting.category)
+
+            if (setting.hasSound) {
+                setSound(DEFAULT_RINGTONE_URI, AudioManager.STREAM_NOTIFICATION)
+            }
+            if (setting.hasVibration) {
+                setVibrate(DEFAULT_VIBRATION_PATTERN)
+            }
+        }
+    }
+
+    fun isSync(id: Int) = id == ID_SYNC
+
+    fun isForeground(id: Int) = id == ID_FOREGROUND
+
+    fun isSurvey(id: Int) = id == ID_SYNC
+
+    fun isError(id: Int) = id == ID_ERROR
+
+    private fun entityIdToTag(entityId: Long) = "${BuildConfig.APPLICATION_ID}.SURVEY_ENTITY_ID.$entityId"
 }

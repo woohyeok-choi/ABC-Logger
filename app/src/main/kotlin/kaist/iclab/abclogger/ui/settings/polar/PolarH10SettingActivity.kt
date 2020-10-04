@@ -1,63 +1,116 @@
 package kaist.iclab.abclogger.ui.settings.polar
 
-import android.view.MenuItem
-import kaist.iclab.abclogger.BR
+import android.view.LayoutInflater
+import androidx.lifecycle.lifecycleScope
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.ui.setting.polar.PolarH10Navigator
-import kaist.iclab.abclogger.commons.showToast
+import kaist.iclab.abclogger.commons.AbcError
+import kaist.iclab.abclogger.ui.settings.AbstractSettingActivity
+import kaist.iclab.abclogger.commons.showSnackBar
 import kaist.iclab.abclogger.databinding.LayoutSettingPolarH10Binding
-import kaist.iclab.abclogger.base.BaseViewModelFragment
+import kaist.iclab.abclogger.dialog.VersatileDialog
+import kotlinx.coroutines.flow.collectLatest
+import org.koin.androidx.viewmodel.ext.android.stateViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 
-class PolarH10SettingFragment : BaseViewModelFragment<LayoutSettingPolarH10Binding, PolarH10ViewModel>(), PolarH10Navigator {
-    override val viewModel: PolarH10ViewModel by viewModel { parametersOf(this) }
+class PolarH10SettingActivity : AbstractSettingActivity<LayoutSettingPolarH10Binding, PolarH10ViewModel>() {
+    override val viewModel: PolarH10ViewModel by stateViewModel()
 
-    override val innerLayoutId: Int = R.layout.layout_setting_polar_h10
+    override fun getInnerViewBinding(inflater: LayoutInflater): LayoutSettingPolarH10Binding =
+            LayoutSettingPolarH10Binding.inflate(inflater)
 
-    override val titleRes: Int = R.string.data_name_polar_h10
+    override fun afterToolbarCreated() {
+        childBinding.containerDeviceId.setOnClickListener {
+            if (childBinding.swiConnect.isChecked) {
+                showSnackBar(viewBinding.root, R.string.setting_polar_h10_msg_require_stop_connection)
+            } else {
+                lifecycleScope.launchWhenCreated {
+                    val newId = VersatileDialog.text(
+                        manager = supportFragmentManager,
+                        owner = this@PolarH10SettingActivity,
+                        title = getString(R.string.collector_polar_h10_info_device_id),
+                        value = viewModel.deviceId
+                    )?.trim()
 
-    override val menuId: Int = R.menu.menu_activity_settings
-
-    override val viewModelVariable: Int = BR.viewModel
-
-    override fun beforeExecutePendingBindings() {
-        innerViewBinding.containerDeviceId.setOnClickListener {
-            if (innerViewBinding.switchOnOff.isChecked) return@setOnClickListener
-
-            EditTextDialogFragment.showDialog(
-                    fragmentManager = supportFragmentManager,
-                    title = getString(R.string.setting_polar_h10_collector_device_id_dialog_title),
-                    content = viewModel.deviceId.value?.toString() ?: ""
-            ) { content ->
-                innerViewBinding.txtDeviceId.text = content
+                    if (newId != null) {
+                        viewModel.deviceId = newId
+                        childBinding.txtDeviceIdText.text = newId
+                    }
+                }
             }
         }
 
-        innerViewBinding.switchOnOff.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) viewModel.connect() else viewModel.disconnect()
+        childBinding.swiConnect.setOnCheckedChangeListener { _, isChecked ->
+            childBinding.txtDeviceIdTitle.isEnabled = !isChecked
+            childBinding.txtDeviceIdText.isEnabled = !isChecked
+
+            if (isChecked) {
+                viewModel.connect(childBinding.txtDeviceIdText.toString())
+            } else {
+                viewModel.disconnect()
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.status.collectLatest { connection ->
+                childBinding.txtName.text = connection?.name
+                childBinding.txtAddress.text = connection?.address
+                childBinding.txtConnection.text = connection?.state
+                childBinding.txtRssi.text = connection?.rssi?.toString()
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.battery.collectLatest { battery ->
+                childBinding.txtBattery.text = battery?.toString()
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.heartRate.collectLatest { heartRate ->
+                childBinding.txtHeartRate.text = heartRate?.let {
+                    "${it.heartRate} (${if (it.contact) "CONTACTED" else "DETACHED"})"
+                }
+                childBinding.txtRrInterval.text = heartRate?.rrInterval?.lastOrNull()?.toString()
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.ecg.collectLatest { ecg ->
+                childBinding.txtEcg.text = ecg?.toString()
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.accelerometer.collectLatest { acc ->
+                childBinding.txtAccel.text = acc?.let { (x, y, z) -> "$x, $y, $z" }
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.error.collectLatest { error ->
+                showSnackBar(viewBinding.root, AbcError.wrap(error).toSimpleString(this@PolarH10SettingActivity))
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            val deviceId = viewModel.deviceId
+            updateUi(deviceId)
+
+            viewModel.saveState(KEY_DEVICE_ID, deviceId)
         }
     }
 
-    override fun onError(throwable: Throwable) {
-        showToast(throwable)
+    override fun undo() {
+        val deviceId = viewModel.loadState(KEY_DEVICE_ID) ?: ""
+        viewModel.deviceId = deviceId
+        updateUi(deviceId)
     }
 
-    override fun navigateStore() {
-        finish()
+    private fun updateUi(deviceId: String) {
+        childBinding.txtDeviceIdText.text = deviceId
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                finish()
-                true
-            }
-            R.id.menu_activity_settings_save -> {
-                viewModel.store()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+    companion object {
+        private const val KEY_DEVICE_ID = "KEY_DEVICE_ID"
     }
 }

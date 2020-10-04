@@ -1,7 +1,5 @@
-package kaist.iclab.abclogger.base
+package kaist.iclab.abclogger.core.ui
 
-import androidx.annotation.LayoutRes
-import androidx.databinding.ViewDataBinding
 import androidx.viewbinding.ViewBinding
 
 abstract class BaseViewModelActivity<T : ViewBinding, VM : BaseViewModel> : BaseActivity<T>() {

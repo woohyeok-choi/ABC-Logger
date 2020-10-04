@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.collector.content
+package kaist.iclab.abclogger.collector.call
 
 import android.Manifest
 import android.app.AlarmManager
@@ -15,14 +15,15 @@ import androidx.core.database.getStringOrNull
 import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.*
-import kaist.iclab.abclogger.core.AbstractCollector
-import kaist.iclab.abclogger.core.DataRepository
+import kaist.iclab.abclogger.core.collector.AbstractCollector
+import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.collector.Description
 import java.util.concurrent.TimeUnit
 
 class CallLogCollector(
     context: Context,
-    name: String,
     qualifiedName: String,
+    name: String,
     description: String,
     dataRepository: DataRepository
 ) : AbstractCollector<CallLogEntity>(
@@ -33,7 +34,6 @@ class CallLogCollector(
     dataRepository
 ) {
     override val permissions: List<String> = listOf(
-            Manifest.permission.READ_CALL_LOG,
             Manifest.permission.READ_CONTACTS
     )
 
@@ -62,7 +62,7 @@ class CallLogCollector(
 
     override fun isAvailable(): Boolean = true
 
-    override fun getStatus(): Array<Info> = arrayOf()
+    override fun getDescription(): Array<Description> = arrayOf()
 
     override suspend fun onStart() {
         val filter = IntentFilter().apply {
@@ -95,9 +95,13 @@ class CallLogCollector(
     override suspend fun list(limit: Long): Collection<CallLogEntity> = dataRepository.find(0, limit)
 
     private fun handleCallLogScanRequest() = launch {
-        val timestamp = System.currentTimeMillis()
+        val toTime = System.currentTimeMillis()
+        val fromTime = atLeastPositive(
+            least = toTime - TimeUnit.HOURS.toMillis(12),
+            value = lastTimeDataWritten
+        )
 
-        getRecentContents(
+        val entities = getRecentContents(
                 contentResolver = contentResolver,
                 uri = CallLog.Calls.CONTENT_URI,
                 timeColumn = CallLog.Calls.DATE,
@@ -109,13 +113,13 @@ class CallLogCollector(
                         CallLog.Calls.NUMBER_PRESENTATION,
                         CallLog.Calls.DATA_USAGE
                 ),
-                lastTime = lastTimeDataWritten.coerceAtLeast(timestamp - TimeUnit.HOURS.toMillis(12))
+                lastTime = fromTime
         ) { cursor ->
             val millis = cursor.getLongOrNull(0) ?: 0
             val number = cursor.getStringOrNull(2) ?: ""
             val contact = getContact(contentResolver, number) ?: Contact()
 
-            val entity = CallLogEntity(
+            CallLogEntity(
                     duration = cursor.getLongOrNull(1) ?: 0,
                     number = toHash(number, 4),
                     type = stringifyCallType(cursor.getIntOrNull(3)),
@@ -124,9 +128,11 @@ class CallLogCollector(
                     contactType = contact.contactType,
                     isStarred = contact.isStarred,
                     isPinned = contact.isPinned
-            )
-            put(entity, millis)
+            ).apply {
+                timestamp = millis
+            }
         }
+        putAll(entities)
     }
 
     companion object {

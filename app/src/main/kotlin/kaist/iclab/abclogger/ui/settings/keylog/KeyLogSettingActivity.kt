@@ -2,63 +2,112 @@ package kaist.iclab.abclogger.ui.settings.keylog
 
 import android.content.Intent
 import android.provider.Settings
-import android.view.MenuItem
+import android.view.LayoutInflater
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
-import kaist.iclab.abclogger.BR
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.commons.showToast
+import kaist.iclab.abclogger.ui.settings.AbstractSettingActivity
+import kaist.iclab.abclogger.collector.keylog.KeyLogCollector
+import kaist.iclab.abclogger.commons.getActivityResult
+import kaist.iclab.abclogger.commons.getColorFromAttr
 import kaist.iclab.abclogger.databinding.LayoutSettingKeyLogBinding
-import kaist.iclab.abclogger.base.BaseToolbarActivity
-import kaist.iclab.abclogger.base.BaseViewModelFragment
-import kotlinx.coroutines.launch
+import kaist.iclab.abclogger.dialog.VersatileDialog
+import org.koin.androidx.viewmodel.ext.android.stateSharedViewModel
+import org.koin.androidx.viewmodel.ext.android.stateViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class KeyLogSettingFragment : BaseViewModelFragment<LayoutSettingKeyLogBinding, KeyLogViewModel>() {
-    override val viewModel: KeyLogViewModel by viewModel()
-    override val innerLayoutId: Int = R.layout.layout_setting_key_log
-    override val titleRes: Int = R.string.data_name_key_log
-    override val menuId: Int = R.menu.menu_activity_settings
-    override val viewModelVariable: Int = BR.viewModel
+class KeyLogSettingActivity :
+    AbstractSettingActivity<LayoutSettingKeyLogBinding, KeyLogViewModel>() {
+    override val viewModel: KeyLogViewModel by stateViewModel()
 
-    override fun beforeExecutePendingBindings() {
-        innerViewBinding.containerKeyboardType.setOnClickListener {
-            SingleChoiceDialogFragment.showDialog(
-                    fragmentManager = supportFragmentManager,
-                    title = getString(R.string.setting_key_log_collector_keyboard_type_dialog_title),
-                    items = arrayOf(
-                            getString(R.string.setting_key_log_collector_chunjiin),
-                            getString(R.string.setting_key_log_collector_qwerty),
-                            getString(R.string.setting_key_log_collector_others)
-                    ),
-                    selectedItem = innerViewBinding.txtKeySetting.text?.toString() ?: ""
-            ) { content ->
-                innerViewBinding.txtKeySetting.text = content
-            }
-        }
+    private val options = arrayOf(
+        KeyLogCollector.KEYBOARD_TYPE_CHUNJIIN,
+        KeyLogCollector.KEYBOARD_TYPE_QWERTY_KOR,
+        KeyLogCollector.KEYBOARD_TYPE_OTHERS
+    )
 
-        innerViewBinding.containerAccessibility.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        }
-    }
+    override fun getInnerViewBinding(inflater: LayoutInflater): LayoutSettingKeyLogBinding =
+        LayoutSettingKeyLogBinding.inflate(inflater)
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                finish()
-                true
-            }
-            R.id.menu_activity_settings_save -> {
-                lifecycleScope.launch {
-                    viewModel.store()
-                    finish()
+    override fun afterToolbarCreated() {
+        childBinding.containerKeyboard.setOnClickListener {
+            lifecycleScope.launchWhenCreated {
+                val items = options.mapNotNull { type ->
+                    keyboardTypeToString(type)
+                }.toTypedArray()
+
+                val idx = VersatileDialog.singleChoice(
+                    manager = supportFragmentManager,
+                    owner = this@KeyLogSettingActivity,
+                    title = getString(R.string.setting_key_log_keyboard_type_title),
+                    value = viewModel.keyboardType,
+                    items = items
+                )
+
+                if (idx != null) {
+                    viewModel.keyboardType = options[idx]
+                    updateUi(viewModel.keyboardType)
                 }
-                true
             }
-            else -> super.onOptionsItemSelected(item)
+        }
+
+        childBinding.containerAccessibility.setOnClickListener {
+            lifecycleScope.launchWhenCreated {
+                getActivityResult(
+                    Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS),
+                    ActivityResultContracts.StartActivityForResult()
+                )
+                updateUi(viewModel.isAccessibilityServiceAllowed())
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            val keyboardType = viewModel.keyboardType
+            val isAllowed = viewModel.isAccessibilityServiceAllowed()
+
+            viewModel.saveState(KEY_KEYBOARD_TYPE, keyboardType)
+
+            updateUi(keyboardType)
+            updateUi(isAllowed)
         }
     }
 
-    override fun onError(throwable: Throwable?) {
-        showToast(throwable)
+    override fun undo() {
+        val keyboardType = viewModel.loadState(KEY_KEYBOARD_TYPE) ?: -1
+        val isAllowed = viewModel.isAccessibilityServiceAllowed()
+
+        viewModel.keyboardType = keyboardType
+
+        updateUi(keyboardType)
+        updateUi(isAllowed)
+    }
+
+    private fun updateUi(keyboardType: Int) {
+        childBinding.txtKeyboardText.text = keyboardTypeToString(keyboardType)
+    }
+
+    private fun updateUi(isAllowed: Boolean) {
+        childBinding.txtAccessibilityText.text = accessibilityToString(isAllowed)
+        val textColor = getColorFromAttr(this, if (isAllowed) R.attr.colorPrimary else R.attr.colorError) ?: return
+        childBinding.txtAccessibilityText.setTextColor(textColor)
+    }
+
+    private fun keyboardTypeToString(type: Int?) = when (type) {
+        KeyLogCollector.KEYBOARD_TYPE_CHUNJIIN -> R.string.setting_key_log_keyboard_type_text_chunjiin
+        KeyLogCollector.KEYBOARD_TYPE_QWERTY_KOR -> R.string.setting_key_log_keyboard_type_text_qwerty
+        KeyLogCollector.KEYBOARD_TYPE_OTHERS -> R.string.setting_key_log_keyboard_type_text_others
+        else -> null
+    }?.let { getString(it) }
+
+    private fun accessibilityToString(isAllowed: Boolean) = getString(
+        if (isAllowed) {
+            R.string.setting_key_log_accessibility_text_allowed
+        } else {
+            R.string.setting_key_log_accessibility_text_rejected
+        }
+    )
+
+    companion object {
+        private const val KEY_KEYBOARD_TYPE = "KEY_KEYBOARD_TYPE"
     }
 }

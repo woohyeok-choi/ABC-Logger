@@ -1,14 +1,7 @@
 package kaist.iclab.abclogger.structure.config
 
-import android.text.InputType
-import androidx.activity.result.ActivityResultCaller
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.databinding.BaseObservable
-import kaist.iclab.abclogger.commons.getActivityResult
 import kaist.iclab.abclogger.core.collector.Status
-
-private const val EMPTY_VALUE = -1
-
 
 class ConfigCategoryBuilder(val name: String? = null) {
     private val configs: ArrayList<ConfigData> = if (name.isNullOrBlank()) {
@@ -97,12 +90,14 @@ class ConfigBuilder {
         categories.add(builder.build())
     }
 
-    fun build(): ArrayList<ConfigData> = arrayListOf<ConfigData>().apply {
+    fun build(): Config = Config().apply {
         addAll(categories.flatten())
     }
 }
 
-fun config(init: ConfigBuilder.() -> Unit): ArrayList<ConfigData> {
+class Config: ArrayList<ConfigData>()
+
+fun config(init: ConfigBuilder.() -> Unit): Config {
     val config = ConfigBuilder()
     config.init()
     return config.build()

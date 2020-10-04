@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.collector.sensor
+package kaist.iclab.abclogger.collector.embedded
 
 import android.content.Context
 import android.content.Intent
@@ -10,17 +10,19 @@ import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.subjects.PublishSubject
 import io.reactivex.rxjava3.subjects.Subject
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.core.AbstractCollector
+import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.collector.stringifySensorAccuracy
-import kaist.iclab.abclogger.core.DataRepository
+import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.collector.Description
+import kaist.iclab.abclogger.core.collector.with
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.reactive.asFlow
 import java.util.concurrent.TimeUnit
 
 class EmbeddedSensorCollector(
     context: Context,
-    name: String,
     qualifiedName: String,
+    name: String,
     description: String,
     dataRepository: DataRepository
 ) : AbstractCollector<EmbeddedSensorEntity>(
@@ -52,15 +54,12 @@ class EmbeddedSensorCollector(
     override fun isAvailable(): Boolean =
         isSensorAvailable(Sensor.TYPE_LIGHT) || isSensorAvailable(Sensor.TYPE_PROXIMITY)
 
-    override fun getStatus(): Array<Info> = arrayOf(
-        Info(
-            R.string.collector_info_embedded_sensor_light_enabled,
-            context.getString(if (isSensorAvailable(Sensor.TYPE_LIGHT)) R.string.general_enabled else R.string.general_disabled)
-        ),
-        Info(
-            R.string.collector_info_embedded_sensor_proximity_enabled,
-            context.getString(if (isSensorAvailable(Sensor.TYPE_PROXIMITY)) R.string.general_enabled else R.string.general_disabled)
-        )
+    override fun getDescription(): Array<Description> = arrayOf(
+        R.string.collector_embedded_sensor_info_proximity with
+                context.getString(if (isSensorAvailable(Sensor.TYPE_LIGHT)) R.string.collector_embedded_sensor_info_sensor_supported else R.string.collector_embedded_sensor_info_sensor_none),
+        R.string.collector_embedded_sensor_info_light_supported with
+                context.getString(if (isSensorAvailable(Sensor.TYPE_PROXIMITY)) R.string.collector_embedded_sensor_info_sensor_supported else R.string.collector_embedded_sensor_info_sensor_none)
+
     )
 
     override suspend fun onStart() {
@@ -88,7 +87,7 @@ class EmbeddedSensorCollector(
             ).toFlowable(
                 BackpressureStrategy.BUFFER
             ).asFlow().collect {
-                put(data = it)
+                putAll(it)
             }
         }
     }

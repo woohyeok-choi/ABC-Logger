@@ -1,11 +1,11 @@
-package kaist.iclab.abclogger.base
+package kaist.iclab.abclogger.core.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding
-import kaist.iclab.abclogger.commons.Log
+import kaist.iclab.abclogger.core.Log
 
 abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
     lateinit var viewBinding: T

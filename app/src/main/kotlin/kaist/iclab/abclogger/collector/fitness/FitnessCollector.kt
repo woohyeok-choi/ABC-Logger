@@ -25,7 +25,7 @@ import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.core.collector.*
 import java.util.concurrent.TimeUnit
 
-class PhysicalStatCollector(
+class FitnessCollector(
     context: Context,
     qualifiedName: String,
     name: String,
@@ -113,10 +113,10 @@ class PhysicalStatCollector(
         }
     }.build()
 
-    var lastTimeStepCountWritten by ReadWriteStatusLong(Long.MIN_VALUE)
-    var lastTimeDistanceWritten by ReadWriteStatusLong(Long.MIN_VALUE)
-    var lastTimeCaloriesWritten by ReadWriteStatusLong(Long.MIN_VALUE)
-    var lastTimeActivityWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+    private var lastTimeStepCountWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+    private var lastTimeDistanceWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+    private var lastTimeCaloriesWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+    private var lastTimeActivityWritten by ReadWriteStatusLong(Long.MIN_VALUE)
 
     private val alarmManager: AlarmManager by lazy {
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -149,13 +149,13 @@ class PhysicalStatCollector(
     }
 
     override fun getDescription(): Array<Description> = arrayOf(
-        R.string.collector_info_physical_stat_step_count_written with
+        R.string.collector_fitness_info_step_count_written with
                 formatDateTime(context, lastTimeStepCountWritten),
-        R.string.collector_info_physical_stat_activity_written with
+        R.string.collector_fitness_info_stat_activity_written with
                 formatDateTime(context, lastTimeActivityWritten),
-        R.string.collector_info_physical_stat_distance_written with
+        R.string.collector_fitness_info_stat_distance_written with
                 formatDateTime(context, lastTimeDistanceWritten),
-        R.string.collector_info_physical_stat_calories_written with
+        R.string.collector_fitness_info_stat_calories_written with
                 formatDateTime(context, lastTimeCaloriesWritten)
     )
 
@@ -199,24 +199,35 @@ class PhysicalStatCollector(
         val account = GoogleSignIn.getLastSignedInAccount(context)
             ?: throw GoogleApiError.noSignedAccount()
         val historyClient = Fitness.getHistoryClient(context, account)
-        val timestamp = System.currentTimeMillis()
+        val toTime = System.currentTimeMillis()
+
+        val fromTimeStepCount = atLeastPositive(
+            least = toTime - TimeUnit.HOURS.toMillis(12),
+            value = lastTimeStepCountWritten
+        )
+        val fromTimeActivity = atLeastPositive(
+            least = toTime - TimeUnit.HOURS.toMillis(12),
+            value = lastTimeActivityWritten
+        )
+        val fromTimeDistance = atLeastPositive(
+            least = toTime - TimeUnit.HOURS.toMillis(12),
+            value = lastTimeDistanceWritten
+        )
+        val fromTimeCalories = atLeastPositive(
+            least = toTime - TimeUnit.HOURS.toMillis(12),
+            value = lastTimeCaloriesWritten
+        )
 
         /**
          * Extract step counts
          */
         val stepCounts = extractData(
             historyClient = historyClient,
-            fromTime = lastTimeStepCountWritten.coerceAtLeast(timestamp - TimeUnit.DAYS.toMillis(1)),
-            toTime = timestamp,
+            fromTime = fromTimeStepCount,
+            toTime = toTime,
             spec = dataSpecStepCount
-        ).sortedBy { entity ->
-            entity.endTime
-        }.filter { entity ->
-            entity.endTime >= lastTimeStepCountWritten
-        }.also { entities ->
-            entities.lastOrNull()?.let {
-                lastTimeStepCountWritten = it.endTime
-            }
+        ).filter { entity ->
+            entity.endTime >= fromTimeStepCount
         }
 
         /**
@@ -224,17 +235,11 @@ class PhysicalStatCollector(
          */
         val activities = extractData(
             historyClient = historyClient,
-            fromTime = lastTimeActivityWritten.coerceAtLeast(timestamp - TimeUnit.DAYS.toMillis(1)),
-            toTime = timestamp,
+            fromTime = fromTimeActivity,
+            toTime = toTime,
             spec = dataSpecActivity
-        ).sortedBy { entity ->
-            entity.endTime
-        }.filter { entity ->
-            entity.endTime >= lastTimeActivityWritten
-        }.also { entities ->
-            entities.lastOrNull()?.let {
-                lastTimeActivityWritten = it.endTime
-            }
+        ).filter { entity ->
+            entity.endTime >= fromTimeActivity
         }
 
         /**
@@ -242,17 +247,11 @@ class PhysicalStatCollector(
          */
         val distances = extractData(
             historyClient = historyClient,
-            fromTime = lastTimeDistanceWritten.coerceAtLeast(timestamp - TimeUnit.DAYS.toMillis(1)),
-            toTime = timestamp,
+            fromTime = fromTimeDistance,
+            toTime = toTime,
             spec = dataSpecDistance
-        ).sortedBy { entity ->
-            entity.endTime
-        }.filter { entity ->
-            entity.endTime >= lastTimeDistanceWritten
-        }.also { entities ->
-            entities.lastOrNull()?.let {
-                lastTimeDistanceWritten = it.endTime
-            }
+        ).filter { entity ->
+            entity.endTime >= fromTimeDistance
         }
 
         /**
@@ -260,23 +259,32 @@ class PhysicalStatCollector(
          */
         val calories = extractData(
             historyClient = historyClient,
-            fromTime = lastTimeCaloriesWritten.coerceAtLeast(timestamp - TimeUnit.DAYS.toMillis(1)),
-            toTime = timestamp,
+            fromTime = fromTimeCalories,
+            toTime = toTime,
             spec = dataSpecCalories
         ).sortedBy { entity ->
             entity.endTime
         }.filter { entity ->
-            entity.endTime >= lastTimeCaloriesWritten
-        }.also { entities ->
-            entities.lastOrNull()?.let {
-                lastTimeCaloriesWritten = it.endTime
-            }
+            entity.endTime >= fromTimeCalories
         }
 
-        put(stepCounts, timestamp)
-        put(activities, timestamp)
-        put(distances, timestamp)
-        put(calories, timestamp)
+        lastTimeStepCountWritten =
+            stepCounts.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeStepCountWritten)
+                ?: lastTimeStepCountWritten
+        lastTimeActivityWritten =
+            activities.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeActivityWritten)
+                ?: lastTimeActivityWritten
+        lastTimeDistanceWritten =
+            distances.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeDistanceWritten)
+                ?: lastTimeDistanceWritten
+        lastTimeCaloriesWritten =
+            calories.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeCaloriesWritten)
+                ?: lastTimeCaloriesWritten
+
+        putAll(stepCounts, toTime)
+        putAll(activities, toTime)
+        putAll(distances, toTime)
+        putAll(calories, toTime)
     }
 
     private suspend fun extractData(

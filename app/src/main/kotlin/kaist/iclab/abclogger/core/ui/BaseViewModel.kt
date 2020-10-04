@@ -1,12 +1,9 @@
-package kaist.iclab.abclogger.base
+package kaist.iclab.abclogger.core.ui
 
 import android.app.Application
 import androidx.lifecycle.*
-import kaist.iclab.abclogger.ui.State
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 open class BaseViewModel(
     private val savedStateHandle: SavedStateHandle,

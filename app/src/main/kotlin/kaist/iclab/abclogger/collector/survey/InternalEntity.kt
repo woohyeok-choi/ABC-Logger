@@ -1,28 +1,28 @@
 package kaist.iclab.abclogger.collector.survey
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.databinding.BaseObservable
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import kaist.iclab.abclogger.collector.AbstractEntity
 import kaist.iclab.abclogger.commons.*
-import kaist.iclab.abclogger.survey.AltText
-import kaist.iclab.abclogger.survey.Option
-import kaist.iclab.abclogger.survey.Question
-import kaist.iclab.abclogger.survey.Survey
+import kaist.iclab.abclogger.structure.survey.AltText
+import kaist.iclab.abclogger.structure.survey.Question
+import kaist.iclab.abclogger.structure.survey.Survey
 
 @Entity
 data class InternalSurveyEntity(
     @Id var id: Long = 0,
-    var triggerEvent: String = "",
-    var cancelEvent: String = "",
+    var isTransferredToSync: Boolean = false,
+    var uuid: String = "",
+    var eventTime: Long = Long.MIN_VALUE,
+    var eventName: String = "",
     var intendedTriggerTime: Long = Long.MIN_VALUE,
     var actualTriggerTime: Long = Long.MIN_VALUE,
-    var firstReactionTime: Long = Long.MIN_VALUE,
-    var lastReactionTime: Long = Long.MIN_VALUE,
+    var reactionTime: Long = Long.MIN_VALUE,
     var responseTime: Long = Long.MIN_VALUE,
     var url: String = "",
     @Convert(converter = AltTextConverter::class, dbType = String::class)
@@ -34,8 +34,8 @@ data class InternalSurveyEntity(
     var timeoutUntil: Long = Long.MIN_VALUE,
     @Convert(converter = TimeoutActionConverter::class, dbType = Int::class)
     var timeoutAction: Survey.TimeoutAction = Survey.TimeoutAction.NONE,
-    @Convert(converter = LongListConverter::class, dbType = String::class)
-    var responses: List<Long> = listOf()
+    @io.objectbox.annotation.Transient
+    var responses: List<InternalResponseEntity> = listOf()
 ) {
     fun isAnswered(): Boolean = responseTime >= 0
 
@@ -57,11 +57,51 @@ data class InternalResponseEntity(
     var index: Int = 0,
     @Convert(converter = QuestionConverter::class, dbType = String::class)
     var question: Question = Question(),
-    @Convert(converter = AnswerConverter::class, dbType = String::class)
-    var answer: Answer = Answer(true)
-)
+    @Convert(converter = InternalAnswerConverter::class, dbType = String::class)
+    var answer: InternalAnswer = InternalAnswer(true)
+) : Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readInt(),
+        parcel.readParcelable(Question::class.java.classLoader) ?: Question(),
+        parcel.readParcelable(InternalAnswer::class.java.classLoader) ?: InternalAnswer()
+    )
 
-class Answer(val mutualExclusive: Boolean) : BaseObservable() {
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeLong(id)
+        parcel.writeLong(surveyId)
+        parcel.writeInt(index)
+        parcel.writeParcelable(question, flags)
+        parcel.writeParcelable(answer, flags)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<InternalResponseEntity> {
+        override fun createFromParcel(parcel: Parcel): InternalResponseEntity {
+            return InternalResponseEntity(parcel)
+        }
+
+        override fun newArray(size: Int): Array<InternalResponseEntity?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
+
+class InternalAnswer(
+    private val mutualExclusive: Boolean = true,
+    mainAnswer: Set<String> = setOf(),
+    otherAnswer: String = ""
+) : BaseObservable(), Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readByte() != 0.toByte(),
+        parcel.createStringArray()?.toSet() ?: setOf(),
+        parcel.readString() ?: ""
+    )
+
     fun isEmptyAnswer() = main.isEmpty() && other.isBlank()
 
     @Transient
@@ -71,7 +111,7 @@ class Answer(val mutualExclusive: Boolean) : BaseObservable() {
             notifyChange()
         }
 
-    var main: Set<String> = setOf()
+    var main: Set<String> = mainAnswer
         set(value) {
             if (field == value) return
             field = value
@@ -82,7 +122,7 @@ class Answer(val mutualExclusive: Boolean) : BaseObservable() {
             }
         }
 
-    var other: String = ""
+    var other: String = otherAnswer
         set(value) {
             if (field == value) return
             field = value
@@ -92,43 +132,31 @@ class Answer(val mutualExclusive: Boolean) : BaseObservable() {
                 main = setOf()
             }
         }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeByte(if (mutualExclusive) 1 else 0)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<InternalAnswer> {
+        override fun createFromParcel(parcel: Parcel): InternalAnswer {
+            return InternalAnswer(parcel)
+        }
+
+        override fun newArray(size: Int): Array<InternalAnswer?> {
+            return arrayOfNulls(size)
+        }
+    }
 }
 
-@Entity
-data class SurveyEntity(
-    var triggerEvent: String = "",
-    var cancelEvent: String = "",
-    var intendedTriggerTime: Long = Long.MIN_VALUE,
-    var actualTriggerTime: Long = Long.MIN_VALUE,
-    var firstReactionTime: Long = Long.MIN_VALUE,
-    var lastReactionTime: Long = Long.MIN_VALUE,
-    var responseTime: Long = Long.MIN_VALUE,
-    var url: String = "",
-    var title: String = "",
-    var altTitle: String = "",
-    var message: String = "",
-    var altMessage: String = "",
-    var instruction: String = "",
-    var altInstruction: String = "",
-    var timeoutUntil: Long = Long.MIN_VALUE,
-    var timeoutAction: String = "",
-    @Convert(converter = SyncableResponseConverter::class, dbType = String::class)
-    var responses: List<SyncableResponse> = listOf()
-) : AbstractEntity()
-
-data class SyncableResponse(
-    val index: Int = Int.MIN_VALUE,
-    val type: String = "",
-    val question: String = "",
-    val altQuestion: String = "",
-    val answer: Set<String> = setOf()
-)
-
-class AnswerConverter : JsonConverter<Answer>(
+class InternalAnswerConverter : JsonConverter<InternalAnswer>(
     adapter = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
-        .build().adapter(Answer::class.java),
-    default = Answer(true)
+        .build().adapter(InternalAnswer::class.java),
+    default = InternalAnswer(true)
 )
 
 class QuestionConverter : JsonConverter<Question>(
@@ -151,10 +179,3 @@ class AltTextConverter : JsonConverter<AltText>(
     default = AltText()
 )
 
-class SyncableResponseConverter : JsonConverter<SyncableResponse>(
-    adapter = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-        .adapter(Types.newParameterizedType(List::class.java, SyncableResponse::class.java)),
-    default = SyncableResponse()
-)

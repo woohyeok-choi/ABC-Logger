@@ -2,169 +2,379 @@ package kaist.iclab.abclogger.ui.config
 
 import android.app.Application
 import android.content.Intent
+import android.text.format.DateUtils
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.databinding.BaseObservable
-import androidx.lifecycle.liveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
 import kaist.iclab.abclogger.*
-import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.commons.CollectorError
 import kaist.iclab.abclogger.core.*
-import kaist.iclab.abclogger.base.BaseViewModel
+import kaist.iclab.abclogger.core.ui.BaseViewModel
+import kaist.iclab.abclogger.core.collector.AbstractCollector
+import kaist.iclab.abclogger.commons.Formatter
+import kaist.iclab.abclogger.commons.isPermissionGranted
+import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.collector.Status
+import kaist.iclab.abclogger.core.sync.SyncRepository
+import kaist.iclab.abclogger.structure.config.Config
+import kaist.iclab.abclogger.structure.config.ConfigData
+import kaist.iclab.abclogger.structure.config.config
+import kaist.iclab.abclogger.ui.splash.SplashActivity
+import kaist.iclab.abclogger.view.StatusColor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import android.text.format.Formatter as FileSizeFormatter
 
-class ConfigViewModel(
-        private val collectorRepository: CollectorRepository,
-        private val dataRepository: DataRepository,
-        private val authRepository: AuthRepository,
-        application: Application
-) : BaseViewModel(application) {
 
-    fun getConfig() = liveData {
-        config {
-            category(getString(R.string.config_category_general)) {
-                readOnly<Unit>(getString(R.string.config_user_name)) {
+class ConfigViewModel(
+    private val collectorRepository: CollectorRepository,
+    private val dataRepository: DataRepository,
+    savedStateHandle: SavedStateHandle,
+    application: Application
+) : BaseViewModel(savedStateHandle, application) {
+    fun getConfig() = flow { emit(buildConfig()) }.flowOn(Dispatchers.IO)
+
+    fun getCollectorConfig(qualifiedName: String) = flow {
+        emit(buildCollectorConfig(collectorRepository[qualifiedName]))
+    }.flowOn(Dispatchers.IO)
+
+    private suspend fun buildConfig(): Config {
+        val currentTime = System.currentTimeMillis()
+        val sizeDb = dataRepository.sizeOnDiskInKb()
+
+        return config {
+            category(name = str(R.string.config_category_general)) {
+                readonly(name = str(R.string.config_user_name_title)) {
                     format = {
-                        val name = authRepository.signedName()
-                                ?: getString(R.string.general_unknown)
-                        val email = authRepository.signedEmail()
-                                ?: getString(R.string.general_unknown)
+                        val name = AuthRepository.name().takeUnless { it.isBlank() }
+                            ?: str(R.string.general_hyphen)
+                        val email = AuthRepository.email().takeUnless { it.isBlank() }
+                            ?: str(R.string.general_hyphen)
                         "$name ($email)"
                     }
                 }
-                readOnly<String>(getString(R.string.config_app_version)) {
+
+                readonly(name = str(R.string.config_app_version_title)) {
                     format = {
                         "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
                     }
                 }
-                activity<Boolean, Array<String>, Map<String, Boolean>>(getString(R.string.config_permission)) {
-                    value = isPermissionGranted(getApplication(), collectorRepository.permissions)
-                    input = collectorRepository.permissions.toTypedArray()
-                    contract = ActivityResultContracts.RequestMultiplePermissions()
-                    format = { isGranted ->
-                        if (isGranted == true) {
-                            getString(R.string.config_permission_text_granted)
-                        } else {
-                            getString(R.string.config_permission_text_denied)
-                        }
+
+                activity<Boolean, Array<String>, Map<String, Boolean>>(
+                    name = str(R.string.config_permission_title),
+                    default = isPermissionGranted(
+                        getApplication(),
+                        collectorRepository.permissions
+                    ),
+                    input = collectorRepository.permissions.toTypedArray(),
+                    contract = ActivityResultContracts.RequestMultiplePermissions(),
+                    transform = {
+                        isPermissionGranted(
+                            getApplication(),
+                            collectorRepository.permissions
+                        )
+                    }
+                ) {
+                    format = { value ->
+                        str(if (value) R.string.config_permission_text_granted else R.string.config_permission_text_denied)
+                    }
+                    color = { value ->
+                        if (value) StatusColor.NORMAL else StatusColor.ERROR
                     }
                 }
-                activity<Boolean, Intent, ActivityResult>(getString(R.string.config_whitelist)) {
-                    value = collectorRepository.isIgnoringBatteryOptimization(getApplication())
-                    contract = ActivityResultContracts.StartActivityForResult()
-                    input = collectorRepository.batteryOptimizationIgnoreIntent
-                    format = { isGranted ->
-                        if (isGranted == true) {
-                            getString(R.string.config_whitelist_text_granted)
-                        } else {
-                            getString(R.string.config_whitelist_text_denied)
+
+                activity<Boolean, Intent, ActivityResult>(
+                    name = str(R.string.config_battery_optimization_ignore_title),
+                    default = CollectorRepository.isBatteryOptimizationIgnored(getApplication()),
+                    contract = ActivityResultContracts.StartActivityForResult(),
+                    input = CollectorRepository.getIgnoreBatteryOptimizationIntent(getApplication()),
+                    transform = { CollectorRepository.isBatteryOptimizationIgnored(getApplication()) },
+                ) {
+                    format = { value ->
+                        str(if (value) R.string.config_battery_optimization_ignore_text_ignored else R.string.config_battery_optimization_ignore_text_not_ignored)
+                    }
+                    color = { value ->
+                        if (value) StatusColor.NORMAL else StatusColor.ERROR
+                    }
+                }
+
+                actionable(
+                    name = str(R.string.config_data_size_title),
+                    default = sizeDb
+                ) {
+                    format = { size ->
+                        FileSizeFormatter.formatShortFileSize(getApplication(), size * 1024)
+                    }
+                    confirmMessage = str(R.string.config_data_size_dialog)
+                    action = {
+                        launchIo {
+                            dataRepository.flush()
+                            value = dataRepository.sizeOnDiskInKb()
                         }
                     }
                 }
             }
-            category(getString(R.string.config_category_sync)) {
-                actionable<Long>(getString(R.string.config_sync_status)) {
-                    value = Preference.lastTimeDataSync
+
+            category(name = str(R.string.config_category_sync)) {
+                actionable(
+                    name = str(R.string.config_sync_status_title),
+                    default = Preference.lastTimeDataSync,
+                ) {
                     format = { value ->
-                        getString(R.string.config_sync_status_text_last_sync_time,
-                                Formatter.formatDateTime(value ?: Long.MIN_VALUE))
+                        if (value > 0) {
+                            str(
+                                R.string.config_sync_status_text_normal,
+                                dateTime(value, currentTime),
+                                timeSpan(value, currentTime)
+                            )
+                        } else {
+                            str(R.string.config_sync_status_text_none)
+                        }
                     }
                     action = {
-                        launch { SyncRepository.sync(getApplication()) }
-                    }
-                }
-                boolean(getString(R.string.config_sync_via_only_wifi)) {
-                    value = Preference.syncOnlyWifi
-                    format = { value ->
-                        if (value == true) {
-                            getString(R.string.config_sync_via_only_wifi_text_only_wifi)
-                        } else {
-                            getString(R.string.config_sync_via_only_wifi_text_any_network)
+                        launchUi {
+                            SyncRepository.syncNow(getApplication(), Preference.isAutoSync)
+                                ?.collectLatest {
+                                    value = Preference.lastTimeDataSync
+                                }
                         }
                     }
-                    onChange = {
-                        Preference.syncOnlyWifi = it ?: false
+                }
+
+                radio(
+                    name = str(R.string.config_sync_network_title),
+                    default = Preference.isSyncableWithWifiOnly,
+                    options = arrayOf(true, false)
+                ) {
+                    format = { value ->
+                        str(if (value) R.string.config_sync_network_text_wifi else R.string.config_sync_network_text_any)
+                    }
+                    formatOption = { value ->
+                        str(if (value) R.string.config_sync_network_option_wifi else R.string.config_sync_network_option_any)
+                    }
+                    onAfterChange = { Preference.isSyncableWithWifiOnly = value }
+                }
+
+                radio(
+                    name = str(R.string.config_sync_auto_sync_title),
+                    default = Preference.isAutoSync,
+                    options = arrayOf(true, false)
+                ) {
+                    format = { value ->
+                        str(if (value) R.string.config_sync_auto_sync_text_auto else R.string.config_sync_auto_sync_text_manual)
+                    }
+                    formatOption = { value ->
+                        str(if (value) R.string.config_sync_auto_sync_option_auto else R.string.config_sync_auto_sync_option_manual)
+                    }
+                    onAfterChange = {
+                        launchIo {
+                            Preference.isAutoSync = value
+                            SyncRepository.setAutoSync(getApplication(), value)
+                        }
                     }
                 }
-                actionable<String>(getString(R.string.config_sync_cancel)) {
-                    value = getString(R.string.config_sync_cancel_text)
-                    action = { SyncRepository.cancel(getApplication()) }
-                }
             }
-            category(getString(R.string.config_category_collector)) {
-                collectorRepository.collectors.forEach { collector ->
-                    collector {
-                        value = collector
-                        format = { collector ->
-                            val isTurnedOn = collector?.isEnabled == true
-                            val hasNoError = collector?.lastErrorMessage.isNullOrBlank()
 
-                            when {
-                                isTurnedOn && hasNoError -> getString(R.string.config_collector_status_text_normal_operating)
-                                isTurnedOn && !hasNoError -> getString(R.string.config_collector_status_text_error)
-                                else -> getString(R.string.config_collector_status_text_no_operating)
+            category(name = str(R.string.config_category_collector)) {
+                collectorRepository.all.forEach { collector ->
+                    collector(
+                        name = collector.name,
+                        status = collector.getStatus(),
+                        qualifiedName = collector.qualifiedName
+                    ) {
+                        description = collector.description
+                        color = { value ->
+                            when (value) {
+                                Status.On -> StatusColor.NORMAL
+                                Status.Off -> StatusColor.NONE
+                                is Status.Error -> StatusColor.ERROR
+                            }
+                        }
+                        format = { value ->
+                            when (value) {
+                                Status.On -> str(R.string.config_collector_status_text_on)
+                                Status.Off -> str(R.string.config_collector_status_text_off)
+                                is Status.Error -> str(R.string.config_collector_status_text_error)
                             }
                         }
                     }
                 }
             }
-            category(getString(R.string.config_category_data)) {
-                /**
-                 * TODO: Is this works?
-                 */
-                actionable<Pair<Long, Long>>(getString(R.string.config_data_size)) {
-                    fun getValue() = launch { value = dataRepository.sizeOnDiskInBytes() to dataRepository.maxSizeInBytes() }
 
-                    getValue()
+            category(name = str(R.string.config_category_others)) {
+                activity<Unit, Intent, ActivityResult>(
+                    name = str(R.string.config_others_setting_title),
+                    default = Unit,
+                    input = CollectorRepository.getSettingIntent(getApplication()),
+                    contract = ActivityResultContracts.StartActivityForResult(),
+                    transform = { }
+                ) {
+                    format = {
+                        str(R.string.config_others_setting_text)
+                    }
+                }
 
+                activity<Unit, Intent, ActivityResult>(
+                    name = str(R.string.config_others_ntf_management_title),
+                    default = Unit,
+                    contract = ActivityResultContracts.StartActivityForResult(),
+                    input = NotificationRepository.getSettingIntent(getApplication()),
+                    transform = { }
+                ) {
+                    format = {
+                        str(R.string.config_others_ntf_management_text)
+                    }
+                }
+
+                activity<Unit, Intent, ActivityResult>(
+                    name = str(R.string.config_others_sign_out_title),
+                    default = Unit,
+                    contract = ActivityResultContracts.StartActivityForResult(),
+                    input = Intent(getApplication(), SplashActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .putExtra(SplashActivity.EXTRA_SIGN_OUT, true),
+                    transform = { }
+                ) {
+                    format = {
+                        str(R.string.config_others_sign_out_text)
+                    }
+                    confirmMessage = str(R.string.config_others_sign_out_dialog)
+                }
+            }
+        }
+    }
+
+    private suspend fun <T : AbstractCollector<*>> buildCollectorConfig(collector: T?): Config {
+        if (collector == null) return Config()
+
+        val currentTime = System.currentTimeMillis()
+
+        return config {
+            category(name = str(R.string.sub_config_category_collector_general)) {
+                radio(
+                    name = str(R.string.sub_config_collector_general_status_title),
+                    default = collector.getStatus(),
+                    options = arrayOf(Status.On, Status.Off)
+                ) {
+                    formatOption = { value ->
+                        if (value == Status.On) {
+                            str(R.string.sub_config_collector_general_status_dialog_on)
+                        } else str(
+                            R.string.sub_config_collector_general_status_dialog_off
+                        )
+                    }
                     format = { value ->
-                        value?.let { (curSize, maxSize) ->
-                            val curSizeStr = FileSizeFormatter.formatShortFileSize(getApplication(), curSize)
-                            val maxSizeStr = FileSizeFormatter.formatShortFileSize(getApplication(), maxSize)
-                            getString(R.string.config_data_size_text, curSizeStr, maxSizeStr)
+                        when (value) {
+                            Status.On -> str(
+                                R.string.sub_config_collector_general_status_text_on,
+                                dateTime(collector.turnedOnTime, currentTime),
+                                timeSpan(collector.turnedOnTime, currentTime)
+                            )
+                            Status.Off -> str(R.string.sub_config_collector_general_status_text_off)
+                            is Status.Error -> str(
+                                R.string.sub_config_collector_general_status_text_error,
+                                value.message ?: str(R.string.general_unknown)
+                            )
                         }
                     }
-                    action = { getValue() }
-                }
-                actionable<Unit>(getString(R.string.config_data_flush)) {
-                    format = {
-                        getString(R.string.config_data_flush_text)
+                    color = { value ->
+                        when (value) {
+                            Status.On -> StatusColor.NORMAL
+                            Status.Off -> StatusColor.NONE
+                            is Status.Error -> StatusColor.ERROR
+                        }
                     }
-                    dialogMessage = getString(R.string.config_data_flush_dialog)
-                    action = {
-                        launch { io { dataRepository.flush() } }
+                    onAfterChange = {
+                        if (value == Status.On) {
+                            collector.start()
+                            launchIo {
+                                collector.statusFlow.collectLatest {
+                                    value = it
+                                }
+                            }
+                        } else if (value == Status.Off) {
+                            collector.stop()
+                        }
+                    }
+                }
+
+                activity<Boolean, Array<String>, Map<String, Boolean>>(
+                    name = str(R.string.sub_config_collector_general_permission_title),
+                    default = isPermissionGranted(getApplication(), collector.permissions),
+                    input = collector.permissions.toTypedArray(),
+                    contract = ActivityResultContracts.RequestMultiplePermissions(),
+                    transform = { isPermissionGranted(getApplication(), collector.permissions) }
+                ) {
+                    format = { value ->
+                        str(if (value) R.string.sub_config_collector_general_permission_text_granted else R.string.sub_config_collector_general_permission_text_denied)
+                    }
+                    color = { value ->
+                        if (value) StatusColor.NORMAL else StatusColor.ERROR
+                    }
+                }
+
+                activity<Boolean, Intent?, ActivityResult>(
+                    name = str(R.string.sub_config_collector_general_availability_title),
+                    default = collector.isAvailable(),
+                    input = collector.setupIntent,
+                    contract = ActivityResultContracts.StartActivityForResult(),
+                    transform = { collector.isAvailable() }
+                ) {
+                    format = { value ->
+                        str(if (value) R.string.sub_config_collector_general_availability_text_available else R.string.sub_config_collector_general_availability_text_unavailable)
+                    }
+                    color = { value ->
+                        if (value) StatusColor.NORMAL else StatusColor.ERROR
+                    }
+                    onBeforeChange = {
+                        if (collector.getStatus() != Status.Off) throw CollectorError.changeSettingDuringOperating(
+                            collector.qualifiedName
+                        )
                     }
                 }
             }
-            category(getString(R.string.config_category_others)) {
-                activity<Unit, Intent, ActivityResult>(getString(R.string.config_others_setting)) {
-                    format = {
-                        getString(R.string.config_others_setting_text)
-                    }
-                    input = collectorRepository.settingIntent
-                    contract = ActivityResultContracts.StartActivityForResult()
-                }
-                actionable<Unit>(getString(R.string.config_others_sign_out)) {
-                    format = {
-                        getString(R.string.config_others_sign_out_text)
-                    }
-                    dialogMessage = getString(R.string.config_others_sign_out_dialog)
-                    action = {
-                        launch {
-                            io {
-                                /**
-                                 * TODO: Cancel all
-                                 */
 
-                                GoogleSignIn.getClient(getApplication(), GoogleSignInOptions.DEFAULT_SIGN_IN).signOut().toCoroutine()
-                                FirebaseAuth.getInstance().signOut()
-                                collectorRepository.stop()
-                                collectorRepository.collectors.forEach { it.clear() }
-                                //Notifications.cancelAll()
-                            }
+            category(name = str(R.string.sub_config_category_collector_data)) {
+                readonly(name = str(R.string.sub_config_collector_data_last_written_time_title)) {
+                    format = {
+                        if (collector.lastTimeDataWritten > 0) {
+                            str(
+                                R.string.sub_config_collector_data_last_written_time_text_written,
+                                dateTime(collector.lastTimeDataWritten, currentTime),
+                                timeSpan(collector.lastTimeDataWritten, currentTime)
+                            )
+                        } else {
+                            str(R.string.sub_config_collector_data_last_written_time_text_none)
+                        }
+                    }
+                }
+
+                readonly(name = str(R.string.sub_config_collector_data_records_collected_title)) {
+                    format = {
+                        val compactNumber =
+                            Formatter.formatCompactNumber(collector.recordsCollected)
+                        str(
+                            R.string.sub_config_collector_data_records_collected_text,
+                            compactNumber
+                        )
+                    }
+                }
+
+                readonly(name = str(R.string.sub_config_collector_data_records_uploaded_title)) {
+                    format = {
+                        val compactNumber =
+                            Formatter.formatCompactNumber(collector.recordsUploaded)
+                        str(R.string.sub_config_collector_data_records_uploaded_text, compactNumber)
+                    }
+                }
+            }
+
+            if (collector.getDescription().isNotEmpty()) {
+                category(name = str(R.string.sub_config_category_collector_others)) {
+                    collector.getDescription().forEach { info ->
+                        readonly(name = str(info.stringRes)) {
+                            format = { info.value.toString() }
                         }
                     }
                 }
@@ -172,11 +382,24 @@ class ConfigViewModel(
         }
     }
 
-    fun signOut() = liveData {
+    private fun str(res: Int) = getApplication<Application>().getString(res)
 
-    }
+    private fun str(res: Int, vararg formats: Any) =
+        getApplication<Application>().getString(res, *formats)
 
-    private fun getString(res: Int) = getApplication<Application>().getString(res)
+    private fun dateTime(then: Long, now: Long) =
+        if (then > 0) Formatter.formatSameDateTime(
+            getApplication(),
+            then,
+            now
+        ) else str(R.string.general_hyphen)
 
-    private fun getString(res: Int, vararg formats: Any) = getApplication<Application>().getString(res, *formats)
+    private fun timeSpan(then: Long, now: Long) = if (then > 0)
+        DateUtils.getRelativeTimeSpanString(
+            then,
+            now,
+            DateUtils.MINUTE_IN_MILLIS
+        ) else str(R.string.general_hyphen)
+
+
 }

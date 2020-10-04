@@ -1,48 +1,65 @@
 package kaist.iclab.abclogger.dialog
 
-import android.app.AlertDialog
-import android.app.DatePickerDialog
 import android.app.Dialog
-import android.app.TimePickerDialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
+import android.text.InputType
 import android.view.LayoutInflater
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.datepicker.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.commons.safeEnumValueOf
-import kaist.iclab.abclogger.databinding.*
-import kotlinx.coroutines.CompletableDeferred
-import java.util.*
+import kaist.iclab.abclogger.databinding.LayoutDialogRangeSliderBinding
+import kaist.iclab.abclogger.databinding.LayoutDialogSliderBinding
+import kaist.iclab.abclogger.databinding.LayoutDialogTextBinding
+import kaist.iclab.abclogger.databinding.LayoutDialogTimeBinding
+import kotlinx.coroutines.withContext
+import java.io.Serializable
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+import androidx.core.util.Pair as AndroidPair
 
 private const val REQUEST_KEY = "${BuildConfig.APPLICATION_ID}.ui.dialog.REQUEST_KEY"
 private const val ARG_TITLE = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_TITLE"
-private const val ARG_TYPE = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_TYPE"
 
 /**
- * For CONFIRM: ARG_MESSAGE to String
+ * For CONFIRM: String
  */
 private const val ARG_MESSAGE = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_MESSAGE"
 
 /**
- * For SINGLE, MULTIPLE, NUMBER, and RANGE: ARG_OPTIONS to String Array
+ * For SINGLE and MULTIPLE: Array<String>
  */
-private const val ARG_ITEMS = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_OPTIONS"
+private const val ARG_ITEMS = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_ITEMS"
+
+/**
+ * For SLIDER and SLIDER_RANGE: Float
+ */
+private const val ARG_FROM = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_FROM"
+private const val ARG_TO = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_TO"
+private const val ARG_STEP = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_STEP"
+private const val ARG_LABEL_FORMATTER =
+    "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_LABEL_FORMATTER"
+
+/**
+ * For TEXT: Int (InputType)
+ */
+private const val ARG_INPUT_TYPE = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_INPUT_TYPE"
 
 /**
  * Initial and returned value
  * For CONFIRM: no need
  * For SINGLE and NUMBER: Int
  * For MULTIPLE: Array<Int>
- * For RANGE: Pair<Int, Int>
+ * For SLIDER: Float
+ * For SLIDER_RANGE: Pair<Float, Float>
  * For TEXT: String
  * For DATE: Long
  * For DATE_RANGE: Pair<Long, Long>
@@ -50,227 +67,506 @@ private const val ARG_ITEMS = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_OPTIO
  */
 private const val ARG_VALUE = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_VALUE"
 
-enum class DialogType {
-    CONFIRM,
-    SINGLE_CHOICE,
-    MULTIPLE_CHOICE,
-    TEXT,
-    SLIDER,
-    SLIDER_RANGE,
-    DATE,
-    DATE_RANGE,
-    TIME
+typealias LabelFormatter = (value: Float) -> String
+
+open class VersatileDialogBuilder {
+    suspend fun confirm(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        message: String,
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): Boolean = withContext(context) {
+        suspendCoroutine { continuation ->
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) != null)
+            }
+
+            ConfirmDialogFragment().apply {
+                arguments = bundleOf(
+                    ARG_TITLE to title,
+                    ARG_MESSAGE to message
+                )
+            }.show(manager, tag)
+        }
+    }
+
+    suspend fun singleChoice(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        value: Int? = null,
+        items: Array<String> = arrayOf(),
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): Int? = withContext(context) {
+        suspendCoroutine { continuation ->
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) as? Int)
+            }
+
+            SingleChoiceDialogFragment().apply {
+                arguments = bundleOf(
+                    ARG_TITLE to title,
+                    ARG_ITEMS to items,
+                    ARG_VALUE to (value ?: -1)
+                )
+            }.show(manager, tag)
+        }
+    }
+
+    suspend fun multipleChoice(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        value: IntArray? = null,
+        items: Array<String> = arrayOf(),
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): IntArray? = withContext(context) {
+        suspendCoroutine { continuation ->
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) as? IntArray)
+            }
+
+            MultipleChoiceDialogFragment().apply {
+                arguments = bundleOf(
+                    ARG_TITLE to title,
+                    ARG_ITEMS to items,
+                    ARG_VALUE to (value ?: intArrayOf())
+                )
+            }.show(manager, tag)
+        }
+    }
+
+    suspend fun text(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        value: String? = null,
+        inputType: Int = InputType.TYPE_CLASS_TEXT,
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): String? = withContext(context) {
+        suspendCoroutine { continuation ->
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) as? String)
+            }
+
+            TextDialogFragment().apply {
+                arguments = bundleOf(
+                    ARG_TITLE to title,
+                    ARG_VALUE to (value ?: ""),
+                    ARG_INPUT_TYPE to inputType
+                )
+            }.show(manager, tag)
+        }
+    }
+
+    suspend fun slider(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        value: Float? = null,
+        from: Float = 0F,
+        to: Float = 100F,
+        step: Float = 1F,
+        labelFormatter: LabelFormatter? = null,
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): Float? = withContext(context) {
+        suspendCoroutine { continuation ->
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) as? Float)
+            }
+
+            SliderDialogFragment().apply {
+                arguments = bundleOf(
+                    ARG_TITLE to title,
+                    ARG_FROM to from,
+                    ARG_TO to to,
+                    ARG_STEP to step,
+                    ARG_LABEL_FORMATTER to labelFormatter,
+                    ARG_VALUE to (value ?: from)
+                )
+            }.show(manager, tag)
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    suspend fun sliderRange(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        value: Pair<Float, Float>? = null,
+        from: Float = 0F,
+        to: Float = 100F,
+        step: Float = 1F,
+        labelFormatter: LabelFormatter? = null,
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): Pair<Float, Float>? = withContext(context) {
+        suspendCoroutine { continuation ->
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) as? Pair<Float, Float>)
+            }
+
+            RangeSliderDialogFragment().apply {
+                arguments = bundleOf(
+                    ARG_TITLE to title,
+                    ARG_FROM to from,
+                    ARG_TO to to,
+                    ARG_STEP to step,
+                    ARG_LABEL_FORMATTER to labelFormatter,
+                    ARG_VALUE to (value ?: (from to to))
+                )
+            }.show(manager, tag)
+        }
+    }
+
+    suspend fun date(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        value: Long? = null,
+        range: Pair<Long, Long>? = null,
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): Long? = withContext(context) {
+        suspendCoroutine { continuation ->
+            val builder = MaterialDatePicker.Builder.datePicker()
+                .setTitleText(title)
+                .setSelection(value ?: MaterialDatePicker.todayInUtcMilliseconds())
+
+            if (range != null) {
+                val (from, to) = range
+                val validator = CompositeDateValidator.allOf(
+                    listOf(
+                        DateValidatorPointForward.from(from),
+                        DateValidatorPointBackward.before(to)
+                    )
+                )
+                builder.setCalendarConstraints(
+                    CalendarConstraints.Builder().setValidator(validator).build()
+                )
+            }
+
+            val dialog = builder.build()
+
+            dialog.addOnPositiveButtonClickListener {
+                dialog.setFragmentResult(REQUEST_KEY, bundleOf(ARG_VALUE to it))
+            }
+
+            dialog.addOnCancelListener {
+                dialog.setFragmentResult(REQUEST_KEY, bundleOf())
+            }
+
+            dialog.addOnNegativeButtonClickListener {
+                dialog.setFragmentResult(REQUEST_KEY, bundleOf())
+            }
+
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) as? Long)
+            }
+
+            dialog.show(manager, tag)
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    suspend fun dateRange(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        value: Pair<Long, Long>? = null,
+        range: Pair<Long, Long>? = null,
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): Pair<Long, Long>? = withContext(context) {
+        suspendCoroutine { continuation ->
+            val today = MaterialDatePicker.todayInUtcMilliseconds()
+            val builder = MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText(title)
+                .setSelection(
+                    (value ?: (today to today)).let {
+                        AndroidPair.create(it.first, it.second)
+                    }
+                )
+
+            if (range != null) {
+                val (from, to) = range
+                val validator = CompositeDateValidator.allOf(
+                    listOf(
+                        DateValidatorPointForward.from(from),
+                        DateValidatorPointBackward.before(to)
+                    )
+                )
+                builder.setCalendarConstraints(
+                    CalendarConstraints.Builder().setValidator(validator).build()
+                )
+            }
+
+            val dialog = builder.build()
+
+            dialog.addOnPositiveButtonClickListener {
+                val from = it.first
+                val to = it.second
+
+                dialog.setFragmentResult(
+                    REQUEST_KEY,
+                    if (from != null && to != null) {
+                        bundleOf(ARG_VALUE to (from to to))
+                    } else {
+                        bundleOf()
+                    }
+                )
+            }
+
+            dialog.addOnCancelListener {
+                dialog.setFragmentResult(REQUEST_KEY, bundleOf())
+            }
+
+            dialog.addOnNegativeButtonClickListener {
+                dialog.setFragmentResult(REQUEST_KEY, bundleOf())
+            }
+
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) as? Pair<Long, Long>)
+            }
+
+            dialog.show(manager, tag)
+        }
+    }
+
+
+    @Suppress("UNCHECKED_CAST")
+    suspend fun time(
+        manager: FragmentManager,
+        owner: LifecycleOwner,
+        title: String,
+        value: Pair<Int, Int>? = null,
+        tag: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): Pair<Int, Int>? = withContext(context) {
+        suspendCoroutine { continuation ->
+            manager.setFragmentResultListener(REQUEST_KEY, owner) { _, bundle ->
+                manager.clearFragmentResultListener(REQUEST_KEY)
+                continuation.resume(bundle.get(ARG_VALUE) as? Pair<Int, Int>)
+            }
+
+            TimePickerDialogFragment().apply {
+                arguments = bundleOf(
+                    ARG_TITLE to title,
+                    ARG_VALUE to (value ?: (0 to 0))
+                )
+            }.show(manager, tag)
+        }
+    }
 }
+
 
 @Suppress("UNCHECKED_CAST")
-suspend fun <T> show(
-        title: String,
-        type: DialogType,
-        message: String? = null,
-        items: Array<String> = arrayOf(),
-
-        value: T?,
-        lifecycleOwner: LifecycleOwner,
-        manager: FragmentManager
-): T? {
-    val deferred = CompletableDeferred<T?>()
-
-    manager.setFragmentResultListener(REQUEST_KEY, lifecycleOwner) { _, bundle ->
-        deferred.complete(bundle.get(ARG_VALUE) as? T)
-        manager.clearFragmentResultListener(REQUEST_KEY)
-    }
-
-    val dialog = VersatileDialogs().apply {
-        arguments = bundleOf(
-                VersatileDialogFragment.ARG_TITLE to title,
-                VersatileDialogFragment.ARG_TYPE to type.name,
-                VersatileDialogFragment.ARG_MESSAGE to message,
-                VersatileDialogFragment.ARG_OPTIONS to options,
-                VersatileDialogFragment.ARG_VALUE to value
-        )
-    }
-
-    dialog.show(manager, null)
-
-    return deferred.await()
-}
-
-class VersatileDialogFragment : DialogFragment(), DialogInterface.OnClickListener {
+abstract class VersatileDialog<T> : DialogFragment() {
     private val title by lazy {
         arguments?.getString(ARG_TITLE) ?: getString(R.string.general_unknown)
     }
-    private val type by lazy { safeEnumValueOf<DialogType>(arguments?.getString(ARG_TYPE)) }
+
+    private val initValue by lazy { arguments?.get(ARG_VALUE) as? T }
+    private var isPositive: Boolean = false
+
+    protected abstract fun getValue(): T
+
+    protected abstract fun buildDialog(builder: MaterialAlertDialogBuilder, initValue: T?): Dialog
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val builder = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(title)
+            .setPositiveButton(android.R.string.ok) { _, _ -> isPositive = true }
+            .setNegativeButton(android.R.string.cancel) { _, _ -> isPositive = false }
+        return buildDialog(builder, initValue)
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        setFragmentResult(
+            REQUEST_KEY,
+            if (isPositive) {
+                bundleOf(ARG_VALUE to getValue())
+            } else {
+                bundleOf()
+            }
+        )
+        super.onDismiss(dialog)
+    }
+
+    companion object : VersatileDialogBuilder()
+}
+
+internal class ConfirmDialogFragment : VersatileDialog<Boolean>() {
     private val message by lazy {
         arguments?.getString(ARG_MESSAGE) ?: getString(R.string.general_unknown)
     }
-    private val options by lazy { arguments?.getStringArray(ARG_ITEMS) ?: arrayOf() }
 
-    private var curSingleChoiceValue = -1
-    private var curMultipleChoiceValue = mutableListOf<Int>()
-    private var curSliderValue = 0
-    private var curRangeValue = 0 to 0
-    private var curTextValue = ""
+    override fun getValue() = true
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> getValue() = arguments?.get(ARG_VALUE) as? T
+    override fun buildDialog(builder: MaterialAlertDialogBuilder, initValue: Boolean?): Dialog =
+        builder.setMessage(message).create()
+}
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = when (type) {
-        Type.DATE -> date()
-        Type.TIME -> time()
-        Type.CONFIRM -> confirm(defaultBuilder())
-        Type.SINGLE_CHOICE -> singleChoice(defaultBuilder())
-        Type.TEXT -> text(defaultBuilder())
-        Type.MULTIPLE_CHOICE -> multipleChoice(defaultBuilder())
-        Type.SLIDER -> slider(defaultBuilder())
-        Type.SLIDER_RANGE -> range(defaultBuilder())
+internal class TextDialogFragment : VersatileDialog<String>() {
+    private val inputType by lazy { arguments?.getInt(ARG_INPUT_TYPE) ?: InputType.TYPE_CLASS_TEXT }
+    private val binding by lazy {
+        LayoutDialogTextBinding.inflate(LayoutInflater.from(requireContext()))
     }
 
-    private fun defaultBuilder() = MaterialAlertDialogBuilder(requireContext())
-            .setTitle(title)
-            .setPositiveButton(android.R.string.ok, this)
-            .setNegativeButton(android.R.string.cancel, this)
+    override fun getValue(): String = binding.editText.text?.toString() ?: ""
 
-    private fun date(): Dialog {
-        val s = MaterialDatePicker.Builder
-                .datePicker()
-                .setTitleText(title)
-                .build()
+    override fun buildDialog(builder: MaterialAlertDialogBuilder, initValue: String?): Dialog {
+        binding.editText.setText(initValue ?: "")
+        binding.editText.inputType = inputType
 
-        val (year, month, day) = getValue<Triple<Int, Int, Int>>()
-                ?: GregorianCalendar.getInstance().let { calendar ->
-                    Triple(
-                            calendar.get(Calendar.YEAR),
-                            calendar.get(Calendar.MONTH),
-                            calendar.get(Calendar.DAY_OF_MONTH)
-                    )
-                }
-        return DatePickerDialog(requireContext(), this, year, month, day)
+
+        return builder.setView(binding.root).create()
     }
+}
 
-    private fun time(): Dialog {
-        val (hour, minute) = getValue<Pair<Int, Int>>()
-                ?: GregorianCalendar.getInstance().let { calendar ->
-                    calendar.get(Calendar.HOUR_OF_DAY) to calendar.get(Calendar.MINUTE)
-                }
+internal class SingleChoiceDialogFragment : VersatileDialog<Int>() {
+    private val items by lazy { arguments?.getStringArray(ARG_ITEMS) ?: arrayOf() }
+    private var value: Int? = null
 
-        return TimePickerDialog(requireContext(), this, hour, minute, true)
-    }
+    override fun getValue(): Int = value ?: -1
 
-    private fun confirm(builder: MaterialAlertDialogBuilder): Dialog =
-            builder.setMessage(message).create()
-
-    private fun singleChoice(builder: MaterialAlertDialogBuilder): Dialog {
-        curSingleChoiceValue = getValue<Int>() ?: -1
-        return builder.setSingleChoiceItems(options, curSingleChoiceValue) { _, which ->
-            curSingleChoiceValue = which
+    override fun buildDialog(builder: MaterialAlertDialogBuilder, initValue: Int?): Dialog {
+        value = initValue
+        return builder.setSingleChoiceItems(items, initValue ?: -1) { _, which ->
+            value = which
         }.create()
     }
+}
 
-    private fun multipleChoice(builder: MaterialAlertDialogBuilder): Dialog {
-        curMultipleChoiceValue = getValue<Array<Int>>()?.toMutableList() ?: mutableListOf()
 
-        val checked = BooleanArray(options.size) {
-            it in curMultipleChoiceValue
+internal class MultipleChoiceDialogFragment : VersatileDialog<IntArray>() {
+    private val items by lazy { arguments?.getStringArray(ARG_ITEMS) ?: arrayOf() }
+    private var value: MutableSet<Int> = mutableSetOf()
+
+    override fun getValue(): IntArray = value.toIntArray()
+
+    override fun buildDialog(builder: MaterialAlertDialogBuilder, initValue: IntArray?): Dialog {
+        value = initValue?.toMutableSet() ?: mutableSetOf()
+
+        val selectedItem = BooleanArray(items.size) { idx ->
+            idx in initValue ?: intArrayOf()
         }
-        return builder.setMultiChoiceItems(options, checked) { _, which, isChecked ->
-            if (isChecked) curMultipleChoiceValue.add(which) else curMultipleChoiceValue.remove(which)
+
+        return builder.setMultiChoiceItems(items, selectedItem) { _, which, isChecked ->
+            if (isChecked) value.add(which) else value.remove(which)
         }.create()
     }
+}
 
-    private fun slider(builder: MaterialAlertDialogBuilder): Dialog {
-        val binding = LayoutDialogSliderBinding.inflate(LayoutInflater.from(requireContext()))
-        val min = 0
-        val max = (options.size - 1).coerceAtLeast(min)
+@Suppress("UNCHECKED_CAST")
+internal class SliderDialogFragment : VersatileDialog<Float>() {
+    private val valueFrom by lazy { arguments?.getFloat(ARG_FROM) ?: 0F }
+    private val valueTo by lazy { arguments?.getFloat(ARG_TO) ?: 100F }
+    private val stepSize by lazy { arguments?.getFloat(ARG_STEP) ?: 1F }
+    private val labelFormatter by lazy { arguments?.getSerializable(ARG_LABEL_FORMATTER) as? LabelFormatter }
 
-        curSliderValue = getValue<Int>()?.coerceIn(min, max) ?: min
+    private val binding by lazy {
+        LayoutDialogSliderBinding.inflate(LayoutInflater.from(requireContext()))
+    }
+
+    override fun getValue(): Float = binding.slider.value
+
+    override fun buildDialog(builder: MaterialAlertDialogBuilder, initValue: Float?): Dialog {
+
+        val from = valueFrom
+        val to = valueTo.coerceAtLeast(from)
+        val step = stepSize.coerceIn(0F, to)
 
         binding.slider.apply {
-            valueFrom = min.toFloat()
-            valueTo = max.toFloat()
-            stepSize = 1F
-            value = curSliderValue.toFloat()
-            setLabelFormatter { value -> options[value.toInt().coerceIn(min, max)] }
-            addOnChangeListener { _, value, _ ->
-                curSliderValue = value.toInt().coerceIn(min, max)
-                binding.txtSlider.text = options[curSliderValue]
+            valueFrom = from
+            valueTo = to
+            stepSize = step
+            value = initValue?.coerceIn(from, to) ?: from
+
+            setLabelFormatter { value ->
+                labelFormatter?.invoke(value) ?: value.toString()
             }
         }
         return builder.setView(binding.root).create()
     }
+}
 
-    private fun range(builder: MaterialAlertDialogBuilder): Dialog {
-        val binding = LayoutDialogRangeSliderBinding.inflate(LayoutInflater.from(requireContext()))
-        val min = 0
-        val max = (options.size - 1).coerceAtLeast(min)
+@Suppress("UNCHECKED_CAST")
+internal class RangeSliderDialogFragment : VersatileDialog<Pair<Float, Float>>() {
+    private val valueFrom by lazy { arguments?.getFloat(ARG_FROM) ?: 0F }
+    private val valueTo by lazy { arguments?.getFloat(ARG_TO) ?: 100F }
+    private val stepSize by lazy { arguments?.getFloat(ARG_STEP) ?: 1F }
+    private val labelFormatter by lazy { arguments?.getSerializable(ARG_LABEL_FORMATTER) as? LabelFormatter }
 
-        curRangeValue = getValue<Pair<Int, Int>>()?.let { (f, s) ->
-            f.coerceIn(min, max) to s.coerceIn(min, max)
-        } ?: min to min
+    private val binding by lazy {
+        LayoutDialogRangeSliderBinding.inflate(LayoutInflater.from(requireContext()))
+    }
 
-        val (fromValue, toValue) = curRangeValue
+    override fun getValue(): Pair<Float, Float> {
+        val values = binding.rangeSlider.values
+        return if (values.size >= 2) {
+            val (first, second) = values.sorted()
+            first to second
+        } else {
+            binding.rangeSlider.valueFrom to binding.rangeSlider.valueTo
+        }
+    }
+
+    override fun buildDialog(
+        builder: MaterialAlertDialogBuilder,
+        initValue: Pair<Float, Float>?
+    ): Dialog {
+        val from = valueFrom
+        val to = valueTo.coerceAtLeast(from)
+        val step = stepSize.coerceIn(0F, to)
+        val initValueList = initValue?.let { (a, b) -> listOf(a, b) } ?: listOf()
 
         binding.rangeSlider.apply {
-            valueFrom = min.toFloat()
-            valueTo = max.toFloat()
-            stepSize = 1F
-            values = listOf(fromValue.toFloat(), toValue.toFloat())
-            setLabelFormatter { value -> options[value.toInt().coerceIn(min, max)] }
-            addOnChangeListener { _, _, _ ->
-                if (values.size >= 2) {
-                    val (from, to) = values.map { it.toInt().coerceIn(min, max) }.sorted()
-                    curRangeValue = from to to
-                    binding.txtSliderFrom.text = options[from]
-                    binding.txtSliderTo.text = options[to]
-                }
+            valueFrom = from
+            valueTo = to
+            stepSize = step
+            values = initValueList.map { it.coerceIn(from, to) }
+            setLabelFormatter {
+                labelFormatter?.invoke(it) ?: ""
+            }
+        }
+        return builder.setView(binding.root).create()
+    }
+}
+
+internal class TimePickerDialogFragment : VersatileDialog<Pair<Int, Int>>() {
+    private val binding by lazy {
+        LayoutDialogTimeBinding.inflate(LayoutInflater.from(requireContext()))
+    }
+
+    override fun getValue(): Pair<Int, Int> = binding.timePicker.hour to binding.timePicker.minute
+
+    override fun buildDialog(
+        builder: MaterialAlertDialogBuilder,
+        initValue: Pair<Int, Int>?
+    ): Dialog {
+        binding.timePicker.apply {
+            setIs24HourView(true)
+            if (initValue != null) {
+                minute = initValue.first
+                hour = initValue.second
             }
         }
 
         return builder.setView(binding.root).create()
-    }
-
-    private fun text(builder: MaterialAlertDialogBuilder): Dialog {
-        val binding = LayoutDialogTextBinding.inflate(LayoutInflater.from(requireContext()))
-        curTextValue = getValue<String>() ?: ""
-
-        binding.editText.setText(curTextValue)
-        binding.editText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                curTextValue = s?.toString() ?: ""
-            }
-
-            override fun afterTextChanged(s: Editable?) { }
-        })
-
-        return builder.setView(binding.root).create()
-    }
-
-
-    override fun onClick(dialog: DialogInterface?, which: Int) {
-        if (which != AlertDialog.BUTTON_POSITIVE) return
-
-        setFragmentResult(
-                REQUEST_KEY,
-                bundleOf(ARG_VALUE to when (type) {
-                    Type.CONFIRM -> Unit
-                    Type.TEXT -> curTextValue
-                    Type.SINGLE_CHOICE -> curSingleChoiceValue
-                    Type.MULTIPLE_CHOICE -> curMultipleChoiceValue
-                    Type.SLIDER_RANGE -> curRangeValue
-                    Type.SLIDER -> curSliderValue
-                    else -> null
-                })
-        )
-
-    }
-
-
-
-
-    companion object {
-
-
-
     }
 }

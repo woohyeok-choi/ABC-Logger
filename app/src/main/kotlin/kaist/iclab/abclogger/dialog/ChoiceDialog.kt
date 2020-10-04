@@ -1,6 +1,5 @@
 package kaist.iclab.abclogger.dialog
 
-import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -23,7 +22,7 @@ private const val ARG_TEXTS = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_TEXTS
 private const val ARG_ICONS = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_ICONS"
 private const val ARG_SELECTION = "${BuildConfig.APPLICATION_ID}.ui.dialog.ARG_SELECTION"
 
-internal class BottomSheetDialog : BottomSheetDialogFragment() {
+class ChoiceDialog : BottomSheetDialogFragment() {
     private lateinit var viewBinding: FragmentBottomSheetChoiceBinding
     private val texts by lazy { arguments?.getStringArray(ARG_TEXTS) ?: arrayOf() }
     private val icons by lazy { arguments?.getIntArray(ARG_ICONS) ?: intArrayOf() }
@@ -80,7 +79,7 @@ internal class BottomSheetDialog : BottomSheetDialogFragment() {
                 manager.clearFragmentResultListener(REQUEST_KEY)
             }
 
-            BottomSheetDialog().apply {
+            ChoiceDialog().apply {
                 arguments = bundleOf(
                         ARG_TEXTS to texts,
                         ARG_ICONS to icons

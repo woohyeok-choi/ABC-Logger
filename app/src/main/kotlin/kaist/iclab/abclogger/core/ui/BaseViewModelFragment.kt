@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.base
+package kaist.iclab.abclogger.core.ui
 
 import androidx.viewbinding.ViewBinding
 

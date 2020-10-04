@@ -5,11 +5,11 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.databinding.ItemSurveyConfigurationBinding
 import kaist.iclab.abclogger.structure.survey.SurveyConfiguration
-import kaist.iclab.abclogger.databinding.ItemSurveySettingBinding
 import kotlin.collections.ArrayList
 
-class SurveySettingListAdapter : RecyclerView.Adapter<SurveySettingListAdapter.ViewHolder>() {
+class SurveyConfigurationListAdapter : RecyclerView.Adapter<SurveyConfigurationListAdapter.ViewHolder>() {
     interface OnItemClickListener {
         fun onItemClick(position: Int, item: SurveyConfiguration)
     }
@@ -77,5 +77,5 @@ class SurveySettingListAdapter : RecyclerView.Adapter<SurveySettingListAdapter.V
         }
     }
 
-    class ViewHolder(val binding: ItemSurveySettingBinding) : RecyclerView.ViewHolder(binding.root)
+    class ViewHolder(val binding: ItemSurveyConfigurationBinding) : RecyclerView.ViewHolder(binding.root)
 }

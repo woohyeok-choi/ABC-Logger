@@ -1,23 +1,19 @@
-package kaist.iclab.abclogger.base
+package kaist.iclab.abclogger.ui.settings
 
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.CallSuper
-import androidx.annotation.StringRes
-import androidx.lifecycle.lifecycleScope
 import androidx.viewbinding.ViewBinding
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.core.ui.BaseViewModel
+import kaist.iclab.abclogger.core.ui.BaseViewModelActivity
 import kaist.iclab.abclogger.commons.crossFade
 import kaist.iclab.abclogger.databinding.ActivitySettingBinding
 
-abstract class BaseSettingActivity<V : ViewBinding, VM : BaseViewModel> : BaseViewModelActivity<ActivitySettingBinding, VM>() {
-    @get:StringRes
-    abstract val titleRes: Int
+abstract class AbstractSettingActivity<V : ViewBinding, VM : BaseViewModel> : BaseViewModelActivity<ActivitySettingBinding, VM>() {
     lateinit var childBinding: V
-
-    private val shortAnimDuration by lazy { resources.getInteger(android.R.integer.config_shortAnimTime).toLong() }
 
     override fun getViewBinding(inflater: LayoutInflater): ActivitySettingBinding =
             ActivitySettingBinding.inflate(inflater)
@@ -26,7 +22,7 @@ abstract class BaseSettingActivity<V : ViewBinding, VM : BaseViewModel> : BaseVi
 
     @CallSuper
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.save, menu)
+        menuInflater.inflate(R.menu.setting, menu)
         return true
     }
 
@@ -37,7 +33,7 @@ abstract class BaseSettingActivity<V : ViewBinding, VM : BaseViewModel> : BaseVi
         setSupportActionBar(viewBinding.toolBar)
 
         supportActionBar?.apply {
-            title = getString(titleRes)
+            title = ""
             setDisplayHomeAsUpEnabled(true)
         }
         childBinding = getInnerViewBinding(layoutInflater)
@@ -45,22 +41,12 @@ abstract class BaseSettingActivity<V : ViewBinding, VM : BaseViewModel> : BaseVi
         viewBinding.container.addView(childBinding.root)
 
         afterToolbarCreated()
-        crossFade(viewBinding.nestedScrollView, viewBinding.progressBar, shortAnimDuration)
-    }
-
-    private fun saveInternal() = lifecycleScope.launchWhenCreated {
-        crossFade(viewBinding.progressBar, viewBinding.nestedScrollView, shortAnimDuration)
-
-        if (save()) {
-            finish()
-        } else {
-            crossFade(viewBinding.nestedScrollView, viewBinding.progressBar, shortAnimDuration)
-        }
+        crossFade(viewBinding.nestedScrollView, viewBinding.progressBar)
     }
 
     abstract fun afterToolbarCreated()
 
-    abstract suspend fun save(): Boolean
+    abstract fun undo()
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
@@ -68,8 +54,8 @@ abstract class BaseSettingActivity<V : ViewBinding, VM : BaseViewModel> : BaseVi
                 finish()
                 true
             }
-            R.id.menu_save -> {
-                saveInternal()
+            R.id.menu_undo -> {
+                undo()
                 true
             }
             else -> super.onOptionsItemSelected(item)
