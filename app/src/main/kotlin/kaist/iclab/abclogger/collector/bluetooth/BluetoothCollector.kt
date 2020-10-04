@@ -5,179 +5,216 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import androidx.core.app.AlarmManagerCompat
+import androidx.core.content.getSystemService
 import kaist.iclab.abclogger.BuildConfig
-import kaist.iclab.abclogger.ObjBox
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.BaseStatus
-import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.commons.checkPermission
-import kaist.iclab.abclogger.commons.safeRegisterReceiver
-import kaist.iclab.abclogger.commons.safeUnregisterReceiver
+import kaist.iclab.abclogger.collector.stringifyBluetoothClass
+import kaist.iclab.abclogger.collector.stringifyBluetoothDeviceBondState
+import kaist.iclab.abclogger.collector.stringifyBluetoothDeviceType
+import kaist.iclab.abclogger.core.collector.AbstractCollector
+import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.collector.Description
+import kaist.iclab.abclogger.core.collector.with
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.reflect.KClass
 
-class BluetoothCollector(private val context: Context) : BaseCollector<BluetoothCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
-    }
-
-    override val clazz: KClass<Status> = Status::class
-
-    override val name: String = context.getString(R.string.data_name_bluetooth)
-
-    override val description: String = context.getString(R.string.data_desc_bluetooth)
-
-    override val requiredPermissions: List<String> = listOf(
+/**
+ * Bluetooth Collector operates every T minutes as follows:
+ * 1. BluetoothAdapter.startDiscovery()
+ * 1.2. BluetoothDevice.ACTION_FOUND -> write device profiles
+ * 2. BluetoothLeScanner.startScan() (via ScanCallback or PendingIntent) when BluetoothAdapter.ACTION_DISCOVERY_FINISHED is received
+ * 3. BluetoothLeScanner.stopScan() after 10 seconds
+ *
+ */
+class BluetoothCollector(
+    context: Context,
+    qualifiedName: String,
+    name: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<BluetoothEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    override val permissions: List<String> = listOf(
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
     )
 
-    override val newIntentForSetUp: Intent? = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+    override val setupIntent: Intent? = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
 
-    override suspend fun checkAvailability(): Boolean =
-            bluetoothAdapter?.isEnabled == true && context.checkPermission(requiredPermissions)
+    private val discoveredLeDevices: ConcurrentHashMap<String, BluetoothEntity> = ConcurrentHashMap()
 
-    override suspend fun onStart() {
-        context.safeRegisterReceiver(receiver, filter)
-        alarmManager.cancel(intent)
-
-        scheduleAlarm()
+    private val alarmManager by lazy {
+        context.getSystemService<AlarmManager>()!!
     }
 
-    override suspend fun onStop() {
-        context.safeUnregisterReceiver(receiver)
-
-        alarmManager.cancel(intent)
+    private val intentScanRequest by lazy {
+        PendingIntent.getBroadcast(
+                context,
+                REQUEST_CODE_BLUETOOTH_SCAN_REQUEST,
+                Intent(ACTION_BLUETOOTH_SCAN_REQUEST),
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
-    private val bluetoothAdapter: BluetoothAdapter? by lazy {
-        BluetoothAdapter.getDefaultAdapter()
-    }
-
-    private val alarmManager: AlarmManager by lazy {
-        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    private val intentLeDeviceFound by lazy {
+        PendingIntent.getBroadcast(
+                context,
+                REQUEST_CODE_BLUETOOTH_LE_FOUND,
+                Intent(ACTION_BLUETOOTH_LE_FOUND),
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
     private val scanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
-            super.onScanResult(callbackType, result)
-            handleBLERetrieval(result)
+            result ?: return
+            handleLeDeviceFound(result)
         }
     }
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
-                BluetoothDevice.ACTION_FOUND -> handleBluetoothRetrieval(intent)
-                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> handleBluetoothDiscovered()
-                ACTION_BLUETOOTH_SCAN -> handleBluetoothScanRequest()
+                ACTION_BLUETOOTH_SCAN_REQUEST -> handleScanRequest()
+                BluetoothDevice.ACTION_FOUND -> handleDeviceFound(intent)
+                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> handleLeScanRequest()
+                ACTION_BLUETOOTH_LE_FOUND -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    intent.getParcelableArrayListExtra<ScanResult>(BluetoothLeScanner.EXTRA_LIST_SCAN_RESULT)?.forEach {
+                        handleLeDeviceFound(it)
+                    }
+                }
             }
         }
     }
 
-    private val filter = IntentFilter().apply {
-        addAction(ACTION_BLUETOOTH_SCAN)
-        addAction(BluetoothDevice.ACTION_FOUND)
-        addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
-    }
+    override fun isAvailable(): Boolean = BluetoothAdapter.getDefaultAdapter()?.isEnabled == true
 
-    private val intent = PendingIntent.getBroadcast(
-            context, REQUEST_CODE_BLUETOOTH_SCAN,
-            Intent(ACTION_BLUETOOTH_SCAN), PendingIntent.FLAG_UPDATE_CURRENT
-    )
+    override fun getDescription(): Array<Description> = arrayOf(
+                    R.string.collector_bluetooth_info_ble with
+                    if(BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner != null) {
+                        context.getString(R.string.collector_bluetooth_info_ble_supported)
+                    } else {
+                        context.getString(R.string.collector_bluetooth_info_ble_none)
+                    }
+            )
 
-    private val discoveredBLEDevices: ConcurrentHashMap<String, BluetoothDevice> = ConcurrentHashMap()
 
-    private val isBLEScanning: AtomicBoolean = AtomicBoolean(false)
-
-    private fun handleBluetoothDiscovered() = launch {
-        if (isBLEScanning.get()) return@launch
-
-        isBLEScanning.set(true)
-
-        BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner?.also { scanner ->
-            scanner.startScan(scanCallback)
-            delay(5000)
-            scanner.stopScan(scanCallback)
+    override suspend fun onStart() {
+        val filter = IntentFilter().apply {
+            addAction(ACTION_BLUETOOTH_SCAN_REQUEST)
+            addAction(ACTION_BLUETOOTH_LE_FOUND)
+            addAction(BluetoothDevice.ACTION_FOUND)
+            addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
         }
 
-        discoveredBLEDevices.clear()
-        isBLEScanning.set(false)
+        context.safeRegisterReceiver(receiver, filter)
+        handleScanRequest()
     }
 
-    private fun handleBluetoothScanRequest() {
-        if (bluetoothAdapter?.isDiscovering == true) bluetoothAdapter?.cancelDiscovery()
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
+        alarmManager.cancel(intentScanRequest)
+    }
 
-        if (bluetoothAdapter?.isDiscovering == false && bluetoothAdapter?.isEnabled == true) {
-            bluetoothAdapter?.startDiscovery()
+    override suspend fun count(): Long = dataRepository.count<BluetoothEntity>()
+
+    override suspend fun flush(entities: Collection<BluetoothEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
+    }
+
+    override suspend fun list(limit: Long): Collection<BluetoothEntity> = dataRepository.find(0, limit)
+
+    private fun handleScanRequest() {
+        val adapter = BluetoothAdapter.getDefaultAdapter()
+        if (adapter == null) {
+            handleLeScanRequest()
+        } else {
+            if (adapter.isDiscovering) adapter.cancelDiscovery()
+            if (!adapter.isDiscovering && adapter.isEnabled) adapter.startDiscovery()
         }
 
-        scheduleAlarm()
-    }
-
-    private fun handleBluetoothRetrieval(intent: Intent) {
-        val timestamp = System.currentTimeMillis()
-        val extras = intent.extras ?: return
-        val device = extras.getParcelable<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE) ?: return
-        val rssi = extras.getShort(BluetoothDevice.EXTRA_RSSI, 0).toInt()
-
-        BluetoothEntity(
-                deviceName = device.name ?: "Unknown",
-                address = device.address ?: "Unknown",
-                rssi = rssi
-        ).fill(timeMillis = timestamp).also { entity ->
-            launch {
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = timestamp))
-            }
-        }
-    }
-
-    private fun handleBLERetrieval(result: ScanResult?) {
-        val timestamp = System.currentTimeMillis()
-        val device = result?.device ?: return
-        val address = result.device?.address ?: return
-
-        if (address in discoveredBLEDevices.keys) return
-
-        discoveredBLEDevices[address] = device
-
-        BluetoothEntity(
-                deviceName = result.device?.name ?: "",
-                address = address,
-                rssi = result.rssi
-        ).fill(timeMillis = timestamp).also { entity ->
-            launch {
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = timestamp))
-            }
-        }
-    }
-
-    private fun scheduleAlarm() {
-        val curTime = System.currentTimeMillis()
         AlarmManagerCompat.setAndAllowWhileIdle(
-                alarmManager, AlarmManager.RTC_WAKEUP, curTime + TimeUnit.MINUTES.toMillis(10), intent
+                alarmManager,
+                AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(10),
+                intentScanRequest
         )
     }
 
+    private fun handleDeviceFound(intent: Intent) = launch {
+        val timestamp = System.currentTimeMillis()
+        val extras = intent.extras ?: return@launch
+        val rssi = extras.getShort(BluetoothDevice.EXTRA_RSSI, 0).toInt()
+        val device = extras.getParcelable<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                ?: return@launch
+        val entity = buildEntity(device, rssi, false)
+
+        put(entity, timestamp)
+    }
+
+    private fun handleLeScanRequest() = launch {
+        discoveredLeDevices.clear()
+
+        val leScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner ?: return@launch
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            leScanner.startScan(null, null, intentLeDeviceFound)
+        } else {
+            leScanner.startScan(scanCallback)
+        }
+
+        delay(10 * 1000)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            leScanner.stopScan(intentLeDeviceFound)
+        } else {
+            leScanner.stopScan(scanCallback)
+        }
+
+        val timestamp = System.currentTimeMillis()
+        putAll(discoveredLeDevices.values, timestamp)
+    }
+
+    private fun handleLeDeviceFound(scanResult: ScanResult) {
+        discoveredLeDevices[scanResult.device.address] = buildEntity(scanResult.device, scanResult.rssi, true)
+    }
+
+    private fun buildEntity(device: BluetoothDevice, rssi: Int, isLowEnergy: Boolean) =
+            BluetoothEntity(
+                    name = device.name ?: "UNKNOWN",
+                    address = device.address ?: "UNKNOWN",
+                    alias = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) device.alias else null)
+                            ?: "UNKNOWN",
+                    rssi = rssi,
+                    bondState = stringifyBluetoothDeviceBondState(device.bondState),
+                    deviceType = stringifyBluetoothDeviceType(device.type),
+                    classType = stringifyBluetoothClass(device.bluetoothClass.deviceClass),
+                    isLowEnergy = isLowEnergy
+            )
+
     companion object {
-        private const val ACTION_BLUETOOTH_SCAN = "${BuildConfig.APPLICATION_ID}.ACTION_BLUETOOTH_SCAN"
-        private const val REQUEST_CODE_BLUETOOTH_SCAN = 0xdd
+        private const val ACTION_BLUETOOTH_SCAN_REQUEST = "${BuildConfig.APPLICATION_ID}.ACTION_BLUETOOTH_SCAN_REQUEST"
+        private const val ACTION_BLUETOOTH_LE_FOUND = "${BuildConfig.APPLICATION_ID}.ACTION_BLUETOOTH_LE_FOUND"
+        private const val REQUEST_CODE_BLUETOOTH_SCAN_REQUEST = 0xdd
+        private const val REQUEST_CODE_BLUETOOTH_LE_FOUND = 0xde
     }
 }

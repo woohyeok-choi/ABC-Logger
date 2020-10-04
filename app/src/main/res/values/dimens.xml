@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="item_default_vertical_padding">8dp</dimen>
-    <dimen name="item_default_horizontal_padding">12dp</dimen>
 
-    <dimen name="text_title_size">48sp</dimen>
-    <dimen name="text_sub_title_size">14sp</dimen>
-    <dimen name="txt_size_title_small">16sp</dimen>
-    <dimen name="txt_size_text">14sp</dimen>
-    <dimen name="txt_size_text_small">12sp</dimen>
-    <dimen name="item_space_horizontal">24dp</dimen>
+    <dimen name="space_horiz_padding">16dp</dimen>
 
-    <dimen name="cardview_elevation">2dp</dimen>
+    <dimen name="space_vert_padding">16dp</dimen>
+    <dimen name="space_vert_margin">8dp</dimen>
 
-    <dimen name="progress_bar_size">64dp</dimen>
-    <dimen name="progress_bar_horizontal_height">18dp</dimen>
-    <dimen name="progress_bar_horizontal_margin_vertical">-6dp</dimen>
+    <dimen name="item_single_line_height">56dp</dimen>
+    <dimen name="item_two_line_height">72dp</dimen>
+    <dimen name="item_three_line_height">88dp</dimen>
 
+    <dimen name="cardview_elevation">1dp</dimen>
+    <dimen name="item_width">56dp</dimen>
+    <dimen name="margin_top_text_input_layout">4dp</dimen>
 
+    <dimen name="avatar_size">72dp</dimen>
+    <dimen name="space_drawer_top_padding">32dp</dimen>
+
+    <dimen name="drawable_padding">4dp</dimen>
+
+    <dimen name="bottom_nav_height">56dp</dimen>
+
+    
 </resources>

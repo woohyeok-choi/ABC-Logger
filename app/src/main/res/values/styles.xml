@@ -1,22 +1,114 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
         <item name="colorPrimary">@color/color_primary</item>
-        <item name="colorPrimaryDark">@color/color_primary_dark</item>
-        <item name="colorAccent">@color/color_accent</item>
+        <item name="colorPrimaryVariant">@color/color_primary_dark</item>
+        <item name="colorSecondary">@color/color_secondary</item>
+        <item name="colorSecondaryVariant">@color/color_secondary_dark</item>
+
+        <item name="android:colorBackground">@color/color_background</item>
+        <item name="colorSurface">@color/color_surface</item>
+        <item name="colorError">@color/color_error</item>
+
+        <item name="colorOnPrimary">@color/color_on_primary</item>
+        <item name="colorOnSecondary">@color/color_on_secondary</item>
+        <item name="colorOnBackground">@color/color_on_background</item>
+        <item name="colorOnSurface">@color/color_on_surface</item>
+        <item name="colorOnError">@color/color_on_error</item>
+
+        <item name="toolbarStyle">@style/AppTheme.ToolbarStyle</item>
+        <item name="navigationViewStyle">@style/AppTheme.NavigationView</item>
+        <item name="radioButtonStyle">@style/AppTheme.RadioButton</item>
+        <item name="switchStyle">@style/AppTheme.Switch</item>
+        <item name="checkboxStyle">@style/AppTheme.CheckBox</item>
+        <item name="shapeAppearance">?attr/colorOnBackground</item>
+
+        <item name="textAppearanceHeadline1">@style/AppTheme.TextAppearance.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/AppTheme.TextAppearance.Headline2</item>
+        <item name="textAppearanceHeadline3">@style/AppTheme.TextAppearance.Headline3</item>
+        <item name="textAppearanceHeadline4">@style/AppTheme.TextAppearance.Headline4</item>
+        <item name="textAppearanceHeadline5">@style/AppTheme.TextAppearance.Headline5</item>
+        <item name="textAppearanceHeadline6">@style/AppTheme.TextAppearance.Headline6</item>
+        <item name="textAppearanceSubtitle1">@style/AppTheme.TextAppearance.Subtitle1</item>
+        <item name="textAppearanceSubtitle2">@style/AppTheme.TextAppearance.Subtitle2</item>
+        <item name="textAppearanceBody1">@style/AppTheme.TextAppearance.Body1</item>
+        <item name="textAppearanceBody2">@style/AppTheme.TextAppearance.Body2</item>
+        <item name="textAppearanceButton">@style/AppTheme.TextAppearance.Button</item>
+        <item name="textAppearanceCaption">@style/AppTheme.TextAppearance.Caption</item>
+        <item name="textAppearanceOverline">@style/AppTheme.TextAppearance.Overline</item>
+
+        <item name="android:textColor">@color/text_view_color</item>
+        <item name="android:textColorHint">@color/hint_color</item>
+
         <item name="android:windowActivityTransitions">true</item>
+        <item name="android:statusBarColor" tools:ignore="NewApi">?attr/colorOnBackground</item>
+        <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
+        <item name="android:navigationBarColor" tools:ignore="NewApi">?attr/colorOnBackground</item>
+        <item name="android:windowLightNavigationBar" tools:ignore="NewApi">true</item>
+        <item name="android:navigationBarDividerColor" tools:ignore="NewApi">?attr/colorControlHighlight</item>
     </style>
 
-    <style name="AppTheme.NoWindow" parent="AppTheme">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <style name="AppTheme.RadioButton" parent="Widget.MaterialComponents.CompoundButton.RadioButton">
+        <item name="android:textColor">?attr/colorOnBackground</item>
+    </style>
+    <style name="AppTheme.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">
+        <item name="android:textColor">?attr/colorOnBackground</item>
+        <item name="android:textAppearance">?attr/textAppearanceSubtitle1</item>
+    </style>
+    <style name="AppTheme.CheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
+        <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
 
-
-    <style name="AppTheme.Splash" parent="AppTheme.NoWindow">
-        <item name="android:windowBackground">@android:color/transparent</item>
+    <style name="AppTheme.NavigationView" parent="Widget.MaterialComponents.NavigationView">
+        <item name="itemTextAppearance">?attr/textAppearanceBody2</item>
     </style>
 
+    <style name="AppTheme.ToolbarStyle" parent="Widget.MaterialComponents.Toolbar.Surface">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="actionMenuTextColor">?attr/colorOnBackground</item>
+        <item name="colorControlNormal">?attr/colorOnBackground</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="subtitleTextColor">?attr/colorOnSurface</item>
+        <item name="subtitleTextAppearance">?attr/textAppearanceOverline</item>
+    </style>
+
+    <style name="AppTheme.TextAppearance.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Headline3" parent="TextAppearance.MaterialComponents.Headline3">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Headline4" parent="TextAppearance.MaterialComponents.Headline4">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Subtitle2" parent="TextAppearance.MaterialComponents.Subtitle2">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Body1" parent="TextAppearance.MaterialComponents.Body1">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Body2" parent="TextAppearance.MaterialComponents.Body2">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Button" parent="TextAppearance.MaterialComponents.Button">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Caption" parent="TextAppearance.MaterialComponents.Caption">
+    </style>
+
+    <style name="AppTheme.TextAppearance.Overline" parent="TextAppearance.MaterialComponents.Overline">
+    </style>
 </resources>

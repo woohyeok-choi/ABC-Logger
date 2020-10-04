@@ -5,89 +5,79 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import kaist.iclab.abclogger.ObjBox
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.BaseStatus
-import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.commons.safeRegisterReceiver
-import kaist.iclab.abclogger.commons.safeUnregisterReceiver
-import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
+import kaist.iclab.abclogger.core.collector.AbstractCollector
+import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.collector.stringifyBatteryStatus
+import kaist.iclab.abclogger.collector.stringifyBatteryHealth
+import kaist.iclab.abclogger.collector.stringifyBatteryPlugType
+import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.collector.Description
 
-class BatteryCollector(private val context: Context) : BaseCollector<BatteryCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
+class BatteryCollector(
+    context: Context,
+    qualifiedName: String,
+    name: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<BatteryEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    override val permissions: List<String> = listOf()
+
+    override val setupIntent: Intent? = null
+
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
+            handleBatteryRetrieval(intent)
+        }
     }
 
-    override val clazz: KClass<Status> = Status::class
+    override fun isAvailable(): Boolean = true
 
-    override val name: String = context.getString(R.string.data_name_battery)
-
-    override val description: String = context.getString(R.string.data_desc_battery)
-
-    override val requiredPermissions: List<String> = listOf()
-
-    override val newIntentForSetUp: Intent? = null
-
-    override suspend fun checkAvailability(): Boolean = true
+    override fun getDescription(): Array<Description> = arrayOf()
 
     override suspend fun onStart() {
-        context.safeRegisterReceiver(receiver, filter)
+        context.safeRegisterReceiver(receiver, IntentFilter().apply {
+            addAction(Intent.ACTION_BATTERY_CHANGED)
+        })
     }
 
     override suspend fun onStop() {
         context.safeUnregisterReceiver(receiver)
     }
 
-    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
+    override suspend fun count(): Long = dataRepository.count<BatteryEntity>()
 
-            handleBatteryRetrieval(intent)
-        }
+    override suspend fun flush(entities: Collection<BatteryEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
     }
 
-    private fun handleBatteryRetrieval(intent: Intent) {
-        val timestamp = System.currentTimeMillis()
+    override suspend fun list(limit: Long): Collection<BatteryEntity> = dataRepository.find(0, limit)
 
-        BatteryEntity(
+    private fun handleBatteryRetrieval(intent: Intent) = launch {
+        val timestamp = System.currentTimeMillis()
+        val manager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+        val entity = BatteryEntity(
                 level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1),
                 scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1),
                 temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1),
                 voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1),
-                health = when (intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1)) {
-                    BatteryManager.BATTERY_HEALTH_COLD -> "COLD"
-                    BatteryManager.BATTERY_HEALTH_DEAD -> "DEAD"
-                    BatteryManager.BATTERY_HEALTH_GOOD -> "GOOD"
-                    BatteryManager.BATTERY_HEALTH_OVERHEAT -> "OVERHEAT"
-                    BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "OVER_VOLTAGE"
-                    BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "UNSPECIFIED_FAILURE"
-                    else -> "UNKNOWN"
-                },
-                pluggedType = when (intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)) {
-                    BatteryManager.BATTERY_PLUGGED_AC -> "AC"
-                    BatteryManager.BATTERY_PLUGGED_USB -> "USB"
-                    BatteryManager.BATTERY_PLUGGED_WIRELESS -> "WIRELESS"
-                    else -> "UNKNOWN"
-                },
-                status = when (intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)) {
-                    BatteryManager.BATTERY_STATUS_CHARGING -> "CHARGING"
-                    BatteryManager.BATTERY_STATUS_DISCHARGING -> "DISCHARGING"
-                    BatteryManager.BATTERY_STATUS_FULL -> "FULL"
-                    BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "NOT_CHARGING"
-                    else -> "UNKNOWN"
-                }
-        ).fill(timeMillis = timestamp).also { entity ->
-            launch {
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = timestamp))
-            }
-        }
-    }
-
-    private val filter = IntentFilter().apply {
-        addAction(Intent.ACTION_BATTERY_CHANGED)
+                health = stringifyBatteryHealth(intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1)),
+                pluggedType = stringifyBatteryPlugType(intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)),
+                status = stringifyBatteryStatus(intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)),
+                capacity = manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),
+                chargeCounter = manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER),
+                currentAverage = manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE),
+                currentNow = manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW),
+                energyCounter = manager.getLongProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER),
+                technology = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: ""
+        )
+        put(entity, timestamp)
     }
 }

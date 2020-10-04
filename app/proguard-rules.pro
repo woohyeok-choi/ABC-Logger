@@ -55,5 +55,9 @@
 -keep class data.** {public private protected *;}
 -keep class com.androidcommunications.polar.api.ble.model.** {public private protected *;}
 -keep class com.androidcommunications.polar.enpoints.ble.bluedroid.host.**
+-keep class kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoaderImpl
 
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
 

@@ -1,7 +1,7 @@
 package kaist.iclab.abclogger.collector.traffic
 
 import io.objectbox.annotation.Entity
-import kaist.iclab.abclogger.collector.Base
+import kaist.iclab.abclogger.core.collector.AbstractEntity
 
 @Entity
 data class DataTrafficEntity(
@@ -11,4 +11,4 @@ data class DataTrafficEntity(
         var txBytes: Long = Long.MIN_VALUE,
         var mobileRxBytes: Long = Long.MIN_VALUE,
         var mobileTxBytes: Long = Long.MIN_VALUE
-) : Base()
+) : AbstractEntity()

@@ -15,4 +15,15 @@
         <attr name="shouldAnswer" format="boolean"/>
         <attr name="showEtc" format="boolean"/>
     </declare-styleable>
+
+    <declare-styleable name="AutoRadioGroup">
+        <attr name="radioButtonTextSize" format="dimension"/>
+        <attr name="radioButtonTextColor" format="color"/>
+        <attr name="radioButtonEnabled" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="ResponseView">
+        <attr name="android:textSize" format="dimension"/>
+    </declare-styleable>
+
 </resources>

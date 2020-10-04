@@ -1,89 +1,115 @@
 package kaist.iclab.abclogger.ui.splash
 
 import android.content.Intent
+import android.os.Build
 import android.os.SystemClock
-import com.google.firebase.auth.FirebaseUser
-import kaist.iclab.abclogger.BR
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.commons.showToast
+import android.view.LayoutInflater
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
+import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.AuthRepository
+import kaist.iclab.abclogger.core.CollectorRepository
+import kaist.iclab.abclogger.core.Log
 import kaist.iclab.abclogger.databinding.ActivitySplashBinding
-import kaist.iclab.abclogger.ui.base.BaseActivity
+import kaist.iclab.abclogger.core.ui.BaseActivity
 import kaist.iclab.abclogger.ui.main.MainActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
+import org.koin.android.ext.android.inject
+import java.lang.Exception
 
 
-class SplashActivity : BaseActivity<ActivitySplashBinding, SplashViewModel>(), SplashNavigator {
-    override val layoutId: Int = R.layout.activity_splash
+class SplashActivity : BaseActivity<ActivitySplashBinding>() {
+    private val collectorRepository: CollectorRepository by inject()
 
-    override val viewModelVariable: Int = BR.viewModel
+    override fun getViewBinding(inflater: LayoutInflater): ActivitySplashBinding =
+        ActivitySplashBinding.inflate(inflater)
 
-    override val viewModel: SplashViewModel by viewModel { parametersOf(this, this) }
+    override fun afterViewInflate() {
+        lifecycleScope.launchWhenCreated {
+            if (intent?.getBooleanExtra(EXTRA_SIGN_OUT, false) == true) {
+                AuthRepository.signOut(this@SplashActivity)
+                collectorRepository.stop(this@SplashActivity)
+            }
 
-    override fun beforeExecutePendingBindings() {
-        viewModel.doGoogleSignIn()
-    }
+            try {
+                /**
+                 * Step 1: Google Play Service version check.
+                 */
+                AuthRepository.updateGooglePlayService(this@SplashActivity)
 
-    override fun navigateGoogleSignIn(intent: Intent) {
-        startActivityForResult(intent, REQUEST_CODE_GOOGLE_SIGN_IN)
-    }
+                /**
+                 * Step 2: Sign in with Google Account
+                 */
+                val signInResult = getActivityResult(
+                    AuthRepository.getGoogleSignInIntent(this@SplashActivity),
+                    ActivityResultContracts.StartActivityForResult()
+                ).data
 
-    override fun navigateFirebaseAuth(user: FirebaseUser) {
-        val msg = listOf(
-                getString(R.string.msg_sign_in_success),
-                user.displayName ?: user.email ?: ""
-        ).joinToString(" ")
+                /**
+                 * Step 3: Authorize Firebase with Google Account
+                 */
+                AuthRepository.authorizeFirebaseWithGoogleAccount(signInResult)?.email?.let {
+                    Log.setUserId(it)
+                }
 
-        showToast(msg)
+                /**
+                 * Step 4: Permission Request
+                 */
+                if (!isPermissionGranted(this@SplashActivity, collectorRepository.permissions)) {
+                    val results = getActivityResult(
+                        collectorRepository.permissions.toTypedArray(),
+                        ActivityResultContracts.RequestMultiplePermissions()
+                    )
 
-        viewModel.doPermissions(
-                title = getString(R.string.dialog_title_permission_request),
-                message = getString(R.string.dialog_message_permission_request)
-        )
-    }
+                    if (results.values.any { !it }) throw PreconditionError.permissionDenied()
+                }
 
-    override fun navigatePermission(isGranted: Boolean, intent: Intent) {
-        if (isGranted) {
-            viewModel.doWhiteList()
-        } else {
-            showToast(R.string.msg_permission_setting_required, false)
-            startActivityForResult(intent, REQUEST_CODE_PERMISSION_SETTING)
-        }
-    }
+                /**
+                 * Step 5: Special permission: Background Location Access
+                 * For < 29, it is not required
+                 * For 29, it shows normal permission dialog
+                 * For > 30, it shows special setting activity.
+                 */
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (!CollectorRepository.isBackgroundLocationAccessGranted(this@SplashActivity)) {
+                        val result = getActivityResult(
+                            CollectorRepository.getBackgroundLocationPermission(),
+                            ActivityResultContracts.RequestPermission()
+                        )
+                        if (!result) throw PreconditionError.backgroundLocationAccessDenied()
+                    }
+                }
 
-    override fun navigatePermissionAgain() {
-        viewModel.doWhiteList()
-    }
+                /**
+                 * Step 6: Whitelist Request
+                 */
+                if (!CollectorRepository.isBatteryOptimizationIgnored(this@SplashActivity)) {
+                    getActivityResult(
+                        CollectorRepository.getIgnoreBatteryOptimizationIntent(this@SplashActivity),
+                        ActivityResultContracts.StartActivityForResult()
+                    )
+                }
+                if (!CollectorRepository.isBatteryOptimizationIgnored(this@SplashActivity))
+                    throw PreconditionError.whiteListDenied()
 
-    override fun navigateWhiteList(intent: Intent) {
-        startActivityForResult(intent, REQUEST_CODE_WHITE_LIST)
-    }
-
-    override fun navigateSuccess() {
-        SystemClock.sleep(1000)
-        finish()
-        startActivity(Intent(this, MainActivity::class.java))
-    }
-
-    override fun navigateError(throwable: Throwable) {
-        showToast(throwable)
-        SystemClock.sleep(1000)
-        finish()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            REQUEST_CODE_GOOGLE_SIGN_IN -> viewModel.doFirebaseAuth(data)
-            REQUEST_CODE_PERMISSION_SETTING -> viewModel.doPermissionsAgain()
-            REQUEST_CODE_WHITE_LIST -> viewModel.doWhiteListAgain()
+                SystemClock.sleep(1000)
+                finish()
+                startActivity(
+                    Intent(
+                        this@SplashActivity,
+                        MainActivity::class.java
+                    ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            } catch (e: Exception) {
+                SystemClock.sleep(1000)
+                Log.e(this@SplashActivity.javaClass, AbcError.wrap(e))
+                showToast(AbcError.wrap(e).toSimpleString(this@SplashActivity))
+                finish()
+            }
         }
     }
 
     companion object {
-        const val REQUEST_CODE_PERMISSION_SETTING = 0x09
-        const val REQUEST_CODE_WHITE_LIST = 0x10
-        const val REQUEST_CODE_GOOGLE_SIGN_IN = 0x11
+        const val EXTRA_SIGN_OUT = "${BuildConfig.APPLICATION_ID}.ui.splash.SplashActivity.SIGN_OUT"
     }
 }

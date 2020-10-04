@@ -1,70 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <data>
-        <variable
-            name="viewModel"
-            type="kaist.iclab.abclogger.collector.survey.setting.SurveySettingViewModel" />
-    </data>
-    <androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fab_add_survey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/space_vert_padding"
+        android:layout_gravity="bottom|end"
+        android:text="@string/setting_survey_config_button_add"
+        app:icon="@drawable/baseline_add_24"/>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="@dimen/item_default_horizontal_padding"
-        android:paddingTop="@dimen/item_default_vertical_padding"
-        android:paddingRight="@dimen/item_default_horizontal_padding">
+        android:orientation="vertical">
 
-        <androidx.core.widget.ContentLoadingProgressBar
-            android:id="@+id/load_progress_bar"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:indeterminate="true"
-            isLoading="@{viewModel.loadStatus.loading}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.core.widget.ContentLoadingProgressBar
-            android:id="@+id/store_progress_bar"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:indeterminate="true"
-            isLoading="@{viewModel.storeStatus.loading}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/txt_survey_setting_instruction"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:text="@string/setting_survey_collector_instruction"
-            android:textColor="@color/color_message"
-            android:textSize="@dimen/txt_size_title_small"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_add_item"/>
-
-        <ImageButton
-            android:id="@+id/btn_add_item"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            app:layout_constraintBottom_toBottomOf="@id/txt_survey_setting_instruction"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/txt_survey_setting_instruction"
-            app:srcCompat="@drawable/baseline_add_black_36" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_base_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:layout_constraintTop_toBottomOf="@id/btn_add_item"
-            app:layout_constraintStart_toStartOf="parent"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+            android:minHeight="@dimen/item_two_line_height"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="?selectableItemBackground">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_base_date_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingLeft="@dimen/space_horiz_padding"
+                android:text="@string/setting_survey_base_date_title"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/img_more"
+                android:textAppearance="?attr/textAppearanceSubtitle1"/>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_base_date_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                tools:text="This is message"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingLeft="@dimen/space_horiz_padding"
+                app:layout_constraintTop_toBottomOf="@id/txt_base_date_title"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/img_more"
+                android:textAppearance="?attr/textAppearanceBody2"/>
+
+            <ImageView
+                android:id="@+id/img_more"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_chevron_right_24"
+                app:tint="@color/color_on_surface"
+                android:paddingRight="@dimen/space_horiz_padding"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/space_horiz_padding"
+            android:paddingTop="@dimen/space_vert_padding"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Overline"
+            android:text="@string/setting_survey_config_header"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_no_survey"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/setting_survey_config_text_empty"
+                android:textAppearance="?attr/textAppearanceSubtitle2"
+                android:textColor="?attr/colorError"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+        </FrameLayout>
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

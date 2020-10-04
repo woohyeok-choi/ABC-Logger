@@ -1,7 +1,7 @@
 package kaist.iclab.abclogger.collector.battery
 
 import io.objectbox.annotation.Entity
-import kaist.iclab.abclogger.collector.Base
+import kaist.iclab.abclogger.core.collector.AbstractEntity
 
 @Entity
 data class BatteryEntity(
@@ -11,5 +11,11 @@ data class BatteryEntity(
         var voltage: Int = Int.MIN_VALUE,
         var health: String = "",
         var pluggedType: String = "",
-        var status: String = ""
-) : Base()
+        var status: String = "",
+        var capacity: Int = Int.MIN_VALUE,
+        var chargeCounter: Int = Int.MIN_VALUE,
+        var currentAverage: Int = Int.MIN_VALUE,
+        var currentNow: Int = Int.MIN_VALUE,
+        var energyCounter: Long = Long.MIN_VALUE,
+        var technology: String = ""
+) : AbstractEntity()

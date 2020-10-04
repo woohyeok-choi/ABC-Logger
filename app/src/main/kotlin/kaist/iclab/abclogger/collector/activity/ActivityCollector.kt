@@ -10,68 +10,35 @@ import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
 import com.google.android.gms.location.*
-import kaist.iclab.abclogger.AbcEvent
 import kaist.iclab.abclogger.BuildConfig
-import kaist.iclab.abclogger.ObjBox
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.BaseStatus
-import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.core.collector.AbstractCollector
+import kaist.iclab.abclogger.collector.stringifyActivityType
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
 import kaist.iclab.abclogger.commons.safeUnregisterReceiver
-import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
+import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.collector.Description
+import java.util.concurrent.TimeUnit
 
-class ActivityCollector(private val context: Context) : BaseCollector<ActivityCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null, override val lastTime: Long? = null) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
-    }
+class ActivityCollector(
+    context: Context,
+    qualifiedName: String,
+    name: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<PhysicalActivityEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    override val permissions: List<String> = listOfNotNull(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) Manifest.permission.ACTIVITY_RECOGNITION else null
+    )
 
-    override val clazz: KClass<Status> = Status::class
-
-    override val name: String = context.getString(R.string.data_name_physical_activity)
-
-    override val description: String = context.getString(R.string.data_desc_physical_activity)
-
-    override val requiredPermissions: List<String> = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-        listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-        )
-    } else {
-        listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACTIVITY_RECOGNITION
-        )
-    }
-
-    override val newIntentForSetUp: Intent? = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-
-    override suspend fun onStart() {
-        context.safeRegisterReceiver(receiver, filter)
-
-        client.requestActivityUpdates(1000 * 15, activityIntent)
-        client.requestActivityTransitionUpdates(transitionRequest, activityTransitionIntent)
-    }
-
-    override suspend fun onStop() {
-        context.safeUnregisterReceiver(receiver)
-
-        client.removeActivityUpdates(activityIntent)
-        client.removeActivityTransitionUpdates(activityTransitionIntent)
-    }
-
-    override suspend fun checkAvailability(): Boolean {
-        val isPermitted = context.checkPermission(requiredPermissions)
-        val isLocationEnabled = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            Settings.Secure.getInt(context.contentResolver, Settings.Secure.LOCATION_MODE) != Settings.Secure.LOCATION_MODE_OFF
-        } else {
-            (context.getSystemService(Context.LOCATION_SERVICE) as LocationManager).isLocationEnabled
-        }
-        return isPermitted && isLocationEnabled
-    }
+    override val setupIntent: Intent? = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     private val client: ActivityRecognitionClient by lazy {
         ActivityRecognition.getClient(context)
@@ -81,134 +48,77 @@ class ActivityCollector(private val context: Context) : BaseCollector<ActivityCo
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 ACTION_ACTIVITY_UPDATE -> handleActivityRetrieval(intent)
-                ACTION_ACTIVITY_TRANSITION_UPDATE -> handleActivityTransitionRetrieval(intent)
             }
         }
     }
 
-    private val activityIntent: PendingIntent = PendingIntent.getBroadcast(
+    private val activityIntent by lazy {
+        PendingIntent.getBroadcast(
             context, REQUEST_CODE_ACTIVITY_UPDATE,
             Intent(ACTION_ACTIVITY_UPDATE),
             PendingIntent.FLAG_UPDATE_CURRENT
-    )
-
-    private val activityTransitionIntent: PendingIntent = PendingIntent.getBroadcast(
-            context, REQUEST_CODE_ACTIVITY_TRANSITION_UPDATE,
-            Intent(ACTION_ACTIVITY_TRANSITION_UPDATE),
-            PendingIntent.FLAG_UPDATE_CURRENT
-    )
-
-    private val filter = IntentFilter().apply {
-        addAction(ACTION_ACTIVITY_UPDATE)
-        addAction(ACTION_ACTIVITY_TRANSITION_UPDATE)
-    }
-
-    private val transitionRequest = listOf(
-            DetectedActivity.IN_VEHICLE,
-            DetectedActivity.ON_FOOT,
-            DetectedActivity.RUNNING,
-            DetectedActivity.WALKING,
-            DetectedActivity.ON_BICYCLE,
-            DetectedActivity.STILL
-    ).map { activity ->
-        listOf(
-                ActivityTransition.Builder()
-                        .setActivityType(activity)
-                        .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER)
-                        .build(),
-                ActivityTransition.Builder()
-                        .setActivityType(activity)
-                        .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_EXIT)
-                        .build()
         )
-    }.flatten().let { ActivityTransitionRequest(it) }
-
-    private fun activityTypeToString(typeInt: Int) = when (typeInt) {
-        DetectedActivity.IN_VEHICLE -> "IN_VEHICLE"
-        DetectedActivity.ON_BICYCLE -> "ON_BICYCLE"
-        DetectedActivity.ON_FOOT -> "ON_FOOT"
-        DetectedActivity.RUNNING -> "RUNNING"
-        DetectedActivity.STILL -> "STILL"
-        DetectedActivity.TILTING -> "TILTING"
-        DetectedActivity.WALKING -> "WALKING"
-        else -> "UNKNOWN"
     }
 
-    private fun transitionEventToABCEvent(isEntered: Boolean, activityType: Int): String? {
-        return if (isEntered) {
-            when (activityType) {
-                DetectedActivity.IN_VEHICLE -> AbcEvent.ACTIVITY_ENTER_IN_VEHICLE
-                DetectedActivity.ON_BICYCLE -> AbcEvent.ACTIVITY_ENTER_ON_BICYCLE
-                DetectedActivity.ON_FOOT -> AbcEvent.ACTIVITY_ENTER_ON_FOOT
-                DetectedActivity.RUNNING -> AbcEvent.ACTIVITY_ENTER_RUNNING
-                DetectedActivity.STILL -> AbcEvent.ACTIVITY_ENTER_STILL
-                DetectedActivity.TILTING -> AbcEvent.ACTIVITY_ENTER_TILTING
-                DetectedActivity.WALKING -> AbcEvent.ACTIVITY_ENTER_WALKING
-                else -> null
-            }
+    override fun getDescription(): Array<Description> = arrayOf()
+
+    override fun isAvailable(): Boolean {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            Settings.Secure.getInt(
+                context.contentResolver,
+                Settings.Secure.LOCATION_MODE
+            ) != Settings.Secure.LOCATION_MODE_OFF
         } else {
-            when (activityType) {
-                DetectedActivity.IN_VEHICLE -> AbcEvent.ACTIVITY_EXIT_IN_VEHICLE
-                DetectedActivity.ON_BICYCLE -> AbcEvent.ACTIVITY_EXIT_ON_BICYCLE
-                DetectedActivity.ON_FOOT -> AbcEvent.ACTIVITY_EXIT_ON_FOOT
-                DetectedActivity.RUNNING -> AbcEvent.ACTIVITY_EXIT_RUNNING
-                DetectedActivity.STILL -> AbcEvent.ACTIVITY_EXIT_STILL
-                DetectedActivity.TILTING -> AbcEvent.ACTIVITY_EXIT_TILTING
-                DetectedActivity.WALKING -> AbcEvent.ACTIVITY_EXIT_WALKING
-                else -> null
-            }
+            (context.getSystemService(Context.LOCATION_SERVICE) as LocationManager).isLocationEnabled
         }
     }
 
-    private fun handleActivityRetrieval(intent: Intent) {
-        if (!ActivityRecognitionResult.hasResult(intent)) return
-        val result = ActivityRecognitionResult.extractResult(intent) ?: return
-        val curTime = System.currentTimeMillis()
+    override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, IntentFilter().apply {
+            addAction(ACTION_ACTIVITY_UPDATE)
+        })
 
-        result.probableActivities?.map { detectedActivity ->
-            PhysicalActivityEntity(
-                    type = activityTypeToString(detectedActivity.type),
-                    confidence = detectedActivity.confidence
-            ).fill(timeMillis = result.time)
-        }.also { entity ->
-            launch {
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = curTime))
-            }
-        }
+        client.requestActivityUpdates(TimeUnit.SECONDS.toMillis(15), activityIntent)
     }
 
-    private fun handleActivityTransitionRetrieval(intent: Intent) {
-        if (!ActivityTransitionResult.hasResult(intent)) return
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
+
+        client.removeActivityUpdates(activityIntent)
+    }
+
+    override suspend fun count(): Long = dataRepository.count<PhysicalActivityEntity>()
+
+    override suspend fun flush(entities: Collection<PhysicalActivityEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
+    }
+
+    override suspend fun list(limit: Long): Collection<PhysicalActivityEntity> = dataRepository.find(0, limit)
+
+    private fun handleActivityRetrieval(intent: Intent) = launch {
+        if (!ActivityRecognitionResult.hasResult(intent)) return@launch
+
+        val result = ActivityRecognitionResult.extractResult(intent)?.probableActivities
+            ?: return@launch
+        if (result.isEmpty()) return@launch
 
         val curTime = System.currentTimeMillis()
-        val result = ActivityTransitionResult.extractResult(intent)?.transitionEvents ?: return
-
-        result.map { event ->
-            val type = event.activityType
-            val isEntered = event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
-
-            transitionEventToABCEvent(isEntered, type)?.let { AbcEvent.post(timestamp = curTime, eventType = it) }
-
-            PhysicalActivityTransitionEntity(
-                    type = activityTypeToString(type),
-                    isEntered = isEntered
-            ).fill(
-                    timeMillis = curTime
+        val activities = result.map { detectedActivity ->
+            PhysicalActivityEntity.Activity(
+                type = stringifyActivityType(detectedActivity.type),
+                confidence = detectedActivity.confidence
             )
-        }.also { entity ->
-            launch {
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = curTime))
-            }
         }
+
+        put(PhysicalActivityEntity(activities = activities), curTime)
     }
 
     companion object {
-        private const val REQUEST_CODE_ACTIVITY_TRANSITION_UPDATE = 0xf1
         private const val REQUEST_CODE_ACTIVITY_UPDATE = 0xf2
-
-        private const val ACTION_ACTIVITY_TRANSITION_UPDATE = "${BuildConfig.APPLICATION_ID}.ACTION_ACTIVITY_TRANSITION_UPDATE"
-        private const val ACTION_ACTIVITY_UPDATE = "${BuildConfig.APPLICATION_ID}.ACTION_ACTIVITY_UPDATE"
+        private const val ACTION_ACTIVITY_UPDATE =
+            "${BuildConfig.APPLICATION_ID}.ACTION_ACTIVITY_UPDATE"
     }
+
+
 }

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_drawer_top_padding"
+    android:paddingHorizontal="@dimen/space_horiz_padding"
+    android:background="?attr/colorPrimary">
+
+    <ImageView
+        android:id="@+id/img_avatar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/avatar_size"
+        android:minWidth="@dimen/avatar_size"
+        tools:src="@mipmap/ic_launcher_circle"
+        android:paddingTop="@dimen/space_vert_padding"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/txt_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/colorOnPrimarySurface"
+        android:paddingTop="@dimen/space_vert_padding"
+        tools:text="ABC Logger"
+        android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/txt_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/space_vert_padding"
+        android:textColor="?attr/colorOnPrimarySurface"
+        android:alpha="0.72"
+        tools:text="abc.logger@gmail.com"
+        android:textAppearance="?attr/textAppearanceBody2">
+    </com.google.android.material.textview.MaterialTextView>
+</LinearLayout>

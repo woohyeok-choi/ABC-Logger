@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/survey_all_list"
+        android:icon="@drawable/baseline_list_24"
+        android:title="@string/menu_bottom_survey_list"/>
+
+    <item
+        android:id="@+id/config"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="@string/menu_bottom_config"/>
+</menu>

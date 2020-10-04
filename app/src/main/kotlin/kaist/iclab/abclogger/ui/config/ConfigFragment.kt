@@ -1,91 +1,165 @@
 package kaist.iclab.abclogger.ui.config
 
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
-import androidx.lifecycle.observe
-import kaist.iclab.abclogger.BR
+import android.view.LayoutInflater
+import android.view.View
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
 import kaist.iclab.abclogger.BuildConfig
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.commons.showToast
 import kaist.iclab.abclogger.databinding.FragmentConfigBinding
-import kaist.iclab.abclogger.ui.base.BaseFragment
-import kaist.iclab.abclogger.ui.dialog.YesNoDialogFragment
-import kaist.iclab.abclogger.ui.splash.SplashActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
+import kaist.iclab.abclogger.base.BaseViewModelFragment
+import kaist.iclab.abclogger.commons.showSnackBar
+import kaist.iclab.abclogger.dialog.VersatileDialog
+import kaist.iclab.abclogger.ui.State
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
-class ConfigFragment : BaseFragment<FragmentConfigBinding, ConfigViewModel>(),
-        SharedPreferences.OnSharedPreferenceChangeListener, ConfigNavigator {
-    override val layoutId: Int = R.layout.fragment_config
+@ExperimentalCoroutinesApi
+@FlowPreview
+abstract class ConfigFragment2 : BaseViewModelFragment<FragmentConfigBinding, ConfigViewModel>(), ConfigDataAdapter.OnItemClickListener {
+    private val configAdapter = ConfigDataAdapter()
 
-    override val viewModelVariable: Int = BR.viewModel
+    override fun getViewBinding(inflater: LayoutInflater): FragmentConfigBinding =
+            FragmentConfigBinding.inflate(inflater)
 
-    override val viewModel: ConfigViewModel by viewModel { parametersOf(this) }
+    override fun initView(viewBinding: FragmentConfigBinding) {
+        configAdapter.setOnItemClickListener(this)
 
-    override fun beforeExecutePendingBindings() {
-        val adapter = ConfigListAdapter()
+        viewBinding.recyclerView.adapter = configAdapter
+        viewBinding.recyclerView.itemAnimator = DefaultItemAnimator()
+        viewBinding.recyclerView.visibility = View.GONE
 
-        dataBinding.recyclerView.adapter = adapter
-        dataBinding.recyclerView.itemAnimator = null
+        viewBinding.txtError.visibility = View.GONE
 
-        viewModel.configs.observe(this) { data ->
-            data?.let { adapter.items = data }
+        viewBinding.swipeLayout.setOnRefreshListener {
+            refresh()
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        context?.getSharedPreferences(
-                BuildConfig.PREF_NAME,
-                Context.MODE_PRIVATE
-        )?.registerOnSharedPreferenceChangeListener(this)
+    abstract fun refresh()
+    abstract val config: Flow<State>
+
+    override fun afterViewCreated(viewBinding: FragmentConfigBinding) {
+        lifecycleScope.launchWhenResumed {
+            config.collectLatest { state ->
+                viewBinding.swipeLayout.isRefreshing = state == State.Loading
+                when (state) {
+                    is State.Failure -> {
+                        showSnackBar(viewBinding.root, state.error)
+
+                        viewBinding.recyclerView.visibility = View.VISIBLE
+                        viewBinding.txtError.visibility = View.GONE
+                    }
+                    is State.Success<*> -> {
+                        (state.data as? ArrayList<*>)?.filterIsInstance<ConfigData>()?.let {
+                            configAdapter.items = arrayListOf<ConfigData>().apply { addAll(it) }
+                        }
+                        viewBinding.recyclerView.visibility = View.GONE
+                        viewBinding.txtError.visibility = View.VISIBLE
+                    }
+                }
+            }
+        }
     }
 
-    override fun onStop() {
-        super.onStop()
-        context?.getSharedPreferences(
-                BuildConfig.PREF_NAME,
-                Context.MODE_PRIVATE
-        )?.unregisterOnSharedPreferenceChangeListener(this)
+    override fun onItemClick(position: Int, item: ConfigItem<*>) {
+        lifecycleScope.launchWhenCreated {
+            when (item) {
+                is ActionableConfigItem<*> -> onItemClick(item)
+                is CollectorConfigItem -> onItemClick(item)
+                is ActivityResultConfigItem<*, *, *> -> onItemClick(item)
+                is RadioConfigItem<*> -> onItemClick(item)
+                is NumberConfigItem -> onItemClick(item)
+                is NumberRangeConfigItem -> onItemClick(item)
+                is TextConfigItem -> onItemClick(item)
+            }
+        }
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        viewModel.load()
+    private suspend fun onItemClick(item: ActionableConfigItem<*>) {
+        val message = item.confirmDialogMessage
+
+        if (!message.isNullOrBlank()) {
+            val result = VersatileDialog.confirm(
+                    manager = parentFragmentManager,
+                    owner = this,
+                    title = item.name,
+                    message = message
+            )
+            if (result) item.run()
+        } else {
+            item.run()
+        }
     }
 
-    override fun navigateError(throwable: Throwable) {
-        showToast(throwable)
+    private suspend fun onItemClick(item: CollectorConfigItem) {
+        val direction = ConfigFragmentDirections.actionConfigToConfigCollector(
+                qualifiedName = item.qualifiedName
+        )
+        findNavController().navigate(direction)
     }
 
-    override fun navigateIntent(intent: Intent) {
-        startActivityForResult(intent, 0xFF)
+    private suspend fun onItemClick(item: ActivityResultConfigItem<*, *, *>) {
+        item.run(this)
     }
 
-    override fun navigateBeforeFlush() {
-        YesNoDialogFragment.showDialog(
-                parentFragmentManager,
-                getString(R.string.dialog_title_flush_data),
-                getString(R.string.dialog_message_flush_data)
-        ) { viewModel.flush() }
+
+    private suspend fun onItemClick(item: RadioConfigItem<*>) {
+        val result = VersatileDialog.singleChoice(
+                manager = parentFragmentManager,
+                owner = this,
+                title = item.name,
+                value = item.index,
+                items = item.optionsAsString()
+        )
+        if (result != null) item.index = result
     }
 
-    override fun navigateBeforeLogout() {
-        YesNoDialogFragment.showDialog(
-                parentFragmentManager,
-                getString(R.string.dialog_title_sign_out),
-                getString(R.string.dialog_message_sign_out)
-        ) { viewModel.logout() }
+    private suspend fun onItemClick(item: NumberConfigItem) {
+        val result = VersatileDialog.slider(
+                manager = parentFragmentManager,
+                owner = this,
+                title = item.name,
+                value = item.value,
+                from = item.min,
+                to = item.max,
+                step = item.step,
+                nFloats = item.nFloats
+        )
+        if (result != null) item.value = result
     }
 
-    override fun navigateAfterLogout() {
-        val intent = Intent(requireContext(), SplashActivity::class.java)
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        startActivity(intent)
+    private suspend fun onItemClick(item: NumberRangeConfigItem) {
+        val result = VersatileDialog.sliderRange(
+                manager = parentFragmentManager,
+                owner = this,
+                title = item.name,
+                value = item.value,
+                from = item.min,
+                to = item.max,
+                step = item.step,
+                nFloats = item.nFloats
+        )
+        if (result != null) item.value = result
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        viewModel.load()
+    private suspend fun onItemClick(item: TextConfigItem) {
+        val result = VersatileDialog.text(
+                manager = parentFragmentManager,
+                owner = this,
+                title = item.name,
+                value = item.value,
+                inputType = item.inputType
+        )
+        if (result != null) item.value = result
     }
+
+    companion object {
+        private const val REQUEST_KEY = "${BuildConfig.APPLICATION_ID}.ui.config.list.ConfigFragment.REQUEST_KEY"
+    }
+
+
 }

@@ -1,37 +1,43 @@
 package kaist.iclab.abclogger
 
 import android.app.Application
-import kaist.iclab.abclogger.commons.AppLog
+import github.agustarc.koap.Koap
+import kaist.iclab.abclogger.core.Log
+import kaist.iclab.abclogger.core.NotificationRepository
+import kaist.iclab.abclogger.core.Preference
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 
 class AbcApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        AppLog.d(TAG, "onCreate()")
-        startKoin {
-            androidLogger()
-            androidContext(this@AbcApplication)
-            modules(listOf(collectorModules, viewModelModules))
-        }
-        GlobalScope.launch {
-            AbcCollector.bind(this@AbcApplication)
+        Log.d(javaClass, "onCreate()")
 
-            if (BuildConfig.IS_TEST_MODE) {
-                Debug.generateSurveyEntities(50)
+        NotificationRepository.bind(this)
+
+        startKoin {
+            androidLogger(Level.NONE)
+            androidContext(this@AbcApplication)
+            modules(listOf(collectorModules, repositoryModules, viewModelModules))
+        }
+
+        Koap.bind(this, Preference)
+
+        GlobalScope.launch {
+            if (BuildConfig.GENERATE_DUMMY_ENTITY) {
+                /**
+                 * TODO: GENERATE DUMMY ENTITIES
+                 */
             }
         }
     }
 
     override fun onTerminate() {
         super.onTerminate()
-        AppLog.d(TAG, "onTerminate()")
-    }
-
-    companion object {
-        val TAG = AbcApplication::class.java.canonicalName
+        Log.d(javaClass, "onTerminate()")
     }
 }

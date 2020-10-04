@@ -1,69 +1,56 @@
 package kaist.iclab.abclogger.collector.location
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
+import android.provider.Settings
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import kaist.iclab.abclogger.BuildConfig
-import kaist.iclab.abclogger.ObjBox
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.BaseStatus
-import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.commons.checkPermission
+import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
 import kaist.iclab.abclogger.commons.safeUnregisterReceiver
-import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
+import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.collector.Description
+import java.util.concurrent.TimeUnit
 
-class LocationCollector(private val context: Context) : BaseCollector<LocationCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
-    }
+class LocationCollector(
+    context: Context,
+    qualifiedName: String,
+    name: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<LocationEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    override val permissions: List<String> = listOfNotNull(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+    )
 
-    override val clazz: KClass<Status> = Status::class
-
-    override val name: String = context.getString(R.string.data_name_location)
-
-    override val description: String = context.getString(R.string.data_desc_location)
-
-    override val requiredPermissions: List<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        )
-    } else {
-        listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-        )
-    }
-
-    override val newIntentForSetUp: Intent? = null
-
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
-
-    override suspend fun onStart() {
-        context.safeRegisterReceiver(receiver, filter)
-        client.requestLocationUpdates(request, intent)
-    }
-
-    override suspend fun onStop() {
-        context.safeUnregisterReceiver(receiver)
-        client.removeLocationUpdates(intent)
-    }
+    override val setupIntent: Intent? = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     private val client: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    private val intent: PendingIntent by lazy {
+        PendingIntent.getBroadcast(
+                context,
+                REQUEST_CODE_LOCATION_UPDATE,
+                Intent(ACTION_LOCATION_UPDATE),
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -73,34 +60,51 @@ class LocationCollector(private val context: Context) : BaseCollector<LocationCo
         }
     }
 
-    private val intent: PendingIntent = PendingIntent.getBroadcast(
-            context, REQUEST_CODE_LOCATION_UPDATE, Intent(ACTION_LOCATION_UPDATE), PendingIntent.FLAG_UPDATE_CURRENT
-    )
 
-    private val filter = IntentFilter().apply {
-        addAction(ACTION_LOCATION_UPDATE)
+    override fun isAvailable(): Boolean = true
+
+    override fun getDescription(): Array<Description> = arrayOf()
+
+    @SuppressLint("MissingPermission")
+    override suspend fun onStart() {
+        context.safeRegisterReceiver(receiver, IntentFilter().apply {
+            addAction(ACTION_LOCATION_UPDATE)
+        })
+
+        val request = LocationRequest.create()
+                .setInterval(TimeUnit.MINUTES.toMillis(3))
+                .setSmallestDisplacement(5.0F)
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+
+        client.requestLocationUpdates(request, intent)
     }
 
-    private val request = LocationRequest.create()
-            .setInterval(1000 * 60 * 3)
-            .setSmallestDisplacement(5.0F)
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+    override suspend fun onStop() {
+        context.safeUnregisterReceiver(receiver)
+        client.removeLocationUpdates(intent)
+    }
 
-    private fun handleLocationRetrieval(intent: Intent) {
-        LocationResult.extractResult(intent)?.lastLocation?.let { loc ->
-            LocationEntity(
-                    latitude = loc.latitude,
-                    longitude = loc.longitude,
-                    altitude = loc.altitude,
-                    accuracy = loc.accuracy,
-                    speed = loc.speed
-            ).fill(timeMillis = loc.time)
-        }?.also { entity ->
-            launch {
-                ObjBox.put(entity)
-                setStatus(Status(lastTime = System.currentTimeMillis()))
-            }
-        }
+    override suspend fun count(): Long = dataRepository.count<LocationEntity>()
+
+    override suspend fun flush(entities: Collection<LocationEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
+    }
+
+    override suspend fun list(limit: Long): Collection<LocationEntity> = dataRepository.find(0, limit)
+
+    private fun handleLocationRetrieval(intent: Intent) = launch {
+        val location = LocationResult.extractResult(intent)?.lastLocation ?: return@launch
+
+        val entity = LocationEntity(
+                latitude = location.latitude,
+                longitude = location.longitude,
+                altitude = location.altitude,
+                accuracy = location.accuracy,
+                speed = location.speed
+        )
+
+        put(entity, location.time)
     }
 
     companion object {

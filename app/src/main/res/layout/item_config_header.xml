@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="item"
+            type="kaist.iclab.abclogger.structure.config.ConfigHeader" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:paddingTop="6dp"
+        android:paddingTop="@dimen/space_vert_padding">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/space_horiz_padding"
+            android:paddingTop="@dimen/space_vert_padding"
+            android:textColor="?attr/colorPrimary"
+            android:text="@{item.name}"
+            android:textAppearance="?attr/textAppearanceOverline"
+            tools:text="This is category" />
+    </FrameLayout>
+</layout>

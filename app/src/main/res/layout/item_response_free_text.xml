@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <import type="java.util.Set" />
+
+        <import type="kaist.iclab.abclogger.structure.survey.FreeTextOption" />
+
+        <variable
+            name="isEnabled"
+            type="Boolean" />
+
+        <variable
+            name="isOthersShown"
+            type="Boolean" />
+
+        <variable
+            name="question"
+            type="String" />
+
+        <variable
+            name="answer"
+            type="kaist.iclab.abclogger.collector.survey.InternalAnswer" />
+
+        <variable
+            name="option"
+            type="FreeTextOption" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardElevation="@dimen/cardview_elevation"
+        app:cardUseCompatPadding="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableStart="@{answer.isInvalid ? @drawable/baseline_error_outline_24 : null}"
+                android:drawableTint="?attr/colorError"
+                android:enabled="@{isEnabled}"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:singleLine="false"
+                android:text="@{question}"
+                android:drawablePadding="@dimen/drawable_padding"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                tools:drawableStart="@drawable/baseline_error_outline_24"
+                tools:text="This is question." />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:layout_marginTop="@dimen/space_vert_margin"
+                android:paddingHorizontal="@dimen/space_horiz_padding">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/margin_top_text_input_layout"
+                    app:counterTextColor="?attr/colorPrimary"
+                    app:counterEnabled="true"
+                    android:enabled="@{isEnabled}"
+                    android:hint="@string/survey_hint_for_text">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        tools:singleLine="true"
+                        android:enabled="@{isEnabled}"
+                        answer="@={answer.main}"
+                        android:singleLine="@{option.singleLine}"
+                        tools:text="This is example response"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </FrameLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</layout>

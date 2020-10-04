@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/survey_all_list">
+
+    <fragment
+        android:id="@+id/survey_all_list"
+        android:name="kaist.iclab.abclogger.ui.survey.list.SurveyAllListFragment"
+        android:label="@string/title_survey_list">
+        <action
+            android:id="@+id/action_survey_all_list_to_survey_response"
+            app:destination="@id/survey_response" />
+    </fragment>
+    <fragment
+        android:id="@+id/survey_not_answered_list"
+        android:name="kaist.iclab.abclogger.ui.survey.list.SurveyNotAnsweredListFragment"
+        android:label="@string/title_survey_list">
+        <action
+            android:id="@+id/action_survey_not_answered_list_to_survey_response"
+            app:destination="@id/survey_response" />
+    </fragment>
+    <fragment
+        android:id="@+id/survey_answered_list"
+        android:name="kaist.iclab.abclogger.ui.survey.list.SurveyAnsweredListFragment"
+        android:label="@string/title_survey_list">
+        <action
+            android:id="@+id/action_survey_answered_list_to_survey_response"
+            app:destination="@id/survey_response" />
+    </fragment>
+    <fragment
+        android:id="@+id/survey_expired_list"
+        android:name="kaist.iclab.abclogger.ui.survey.list.SurveyExpiredListFragment"
+        android:label="@string/title_survey_list">
+        <action
+            android:id="@+id/action_survey_expired_list_to_survey_response"
+            app:destination="@id/survey_response" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/survey_response"
+        android:name="kaist.iclab.abclogger.ui.survey.response.SurveyResponseFragment"
+        android:label="@string/title_survey_response">
+        <argument
+            android:name="title"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="message"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="triggerTime"
+            android:defaultValue="-1L"
+            app:argType="long" />
+        <argument
+            android:name="entityId"
+            android:defaultValue="0L"
+            app:argType="long" />
+        <argument
+            android:name="restore"
+            app:argType="boolean"
+            android:defaultValue="false" />
+    </fragment>
+    <fragment
+        android:id="@+id/config"
+        android:name="kaist.iclab.abclogger.ui.config.ConfigGeneralFragment"
+        android:label="@string/menu_bottom_config">
+        <action
+            android:id="@+id/action_config_to_config_collector"
+            app:destination="@id/config_collector"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+    </fragment>
+    <fragment
+        android:id="@+id/config_collector"
+        android:name="kaist.iclab.abclogger.ui.config.ConfigCollectorFragment">
+        <argument
+            android:name="qualifiedName"
+            app:argType="string" />
+        <argument
+            android:name="name"
+            app:argType="string"/>
+        <argument
+            android:name="description"
+            app:argType="string"/>
+    </fragment>
+</navigation>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="kaist.iclab.abclogger.commons.Formatter"/>
+        <import type="android.view.View"/>
+
+        <variable
+            name="item"
+            type="kaist.iclab.abclogger.structure.survey.SurveyConfiguration" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ProgressBar
+            style="?android:progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="@{item.loading ? View.VISIBLE : View.GONE}"
+            android:indeterminate="true"/>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/txt_error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@{item.error}"
+            tools:text="This is error message"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:visibility="@{item.error == null ? View.GONE : View.VISIBLE}"
+            android:textColor="?attr/colorError"
+            tools:visibility="visible" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="?selectableItemBackground">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@{item.survey.title.main}"
+                tools:text="This is title"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:paddingStart="@dimen/space_horiz_padding"
+                android:paddingEnd="0dp"
+                android:paddingTop="@dimen/space_vert_padding"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/txt_download_at"
+                android:textAppearance="?attr/textAppearanceSubtitle1"/>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_message"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                tools:text="This is message"
+                android:text="@{item.survey.message.main}"
+                android:alpha="0.60"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:paddingStart="@dimen/space_horiz_padding"
+                android:paddingEnd="0dp"
+                android:paddingBottom="@dimen/space_vert_padding"
+                app:layout_constraintTop_toBottomOf="@id/txt_title"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/txt_download_at"
+                android:textAppearance="?attr/textAppearanceBody2"/>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_download_at"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@{Formatter.formatDateTime(context, item.lastAccessTime)}"
+                tools:text="2020. 3. 20"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingStart="0dp"
+                android:paddingEnd="@dimen/space_horiz_padding"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:textAppearance="?attr/textAppearanceCaption"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </FrameLayout>
+</layout>

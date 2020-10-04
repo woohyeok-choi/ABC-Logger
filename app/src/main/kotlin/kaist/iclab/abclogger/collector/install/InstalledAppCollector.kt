@@ -8,105 +8,109 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import kaist.iclab.abclogger.BuildConfig
-import kaist.iclab.abclogger.ObjBox
-import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.*
-import kaist.iclab.abclogger.commons.safeRegisterReceiver
-import kaist.iclab.abclogger.commons.safeUnregisterReceiver
-import kotlinx.coroutines.launch
+import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.collector.AbstractCollector
+import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.collector.Description
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.KClass
 
-class InstalledAppCollector(private val context: Context) : BaseCollector<InstalledAppCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null,
-                      val lastTimeAccessed: Long? = null) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
+/**
+ * Collect installed apps every three hours.
+ */
+class InstalledAppCollector(
+    context: Context,
+    qualifiedName: String,
+    name: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<InstalledAppEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    override val permissions: List<String> = listOf()
+
+    override val setupIntent: Intent? = null
+
+    private val alarmManager by lazy {
+        context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
 
-    override val clazz: KClass<Status> = Status::class
+    private val packageManager by lazy { context.packageManager }
 
-    override val name: String = context.getString(R.string.data_name_installed_app)
+    private val intent by lazy {
+        PendingIntent.getBroadcast(
+                context, REQUEST_CODE_RETRIEVE_PACKAGES,
+                Intent(ACTION_RETRIEVE_PACKAGES), PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
 
-    override val description: String = context.getString(R.string.data_desc_installed_app)
+    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != ACTION_RETRIEVE_PACKAGES) return
+            handleScanRequest()
+        }
+    }
 
-    override val requiredPermissions: List<String> = listOf()
+    override fun isAvailable(): Boolean = true
 
-    override val newIntentForSetUp: Intent? = null
-
-    override suspend fun checkAvailability(): Boolean = true
+    override fun getDescription(): Array<Description> = arrayOf()
 
     override suspend fun onStart() {
-        val currentTime = System.currentTimeMillis()
-        val halfDayHour: Long = TimeUnit.HOURS.toMillis(12)
-        val lastTimeAccessed = getStatus()?.lastTimeAccessed ?: 0
+        context.safeRegisterReceiver(receiver, IntentFilter().apply {
+            addAction(ACTION_RETRIEVE_PACKAGES)
+        })
 
-        val triggerTime = if (lastTimeAccessed > 0 && lastTimeAccessed + halfDayHour >= currentTime) {
-            lastTimeAccessed + halfDayHour
-        } else {
-            currentTime + TimeUnit.SECONDS.toMillis(10)
-        }
+        val leastTriggerTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(20)
+        val scheduledTriggerTime = lastTimeDataWritten + TimeUnit.HOURS.toMillis(3)
+        val realTriggerTime = scheduledTriggerTime.coerceAtLeast(leastTriggerTime)
 
-        context.safeRegisterReceiver(receiver, filter)
-
-        alarmManager.cancel(intent)
         alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                halfDayHour,
+                realTriggerTime,
+                TimeUnit.HOURS.toMillis(3),
                 intent
         )
     }
 
     override suspend fun onStop() {
         context.safeUnregisterReceiver(receiver)
-
         alarmManager.cancel(intent)
     }
 
-    private val packageManager: PackageManager by lazy { context.applicationContext.packageManager }
+    override suspend fun count(): Long = dataRepository.count<InstalledAppEntity>()
 
-    private val alarmManager: AlarmManager by lazy {
-        context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    override suspend fun flush(entities: Collection<InstalledAppEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
     }
 
-    private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action != ACTION_RETRIEVE_PACKAGES) return
-            val curTime = System.currentTimeMillis()
-            packageManager.getInstalledPackages(
-                    PackageManager.GET_META_DATA
-            ).map { info ->
-                InstalledAppEntity(
-                        name = getApplicationName(packageManager = packageManager, packageName = info.packageName)
-                                ?: "",
-                        packageName = info.packageName ?: "",
-                        isSystemApp = isSystemApp(packageManager = packageManager, packageName = info.packageName),
-                        isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = info.packageName),
-                        firstInstallTime = info.firstInstallTime,
-                        lastUpdateTime = info.lastUpdateTime
-                ).fill(timeMillis = curTime)
-            }.also { entity ->
-                launch {
-                    ObjBox.put(entity)
-                    setStatus(Status(lastTime = curTime))
-                }
-            }
+    override suspend fun list(limit: Long): Collection<InstalledAppEntity> = dataRepository.find(0, limit)
 
-            launch {
-                setStatus(Status(lastTimeAccessed = curTime))
-            }
+    private fun handleScanRequest() = launch {
+        val timestamp = System.currentTimeMillis()
+        val apps = packageManager.getInstalledPackages(
+                PackageManager.GET_META_DATA
+        ).map { info ->
+            InstalledAppEntity.App(
+                    name = getApplicationName(
+                            packageManager = packageManager,
+                            packageName = info.packageName
+                    ) ?: "",
+                    packageName = info.packageName ?: "",
+                    isSystemApp = isSystemApp(
+                            packageManager = packageManager, packageName = info.packageName
+                    ),
+                    isUpdatedSystemApp = isUpdatedSystemApp(
+                            packageManager = packageManager, packageName = info.packageName
+                    ),
+                    firstInstallTime = info.firstInstallTime,
+                    lastUpdateTime = info.lastUpdateTime
+            )
         }
-    }
-
-
-    private val intent = PendingIntent.getBroadcast(
-            context, REQUEST_CODE_RETRIEVE_PACKAGES,
-            Intent(ACTION_RETRIEVE_PACKAGES), PendingIntent.FLAG_UPDATE_CURRENT
-    )
-
-    private val filter = IntentFilter().apply {
-        addAction(ACTION_RETRIEVE_PACKAGES)
+        put(InstalledAppEntity(apps = apps), timestamp)
     }
 
     companion object {

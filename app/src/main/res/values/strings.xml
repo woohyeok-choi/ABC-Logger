@@ -1,140 +1,386 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="general_etc">Others</string>
-    <string name="general_last_sync_time">Last sync time: %1s</string>
-    <string name="general_current_db_size">Current local data: %1s / %2s</string>
-    <string name="general_free_text">Freely type it.</string>
-    <string name="general_survey_instruction">(Questions marked as * should be answered.)</string>
-    <string name="general_asterisk" translatable="false">(*) </string>
-    <string name="general_close">Dismiss</string>
-    <string name="general_granted">Granted</string>
-    <string name="general_denied">Denied</string>
-    <string name="general_connected">Connected</string>
-    <string name="general_disconnected">Disconnected</string>
-    <string name="general_connecting">Connecting</string>
+    <string name="general_hyphen" translatable="false">-</string>
     <string name="general_unknown">Unknown</string>
-    <string name="general_response_rates">%1d answered / %2d received (%3s)</string>
-    <string name="general_sync_in_progress">Sync in progress&#8230;</string>
 
+    <string name="action_refresh">Refresh</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_resolve">Resolve</string>
+
+    <string name="dialog_text_hint">Response</string>
+
+    <!-- Config -->
     <string name="config_category_general">General</string>
+    <string name="config_user_name_title">User name</string>
+    <string name="config_app_version_title">Version</string>
+    <string name="config_permission_title">Permission</string>
+    <string name="config_permission_text_granted">Granted</string>
+    <string name="config_permission_text_denied">Denied</string>
+    <string name="config_battery_optimization_ignore_title">Battery Optimization</string>
+    <string name="config_battery_optimization_ignore_text_ignored">Ignored</string>
+    <string name="config_battery_optimization_ignore_text_not_ignored">Not ignored</string>
+    <string name="config_others_ntf_management_title">Notification Management</string>
+    <string name="config_others_ntf_management_text">Open a setting for notifications.</string>
+    <string name="config_data_size_title">Data Size on Disk</string>
+    <string name="config_data_size_dialog">Do you want to really remove data?</string>
+
+    <string name="config_category_sync">Sync</string>
+    <string name="config_sync_status_title">Last Sync Time</string>
+    <string name="config_sync_status_text_normal">%1s (%2s)</string>
+    <string name="config_sync_status_text_none">Not yet</string>
+    <string name="config_sync_network_title">Network Type</string>
+    <string name="config_sync_network_text_wifi">Sync when only WiFi is available</string>
+    <string name="config_sync_network_text_any">Sync when any network is available</string>
+    <string name="config_sync_network_option_wifi">WiFi only</string>
+    <string name="config_sync_network_option_any">Any network</string>
+    <string name="config_sync_auto_sync_title">Auto-sync</string>
+    <string name="config_sync_auto_sync_text_manual">Manually sync</string>
+    <string name="config_sync_auto_sync_text_auto">Periodically sync every hour</string>
+    <string name="config_sync_auto_sync_option_manual">Manual</string>
+    <string name="config_sync_auto_sync_option_auto">Automatic</string>
+
     <string name="config_category_collector">Collector</string>
+    <string name="config_collector_status_text_off">Off</string>
+    <string name="config_collector_status_text_on">On</string>
+    <string name="config_collector_status_text_error">Error</string>
+
     <string name="config_category_others">Others</string>
-    <string name="config_title_user_name">User name</string>
-    <string name="config_title_network_constraints">Network constraints</string>
-    <string name="config_desc_network_constraints">Data can be uploaded even when a metered-network (e.g., 5G, LTE) is connected.</string>
-    <string name="config_title_auto_sync">Auto sync</string>
-    <string name="config_desc_auto_sync">Data can be automatically uploaded every hour.</string>
-    <string name="config_title_email">Email</string>
-    <string name="config_title_sync">Sync</string>
-    <string name="config_title_flush_data">Flush local data</string>
-    <string name="config_title_logout">Logout</string>
-    <string name="config_desc_logout">Remove all data, stop data collection, and logout.</string>
-    <string name="config_title_permission">Permissions</string>
-    <string name="config_title_version">Version</string>
-    <string name="config_msg_available">Available</string>
-    <string name="config_msg_require_setting">Permission or additional setting required. Touch to grant.</string>
+    <string name="config_others_setting_title">Setting</string>
+    <string name="config_others_setting_text">Open a setting.</string>
+    <string name="config_others_sign_out_title">Sign Out</string>
+    <string name="config_others_sign_out_text">Stop collecting data and sign out.</string>
+    <string name="config_others_sign_out_dialog">Do you want to really sign-out?</string>
 
-    <string name="ntf_title_service_running">ABC Logger is running in background&#8230;</string>
-    <string name="ntf_title_sync">Sync</string>
-    <string name="ntf_text_sync">Sync in progress&#8230;</string>
-    <string name="ntf_action_sync_cancel">Cancel</string>
-    <string name="ntf_title_collector_runtime_error">Error in %1s collection</string>
-    <string name="ntf_text_collector_runtime_error">Collection of %1s does not work well because %2s. Touch to check the setting and/or restart collection of %3s.</string>
+    <!-- Config for Collectors -->
+    <string name="sub_config_category_collector_general">General</string>
+    <string name="sub_config_collector_general_status_title">Status</string>
+    <string name="sub_config_collector_general_status_text_on">Turned-on at %1s (%2s)</string>
+    <string name="sub_config_collector_general_status_text_off">Off</string>
+    <string name="sub_config_collector_general_status_text_error">Error occurs: %1s</string>
+    <string name="sub_config_collector_general_status_dialog_on">On</string>
+    <string name="sub_config_collector_general_status_dialog_off">Off</string>
+    <string name="sub_config_collector_general_availability_title">Availability</string>
+    <string name="sub_config_collector_general_availability_text_available">Available</string>
+    <string name="sub_config_collector_general_availability_text_unavailable">Unavailable</string>
+    <string name="sub_config_collector_general_permission_title">Permission</string>
+    <string name="sub_config_collector_general_permission_text_granted">Granted</string>
+    <string name="sub_config_collector_general_permission_text_denied">Denied</string>
 
+    <string name="sub_config_category_collector_data">Data</string>
+    <string name="sub_config_collector_data_last_written_time_title">Last Written Time</string>
+    <string name="sub_config_collector_data_last_written_time_text_written">%1s (%2s)</string>
+    <string name="sub_config_collector_data_last_written_time_text_none">Not yet written.</string>
+    <string name="sub_config_collector_data_records_collected_title">Amount of Data Collected</string>
+    <string name="sub_config_collector_data_records_collected_text">%1s records</string>
+    <string name="sub_config_collector_data_records_uploaded_title">Amount of Data Uploaded</string>
+    <string name="sub_config_collector_data_records_uploaded_text">%1s records</string>
 
-    <string name="error_general">Error occurs</string>
-    <string name="error_google_api_exception">Failed to sign in a Google account</string>
-    <string name="error_firebase_auth_invalid_user">Disabled account</string>
-    <string name="error_firebase_auth_collision">Account already exists</string>
-    <string name="error_empty_survey">No survey</string>
-    <string name="error_invalid_survey_format">Invalid survey format</string>
-    <string name="error_invalid_entity_id">No matched survey</string>
-    <string name="error_permission_denied">Permissions denied</string>
-    <string name="error_not_white_listed">Whitelist request denied</string>
-    <string name="error_http_error">Failed in http connection</string>
-    <string name="error_no_signed_google_account">No signed google account</string>
-    <string name="error_invalid_url">Invalid URL</string>
-    <string name="error_polar_h10">Failed to connect Polar H10</string>
-    <string name="error_require_to_update_google_play_service">Outdated Google Play service</string>
-    <string name="error_survey_incorrectly_answered">Mandatory questions not answered</string>
+    <string name="sub_config_category_collector_others">Others</string>
 
-    <string name="dialog_title_permission_request">Permission Request</string>
-    <string name="dialog_message_permission_request">We need some permissions for using this app.</string>
-    <string name="dialog_title_survey_preview">Preview</string>
-    <string name="dialog_title_flush_data">Flush</string>
-    <string name="dialog_message_flush_data">Do you really want to flush local data?</string>
-    <string name="dialog_title_sign_out">Sign Out</string>
-    <string name="dialog_message_sign_out">If you sign out, local data and preferences will be removed. Do you want it?</string>
-    <string name="dialog_title_save_immutable">Save</string>
-    <string name="dialog_message_save_immutable">You cannot edit responses after saving them.</string>
+    <!-- Strings for survey list and response -->
+    <string name="survey_hint_for_others">Others</string>
+    <string name="survey_hint_for_text">Response</string>
+    <string name="survey_msg_no_records">No surveys in %1s.</string>
+    <string name="survey_msg_error_occurs">Error occurs in loading data from %1s.</string>
+    <string name="survey_msg_failed_load_response">Failed to load response.</string>
+    <string name="survey_msg_answer_required">Some questions are not answered.</string>
+    <string name="survey_msg_response_timeout">Cannot submit answers due to timeout.</string>
+    <string name="survey_msg_already_answered">Cannot edit response for a survey already answered.</string>
 
-    <string name="msg_sign_in_success">Welcome</string>
-    <string name="msg_permission_setting_required">Some permissions are denied. Please grant permissions in setting.</string>
-    <string name="msg_back_twice_exit">Press back again to exit.</string>
-    <string name="msg_fail_to_load_contents">Failed to load contents.</string>
+    <!-- Strings for main activity -->
+    <string name="main_msg_back_twice_exit">Press back again to exit.</string>
 
+    <!-- Menu titles -->
+    <string name="menu_bottom_survey_list">Surveys</string>
+    <string name="menu_bottom_config">Config</string>
+    <string name="menu_drawer_survey_all_list">All Surveys</string>
+    <string name="menu_drawer_survey_unanswered_list">Unanswered Surveys</string>
+    <string name="menu_drawer_survey_answered_list">Answered Surveys</string>
+    <string name="menu_drawer_survey_expired_list">Expired Surveys</string>
+    <string name="menu_toolbar_undo">Undo</string>
+    <string name="menu_toolbar_save">Save</string>
+
+    <!-- Titles represented in a toolbar -->
     <string name="title_survey_list">Survey</string>
+    <string name="title_survey_response">Expired Surveys</string>
     <string name="title_config">Config</string>
-    <string name="title_survey_response">Response</string>
 
-    <string name="menu_item_survey_question_save">Save</string>
-    <string name="menu_item_setting_save">Save</string>
+    <!-- Notification channel -->
+    <string name="ntf_channel_survey">Survey</string>
+    <string name="ntf_channel_foreground">Foreground</string>
+    <string name="ntf_channel_sync">Sync</string>
+    <string name="ntf_channel_error">Error</string>
 
-    <string name="data_name_physical_activity">Physical Activity</string>
-    <string name="data_desc_physical_activity">It collects a history of physical activities.</string>
-    <string name="data_name_app_usage">App Usage</string>
-    <string name="data_desc_app_usage">It collects a duration of app usage.</string>
-    <string name="data_name_battery">Battery Usage</string>
-    <string name="data_desc_battery">It collects a status of battery (e.g., voltage, temperature, level)</string>
-    <string name="data_name_bluetooth">Bluetooth</string>
-    <string name="data_desc_bluetooth">It collects nearby Bluetooth devices.</string>
-    <string name="data_name_call_log">Call Log</string>
-    <string name="data_desc_call_log">It collects a history of calls (e.g., duration, # calls, first four numbers)</string>
-    <string name="data_name_traffic">Data Traffic</string>
-    <string name="data_desc_traffic">It collects an amount of data usage.</string>
-    <string name="data_name_device_event">Device Event</string>
-    <string name="data_desc_device_event">It collects general events on the smartphone (e.g., screen on/off)</string>
-    <string name="data_name_installed_app">Installed App</string>
-    <string name="data_desc_installed_app">It collects installed apps on your smartphone.</string>
-    <string name="data_name_key_log">Typing Speed</string>
-    <string name="data_desc_key_log">It collects a typing speed.</string>
-    <string name="data_name_location">Location</string>
-    <string name="data_desc_location">It collects locations you visited.</string>
-    <string name="data_name_media">Media</string>
-    <string name="data_desc_media">It collects the number of photos and videos you took.</string>
-    <string name="data_name_message">Message</string>
-    <string name="data_desc_message">It collects the number of SMS/MMSes you received/sent (e.g., # messages, first four number)</string>
-    <string name="data_name_notification">Notification</string>
-    <string name="data_desc_notification">It collects a history of notifications you received.</string>
-    <string name="data_name_physical_stat">Physical Stat</string>
-    <string name="data_desc_physical_stat">It collects your physical stats (e.g., step counts, calories) using Google Fitness.</string>
-    <string name="data_name_polar_h10">Polar H10</string>
-    <string name="data_desc_polar_h10">It collects your physiological signals using Polar H10 (e.g., heart-rate, ECG).</string>
-    <string name="data_name_survey">Survey</string>
-    <string name="data_desc_survey">It collects in-situ survey responses.</string>
-    <string name="data_name_wifi">WiFi</string>
-    <string name="data_desc_wifi">It collects WiFI APs around you.</string>
-    <string name="data_name_sensor">Sensor</string>
-    <string name="data_desc_sensor">It collects data from sensors equipped on your smartphone.</string>
+    <!-- Notification -->
+    <string name="ntf_foreground_title">ABC Logger is operating&#8230;</string>
+    <string name="ntf_foreground_text">Collected %1s records / Uploaded %2s records.</string>
 
-    <!-- Here, define strings for setting activity of each collector -->
-    <string name="setting_key_log_collector_keyboard_type_header">Type of Korean Soft-Keyboard</string>
-    <string name="setting_key_log_collector_chunjiin">Chun-ji-in</string>
-    <string name="setting_key_log_collector_qwerty">Qwerty</string>
-    <string name="setting_key_log_collector_others">Others</string>
-    <string name="setting_key_log_collector_accessibility_header">Accessibility Setting</string>
-    <string name="setting_key_log_collector_keyboard_type_dialog_title">Choose your Korean keyboard.</string>
+    <string name="ntf_sync_title">Sync</string>
+    <string name="ntf_sync_text_initialize">Preparing for sync&#8230;</string>
+    <string name="ntf_sync_text_progress">%1s / %2s records uploaded&#8230;</string>
+    <string name="ntf_sync_text_complete">Sync complete</string>
+    <string name="ntf_sync_text_error">Sync failed due to %1s</string>
+    <string name="ntf_sync_action_cancel">Cancel</string>
 
-    <string name="setting_polar_h10_collector_device_id_header">Polar Device ID</string>
-    <string name="setting_polar_h10_collector_state_header">State</string>
-    <string name="setting_polar_h10_collector_connection_state">Connection</string>
-    <string name="setting_polar_h10_collector_battery">Battery (%)</string>
-    <string name="setting_polar_h10_collector_heart_rate">Heart-rate (bpm)</string>
-    <string name="setting_polar_h10_collector_rr_interval">RR Interval (sec.)</string>
-    <string name="setting_polar_h10_collector_ecg">ECG (mV)</string>
-    <string name="setting_polar_h10_collector_device_id_dialog_title">Type your Polar H10 device ID.</string>
+    <string name="ntf_error_title">Error occurs</string>
+    <string name="ntf_error_text_precondition_error">Some precondition is not granted; Check configurations.</string>
+    <!-- Collector -->
+    <string name="collector_physical_activity_name">Physical Activity</string>
+    <string name="collector_physical_activity_desc">Histories of physical activities</string>
 
-    <string name="setting_survey_collector_instruction">Survey URLs</string>
-    <string name="setting_survey_collector_url_hint">Enter a survey URL.</string>
+    <string name="collector_physical_activity_transition_name">Physical Activity Transition</string>
+    <string name="collector_physical_activity_transition_desc">Transitions btw. consecutive physical activities</string>
+
+    <string name="collector_app_usage_name">App Usage</string>
+    <string name="collector_app_usage_desc">Histories of app usage.</string>
+
+    <string name="collector_battery_name">Battery</string>
+    <string name="collector_battery_desc">Status of battery.</string>
+
+    <string name="collector_bluetooth_name">Bluetooth</string>
+    <string name="collector_bluetooth_desc">Info of nearby Bluetooth devices</string>
+    <string name="collector_bluetooth_info_ble">Bluetooth Low-Energy</string>
+    <string name="collector_bluetooth_info_ble_supported">Supported</string>
+    <string name="collector_bluetooth_info_ble_none">None</string>
+
+    <string name="collector_call_log_name">Call Log</string>
+    <string name="collector_call_log_desc">Histories of sending/incoming calls</string>
+
+    <string name="collector_traffic_name">Data Traffic</string>
+    <string name="collector_traffic_desc">Amount of data usage</string>
+
+    <string name="collector_device_event_name">Device Event</string>
+    <string name="collector_device_event_desc">Typical events on the smartphone</string>
+
+    <string name="collector_installed_app_name">Installed App</string>
+    <string name="collector_installed_app_desc">Info of apps installed on the smartphone.</string>
+
+    <string name="collector_key_log_name">Typing Speed</string>
+    <string name="collector_key_log_desc">Speed and distance btw. soft-keyboard touches.</string>
+    <string name="collector_key_log_info_keyboard_type">Keyboard Type</string>
+
+    <string name="collector_location_name">Location</string>
+    <string name="collector_location_desc">Histories of location visits</string>
+
+    <string name="collector_media_name">Photos/Videos</string>
+    <string name="collector_media_desc">Amount of photos/videos taken</string>
+    <string name="collector_media_info_internal_photo_written">Internal photo</string>
+    <string name="collector_media_info_external_photo_written">External photo</string>
+    <string name="collector_media_info_internal_video_written">Internal video</string>
+    <string name="collector_media_info_external_video_written">External video</string>
+
+    <string name="collector_message_name">Message</string>
+    <string name="collector_message_desc">Histories of sending/incoming SMS/MMS</string>
+    <string name="collector_message_info_sms_written">SMS</string>
+    <string name="collector_message_info_mms_written">MMS</string>
+
+    <string name="collector_notification_name">Notification</string>
+    <string name="collector_notification_desc">Histories of notifications received</string>
+
+    <string name="collector_fitness_name">Fitness</string>
+    <string name="collector_fitness_desc">Activity stats with Google Fitness</string>
+    <string name="collector_fitness_info_step_count_written">Step counts</string>
+    <string name="collector_fitness_info_stat_activity_written">Activity</string>
+    <string name="collector_fitness_info_stat_distance_written">Distance</string>
+    <string name="collector_fitness_info_stat_calories_written">Calories</string>
+
+    <string name="collector_polar_h10_name">Polar H10</string>
+    <string name="collector_polar_h10_desc">Physiological signals with Polar H10</string>
+    <string name="collector_polar_h10_info_device_id">Device ID</string>
+    <string name="collector_polar_h10_info_status">Status</string>
+    <string name="collector_polar_h10_info_battery">Battery</string>
+    <string name="collector_polar_h10_info_name">Name</string>
+    <string name="collector_polar_h10_info_address">Address</string>
+    <string name="collector_polar_h10_info_rssi">Signal strength</string>
+
+    <string name="collector_survey_name">Survey</string>
+    <string name="collector_survey_desc">In-situ survey responses</string>
+    <string name="collector_survey_info_base_date">Base time for survey scheduling</string>
+
+    <string name="collector_wifi_name">WiFi</string>
+    <string name="collector_wifi_desc">Nearby WiFI access points</string>
+
+    <string name="collector_embedded_sensor_name">Embedded Sensor</string>
+    <string name="collector_embedded_sensor_desc">Data from sensors embedded within the smartphone</string>
+    <string name="collector_embedded_sensor_info_proximity">Proximity Sensor</string>
+    <string name="collector_embedded_sensor_info_light_supported">Light Sensor</string>
+    <string name="collector_embedded_sensor_info_sensor_supported">Supported</string>
+    <string name="collector_embedded_sensor_info_sensor_none">None</string>
+
+   <!-- Settings for collector -->
+    <string name="setting_key_log_keyboard_type_title">Type of Korean Soft-Keyboard</string>
+    <string name="setting_key_log_keyboard_type_text_chunjiin">Chun-ji-in</string>
+    <string name="setting_key_log_keyboard_type_text_qwerty">Qwerty</string>
+    <string name="setting_key_log_keyboard_type_text_others">Others</string>
+
+    <string name="setting_key_log_accessibility_title">Accessibility Service</string>
+    <string name="setting_key_log_accessibility_text_allowed">Allowed</string>
+    <string name="setting_key_log_accessibility_text_rejected">Rejected</string>
+
+    <string name="setting_polar_h10_device_id_title">Device ID</string>
+    <string name="setting_polar_h10_msg_require_stop_connection">Should disconnect a current device to change a device ID.</string>
+    <string name="setting_polar_h10_status_header">Status</string>
+    <string name="setting_polar_h10_status_name_connect">Connect</string>
+    <string name="setting_polar_h10_status_name_title">Name</string>
+    <string name="setting_polar_h10_status_address_title">Address</string>
+    <string name="setting_polar_h10_status_connection_title">Connection</string>
+    <string name="setting_polar_h10_status_rssi_title">Signal Strength (dBm)</string>
+    <string name="setting_polar_h10_status_battery_title">Battery (%)</string>
+    <string name="setting_polar_h10_status_heartrate_title">Heart rate (bpm)</string>
+    <string name="setting_polar_h10_status_rr_interval_title">RR Interval (sec.)</string>
+    <string name="setting_polar_h10_status_ecg_title">ECG (mV)</string>
+    <string name="setting_polar_h10_status_accel_title">Accelerometer (mG)</string>
+
+    <string name="setting_survey_base_date_title">Base Date for Survey Scheduling</string>
+    <string name="setting_survey_base_date_option_clear">Clear</string>
+    <string name="setting_survey_base_date_option_change">Change Base Date</string>
+    <string name="setting_survey_base_date_dialog_change">Choose Date</string>
+    <string name="setting_survey_config_header">Configurations</string>
+    <string name="setting_survey_config_text_empty">There is no survey.</string>
+    <string name="setting_survey_config_dialog_add">Enter a survey URL.</string>
+    <string name="setting_survey_config_button_add">Add Survey</string>
+    <string name="setting_survey_config_option_remove">Remove Survey</string>
+    <string name="setting_survey_config_option_preview">Preview</string>
+    <string name="setting_survey_config_option_change">Change URL</string>
+    <string name="setting_survey_config_option_open">Open in a browser</string>
+    <string name="setting_survey_config_option_alt">Show alternative text</string>
+
+
+    <!-- Errors -->
+    <!-- Google Api Exception -->
+    <string name="error_google_api">Google Api error</string>
+    <string name="error_google_api_not_connected">Google Api is not connected.</string>
+    <string name="error_google_api_canceled">Request is canceled.</string>
+    <string name="error_google_api_developer_error">API is incorrectly configured.</string>
+    <string name="error_google_api_error">Unknown error occurs.</string>
+    <string name="error_google_api_internal_error">Internal error occurs</string>
+    <string name="error_google_api_interrupted">Request is interrupted.</string>
+    <string name="error_google_api_invalid_account">Invalid account name.</string>
+    <string name="error_google_api_network_error">Network error occurs.</string>
+    <string name="error_google_api_resolution_required">Resolution is required.</string>
+    <string name="error_google_api_sign_in_required">Sign-in is required.</string>
+    <string name="error_google_api_timeout">Request is timed out.</string>
+    <string name="error_google_api_sign_in_cancelled">Sign-in canceled.</string>
+    <string name="error_google_api_sign_in_currently_in_progress">Sign-in is already in progress.</string>
+    <string name="error_google_api_sign_in_failed">Sign-in failed. There may be no Google account connected to this device, or Google Play service is outdated.</string>
+    <string name="error_google_api_success_no_data_sources">Subscription success but no data source was available.</string>
+    <string name="error_google_api_success_already_subscribed">Subscription success but it was already subscribed.</string>
+    <string name="error_google_api_success_no_claimed_device">Request success but no matching device was found.</string>
+    <string name="error_google_api_success_listener_not_registered_for_fitness_data_updates">Request success but no registered listeners was found. </string>
+    <string name="error_google_api_needs_oauth_permissions">O-Auth permission is required.</string>
+    <string name="error_google_api_conflicting_data_type">Attempted to insert a conflicting data type</string>
+    <string name="error_google_api_inconsistent_data_type">Attempted to insert data type whose name does not match to the package name.</string>
+    <string name="error_google_api_data_type_not_found">Unknown data type was requested.</string>
+    <string name="error_google_api_app_mismatch">Attempted to insert data from the wrong app.</string>
+    <string name="error_google_api_unknown_auth_error">Unknown error occurs during authorization</string>
+    <string name="error_google_api_unsupported_platform">Not supported by Google Fit.</string>
+    <string name="error_google_api_transient_error">Transient errors occurs.</string>
+    <string name="error_google_api_equivalent_session_ended">The session was already ended.</string>
+    <string name="error_google_api_app_not_fit_enabled">The app was not found in a list of connected apps.</string>
+    <string name="error_google_api_api_exception">Error occurs in connecting to Google backend.</string>
+    <string name="error_google_api_aggregation_not_supported">Aggregation request is not supported.</string>
+    <string name="error_google_api_unsupported_account">The account is not supported.</string>
+    <string name="error_google_api_disabled_bluetooth">Bluetooth is currently disabled.</string>
+    <string name="error_google_api_inconsistent_package_name">Attempted to insert data for a data source that does not match to the package name.</string>
+    <string name="error_google_api_data_source_not_found">No local data source is available.</string>
+    <string name="error_google_api_dataset_timestamp_inconsistent_with_update_time_range">Attempted to update data with out-bound timestamp.</string>
+    <string name="error_google_api_invalid_session_timestamps">Attempted to insert a session with invalid time range.</string>
+    <string name="error_google_api_invalid_data_point">Attempted to insert invalid data.</string>
+    <string name="error_google_api_invalid_timestamp">Attempted to query data with invalid timestamps.</string>
+    <string name="error_google_api_data_type_not_allowed_for_api">The data type does not allowed to register listeners.</string>
+    <string name="error_google_api_requires_app_whitelisting">The app is black-listed by Google.</string>
+    <string name="error_google_api_no_signed_account">No Signed account.</string>
+    <string name="error_google_api_no_granted">Permission is not granted.</string>
+
+    <!-- Firebase Exception -->
+    <string name="error_firebase">Firebase error</string>
+    <string name="error_firebase_auth_action_code">Expired or invalid band code.</string>
+    <string name="error_firebase_auth_email">Failed to send an email via Firebase.</string>
+    <string name="error_firebase_auth_invalid_credentials">Failed to identify user.</string>
+    <string name="error_firebase_auth_invalid_user">Failed to retrieve a current user</string>
+    <string name="error_firebase_auth_multi_factor">Failed to sign-in with the 2nd factor.</string>
+    <string name="error_firebase_auth_recent_login_required">There is no recent sign-in history.</string>
+    <string name="error_firebase_auth_user_collision">Conflict occurs with an existing account.</string>
+    <string name="error_firebase_auth_weak_password">Password is too week.</string>
+    <string name="error_firebase_auth_web">Web operations are failed during sign-in.</string>
+    <string name="error_firebase_api_not_available">Api request is not available.</string>
+    <string name="error_firebase_network">A request is failed due to a network error.</string>
+    <string name="error_firebase_too_many_requests">A request is blocked due to too many requests.</string>
+
+    <!-- Polar Exception -->
+    <string name="error_polar">Polar error</string>
+    <string name="error_polar_device_disconnected">A device is disconnected.</string>
+    <string name="error_polar_device_not_found">A device is not found.</string>
+    <string name="error_polar_device_not_connected">A device is not connected.</string>
+    <string name="error_polar_invalid_argument">Invalid connection argument.</string>
+    <string name="error_polar_operation_not_supported">Operation not supported.</string>
+    <string name="error_polar_service_not_available">Polar service is not available.</string>
+    <string name="error_polar_no_setting_available">No setting available.</string>
+
+    <!-- Http Exception -->
+    <string name="error_http">Http error</string>
+    <string name="error_http_400">Bad request.</string>
+    <string name="error_http_401">Unauthorized.</string>
+    <string name="error_http_403">Forbidden.</string>
+    <string name="error_http_404">Not found.</string>
+    <string name="error_http_405">Method not allowed.</string>
+    <string name="error_http_406">Not acceptable.</string>
+    <string name="error_http_408">Request timeout.</string>
+    <string name="error_http_410">Gone.</string>
+    <string name="error_http_411">Length required.</string>
+    <string name="error_http_412">Precondition failed.</string>
+    <string name="error_http_413">Payload too large.</string>
+    <string name="error_http_414">URI too long.</string>
+    <string name="error_http_415">Unsupported media type.</string>
+    <string name="error_http_429">Too many requests.</string>
+    <string name="error_http_500">Internal server error.</string>
+    <string name="error_http_501">Not implemented.</string>
+    <string name="error_http_502">Bad gateway.</string>
+    <string name="error_http_503">Service unavailable.</string>
+    <string name="error_http_504">Gateway timeout.</string>
+    <string name="error_http_511">Network authentication required.</string>
+
+    <!-- Precondition Exception -->
+    <string name="error_precondition">Precondition error</string>
+    <string name="error_precondition_permission_denied">Permission denied.</string>
+    <string name="error_precondition_background_location_access_denied">Background location access denied.</string>
+    <string name="error_precondition_battery_optimization_ignore_denied">Request to ignore battery optimization denied.</string>
+    <string name="error_precondition_outdated_google_play_service">Outdated Google Play service.</string>
+    <string name="error_precondition_invalid_url">Invalid URL format.</string>
+    <string name="error_precondition_empty_content">Empty content.</string>
+    <string name="error_precondition_invalid_format">Invalid format</string>
+
+    <string name="error_sync">Sync error</string>
+    <string name="error_sync_network_changed">Network status is changed during sync.</string>
+    <string name="error_sync_canceled">Request is canceled.</string>
+    <string name="error_sync_unknown">Unknown error occurs.</string>
+    <string name="error_sync_invalid_argument">Invalid argument.</string>
+    <string name="error_sync_deadline_exceeded">Deadline exceeded.</string>
+    <string name="error_sync_not_found">Not found.</string>
+    <string name="error_sync_already_exists">Already exists.</string>
+    <string name="error_sync_permission_denied">Permission denied.</string>
+    <string name="error_sync_resource_exhausted">Resource exhausted.</string>
+    <string name="error_sync_failed_precondition">Failed precondition.</string>
+    <string name="error_sync_aborted">Aborted.</string>
+    <string name="error_sync_out_of_range">Out of range.</string>
+    <string name="error_sync_unimplemented">Unimplemented.</string>
+    <string name="error_sync_internal">Internal error.</string>
+    <string name="error_sync_unavailable">Unavailable.</string>
+    <string name="error_sync_data_loss">Data loss.</string>
+    <string name="error_sync_unauthenticated">Unauthenticated.</string>
+
+    <string name="error_entity">Entity error</string>
+    <string name="error_entity_not_found">Data is not found.</string>
+    <string name="error_entity_empty_data">There is no data.</string>
+    <string name="error_entity_unknown_error">Unknown error occurs.</string>
+    <string name="error_entity_db_full">Database is full.</string>
+    <string name="error_entity_file_corrupted">Database file is corrupted.</string>
+    <string name="error_entity_db_shutdown">Database is shutdown.</string>
+    <string name="error_entity_db_detached">Database is detached.</string>
+
+    <string name="error_collector">Collector error</string>
+    <string name="error_collector_not_found">Corresponding collector not found.</string>
+    <string name="error_collector_change_setting_during_operating">Cannot change settings during operating.</string>
+
 </resources>
 

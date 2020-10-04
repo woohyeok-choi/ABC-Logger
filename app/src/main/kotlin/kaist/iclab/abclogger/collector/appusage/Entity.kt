@@ -1,7 +1,7 @@
 package kaist.iclab.abclogger.collector.appusage
 
 import io.objectbox.annotation.Entity
-import kaist.iclab.abclogger.collector.Base
+import kaist.iclab.abclogger.core.collector.AbstractEntity
 
 @Entity
 data class AppUsageEventEntity(
@@ -10,4 +10,4 @@ data class AppUsageEventEntity(
         var type: String = "",
         var isSystemApp: Boolean = false,
         var isUpdatedSystemApp: Boolean = false
-) : Base()
+) : AbstractEntity()

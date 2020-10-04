@@ -1,206 +1,230 @@
-apply plugin: 'com.android.application'
-apply plugin: 'com.google.protobuf'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'io.objectbox'
+apply plugin: "com.android.application"
+apply plugin: "kotlin-android"
+apply plugin: "kotlin-android-extensions"
+apply plugin: "kotlin-kapt"
+apply plugin: "com.google.protobuf"
+apply plugin: "com.google.firebase.crashlytics"
+apply plugin: "com.google.gms.google-services"
+apply plugin: "io.objectbox"
+apply plugin: "androidx.navigation.safeargs.kotlin"
+
+apply from: "../config.gradle"
+
+
+kapt {
+    correctErrorTypes = true
+}
 
 android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.2"
+
     packagingOptions {
-        exclude 'META-INF/proguard/androidx-annotations.pro'
+        exclude("META-INF/proguard/androidx-annotations.pro")
     }
 
-    dataBinding {
-        enabled = true
+    buildFeatures {
+        dataBinding true
+        viewBinding true
     }
 
     dexOptions {
         maxProcessCount 6
-        javaMaxHeapSize "2g"
+        javaMaxHeapSize "4g"
     }
-
-    compileSdkVersion 29
-    buildToolsVersion = '29.0.3'
 
     defaultConfig {
-        applicationId 'kaist.iclab.abclogger'
+        applicationId "kaist.iclab.abclogger"
         minSdkVersion 23
-        targetSdkVersion 29
-        versionCode config.version_code
-        versionName config.version_name
-        setProperty('archivesBaseName', applicationId + "-v" + versionName)
-        buildConfigField("String", "DB_NAME", "\"${config.db_name}\"")
-        buildConfigField("String", "PREF_NAME", "\"${config.pref_name}\"")
-        buildConfigField("Long", "DB_MAX_SIZE", "${config.db_max_size}L")
-        buildConfigField("Boolean", "IS_TEST_MODE", "${config.is_test_mode}")
+        targetSdkVersion 30
+        setProperty("archivesBaseName", "$applicationId-v.$versionName")
+
+        versionCode 27
+        versionName "0.9.9-d"
+
+        buildConfigField("Boolean", "GENERATE_DUMMY_ENTITY", "false")
         buildConfigField("String", "SERVER_ADDRESS", "\"${config.server_address}\"")
-        buildConfigField("String", "TEST_SERVER_ADDRESS", "\"${config.test_server_address}\"")
+        buildConfigField("String", "SERVER_AUTH_TOKEN", "\"${config.server_auth_token}\"")
     }
+
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
         debug {
+            debuggable true
+        }
+
+        staging {
+            initWith debug
+            buildConfigField("String", "SERVER_ADDRESS", "\"${config.test_server_address}\"")
+            buildConfigField("Boolean", "GENERATE_DUMMY_ENTITY", "true")
         }
     }
+
     sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-        test.java.srcDirs += 'src/test/kotlin'
-        main.proto.srcDirs += 'grpc'
+        main.java.srcDirs += "src/main/kotlin"
+        test.java.srcDirs += "src/test/kotlin"
+        main.proto.srcDirs += "grpc"
     }
+
     compileOptions {
-        sourceCompatibility = '1.8'
-        targetCompatibility = '1.8'
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+
     productFlavors {
     }
 }
 
 dependencies {
-    implementation fileTree(include: ['*.aar'], dir: 'libs')
+    implementation fileTree(include: ["*.aar"], dir: "libs")
 
     /**
      * Kotlin
      */
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.71"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.71"
-    implementation 'javax.annotation:javax.annotation-api:1.3.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.10"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.10"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.3.9"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9"
+    implementation "javax.annotation:javax.annotation-api:1.3.2"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.3.0"
 
     /**
      * Koin for dependency injection
      */
-    implementation "org.koin:koin-core:2.0.1"
-    implementation "org.koin:koin-android:2.0.1"
-    implementation "org.koin:koin-androidx-viewmodel:2.0.1"
+    implementation "org.koin:koin-core:2.1.6"
+    implementation "org.koin:koin-android:2.1.6"
+    implementation "org.koin:koin-androidx-viewmodel:2.1.6"
 
     /**
      * Eventbus for delivering events
      */
-    implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation 'org.greenrobot:eventbus:3.2.0'
 
     /**
      * Firebase
      */
-    implementation "com.google.firebase:firebase-core:17.4.4"
-    implementation "com.google.firebase:firebase-auth:19.3.2"
-    implementation 'com.google.firebase:firebase-analytics:17.4.4'
-    implementation 'com.google.firebase:firebase-crashlytics:17.1.1'
+    implementation "com.google.firebase:firebase-core:17.5.0"
+    implementation "com.google.firebase:firebase-iid:20.2.4"
+    implementation "com.google.firebase:firebase-auth:19.4.0"
+    implementation "com.google.firebase:firebase-crashlytics:17.2.1"
+
+    /**
+     * Material UI
+     */
+    implementation "com.google.android.material:material:1.3.0-alpha02"
+
 
     /**
      * Android X Support libraries
      */
-    implementation 'androidx.core:core-ktx:1.3.0'
-    implementation 'androidx.fragment:fragment-ktx:1.2.5'
-    implementation 'androidx.preference:preference-ktx:1.1.1'
-    implementation "androidx.paging:paging-common-ktx:2.1.2"
-    implementation 'androidx.paging:paging-runtime-ktx:2.1.2'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
+    implementation "androidx.core:core-ktx:1.3.1"
+    implementation "androidx.activity:activity-ktx:1.2.0-alpha08"
+    implementation "androidx.fragment:fragment-ktx:1.3.0-alpha08"
+    implementation "androidx.preference:preference-ktx:1.1.1"
+    implementation "androidx.paging:paging-common-ktx:3.0.0-alpha06"
+    implementation "androidx.paging:paging-runtime-ktx:3.0.0-alpha06"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
     implementation "androidx.lifecycle:lifecycle-livedata-core-ktx:2.2.0"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.2.0'
-    implementation 'androidx.work:work-runtime-ktx:2.3.4'
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-common-java8:2.2.0"
+    implementation "androidx.work:work-runtime-ktx:2.4.0"
     implementation "androidx.navigation:navigation-fragment-ktx:2.3.0"
     implementation "androidx.navigation:navigation-ui-ktx:2.3.0"
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.media:media:1.1.0'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0'
-    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation "androidx.constraintlayout:constraintlayout:2.0.1"
+    implementation "androidx.appcompat:appcompat:1.2.0"
+    implementation "androidx.media:media:1.2.0"
+    implementation "androidx.recyclerview:recyclerview:1.2.0-alpha05"
+    implementation "androidx.cardview:cardview:1.0.0"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     /**
      * Google GMS libraries for login, location, and fitness data retrieval
      */
-    implementation "com.google.android.gms:play-services-auth:18.0.0"
+    implementation "com.google.android.gms:play-services-auth:18.1.0"
     implementation "com.google.android.gms:play-services-location:17.0.0"
-    implementation "com.google.android.gms:play-services-fitness:18.0.0"
+    implementation "com.google.android.gms:play-services-fitness:19.0.0"
 
     /**
-     * Tedpermission to grant simply users' permission
+     * Tedpermission to grant simply users" permission
      */
     implementation "gun0912.ted:tedpermission-rx2:2.2.3"
 
     /**
      * Koap for easy-to-use of shared preferences
      */
-    implementation 'com.github.AgustaRC.koap:koap:1.0.1'
+    implementation "com.github.AgustaRC.koap:koap:1.0.1"
     implementation "com.github.AgustaRC.koap:koap-gson-serializer:1.0.1"
     implementation "com.google.code.gson:gson:2.8.6"
 
     /**
      * Objectbox for android database
      */
-    implementation "io.objectbox:objectbox-kotlin:2.5.1"
-
-    /**
-     * Seekbar with bubble
-     */
-    implementation 'com.github.techery.progresshint:library-addition:0.4.1'
+    implementation "io.objectbox:objectbox-kotlin:2.7.1"
 
     /**
      * Moshi for jsonifing object
      */
-    implementation "com.squareup.moshi:moshi:1.9.2"
-    implementation "com.squareup.moshi:moshi-kotlin:1.9.2"
-    implementation "com.squareup.moshi:moshi-adapters:1.9.2"
+    implementation 'com.squareup.moshi:moshi:1.10.0'
+    implementation 'com.squareup.moshi:moshi-kotlin:1.10.0'
+    implementation 'com.squareup.moshi:moshi-adapters:1.10.0'
 
     /**
      * Fuel for http connection
      */
-    implementation 'com.github.kittinunf.fuel:fuel:2.2.1'
-    implementation 'com.github.kittinunf.fuel:fuel-android:2.2.1'
-    implementation 'com.github.kittinunf.fuel:fuel-coroutines:2.2.1'
+    implementation 'com.github.kittinunf.fuel:fuel:2.2.3'
+    implementation 'com.github.kittinunf.fuel:fuel-android:2.2.3'
+    implementation 'com.github.kittinunf.fuel:fuel-coroutines:2.2.3'
 
     /**
      * rxJava 3.0.0 for reactive pattern
      */
-    implementation 'io.reactivex.rxjava3:rxjava:3.0.0-RC8'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.6'
 
     /**
      * gRPC
      */
-    implementation 'io.grpc:grpc-okhttp:1.26.0'
-    implementation 'io.grpc:grpc-protobuf-lite:1.26.0'
-    implementation 'io.grpc:grpc-stub:1.26.0'
-    implementation 'io.grpc:grpc-android:1.26.0'
-    implementation "com.github.marcoferrer.krotoplus:kroto-plus-coroutines:0.6.0"
+    implementation "io.grpc:grpc-okhttp:1.32.1"
+    implementation "io.grpc:grpc-protobuf:1.32.1"
+    implementation 'io.grpc:grpc-stub:1.32.1'
+    implementation "io.grpc:grpc-kotlin-stub:0.1.5"
+
 
     /**
      * For compatibility of Polar API
      */
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.8'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
 
     /**
      * Other utils
      */
-    implementation 'commons-io:commons-io:2.6'
-
+    implementation "commons-io:commons-io:2.6"
+    implementation "com.ibm.icu:icu4j:67.1"
+    implementation "com.github.bumptech.glide:glide:4.11.0"
 }
-
 
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.11.1'
+        artifact = "com.google.protobuf:protoc:3.13.0"
     }
 
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.26.0'
+            artifact = "io.grpc:protoc-gen-grpc-java:1.32.1"
         }
-        kroto {
-            artifact = "com.github.marcoferrer.krotoplus:protoc-gen-grpc-coroutines:0.6.0"
+        grpckt {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:0.1.5"
         }
     }
+
     generateProtoTasks {
         all().each { task ->
             task.builtins {
@@ -210,9 +234,11 @@ protobuf {
             }
             task.plugins {
                 grpc {
-                    option 'lite'
+                    option "lite"
                 }
-                kroto { }
+                grpckt {
+                    option "lite"
+                }
             }
         }
     }

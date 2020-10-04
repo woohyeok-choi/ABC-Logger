@@ -1,7 +1,7 @@
-package kaist.iclab.abclogger.collector.call
+package kaist.iclab.abclogger.collector.content
 
 import io.objectbox.annotation.Entity
-import kaist.iclab.abclogger.collector.Base
+import kaist.iclab.abclogger.core.AbstractEntity
 
 @Entity
 data class CallLogEntity(
@@ -13,4 +13,19 @@ data class CallLogEntity(
         var contactType: String = "",
         var isStarred: Boolean = false,
         var isPinned: Boolean = false
-) : Base()
+) : AbstractEntity()
+
+@Entity
+data class MessageEntity(
+        var number: String = "",
+        var messageClass: String = "",
+        var messageBox: String = "",
+        var contactType: String = "",
+        var isStarred: Boolean = false,
+        var isPinned: Boolean = false
+) : AbstractEntity()
+
+@Entity
+data class MediaEntity(
+        var mimeType: String = ""
+) : AbstractEntity()

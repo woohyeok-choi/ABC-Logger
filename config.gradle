@@ -1,13 +1,20 @@
-ext.config = [:]
-def config = [:]
+import groovy.json.JsonSlurper
 
-config.version_code = 26
-config.version_name = "0.9.9-d"
-config.is_test_mode = false
-config.server_address = "143.248.100.24:50052"
-config.test_server_address = "143.248.100.24:50052"
-config.db_max_size = 3145728L
-config.db_name = "abc-logger"
-config.pref_name = "abc-logger-pref"
 
-ext.config = config
+task buildAuthToken(type: Exec) {
+    def config = [:]
+
+    try {
+        def json = new JsonSlurper()
+        def data = json.parse(new File("./app/abc-auth.json"))
+        config.server_address = data.server_address
+        config.server_auth_token = data.server_auth_token
+        config.test_server_address = data.test_server_address
+    } catch (Exception ignored) {
+
+    }
+    project.ext.config = config
+
+}
+
+build.dependsOn buildAuthToken

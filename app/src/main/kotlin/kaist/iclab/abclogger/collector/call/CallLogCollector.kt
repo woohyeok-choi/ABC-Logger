@@ -1,78 +1,104 @@
-package kaist.iclab.abclogger.collector.call
+package kaist.iclab.abclogger.collector.content
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.database.ContentObserver
-import android.os.Handler
-import android.os.HandlerThread
+import android.content.IntentFilter
 import android.provider.CallLog
+import androidx.core.content.getSystemService
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import kaist.iclab.abclogger.ObjBox
-import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.collector.*
-import kaist.iclab.abclogger.commons.checkPermission
-import kaist.iclab.abclogger.commons.safeRegisterContentObserver
-import kaist.iclab.abclogger.commons.safeUnregisterContentObserver
-import kotlinx.coroutines.launch
+import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.AbstractCollector
+import kaist.iclab.abclogger.core.DataRepository
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.KClass
 
-class CallLogCollector(private val context: Context) : BaseCollector<CallLogCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null,
-                      val lastTimeAccessed: Long? = null) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
-    }
-
-    override val clazz: KClass<Status> = Status::class
-
-    override val name: String = context.getString(R.string.data_name_call_log)
-
-    override val description: String = context.getString(R.string.data_desc_call_log)
-
-    override val requiredPermissions: List<String> = listOf(
+class CallLogCollector(
+    context: Context,
+    name: String,
+    qualifiedName: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<CallLogEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    override val permissions: List<String> = listOf(
             Manifest.permission.READ_CALL_LOG,
             Manifest.permission.READ_CONTACTS
     )
 
-    override val newIntentForSetUp: Intent? = null
+    override val setupIntent: Intent? = null
 
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+    private val intent by lazy {
+        PendingIntent.getBroadcast(
+                context,
+                REQUEST_CODE_CALL_LOG_SCAN_REQUEST,
+                Intent(ACTION_CALL_LOG_SCAN_REQUEST),
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
+
+    private val alarmManager by lazy {
+        context.getSystemService<AlarmManager>()!!
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            handleCallLogScanRequest()
+        }
+    }
+
+    private val contentResolver by lazy { context.contentResolver }
+
+    override fun isAvailable(): Boolean = true
+
+    override fun getStatus(): Array<Info> = arrayOf()
 
     override suspend fun onStart() {
-        context.contentResolver.safeUnregisterContentObserver(callLogObserver)
-        context.contentResolver.safeRegisterContentObserver(CallLog.Calls.CONTENT_URI, true, callLogObserver)
+        val filter = IntentFilter().apply {
+            addAction(ACTION_CALL_LOG_SCAN_REQUEST)
+        }
+
+        context.safeRegisterReceiver(receiver, filter)
+
+        alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(20),
+                TimeUnit.MINUTES.toMillis(30),
+                intent
+        )
     }
 
     override suspend fun onStop() {
-        context.contentResolver.safeUnregisterContentObserver(callLogObserver)
+        context.safeUnregisterReceiver(receiver)
+
+        alarmManager.cancel(intent)
     }
 
-    private val handler : Handler
-        get() {
-            val thread = HandlerThread(this::class.java.name)
-            thread.start()
-            return Handler(thread.looper)
-        }
+    override suspend fun count(): Long = dataRepository.count<CallLogEntity>()
 
-    private val callLogObserver: ContentObserver = object : ContentObserver(handler) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            handleCallLogRetrieval()
-        }
+    override suspend fun flush(entities: Collection<CallLogEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
     }
 
-    private fun handleCallLogRetrieval() = launch {
-        val curTime = System.currentTimeMillis()
-        val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = getStatus()?.lastTimeAccessed
-                ?: curTime - TimeUnit.DAYS.toMillis(1)
+    override suspend fun list(limit: Long): Collection<CallLogEntity> = dataRepository.find(0, limit)
+
+    private fun handleCallLogScanRequest() = launch {
+        val timestamp = System.currentTimeMillis()
 
         getRecentContents(
-                contentResolver = context.contentResolver,
+                contentResolver = contentResolver,
                 uri = CallLog.Calls.CONTENT_URI,
                 timeColumn = CallLog.Calls.DATE,
                 columns = arrayOf(
@@ -83,46 +109,28 @@ class CallLogCollector(private val context: Context) : BaseCollector<CallLogColl
                         CallLog.Calls.NUMBER_PRESENTATION,
                         CallLog.Calls.DATA_USAGE
                 ),
-                lastTime = lastTimeAccessed
+                lastTime = lastTimeDataWritten.coerceAtLeast(timestamp - TimeUnit.HOURS.toMillis(12))
         ) { cursor ->
-            val timestamp = cursor.getLongOrNull(0) ?: 0
+            val millis = cursor.getLongOrNull(0) ?: 0
             val number = cursor.getStringOrNull(2) ?: ""
+            val contact = getContact(contentResolver, number) ?: Contact()
 
-            timestamps.add(timestamp)
-
-            CallLogEntity(
+            val entity = CallLogEntity(
                     duration = cursor.getLongOrNull(1) ?: 0,
-                    number = toHash(number, 0, 4),
-                    type = callTypeToString(cursor.getIntOrNull(3)),
-                    presentation = callPresentationTypeToString(cursor.getIntOrNull(4)),
-                    dataUsage = cursor.getLongOrNull(5) ?: 0
-            ).fillContact(
-                    number = number, contentResolver = context.contentResolver
-            ).fill(toMillis(timestamp = timestamp))
-        }?.also { entity ->
-            ObjBox.put(entity)
-            setStatus(Status(lastTime = curTime))
+                    number = toHash(number, 4),
+                    type = stringifyCallType(cursor.getIntOrNull(3)),
+                    presentation = stringifyCallPresentation(cursor.getIntOrNull(4)),
+                    dataUsage = cursor.getLongOrNull(5) ?: 0,
+                    contactType = contact.contactType,
+                    isStarred = contact.isStarred,
+                    isPinned = contact.isPinned
+            )
+            put(entity, millis)
         }
-
-        timestamps.max()?.also { timestamp -> setStatus(Status(lastTimeAccessed = timestamp)) }
     }
 
-    private fun callTypeToString(typeInt: Int?): String = when (typeInt) {
-        CallLog.Calls.INCOMING_TYPE -> "INCOMING"
-        CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
-        CallLog.Calls.MISSED_TYPE -> "MISSED"
-        CallLog.Calls.VOICEMAIL_TYPE -> "VOICE_MAIL"
-        CallLog.Calls.REJECTED_TYPE -> "REJECTED"
-        CallLog.Calls.BLOCKED_TYPE -> "BLOCKED"
-        CallLog.Calls.ANSWERED_EXTERNALLY_TYPE -> "ANSWERED_EXTERNALLY"
-        else -> "UNDEFINED"
-    }
-
-    private fun callPresentationTypeToString(typeInt: Int?): String = when (typeInt) {
-        CallLog.Calls.PRESENTATION_ALLOWED -> "ALLOWED"
-        CallLog.Calls.PRESENTATION_PAYPHONE -> "PAYPHONE"
-        CallLog.Calls.PRESENTATION_RESTRICTED -> "RESTRICTED"
-        CallLog.Calls.PRESENTATION_UNKNOWN -> "UNKNOWN"
-        else -> "UNDEFINED"
+    companion object {
+        private const val ACTION_CALL_LOG_SCAN_REQUEST = "${BuildConfig.APPLICATION_ID}.ACTION_CALL_LOG_SCAN_REQUEST"
+        private const val REQUEST_CODE_CALL_LOG_SCAN_REQUEST = 0x11
     }
 }

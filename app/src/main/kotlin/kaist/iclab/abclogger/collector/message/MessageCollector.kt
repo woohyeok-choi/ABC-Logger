@@ -1,160 +1,178 @@
-package kaist.iclab.abclogger.collector.message
+package kaist.iclab.abclogger.collector.content
 
 import android.Manifest
-import android.content.ContentResolver
-import android.content.Context
-import android.content.Intent
-import android.database.ContentObserver
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.*
 import android.net.Uri
-import android.os.Handler
-import android.os.HandlerThread
+
 import android.provider.Telephony
+import androidx.core.content.getSystemService
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
-import kaist.iclab.abclogger.commons.checkPermission
-import kaist.iclab.abclogger.commons.safeRegisterContentObserver
-import kaist.iclab.abclogger.commons.safeUnregisterContentObserver
-import kotlinx.coroutines.launch
+import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.AbstractCollector
+import kaist.iclab.abclogger.core.DataRepository
+import kaist.iclab.abclogger.core.ReadWriteStatusLong
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.KClass
 
-class MessageCollector(private val context: Context) : BaseCollector<MessageCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null,
-                      val lastTimeAccessedSms: Long? = null,
-                      val lastTimeAccessedMms: Long? = null) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
-    }
-
-    override val clazz: KClass<Status> = Status::class
-
-    override val name: String = context.getString(R.string.data_name_message)
-
-    override val description: String = context.getString(R.string.data_desc_message)
-
-    override val requiredPermissions: List<String> = listOf(
-            Manifest.permission.READ_CONTACTS,
-            Manifest.permission.READ_SMS
+class MessageCollector(
+    context: Context,
+    name: String,
+    qualifiedName: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<MessageEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    override val permissions: List<String> = listOf(
+            Manifest.permission.READ_SMS,
+            Manifest.permission.READ_CONTACTS
     )
 
-    override val newIntentForSetUp: Intent? = null
+    override val setupIntent: Intent? = null
 
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+    private var lastTimeSmsWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+    private var lastTimeMmsWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+
+    private val intent by lazy {
+        PendingIntent.getBroadcast(
+                context,
+                REQUEST_CODE_MESSAGE_SCAN_REQUEST,
+                Intent(ACTION_MESSAGE_SCAN_REQUEST),
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
+
+    private val alarmManager by lazy {
+        context.getSystemService<AlarmManager>()!!
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            handleMessageScanRequest()
+        }
+    }
+
+    private val contentResolver by lazy { context.contentResolver }
+
+    override fun isAvailable(): Boolean = true
+
+    override fun getStatus():Array<Info> = arrayOf(
+            Info(
+                    R.string.collector_info_message_sms_written,
+                    formatDateTime(context, lastTimeSmsWritten)
+            ),
+            Info(
+                    R.string.collector_info_message_mms_written,
+                    formatDateTime(context, lastTimeMmsWritten)
+            )
+    )
 
     override suspend fun onStart() {
-        context.contentResolver.safeUnregisterContentObserver(smsObserver)
-        context.contentResolver.safeUnregisterContentObserver(mmsObserver)
+        val filter = IntentFilter().apply {
+            addAction(ACTION_MESSAGE_SCAN_REQUEST)
+        }
+        context.safeRegisterReceiver(receiver, filter)
 
-        context.contentResolver.safeRegisterContentObserver(Telephony.Sms.CONTENT_URI, true, smsObserver)
-        context.contentResolver.safeRegisterContentObserver(Telephony.Mms.CONTENT_URI, true, mmsObserver)
+        alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(20),
+                TimeUnit.MINUTES.toMillis(30),
+                intent
+        )
     }
 
     override suspend fun onStop() {
-        context.contentResolver.safeUnregisterContentObserver(smsObserver)
-        context.contentResolver.safeUnregisterContentObserver(mmsObserver)
+        context.safeUnregisterReceiver(receiver)
+
+        alarmManager.cancel(intent)
     }
 
-    private fun handleSmsRetrieval() = launch {
-        val curTime = System.currentTimeMillis()
-        val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = getStatus()?.lastTimeAccessedSms
-                ?: curTime-TimeUnit.DAYS.toMillis(1)
+    override suspend fun count(): Long = dataRepository.count<MessageEntity>()
 
+    override suspend fun flush(entities: Collection<MessageEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
+    }
+
+    override suspend fun list(limit: Long): Collection<MessageEntity> = dataRepository.find(0, limit)
+
+    private fun handleMessageScanRequest() = launch {
+        val timestamp = System.currentTimeMillis()
+        /**
+         * Retrieve SMS Messages
+         */
         getRecentContents(
-                contentResolver = context.contentResolver,
+                contentResolver = contentResolver,
                 uri = Telephony.Sms.CONTENT_URI,
-                lastTime = lastTimeAccessed,
+                lastTime = lastTimeSmsWritten.coerceAtLeast(timestamp - TimeUnit.HOURS.toMillis(12)),
                 timeColumn = Telephony.Sms.DATE,
                 columns = arrayOf(
                         Telephony.Sms.DATE,
                         Telephony.Sms.ADDRESS,
-                        Telephony.Sms.TYPE)
+                        Telephony.Sms.TYPE
+                )
         ) { cursor ->
-            val timestamp = cursor.getLongOrNull(0) ?: 0
+            val millis = cursor.getLongOrNull(0) ?: Long.MIN_VALUE
             val number = cursor.getStringOrNull(1) ?: ""
+            val contact = getContact(contentResolver, number) ?: Contact()
 
-            timestamps.add(timestamp)
-
-            MessageEntity(
-                    number = toHash(number, 0, 4),
+            val entity = MessageEntity(
+                    number = toHash(number, 4),
                     messageClass = "SMS",
-                    messageBox = messageBoxToString(cursor.getIntOrNull(2))
-            ).fillContact(
-                    number = number,
-                    contentResolver = context.contentResolver
-            ).fill(toMillis(timestamp = timestamp))
-        }?.also { entity ->
-            ObjBox.put(entity)
-            setStatus(Status(lastTime = curTime))
+                    messageBox = stringifyMessageType(cursor.getIntOrNull(2)),
+                    contactType = contact.contactType,
+                    isStarred = contact.isStarred,
+                    isPinned = contact.isPinned
+            )
+            put(entity, millis)
+            lastTimeSmsWritten = millis.coerceAtLeast(lastTimeSmsWritten)
         }
 
-        timestamps.max()?.also { timestamp -> setStatus(Status(lastTimeAccessedSms = timestamp)) }
-    }
-
-    private fun handleMmsRetrieval() = launch {
-        val curTime = System.currentTimeMillis()
-        val timestamps = mutableListOf<Long>()
-        val lastTimeAccessed = getStatus()?.lastTimeAccessedMms
-                ?: curTime-TimeUnit.DAYS.toMillis(1)
-
+        /**
+         * Retrieve MMS Messages
+         */
         getRecentContents(
-                contentResolver = context.contentResolver,
+                contentResolver = contentResolver,
                 uri = Telephony.Mms.CONTENT_URI,
-                lastTime = lastTimeAccessed,
+                /**
+                 * Time column of MMS messages are stored as second, not millis.
+                 */
+                lastTime = lastTimeMmsWritten.coerceAtLeast(timestamp / 1000 - TimeUnit.HOURS.toMillis(12)),
                 timeColumn = Telephony.Mms.DATE,
                 columns = arrayOf(
                         Telephony.Mms.DATE,
                         Telephony.Mms._ID,
-                        Telephony.Mms.MESSAGE_BOX)
+                        Telephony.Mms.MESSAGE_BOX
+                )
         ) { cursor ->
-            val timestamp = cursor.getLongOrNull(0) ?: 0
-            val number = getMmsAddress(cursor.getLongOrNull(1), context.contentResolver)
-                    ?: ""
+            val seconds = cursor.getLongOrNull(0) ?: Long.MIN_VALUE
+            val number = getMmsAddress(contentResolver, cursor.getLongOrNull(1)) ?: ""
+            val contact = getContact(contentResolver, number) ?: Contact()
 
-            timestamps.add(timestamp)
-
-            MessageEntity(
-                    number = toHash(number, 0, 4),
+            val entity = MessageEntity(
+                    number = toHash(number, 0),
                     messageClass = "MMS",
-                    messageBox = messageBoxToString(cursor.getIntOrNull(2))
-            ).fillContact(
-                    number = number,
-                    contentResolver = context.contentResolver
-            ).fill(toMillis(timestamp = timestamp))
-        }?.run {
-            ObjBox.put(this)
-            setStatus(Status(lastTime = curTime))
-        }
-
-        timestamps.max()?.also { timestamp -> setStatus(Status(lastTimeAccessedMms = timestamp)) }
-    }
-
-    private val handler : Handler
-        get() {
-            val thread = HandlerThread(this::class.java.name)
-            thread.start()
-            return Handler(thread.looper)
-        }
-
-    private val smsObserver: ContentObserver = object : ContentObserver(handler) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            handleSmsRetrieval()
+                    messageBox = stringifyMessageType(cursor.getIntOrNull(2)),
+                    contactType = contact.contactType,
+                    isStarred = contact.isStarred,
+                    isPinned = contact.isPinned
+            )
+            put(entity, TimeUnit.SECONDS.toMillis(seconds))
+            lastTimeMmsWritten = seconds.coerceAtLeast(lastTimeMmsWritten)
         }
     }
 
-    private val mmsObserver: ContentObserver = object : ContentObserver(handler) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            handleMmsRetrieval()
-        }
-    }
-
-    private fun getMmsAddress(id: Long?, contentResolver: ContentResolver): String? {
+    private fun getMmsAddress(contentResolver: ContentResolver, id: Long?): String? {
         if (id == null) return null
         return contentResolver.query(
                 Uri.withAppendedPath(
@@ -166,13 +184,8 @@ class MessageCollector(private val context: Context) : BaseCollector<MessageColl
         }
     }
 
-    private fun messageBoxToString(typeInt: Int?): String = when (typeInt) {
-        Telephony.TextBasedSmsColumns.MESSAGE_TYPE_DRAFT -> "DRAFT"
-        Telephony.TextBasedSmsColumns.MESSAGE_TYPE_FAILED -> "FAILED"
-        Telephony.TextBasedSmsColumns.MESSAGE_TYPE_INBOX -> "INBOX"
-        Telephony.TextBasedSmsColumns.MESSAGE_TYPE_OUTBOX -> "OUTBOX"
-        Telephony.TextBasedSmsColumns.MESSAGE_TYPE_QUEUED -> "QUEUED"
-        Telephony.TextBasedSmsColumns.MESSAGE_TYPE_SENT -> "SENT"
-        else -> "UNDEFINED"
+    companion object {
+        private const val ACTION_MESSAGE_SCAN_REQUEST = "${BuildConfig.APPLICATION_ID}.ACTION_MESSAGE_SCAN_REQUEST"
+        private const val REQUEST_CODE_MESSAGE_SCAN_REQUEST = 0x13
     }
 }

@@ -1,195 +1,212 @@
-package kaist.iclab.abclogger.collector.media
+package kaist.iclab.abclogger.collector.content
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.database.ContentObserver
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Looper
+import android.content.IntentFilter
 import android.provider.MediaStore
+import androidx.core.content.getSystemService
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
-import kaist.iclab.abclogger.commons.checkPermission
-import kaist.iclab.abclogger.commons.safeRegisterContentObserver
-import kaist.iclab.abclogger.commons.safeUnregisterContentObserver
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kaist.iclab.abclogger.commons.safeRegisterReceiver
+import kaist.iclab.abclogger.commons.safeUnregisterReceiver
+import kaist.iclab.abclogger.core.AbstractCollector
+import kaist.iclab.abclogger.core.DataRepository
+import kaist.iclab.abclogger.core.ReadWriteStatusLong
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.KClass
 
-class MediaCollector(private val context: Context) : BaseCollector<MediaCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null,
-                      val lastTimeAccessedInternalPhoto: Long = 0,
-                      val lastTimeAccessedInternalVideo: Long = 0,
-                      val lastTimeAccessedExternalPhoto: Long = 0,
-                      val lastTimeAccessedExternalVideo: Long = 0) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
+class MediaCollector(
+    context: Context,
+    name: String,
+    qualifiedName: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<MediaEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    override val permissions: List<String> = listOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
+    override val setupIntent: Intent? = null
+
+    private var lastTimeInternalVideoWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+    private var lastTimeExternalVideoWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+    private var lastTimeInternalPhotoWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+    private var lastTimeExternalPhotoWritten by ReadWriteStatusLong(Long.MIN_VALUE)
+
+    private val intent by lazy {
+        PendingIntent.getBroadcast(
+                context,
+                REQUEST_CODE_MEDIA_SCAN_REQUEST,
+                Intent(ACTION_MEDIA_SCAN_REQUEST),
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
-    override val clazz: KClass<Status> = Status::class
+    private val alarmManager by lazy {
+        context.getSystemService<AlarmManager>()!!
+    }
 
-    override val name: String = context.getString(R.string.data_name_media)
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            handleMediaScanRequest()
+        }
+    }
 
-    override val description: String = context.getString(R.string.data_desc_media)
+    private val contentResolver by lazy { context.contentResolver }
 
-    override val requiredPermissions: List<String> = listOf(Manifest.permission.READ_EXTERNAL_STORAGE)
 
-    override val newIntentForSetUp: Intent? = null
+    override fun isAvailable(): Boolean = true
 
-    override suspend fun checkAvailability(): Boolean = context.checkPermission(requiredPermissions)
+    override fun getStatus(): Array<Info> = arrayOf(
+            Info(
+                    R.string.collector_info_media_internal_photo_written,
+                    formatDateTime(context, lastTimeInternalPhotoWritten)
+            ),
+            Info(
+                    R.string.collector_info_media_external_photo_written,
+                    formatDateTime(context, lastTimeExternalPhotoWritten)
+            ),
+            Info(
+                    R.string.collector_info_media_internal_video_written,
+                    formatDateTime(context, lastTimeInternalVideoWritten)
+            ),
+            Info(
+                    R.string.collector_info_media_external_video_written,
+                    formatDateTime(context, lastTimeExternalVideoWritten)
+            )
+    )
 
     override suspend fun onStart() {
-        context.contentResolver.safeUnregisterContentObserver(internalPhotoObserver)
-        context.contentResolver.safeUnregisterContentObserver(internalVideoObserver)
-        context.contentResolver.safeUnregisterContentObserver(externalPhotoObserver)
-        context.contentResolver.safeUnregisterContentObserver(externalVideoObserver)
+        val filter = IntentFilter().apply {
+            addAction(ACTION_MEDIA_SCAN_REQUEST)
+        }
+        context.safeRegisterReceiver(receiver, filter)
 
-        context.contentResolver.safeRegisterContentObserver(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalPhotoObserver)
-        context.contentResolver.safeRegisterContentObserver(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true, internalVideoObserver)
-        context.contentResolver.safeRegisterContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, externalPhotoObserver)
-        context.contentResolver.safeRegisterContentObserver(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, externalVideoObserver)
+        alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(20),
+                TimeUnit.MINUTES.toMillis(30),
+                intent
+        )
     }
 
     override suspend fun onStop() {
-        context.contentResolver.safeUnregisterContentObserver(internalPhotoObserver)
-        context.contentResolver.safeUnregisterContentObserver(internalVideoObserver)
-        context.contentResolver.safeUnregisterContentObserver(externalPhotoObserver)
-        context.contentResolver.safeUnregisterContentObserver(externalVideoObserver)
+        context.safeUnregisterReceiver(receiver)
+
+        alarmManager.cancel(intent)
     }
 
-    private fun handleMediaRetrieval(type: Int) = launch {
-        val curTime = System.currentTimeMillis()
-        val lastTimeAccessed = getStatus()?.let { status ->
-            when (type) {
-                TYPE_INTERNAL_PHOTO -> status.lastTimeAccessedInternalPhoto
-                TYPE_INTERNAL_VIDEO -> status.lastTimeAccessedInternalVideo
-                TYPE_EXTERNAL_PHOTO -> status.lastTimeAccessedExternalPhoto
-                TYPE_EXTERNAL_VIDEO -> status.lastTimeAccessedExternalVideo
-                else -> null
-            }
-        } ?: curTime - TimeUnit.DAYS.toMillis(1)
+    override suspend fun count(): Long = dataRepository.count<MediaEntity>()
 
-        val cursor = when (type) {
-            TYPE_INTERNAL_PHOTO -> getRecentContents(
-                    contentResolver = context.contentResolver,
-                    uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI,
-                    timeColumn = MediaStore.Images.ImageColumns.DATE_ADDED,
-                    columns = arrayOf(
-                            MediaStore.Images.ImageColumns.DATE_ADDED,
-                            MediaStore.Images.ImageColumns.MIME_TYPE
-                    ),
-                    lastTime = lastTimeAccessed
+    override suspend fun flush(entities: Collection<MediaEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
+    }
+
+    override suspend fun list(limit: Long): Collection<MediaEntity> = dataRepository.find(0, limit)
+
+    private fun handleMediaScanRequest() = launch {
+        val timestamp = System.currentTimeMillis()
+
+        /**
+         * Retrieve internal photo
+         */
+        getRecentContents(
+                contentResolver = contentResolver,
+                uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI,
+                timeColumn = MediaStore.Images.ImageColumns.DATE_ADDED,
+                columns = arrayOf(
+                        MediaStore.Images.ImageColumns.DATE_ADDED,
+                        MediaStore.Images.ImageColumns.MIME_TYPE
+                ),
+                lastTime = lastTimeInternalPhotoWritten.coerceAtLeast(timestamp - TimeUnit.HOURS.toMillis(12))
+        ) { cursor ->
+            val millis = cursor.getLongOrNull(0) ?: Long.MIN_VALUE
+            val entity = MediaEntity(
+                    mimeType = cursor.getStringOrNull(1) ?: "image/*"
             )
-            TYPE_INTERNAL_VIDEO -> getRecentContents(
-                    contentResolver = context.contentResolver,
-                    uri = MediaStore.Video.Media.INTERNAL_CONTENT_URI,
-                    timeColumn = MediaStore.Video.VideoColumns.DATE_ADDED,
-                    columns = arrayOf(
-                            MediaStore.Video.VideoColumns.DATE_ADDED,
-                            MediaStore.Video.VideoColumns.MIME_TYPE
-                    ),
-                    lastTime = lastTimeAccessed
+            put(entity, millis)
+            lastTimeInternalPhotoWritten = millis.coerceAtLeast(lastTimeInternalPhotoWritten)
+        }
+
+        /**
+         * Retrieve external photo
+         */
+        getRecentContents(
+                contentResolver = contentResolver,
+                uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                timeColumn = MediaStore.Images.ImageColumns.DATE_ADDED,
+                columns = arrayOf(
+                        MediaStore.Images.ImageColumns.DATE_ADDED,
+                        MediaStore.Images.ImageColumns.MIME_TYPE
+                ),
+                lastTime = lastTimeExternalPhotoWritten.coerceAtLeast(timestamp - TimeUnit.HOURS.toMillis(12))
+        ) { cursor ->
+            val millis = cursor.getLongOrNull(0) ?: Long.MIN_VALUE
+            val entity = MediaEntity(
+                    mimeType = cursor.getStringOrNull(1) ?: "image/*"
             )
-            TYPE_EXTERNAL_PHOTO -> getRecentContents(
-                    contentResolver = context.contentResolver,
-                    uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    timeColumn = MediaStore.Images.ImageColumns.DATE_ADDED,
-                    columns = arrayOf(
-                            MediaStore.Images.ImageColumns.DATE_ADDED,
-                            MediaStore.Images.ImageColumns.MIME_TYPE
-                    ),
-                    lastTime = lastTimeAccessed
+            put(entity, millis)
+            lastTimeExternalPhotoWritten = millis.coerceAtLeast(lastTimeExternalPhotoWritten)
+        }
+
+        /**
+         * Retrieve internal video
+         */
+        getRecentContents(
+                contentResolver = contentResolver,
+                uri = MediaStore.Video.Media.INTERNAL_CONTENT_URI,
+                timeColumn = MediaStore.Video.VideoColumns.DATE_ADDED,
+                columns = arrayOf(
+                        MediaStore.Video.VideoColumns.DATE_ADDED,
+                        MediaStore.Video.VideoColumns.MIME_TYPE
+                ),
+                lastTime = lastTimeInternalVideoWritten.coerceAtLeast(timestamp - TimeUnit.HOURS.toMillis(12))
+        ) { cursor ->
+            val millis = cursor.getLongOrNull(0) ?: Long.MIN_VALUE
+            val entity = MediaEntity(
+                    mimeType = cursor.getStringOrNull(1) ?: "video/*"
             )
-            TYPE_EXTERNAL_VIDEO -> getRecentContents(
-                    contentResolver = context.contentResolver,
-                    uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                    timeColumn = MediaStore.Video.VideoColumns.DATE_ADDED,
-                    columns = arrayOf(
-                            MediaStore.Video.VideoColumns.DATE_ADDED,
-                            MediaStore.Video.VideoColumns.MIME_TYPE
-                    ),
-                    lastTime = lastTimeAccessed
+            put(entity, millis)
+            lastTimeInternalVideoWritten = millis.coerceAtLeast(lastTimeInternalVideoWritten)
+        }
+
+        /**
+         * Retrieve external video
+         */
+        getRecentContents(
+                contentResolver = contentResolver,
+                uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                timeColumn = MediaStore.Video.VideoColumns.DATE_ADDED,
+                columns = arrayOf(
+                        MediaStore.Video.VideoColumns.DATE_ADDED,
+                        MediaStore.Video.VideoColumns.MIME_TYPE
+                ),
+                lastTime = lastTimeExternalVideoWritten.coerceAtLeast(timestamp - TimeUnit.HOURS.toMillis(12))
+        ) { cursor ->
+            val millis = cursor.getLongOrNull(0) ?: Long.MIN_VALUE
+            val entity = MediaEntity(
+                    mimeType = cursor.getStringOrNull(1) ?: "video/*"
             )
-            else -> null
-        } ?: return@launch
-
-        val timestamps = mutableListOf<Long>()
-        val entities = cursor.use { cs ->
-            val data: MutableList<MediaEntity> = mutableListOf()
-            while (cs.moveToNext()) {
-                val timestamp = cs.getLongOrNull(0) ?: 0
-                val defaultMimeType = if (type == TYPE_INTERNAL_PHOTO || type == TYPE_EXTERNAL_PHOTO) {
-                    "image/*"
-                } else {
-                    "video/*"
-                }
-                val entity = MediaEntity(
-                        mimeType = cs.getStringOrNull(1) ?: defaultMimeType
-                ).fill(toMillis(timestamp = timestamp))
-
-                timestamps.add(timestamp)
-                data.add(entity)
-            }
-            return@use data
-        }
-
-        ObjBox.put(entities)
-        setStatus(Status(lastTime = curTime))
-
-        timestamps.max()?.also { timestamp ->
-            when (type) {
-                TYPE_INTERNAL_PHOTO -> setStatus(Status(lastTimeAccessedInternalPhoto = timestamp))
-                TYPE_INTERNAL_VIDEO -> setStatus(Status(lastTimeAccessedInternalPhoto = timestamp))
-                TYPE_EXTERNAL_PHOTO -> setStatus(Status(lastTimeAccessedInternalPhoto = timestamp))
-                TYPE_EXTERNAL_VIDEO -> setStatus(Status(lastTimeAccessedInternalPhoto = timestamp))
-            }
-        }
-    }
-
-    private val handler : Handler
-        get() {
-            val thread = HandlerThread(this::class.java.name)
-            thread.start()
-            return Handler(thread.looper)
-        }
-
-    private val internalPhotoObserver: ContentObserver = object : ContentObserver(handler) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            handleMediaRetrieval(TYPE_INTERNAL_PHOTO)
-        }
-    }
-
-    private val internalVideoObserver: ContentObserver = object : ContentObserver(handler) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            handleMediaRetrieval(TYPE_INTERNAL_VIDEO)
-        }
-    }
-
-    private val externalPhotoObserver: ContentObserver = object : ContentObserver(handler) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            handleMediaRetrieval(TYPE_EXTERNAL_PHOTO)
-        }
-    }
-
-    private val externalVideoObserver: ContentObserver = object : ContentObserver(handler) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            handleMediaRetrieval(TYPE_EXTERNAL_VIDEO)
+            put(entity, millis)
+            lastTimeExternalVideoWritten = millis.coerceAtLeast(lastTimeExternalVideoWritten)
         }
     }
 
     companion object {
-        private const val TYPE_INTERNAL_PHOTO = 0x01
-        private const val TYPE_INTERNAL_VIDEO = 0x02
-        private const val TYPE_EXTERNAL_PHOTO = 0x03
-        private const val TYPE_EXTERNAL_VIDEO = 0x04
+        private const val ACTION_MEDIA_SCAN_REQUEST = "${BuildConfig.APPLICATION_ID}.ACTION_MEDIA_SCAN_REQUEST"
+        private const val REQUEST_CODE_MEDIA_SCAN_REQUEST = 0x12
     }
 }

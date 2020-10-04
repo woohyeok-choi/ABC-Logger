@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/survey_all_list"
+            android:icon="@drawable/baseline_all_inbox_24"
+            android:title="@string/menu_drawer_survey_all_list" />
+
+        <item
+            android:id="@+id/survey_not_answered_list"
+            android:icon="@drawable/baseline_mark_email_unread_24"
+            android:title="@string/menu_drawer_survey_unanswered_list" />
+        <item
+            android:id="@+id/survey_answered_list"
+            android:icon="@drawable/baseline_mark_email_read_24"
+            android:title="@string/menu_drawer_survey_answered_list" />
+        <item
+            android:id="@+id/survey_expired_list"
+            android:icon="@drawable/baseline_hourglass_disabled_24"
+            android:title="@string/menu_drawer_survey_expired_list" />
+    </group>
+</menu>

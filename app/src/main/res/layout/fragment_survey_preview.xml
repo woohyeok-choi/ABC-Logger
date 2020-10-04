@@ -1,137 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <data>
-        <import type="kaist.iclab.abclogger.ui.Status" />
-        <import type="android.view.View" />
-
-        <variable
-            name="viewModel"
-            type="kaist.iclab.abclogger.collector.survey.setting.SurveyPreviewViewModel" />
-
-    </data>
-
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/swi_alt_text"
+        android:text="@string/setting_survey_config_option_alt"
+        android:paddingHorizontal="@dimen/space_horiz_padding"
+        android:paddingVertical="@dimen/space_vert_padding"
+        android:minHeight="@dimen/item_single_line_height"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"/>
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <include layout="@layout/fragment_survey_response" android:id="@+id/container"/>
 
-            <androidx.core.widget.ContentLoadingProgressBar
-                android:id="@+id/load_progress_bar"
-                style="?android:attr/progressBarStyle"
-                isLoading="@{viewModel.loadStatus.loading}"
-                android:layout_width="@dimen/progress_bar_size"
-                android:layout_height="@dimen/progress_bar_size"
-                android:layout_gravity="center"
-                android:indeterminate="true" />
-
-            <TextView
-                android:id="@+id/txt_error"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/msg_fail_to_load_contents"
-                android:textSize="@dimen/txt_size_text"
-                android:visibility="@{viewModel.loadStatus.failed ? View.VISIBLE : View.GONE}" />
-
-            <androidx.core.widget.NestedScrollView
-                android:id="@+id/scroll_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="@{viewModel.loadStatus.succeeded ? View.VISIBLE : View.GONE}">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="@dimen/item_default_horizontal_padding"
-                        android:paddingRight="@dimen/item_default_horizontal_padding"
-                        android:paddingTop="@dimen/item_default_vertical_padding"
-                        android:paddingBottom="@dimen/item_default_vertical_padding">
-
-                        <TextView
-                            android:id="@+id/txt_header"
-                            isBold="@{true}"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="2"
-                            android:text="@{viewModel.title}"
-                            android:textColor="@color/color_title"
-                            android:textSize="@dimen/txt_size_title_small"
-                            app:layout_constraintLeft_toLeftOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintRight_toLeftOf="parent" />
-
-                        <TextView
-                            android:id="@+id/txt_message"
-                            isBold="@{true}"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="2"
-                            android:text="@{viewModel.message}"
-                            android:textColor="@color/color_message"
-                            android:textSize="@dimen/txt_size_text"
-                            app:layout_constraintTop_toBottomOf="@id/txt_header"
-                            app:layout_constraintLeft_toLeftOf="parent"
-                            app:layout_constraintRight_toRightOf="parent" />
-
-                        <TextView
-                            android:id="@+id/txt_delivered_time"
-                            isBold="@{true}"
-                            formattedTime="@{System.currentTimeMillis()}"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/color_blue"
-                            android:textSize="@dimen/txt_size_text_small"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintRight_toRightOf="@id/txt_header"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <TextView
-                            android:id="@+id/txt_instruction"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:ellipsize="end"
-                            android:maxLines="5"
-                            android:text="@{viewModel.instruction}"
-                            android:textSize="@dimen/txt_size_text_small"
-                            android:textColor="@color/color_message"
-                            app:layout_constraintTop_toBottomOf="@id/txt_message"
-                            app:layout_constraintLeft_toLeftOf="parent" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="5"
-                            android:text="@string/general_survey_instruction"
-                            android:textSize="@dimen/txt_size_text_small"
-                            android:textColor="@color/color_message"
-                            app:layout_constraintTop_toBottomOf="@id/txt_instruction"
-                            app:layout_constraintLeft_toLeftOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recycler_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-                </LinearLayout>
-            </androidx.core.widget.NestedScrollView>
-        </FrameLayout>
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-</layout>
+</LinearLayout>

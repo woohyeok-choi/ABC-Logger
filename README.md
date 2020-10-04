@@ -9,5 +9,8 @@
 ## For team members
 * Check [this](https://docs.google.com/document/d/1h7MI8P9RrywgHGY0U7LNLkN_geRb_D54BSLYjqgxKjs)
 
-
-
+## Coding Convention
+* For Fragment and Activity (especially, which uses ViewModel), do not use data binding library, because:
+    * Some view model requires operations in a source, not XML (e.g., RecyclerView adapter)
+    * Especially, LiveData only can be assigned into views using source, not XML.
+* For a layout or view inside fragment or activity, data binding can be used.

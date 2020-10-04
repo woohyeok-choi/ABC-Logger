@@ -7,368 +7,375 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.text.format.DateUtils
 import androidx.core.app.AlarmManagerCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.app.TaskStackBuilder
-import kaist.iclab.abclogger.AbcEvent
+import androidx.core.content.getSystemService
+import io.objectbox.kotlin.inValues
 import kaist.iclab.abclogger.BuildConfig
-import kaist.iclab.abclogger.ObjBox
+import kaist.iclab.abclogger.core.Event
+import kaist.iclab.abclogger.core.EventBus
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.collector.BaseCollector
-import kaist.iclab.abclogger.collector.BaseStatus
-import kaist.iclab.abclogger.collector.fill
-import kaist.iclab.abclogger.collector.survey.setting.SurveySettingActivity
+import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.*
-import kaist.iclab.abclogger.ui.question.SurveyResponseActivity
-import kotlinx.coroutines.launch
+import kaist.iclab.abclogger.core.*
+import kaist.iclab.abclogger.core.collector.*
+import kaist.iclab.abclogger.structure.survey.*
+import kaist.iclab.abclogger.ui.settings.survey.SurveySettingActivity
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.math.max
-import kotlin.reflect.KClass
+import kotlin.random.Random
 
-class SurveyCollector(private val context: Context) : BaseCollector<SurveyCollector.Status>(context) {
-    data class Status(override val hasStarted: Boolean? = null,
-                      override val lastTime: Long? = null,
-                      val startTime: Long? = null,
-                      val nReceived: Int? = null,
-                      val nAnswered: Int? = null,
-                      val settings: List<Setting>? = null) : BaseStatus() {
-        override fun info(): Map<String, Any> = mapOf()
-
-        data class Setting(
-                val id: Int = 0,
-                val uuid: String? = null,
-                var url: String? = null,
-                val json: String? = null,
-                val lastTimeTriggered: Long? = null,
-                val nextTimeTriggered: Long? = null
-        )
-    }
-
-    override val clazz: KClass<Status> = Status::class
-
-    override val name: String = context.getString(R.string.data_name_survey)
-
-    override val description: String = context.getString(R.string.data_desc_survey)
-
-    override val requiredPermissions: List<String> = listOf(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE
+class SurveyCollector(
+    context: Context,
+    qualifiedName: String,
+    name: String,
+    description: String,
+    dataRepository: DataRepository
+) : AbstractCollector<SurveyEntity>(
+    context,
+    qualifiedName,
+    name,
+    description,
+    dataRepository
+) {
+    var configurations by ReadWriteStatusJson(
+        default = listOf(),
+        adapter = SurveyConfiguration.ListAdapter
     )
 
-    override val newIntentForSetUp: Intent? = Intent(context, SurveySettingActivity::class.java)
-
-    override suspend fun checkAvailability(): Boolean =
-            !getStatus()?.settings.isNullOrEmpty() && context.checkPermission(requiredPermissions)
-
-    override suspend fun onStart() {
-        AbcEvent.register(this)
-
-        val prevStartTime = getStatus()?.startTime ?: 0
-        if (prevStartTime <= 0) setStatus(Status(startTime = System.currentTimeMillis()))
-
-        cancelAll()
-        scheduleAll()
-
-        context.safeRegisterReceiver(receiver, filter)
-    }
-
-    override suspend fun onStop() {
-        AbcEvent.unregister(this)
-        cancelAll()
-
-        context.safeUnregisterReceiver(receiver)
-    }
+    var baseScheduleDate by ReadWriteStatusLong(Long.MIN_VALUE)
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context?, intent: Intent?) {
-            if (intent?.action != ACTION_SURVEY_TRIGGER) return
+            val timestamp = System.currentTimeMillis()
 
-            handleSurveyTrigger(intent.getStringExtra(EXTRA_SURVEY_UUID))
+            if (intent?.action == ACTION_SCHEDULE) {
+                handleSchedule(intent.getLongExtra(EXTRA_SURVEY_ID, 0), timestamp, null)
+            }
         }
     }
 
-    private val filter = IntentFilter().apply { addAction(ACTION_SURVEY_TRIGGER) }
+    override fun isAvailable(): Boolean = configurations.isNotEmpty()
 
-    private fun handleSurveyTrigger(uuid: String?) = launch {
-        val curTime = System.currentTimeMillis()
-        val settings = getStatus()?.settings ?: return@launch
-
-        val updatedSettings = settings.map { setting ->
-            if (setting.uuid == uuid) setting.copy(lastTimeTriggered = curTime) else setting.copy()
-        }
-
-        setStatus(Status(lastTime = curTime, settings = updatedSettings))
-
-        cancelAll()
-        scheduleAll()
-
-        val curSetting = settings.find { setting -> setting.uuid == uuid } ?: return@launch
-        val json = curSetting.json ?: return@launch
-        val survey = json.let { Survey.fromJson(it) } ?: return@launch
-
-        val shouldNotify = when (survey) {
-            is IntervalBasedSurvey -> checkTriggerCondition(
-                    curTime = curTime,
-                    dailyStartTimeHour = survey.dailyStartTimeHour,
-                    dailyStartTimeMinute = survey.dailyStartTimeMinute,
-                    dailyEndTimeHour = survey.dailyEndTimeHour,
-                    dailyEndTimeMinute = survey.dailyEndTimeMinute,
-                    daysOfWeek = survey.daysOfWeek
-            )
-            is EventBasedSurvey -> checkTriggerCondition(
-                    curTime = curTime,
-                    dailyStartTimeHour = survey.dailyStartTimeHour,
-                    dailyStartTimeMinute = survey.dailyStartTimeMinute,
-                    dailyEndTimeHour = survey.dailyEndTimeHour,
-                    dailyEndTimeMinute = survey.dailyEndTimeMinute,
-                    daysOfWeek = survey.daysOfWeek
-            )
-            else -> true
-        }
-
-        if (shouldNotify) {
-            notify(curTime, survey, json)
-
-            val nDelivered = getStatus()?.nReceived ?: 0
-
-            setStatus(Status(nReceived = nDelivered + 1))
-        }
-    }
-
-    private suspend fun scheduleAll(event: AbcEvent? = null) {
-        updateSettings(event)?.let { updatedSettings ->
-            setStatus(Status(settings = updatedSettings))
-            updatedSettings.forEach { setting -> scheduleSurvey(setting) }
-        }
-    }
-
-    private suspend fun cancelAll() {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        getStatus()?.settings?.forEach { setting ->
-            alarmManager.cancel(getPendingIntent(id = setting.id, uuid = setting.uuid ?: ""))
-        }
-    }
-
-    private fun checkTriggerCondition(curTime: Long,
-                                      dailyStartTimeHour: Int,
-                                      dailyStartTimeMinute: Int,
-                                      dailyEndTimeHour: Int,
-                                      dailyEndTimeMinute: Int,
-                                      daysOfWeek: Array<DayOfWeek>): Boolean {
-        val curCalendar = GregorianCalendar.getInstance(TimeZone.getDefault()).apply {
-            timeInMillis = curTime
-        }
-        val curDayOfWeek = DayOfWeek.from(curCalendar.get(Calendar.DAY_OF_WEEK))
-        val curHour = curCalendar.get(Calendar.HOUR_OF_DAY)
-        val curMinute = curCalendar.get(Calendar.MINUTE)
-
-        val dailyStartTimeAsMinute = TimeUnit.HOURS.toMinutes(dailyStartTimeHour.toLong()) + dailyStartTimeMinute
-        val dailyEndTimeAsMinute = TimeUnit.HOURS.toMinutes(dailyEndTimeHour.toLong()) + dailyEndTimeMinute
-        val curTimeAsMinute = TimeUnit.HOURS.toMinutes(curHour.toLong()) + curMinute
-
-        if (curDayOfWeek !in daysOfWeek) return false
-        if (curTimeAsMinute !in (dailyStartTimeAsMinute..dailyEndTimeAsMinute)) return false
-
-        return true
-    }
-
-    private fun notify(curTime: Long, survey: Survey, json: String) {
-        val id = SurveyEntity(
-                title = survey.title,
-                message = survey.message,
-                timeoutPolicy = survey.timeoutPolicy,
-                timeoutSec = survey.timeoutSec,
-                deliveredTime = curTime,
-                json = json
-        ).fill(timeMillis = curTime).let { entity ->
-            ObjBox.put(entity)
-        }
-
-        if (id < 0) return
-
-        val surveyIntent = Intent(context, SurveyResponseActivity::class.java).fillExtras(
-                SurveyResponseActivity.EXTRA_ENTITY_ID to id,
-                SurveyResponseActivity.EXTRA_SHOW_FROM_LIST to false,
-                SurveyResponseActivity.EXTRA_SURVEY_TITLE to survey.title,
-                SurveyResponseActivity.EXTRA_SURVEY_MESSAGE to survey.message,
-                SurveyResponseActivity.EXTRA_SURVEY_DELIVERED_TIME to curTime
-        )
-        val pendingIntent = TaskStackBuilder.create(context)
-                .addNextIntentWithParentStack(surveyIntent)
-                .getPendingIntent(REQUEST_CODE_SURVEY_OPEN, PendingIntent.FLAG_UPDATE_CURRENT)
-
-        val notification = Notifications.build(
-                context = context,
-                channelId = Notifications.CHANNEL_ID_SURVEY,
-                title = survey.title,
-                text = survey.message,
-                subText = DateUtils.formatDateTime(
-                        context, curTime,
-                        DateUtils.FORMAT_NO_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME
-                ),
-                intent = pendingIntent,
-                timeoutMs = if (survey.timeoutPolicy == Survey.TIMEOUT_DISABLED) TimeUnit.SECONDS.toMillis(survey.timeoutSec) else null
-        )
-
-        NotificationManagerCompat.from(context).notify(Notifications.ID_SURVEY_DELIVERED, notification)
-    }
-
-    private fun getPendingIntent(id: Int, uuid: String) = PendingIntent.getBroadcast(
-            context, id,
-            Intent(ACTION_SURVEY_TRIGGER).putExtra(EXTRA_SURVEY_UUID, uuid),
-            PendingIntent.FLAG_UPDATE_CURRENT
+    override fun getDescription(): Array<Description> = arrayOf(
+        R.string.collector_survey_info_base_date with formatDateTime(context, baseScheduleDate)
     )
 
-    private fun scheduleSurvey(setting: Status.Setting) {
-        val nextTimeTriggered = setting.nextTimeTriggered ?: 0
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pendingIntent = getPendingIntent(setting.id, setting.uuid ?: "")
+    override val permissions: List<String> = listOf(
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
 
-        if (nextTimeTriggered > 0) {
-            val curTime = System.currentTimeMillis()
-            val triggerTime = max(curTime + TimeUnit.SECONDS.toMillis(10), nextTimeTriggered)
-            AlarmManagerCompat.setExactAndAllowWhileIdle(alarmManager, AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
-        } else {
-            alarmManager.cancel(pendingIntent)
-        }
-    }
+    override val setupIntent: Intent? = Intent(context, SurveySettingActivity::class.java)
 
-    private suspend fun updateSettings(event: AbcEvent? = null): List<Status.Setting>? {
-        val startTime = getStatus()?.startTime ?: return null
-        val prevSettings = getStatus()?.settings
-        val newSettings = prevSettings?.mapNotNull { setting ->
-            setting.json?.let { json -> Survey.fromJson(json) }?.let { survey ->
-                when (survey) {
-                    is IntervalBasedSurvey -> updateIntervalBasedSurvey(survey = survey, setting = setting, startTime = startTime)
-                    is ScheduleBasedSurvey -> updateScheduleBasedSurvey(survey = survey, setting = setting)
-                    is EventBasedSurvey -> updateEventBasedSurvey(survey = survey, setting = setting, event = event)
-                    else -> null
-                }
-            }
+    override suspend fun onStart() {
+        if (baseScheduleDate < 0) {
+            baseScheduleDate = System.currentTimeMillis()
         }
 
-        val isUpdated = prevSettings?.any{ prevSetting ->
-            val newSetting= newSettings?.find { setting -> prevSetting.id == setting.id }
-            newSetting != prevSetting
-        } ?: false
-
-        return if (isUpdated) newSettings else prevSettings
+        EventBus.register(this)
+        context.safeRegisterReceiver(receiver, IntentFilter().apply {
+            addAction(ACTION_SCHEDULE)
+            addAction(ACTION_EMPTY)
+        })
     }
 
-    private fun updateIntervalBasedSurvey(survey: IntervalBasedSurvey,
-                                          setting: Status.Setting,
-                                          startTime: Long): Status.Setting {
-        val curTime = System.currentTimeMillis()
-
-        val initDelayMs = TimeUnit.SECONDS.toMillis(max(survey.initialDelaySec, 0))
-        val intervalMs = TimeUnit.SECONDS.toMillis(max(survey.intervalSec, 0))
-        val flexMs = TimeUnit.SECONDS.toMillis(max(safeRandom(survey.flexIntervalSec), 0))
-
-        val initialTriggerAt: Long = startTime + initDelayMs
-        val lastTimeTriggered: Long = setting.lastTimeTriggered ?: initialTriggerAt
-        val nextTimeTriggered: Long = setting.nextTimeTriggered ?: 0
-
-        /**
-         * Case 1: curTime < initialTriggerAt
-         * - nextTriggeredTime = initialTriggerAt
-         *
-         * Case 2: curTime >= initial
-         * * Case 2.1: lastTimeTriggered == null && nextTimeTriggered == null
-         *   - lastTimeTriggered = initialTriggerAt
-         *   - nextTimeTriggered = initialTriggerAt + intervals
-         *
-         * * Case 2.2: lastTimeTriggered != null && nextTimeTriggered == null
-         *   - nextTimeTriggered = lastTimeTriggered + intervals
-         *
-         * * Case 2.3: lastTimeTriggered == null && nextTimeTriggered != null
-         *   * Case 2.3.1: nextTimeTriggered >= curTime
-         *     - Just copy the previous setting
-         *   * Case 2.3.2: nextTimeTriggered < curTime
-         *     - nextTimeTriggered = initialTriggerAt + intervals
-         *
-         * * Case 2.4: lastTimeTriggered != null && nextTimeTriggered != null
-         *   * Case 2.3.1: nextTimeTriggered >= curTime
-         *     - Just copy the previous setting
-         *   * Case 2.3.2: nextTimeTriggered < curTime
-         *     - nextTimeTriggered = lastTimeTriggered + intervals
-         */
-
-        return if (curTime < initialTriggerAt) {
-            setting.copy(
-                    nextTimeTriggered = initialTriggerAt,
-                    lastTimeTriggered = null
-            )
-        } else {
-            if (curTime <= nextTimeTriggered) {
-                setting.copy()
-            } else {
-                setting.copy(
-                        nextTimeTriggered = lastTimeTriggered + intervalMs + flexMs
-                )
-            }
-        }
+    override suspend fun onStop() {
+        EventBus.unregister(this)
+        context.safeUnregisterReceiver(receiver)
     }
 
-    private fun updateEventBasedSurvey(survey: EventBasedSurvey,
-                                       setting: Status.Setting,
-                                       event: AbcEvent? = null): Status.Setting {
-        val intervalMs = max(TimeUnit.SECONDS.toMillis(survey.delayAfterTriggerEventSec), 0)
-        val flexMs = TimeUnit.SECONDS.toMillis(max(safeRandom(survey.flexDelayAfterTriggerEventSec), 0))
+    override suspend fun count(): Long = dataRepository.count<SurveyEntity>()
 
-        return when (event?.eventType) {
-            in survey.triggerEvents -> setting.copy(
-                    nextTimeTriggered = event?.timestamp?.plus(intervalMs + flexMs) ?: 0
-            )
-            in survey.cancelEvents -> setting.copy(
-                    nextTimeTriggered = 0
-            )
-            else -> setting.copy()
-        }
+    override suspend fun flush(entities: Collection<SurveyEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
     }
 
-    private fun updateScheduleBasedSurvey(survey: ScheduleBasedSurvey, setting: Status.Setting): Status.Setting {
-        val curTime = System.currentTimeMillis()
-        val calendar = GregorianCalendar.getInstance(TimeZone.getDefault()).apply {
-            timeInMillis = curTime
-        }
-        val curDate = calendar.time
-
-        val nextTimeTriggered = survey.schedules.mapNotNull { schedule ->
-            (0..Int.MAX_VALUE step 7).firstNotNullResult { day ->
-                val triggerCalendar = calendar.apply {
-                    set(GregorianCalendar.DAY_OF_WEEK, schedule.dayOfWeek.id)
-                    set(GregorianCalendar.HOUR_OF_DAY, schedule.hour)
-                    set(GregorianCalendar.MINUTE, schedule.minute)
-                    set(GregorianCalendar.SECOND, 0)
-                    set(GregorianCalendar.MILLISECOND, 0)
-
-                    add(GregorianCalendar.DAY_OF_YEAR, day)
-                }
-                val triggerDate = triggerCalendar.time
-
-                return@firstNotNullResult if (triggerDate.after(curDate)) {
-                    triggerDate.time
-                } else {
-                    null
-                }
-            }
-        }.min() ?: 0
-
-        return setting.copy(nextTimeTriggered = nextTimeTriggered)
-    }
+    override suspend fun list(limit: Long): Collection<SurveyEntity> = dataRepository.find(0, limit)
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onEvent(event: AbcEvent) {
-        launch { scheduleAll(event) }
+    fun onEvent(event: Event) {
+        val events = configurations.flatMap { setting ->
+            (setting.survey.intraDaySchedule as? EventSchedule)?.let {
+                it.eventsTrigger + it.eventsCancel
+            } ?: listOf()
+        }.toSet()
+
+        if (event.type in events) handleSchedule(
+            id = 0,
+            timestamp = event.timestamp,
+            event = event.type
+        )
+    }
+
+    private fun handleSchedule(id: Long, timestamp: Long, event: String? = null) = launch {
+        if (id > 0) {
+            trigger(id, timestamp)
+        }
+
+        configurations.forEach { setting ->
+            schedule(baseScheduleDate.takeIf { it > 0 } ?: timestamp, timestamp, setting, event)
+        }
+
+        timer(timestamp)
+    }
+
+    private suspend fun schedule(
+        baseScheduleTime: Long,
+        timestamp: Long,
+        setting: SurveyConfiguration,
+        event: String? = null
+    ) {
+        val baseTime = baseScheduleTime.takeIf { it >= 0 } ?: return
+
+        val dateBase = LocalDate.fromMillis(baseTime)
+        val dateCurrent = LocalDate.fromMillis(timestamp)
+
+        val uuid = setting.uuid
+        val survey = setting.survey
+        val intraDaySchedule = survey.intraDaySchedule
+        val interDaySchedule = survey.interDaySchedule
+
+        val latestSchedule = dataRepository.findFirst<InternalSurveyEntity> {
+            equal(InternalSurveyEntity_.uuid, uuid)
+            orderDesc(InternalSurveyEntity_.intendedTriggerTime)
+        }
+
+        val dateFrom = if (latestSchedule == null) {
+            dateBase + (survey.timeFrom.takeIf { it != Duration.NONE } ?: Duration.MIN)
+        } else {
+            LocalDate.fromMillis(latestSchedule.intendedTriggerTime) + 1
+        }
+
+        if (dateCurrent + DAYS_MARGIN_FOR_SCHEDULE < dateFrom) return
+
+        val dateTo = if (survey.timeTo == Duration.NONE) {
+            dateFrom + DAYS_SCHEDULE
+        } else {
+            dateBase + survey.timeTo
+        }
+
+        if (dateTo < dateCurrent) return
+
+        val scheduledDates = scheduleInterDay(
+            dateFrom, dateTo, interDaySchedule
+        ).takeIf { it.isNotEmpty() } ?: return
+
+        val scheduledTimes = when (intraDaySchedule) {
+            is TimeSchedule -> scheduleIntraDay(intraDaySchedule)
+            is IntervalSchedule -> scheduleIntraDay(intraDaySchedule)
+            is EventSchedule -> scheduleIntraDay(
+                intraDaySchedule,
+                uuid,
+                event,
+                LocalTime.fromLocalDateTime(LocalDateTime.fromMillis(timestamp))
+            )
+            else -> listOf()
+        }.takeIf { it.isNotEmpty() } ?: return
+
+        val scheduledDateTimes = scheduledDates.combination(scheduledTimes) { date, time ->
+            date + time
+        }.filter { dateTime -> dateTime in (dateFrom..dateTo) }
+
+        val eventsTrigger =
+            (survey.intraDaySchedule as? EventSchedule)?.eventsTrigger ?: listOf()
+        val eventName = if (event != null && event in eventsTrigger) event else ""
+
+        val entities = scheduledDateTimes.map { dateTime ->
+            InternalSurveyEntity(
+                uuid = uuid,
+                eventTime = if (eventName.isNotBlank()) timestamp else Long.MIN_VALUE,
+                eventName = eventName,
+                intendedTriggerTime = dateTime.toMillis(),
+                url = setting.url,
+                title = survey.title,
+                message = survey.message,
+                instruction = survey.instruction,
+                timeoutUntil = if (survey.timeoutAction != Survey.TimeoutAction.NONE) {
+                    (dateTime + survey.timeout).toMillis()
+                } else {
+                    Long.MIN_VALUE
+                },
+                timeoutAction = survey.timeoutAction
+            )
+        }
+        putAll(entities, isStatUpdates = false)
+    }
+
+    private suspend fun timer(timestamp: Long) {
+        val schedulesNotTriggered = dataRepository.find<InternalSurveyEntity> {
+            inValues(InternalSurveyEntity_.uuid, configurations.map { it.uuid }.toTypedArray())
+                .and()
+                .less(InternalSurveyEntity_.actualTriggerTime, 0)
+                .and()
+                .less(InternalSurveyEntity_.intendedTriggerTime, timestamp)
+                .or()
+                .equal(InternalSurveyEntity_.intendedTriggerTime, timestamp)
+
+            order(InternalSurveyEntity_.intendedTriggerTime)
+        }.sortedBy { entity -> entity.intendedTriggerTime }
+
+        schedulesNotTriggered.forEach { entity ->
+            trigger(entity.id, timestamp)
+        }
+
+        val latestSchedule = dataRepository.findFirst<InternalSurveyEntity> {
+            inValues(InternalSurveyEntity_.uuid, configurations.map { it.uuid }.toTypedArray())
+            greater(InternalSurveyEntity_.intendedTriggerTime, timestamp)
+            order(InternalSurveyEntity_.intendedTriggerTime)
+        }
+
+        val alarmManager = context.getSystemService<AlarmManager>() ?: return
+
+        if (latestSchedule == null) {
+            val triggerIntent = PendingIntent.getBroadcast(
+                context, REQUEST_CODE_ACTION_SCHEDULE,
+                Intent(ACTION_SCHEDULE),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            AlarmManagerCompat.setExactAndAllowWhileIdle(
+                alarmManager,
+                AlarmManager.RTC_WAKEUP,
+                timestamp + INTERVAL_CHECK_SCHEDULE,
+                triggerIntent
+            )
+        } else {
+            val triggerIntent = PendingIntent.getBroadcast(
+                context, REQUEST_CODE_ACTION_SCHEDULE,
+                Intent(ACTION_SCHEDULE).putExtra(
+                    EXTRA_SURVEY_ID, latestSchedule.id
+                ), PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            val showIntent = PendingIntent.getBroadcast(
+                context,
+                REQUEST_CODE_ACTION_EMPTY,
+                Intent(ACTION_EMPTY),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            AlarmManagerCompat.setAlarmClock(
+                alarmManager,
+                latestSchedule.intendedTriggerTime,
+                showIntent,
+                triggerIntent
+            )
+        }
+    }
+
+    private suspend fun trigger(id: Long, timestamp: Long) {
+        val entity = dataRepository.get<InternalSurveyEntity>(id) ?: return
+        val uuid = entity.uuid
+        val setting = configurations.firstOrNull { it.uuid == uuid } ?: return
+        val survey = setting.survey
+        val isAltTextShown = entity.isAltTextShown(timestamp)
+
+        val responses = survey.question.mapIndexed { idx, question ->
+            InternalResponseEntity(
+                surveyId = id,
+                index = idx,
+                question = question,
+                answer = InternalAnswer(question.option.type != Option.Type.CHECK_BOX)
+            )
+        }
+
+        put(entity.copy(actualTriggerTime = timestamp))
+        putAll(responses, isStatUpdates = false)
+
+        NotificationRepository.notifySurvey(
+            context = context,
+            timestamp = timestamp,
+            entityId = id,
+            title = entity.title.text(isAltTextShown),
+            message = entity.message.text(isAltTextShown)
+        )
+    }
+
+    private fun scheduleInterDay(
+        dateFrom: LocalDate,
+        dateTo: LocalDate,
+        schedule: InterDaySchedule
+    ): List<LocalDate> {
+        val localDates = when (schedule) {
+            is DateSchedule -> schedule.dates
+            is DayOfWeekSchedule -> (dateFrom..dateTo).filter {
+                it.toDayOfWeek() in schedule.daysOfWeek
+            }
+            is DailySchedule -> (dateFrom..dateTo).toList()
+        }
+
+        return localDates.filter { it in dateFrom..dateTo }
+    }
+
+    private fun scheduleIntraDay(schedule: TimeSchedule): List<LocalTime> = schedule.times
+
+    private fun scheduleIntraDay(schedule: IntervalSchedule): List<LocalTime> {
+        val times = mutableListOf<LocalTime>()
+
+        val intervalDefault = schedule.intervalDefault.coerceAtLeast(Duration.MIN).toMillis()
+        val intervalFlex = schedule.intervalFlex.coerceAtLeast(Duration.MIN).toMillis()
+
+        val from = schedule.timeFrom.coerceIn(LocalTime.MIN, LocalTime.MAX)
+        val to = schedule.timeTo.coerceIn(LocalTime.MIN, LocalTime.MAX)
+
+        var next = from - (intervalDefault + intervalFlex)
+
+        while (next <= to) {
+            val interval = intervalDefault + Random.nextLong(intervalFlex)
+            val time = next + interval
+            if (time in from..to) times.add(time)
+
+            next = time
+        }
+        return times
+    }
+
+    private suspend fun scheduleIntraDay(
+        schedule: EventSchedule,
+        uuid: String,
+        event: String?,
+        eventTime: LocalTime
+    ): List<LocalTime> {
+        if (event in schedule.eventsCancel) {
+            dataRepository.remove<InternalSurveyEntity> {
+                equal(InternalSurveyEntity_.uuid, uuid)
+                less(InternalSurveyEntity_.actualTriggerTime, 0)
+            }
+        }
+
+        if (event in schedule.eventsTrigger) {
+            val fromTime = schedule.timeFrom.coerceIn(LocalTime.MIN, LocalTime.MAX)
+            val toTime = schedule.timeTo.coerceIn(LocalTime.MIN, LocalTime.MAX)
+
+            val delayDefault = schedule.delayDefault.coerceAtLeast(Duration.MIN).toMillis()
+            val delayFlex = schedule.delayFlex.coerceAtLeast(Duration.MIN).toMillis()
+            val delay = delayDefault + Random.nextLong(delayFlex)
+
+            val time = eventTime + delay
+
+            if (time in (fromTime..toTime)) {
+                return listOf(time)
+            }
+        }
+
+        return listOf()
     }
 
     companion object {
-        private const val EXTRA_SURVEY_UUID = "${BuildConfig.APPLICATION_ID}.EXTRA_SURVEY_UUID"
-        private const val ACTION_SURVEY_TRIGGER = "${BuildConfig.APPLICATION_ID}.ACTION_SURVEY_TRIGGER"
-        private const val REQUEST_CODE_SURVEY_OPEN = 0xdd
+        private const val DAYS_SCHEDULE = 7
+        private const val DAYS_MARGIN_FOR_SCHEDULE = 3
+
+        private const val ACTION_EMPTY =
+            "${BuildConfig.APPLICATION_ID}.collector.survey.SurveyCollector.ACTION_EMPTY"
+        private const val REQUEST_CODE_ACTION_EMPTY = 0x01
+
+        private const val ACTION_SCHEDULE =
+            "${BuildConfig.APPLICATION_ID}.collector.survey.SurveyCollector.ACTION_SCHEDULE"
+        private const val REQUEST_CODE_ACTION_SCHEDULE = 0x02
+        private const val EXTRA_SURVEY_ID =
+            "${BuildConfig.APPLICATION_ID}.collector.survey.SurveyCollector.EXTRA_SURVEY_ID"
+
+        private val INTERVAL_CHECK_SCHEDULE = TimeUnit.MINUTES.toMillis(30)
     }
 }

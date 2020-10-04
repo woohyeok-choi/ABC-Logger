@@ -59,6 +59,7 @@ captures/
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
+abc-auth.json
 
 # Freeline
 freeline.py

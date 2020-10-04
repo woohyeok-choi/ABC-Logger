@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="text_watcher" type="id"/>
+    <item name="slider" type="id"/>
+    <item name="range_slider" type="id"/>
+</resources>

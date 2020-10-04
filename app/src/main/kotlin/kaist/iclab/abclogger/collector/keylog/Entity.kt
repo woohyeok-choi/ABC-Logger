@@ -1,7 +1,7 @@
 package kaist.iclab.abclogger.collector.keylog
 
 import io.objectbox.annotation.Entity
-import kaist.iclab.abclogger.collector.Base
+import kaist.iclab.abclogger.core.collector.AbstractEntity
 
 
 @Entity
@@ -17,4 +17,4 @@ data class KeyLogEntity(
         var currentKey: String = "",
         var prevKeyType: String = "",
         var currentKeyType: String = ""
-) : Base()
+) : AbstractEntity()

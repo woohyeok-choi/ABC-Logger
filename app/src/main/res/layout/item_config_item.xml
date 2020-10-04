@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <import type="android.view.View"/>
+        <import type="kaist.iclab.abclogger.structure.config.ReadOnlyConfigItem"/>
+
+        <variable
+            name="item"
+            type="kaist.iclab.abclogger.structure.config.ConfigItem" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/item_two_line_height"
+        android:focusable="true"
+        android:clickable="true"
+        android:background="?selectableItemBackground">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/txt_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/space_vert_padding"
+            android:paddingLeft="@dimen/space_horiz_padding"
+            android:text="@{item.name}"
+            tools:text="This is title"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/img_more"
+            android:textAppearance="?attr/textAppearanceSubtitle1"/>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/txt_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="This is message"
+            android:text="@{item.toString()}"
+            statusColor="@{item.statusColor}"
+            android:alpha="0.60"
+            android:paddingBottom="@dimen/space_vert_padding"
+            android:paddingLeft="@dimen/space_horiz_padding"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@id/txt_title"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/img_more"
+            android:textAppearance="?attr/textAppearanceBody2"/>
+
+        <ImageView
+            android:id="@+id/img_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_chevron_right_24"
+            app:tint="@color/color_on_surface"
+            android:visibility="@{item instanceof ReadOnlyConfigItem ? View.GONE : View.VISIBLE}"
+            android:paddingRight="@dimen/space_horiz_padding"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
