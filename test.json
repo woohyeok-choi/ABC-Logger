@@ -62,6 +62,49 @@
 			},
 			"isOtherShown": true,
 			"option": {
+				"type": "FREE_TEXT",
+				"isSingleLine": false
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "RADIO_BUTTON",
+				"isVertical": false,
+				"items": [
+					"A",
+					"B",
+					"C"
+				]
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "CHECK_BOX",
+				"isVertical": false,
+				"items": [
+					"A",
+					"B",
+					"C"
+				]
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
 				"type": "DROPDOWN",
 				"items": [
 					"A",
