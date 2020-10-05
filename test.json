@@ -1,0 +1,170 @@
+{
+	"title": {
+		"main": "title_main",
+		"alt": "title_alt"
+	},
+	"message": {
+		"main": "message_main",
+		"alt": "message_alt"
+	},
+	"instruction": {
+		"main": "instruction_main",
+		"alt": "instruction_alt"
+	},
+	"question": [
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "FREE_TEXT",
+				"isSingleLine": true
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "RADIO_BUTTON",
+				"isVertical": true,
+				"items": [
+					"A",
+					"B",
+					"C"
+				]
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "CHECK_BOX",
+				"isVertical": true,
+				"items": [
+					"A",
+					"B",
+					"C"
+				]
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "DROPDOWN",
+				"items": [
+					"A",
+					"B",
+					"C"
+				]
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "SLIDER",
+				"min": 0.0,
+				"max": 100.0,
+				"step": 1.0
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "RANGE",
+				"min": 0.0,
+				"max": 100.0,
+				"step": 1.0
+			}
+		},
+		{
+			"title": {
+				"main": "question_title",
+				"alt": "question_alt"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": 0.0,
+				"max": 100.0,
+				"step": 1.0,
+				"defaultValue": 50.0,
+				"minLabel": "Less",
+				"maxLabel": "Highly"
+			}
+		}
+	],
+	"timeout": {
+		"amount": 1,
+		"unit": "HOUR"
+	},
+	"timeoutAction": "ALT_TEXT",
+	"timeFrom": {
+		"amount": 5,
+		"unit": "HOUR"
+	},
+	"timeTo": {
+		"amount": 5,
+		"unit": "HOUR"
+	},
+	"interDaySchedule": {
+		"type": "DAILY",
+		"exceptDates": [
+			{
+				"year": 2005,
+				"month": 5,
+				"day": 3
+			},
+			{
+				"year": 2005,
+				"month": 5,
+				"day": 4
+			},
+			{
+				"year": 2005,
+				"month": 5,
+				"day": 5
+			}
+		]
+	},
+	"intraDaySchedule": {
+		"type": "INTERVAL",
+		"timeFrom": {
+			"hour": 10,
+			"minute": 11,
+			"second": 12
+		},
+		"timeTo": {
+			"hour": 15,
+			"minute": 11,
+			"second": 12
+		},
+		"intervalDefault": {
+			"amount": 5,
+			"unit": "HOUR"
+		},
+		"intervalFlex": {
+			"amount": 30,
+			"unit": "SECOND"
+		}
+	}
+}
