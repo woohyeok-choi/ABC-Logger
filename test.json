@@ -78,7 +78,17 @@
 				"items": [
 					"A",
 					"B",
-					"C"
+					"C",
+					"D",
+					"E",
+					"F",
+					"G",
+					"H",
+					"S",
+					"Q",
+					"W",
+					"E",
+					"AFDDASFASDFSADFSDA"
 				]
 			}
 		},
@@ -91,10 +101,20 @@
 			"option": {
 				"type": "CHECK_BOX",
 				"isVertical": false,
-				"items": [
+				"items":  [
 					"A",
 					"B",
-					"C"
+					"C",
+					"D",
+					"E",
+					"F",
+					"G",
+					"H",
+					"S",
+					"Q",
+					"W",
+					"E",
+					"AFDDASFASDFSADFSDA"
 				]
 			}
 		},
