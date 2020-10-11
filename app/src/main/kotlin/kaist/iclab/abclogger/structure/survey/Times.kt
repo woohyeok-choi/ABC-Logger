@@ -1,15 +1,13 @@
 package kaist.iclab.abclogger.structure.survey
 
-import android.os.Parcel
-import android.os.Parcelable
-import kaist.iclab.abclogger.commons.safeEnumValueOf
+
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 data class Duration(
     val amount: Long,
     val unit: Unit
-) : Comparable<Duration>, Parcelable {
+) : Comparable<Duration> {
     enum class Unit {
         MILLISECOND,
         SECOND,
@@ -18,23 +16,11 @@ data class Duration(
         DAY
     }
 
-    constructor(parcel: Parcel) : this(
-        parcel.readLong(),
-        safeEnumValueOf(parcel.readString(), Unit.MILLISECOND)
-    )
-
     override fun compareTo(other: Duration): Int = toMillis().compareTo(other.toMillis())
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(amount)
-        parcel.writeString(unit.name)
-    }
+    fun isNone() = amount < 0
 
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<Duration> {
+    companion object {
         val NONE = Duration(-1, Unit.MILLISECOND)
         val MIN = Duration(0, Unit.MILLISECOND)
 
@@ -43,14 +29,6 @@ data class Duration(
         fun minutes(amount: Int) = Duration(amount.toLong(), Unit.MINUTE)
         fun hours(amount: Int) = Duration(amount.toLong(), Unit.HOUR)
         fun days(amount: Int) = Duration(amount.toLong(), Unit.DAY)
-
-        override fun createFromParcel(parcel: Parcel): Duration {
-            return Duration(parcel)
-        }
-
-        override fun newArray(size: Int): Array<Duration?> {
-            return arrayOfNulls(size)
-        }
     }
 }
 
@@ -65,33 +43,14 @@ data class LocalDateTime(
     val hour: Int,
     val minute: Int,
     val second: Int
-) : Comparable<LocalDateTime>, Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt()
-    )
+) : Comparable<LocalDateTime> {
+
 
     override fun compareTo(other: LocalDateTime): Int =
         toMillis().compareTo(other.toMillis())
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(year)
-        parcel.writeInt(month)
-        parcel.writeInt(day)
-        parcel.writeInt(hour)
-        parcel.writeInt(minute)
-        parcel.writeInt(second)
-    }
 
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<LocalDateTime> {
+    companion object {
         val NONE = LocalDateTime(-1, -1, -1, -1, -1, -1)
 
         fun fromMillis(millis: Long) =
@@ -107,14 +66,6 @@ data class LocalDateTime(
                 it.get(Calendar.SECOND)
             )
         }
-
-        override fun createFromParcel(parcel: Parcel): LocalDateTime {
-            return LocalDateTime(parcel)
-        }
-
-        override fun newArray(size: Int): Array<LocalDateTime?> {
-            return arrayOfNulls(size)
-        }
     }
 }
 
@@ -122,26 +73,13 @@ data class LocalTime(
     val hour: Int,
     val minute: Int,
     val second: Int
-) : Comparable<LocalTime>, Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt()
-    )
+) : Comparable<LocalTime> {
+
 
     override fun compareTo(other: LocalTime): Int = toMillis().compareTo(other.toMillis())
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(hour)
-        parcel.writeInt(minute)
-        parcel.writeInt(second)
-    }
 
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<LocalTime> {
+    companion object {
         val MIN = LocalTime(0, 0, 0)
         val MAX = LocalTime(23, 59, 59)
 
@@ -164,14 +102,6 @@ data class LocalTime(
                 second = calendar.get(Calendar.SECOND),
             )
         }
-
-        override fun createFromParcel(parcel: Parcel): LocalTime {
-            return LocalTime(parcel)
-        }
-
-        override fun newArray(size: Int): Array<LocalTime?> {
-            return arrayOfNulls(size)
-        }
     }
 }
 
@@ -179,26 +109,11 @@ data class LocalDate(
     val year: Int,
     val month: Int,
     val day: Int
-) : Comparable<LocalDate>, Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt()
-    )
-
+) : Comparable<LocalDate> {
     override fun compareTo(other: LocalDate): Int = toMillis().compareTo(other.toMillis())
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(year)
-        parcel.writeInt(month)
-        parcel.writeInt(day)
-    }
 
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<LocalDate> {
+    companion object {
         val NONE = LocalDate(-1, -1, -1)
 
         fun fromCalendar(calendar: Calendar): LocalDate = calendar.let {
@@ -211,18 +126,10 @@ data class LocalDate(
 
         fun fromMillis(millis: Long): LocalDate =
             fromCalendar(GregorianCalendar.getInstance().apply { timeInMillis = millis })
-
-        override fun createFromParcel(parcel: Parcel): LocalDate {
-            return LocalDate(parcel)
-        }
-
-        override fun newArray(size: Int): Array<LocalDate?> {
-            return arrayOfNulls(size)
-        }
     }
 }
 
-enum class DayOfWeek(val id: Int) : Parcelable {
+enum class DayOfWeek(val id: Int) {
     NONE(-1),
     SUNDAY(GregorianCalendar.SUNDAY),
     MONDAY(GregorianCalendar.MONDAY),
@@ -232,27 +139,12 @@ enum class DayOfWeek(val id: Int) : Parcelable {
     FRIDAY(GregorianCalendar.FRIDAY),
     SATURDAY(GregorianCalendar.SATURDAY);
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(name)
-    }
 
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<DayOfWeek> {
+    companion object {
         fun fromMillis(timestamp: Long) = GregorianCalendar.getInstance().apply {
             timeInMillis = timestamp
         }.get(Calendar.DAY_OF_WEEK).let { dayOfWeek ->
             values().find { it.id == dayOfWeek } ?: NONE
-        }
-
-        override fun createFromParcel(parcel: Parcel): DayOfWeek {
-            return safeEnumValueOf(parcel.readString(), NONE)
-        }
-
-        override fun newArray(size: Int): Array<DayOfWeek?> {
-            return arrayOfNulls(size)
         }
     }
 }

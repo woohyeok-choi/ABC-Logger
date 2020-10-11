@@ -19,9 +19,11 @@ import com.google.android.material.slider.RangeSlider
 import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputEditText
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.view.ArraySpinner
+import kaist.iclab.abclogger.core.Log
+import kaist.iclab.abclogger.view.AutoCompleteTextView
 import kaist.iclab.abclogger.view.CheckBoxGroup
 import kaist.iclab.abclogger.view.RadioGroup
+
 
 object ResponseBindingAdapter {
     /**
@@ -64,7 +66,6 @@ object ResponseBindingAdapter {
 
     /**
      * Response Adapters for RadioGroup
-     * TODO: HorizontalScrollView can be applied to this.
      */
     @BindingAdapter("answer", "items", "isVertical")
     @JvmStatic
@@ -72,15 +73,13 @@ object ResponseBindingAdapter {
         if (answer == null || items == null || isVertical == null) return
 
         val oldItems = getItems<MaterialRadioButton>(view).toTypedArray()
+
         if (!oldItems.contentEquals(items)) {
             view.removeAllViews()
-
             items.forEach { item ->
                 val button = MaterialRadioButton(view.context).apply {
                     id = View.generateViewId()
                     text = item
-                    buttonDrawable
-                    if (isVertical) setTopDrawable(android.R.attr.listChoiceIndicatorSingle, this)
                 }
                 view.addView(button)
             }
@@ -109,6 +108,7 @@ object ResponseBindingAdapter {
     @JvmStatic
     fun setListener(view: RadioGroup, answerAttrChanged: InverseBindingListener?) {
         if (answerAttrChanged == null) return
+
         view.setOnCheckedChangeListener { _, _ ->
             answerAttrChanged.onChange()
         }
@@ -130,7 +130,6 @@ object ResponseBindingAdapter {
                 val button = MaterialCheckBox(view.context).apply {
                     id = View.generateViewId()
                     text = item
-                    if (isVertical) setTopDrawable(android.R.attr.listChoiceIndicatorMultiple, this)
                 }
                 view.addView(button)
             }
@@ -169,32 +168,30 @@ object ResponseBindingAdapter {
      */
     @BindingAdapter("answer", "items")
     @JvmStatic
-    fun setResponse(view: ArraySpinner, answer: Set<String>?, items: Array<String>?) {
+    fun setResponse(view: AutoCompleteTextView, answer: Set<String>?, items: Array<String>?) {
         if (answer == null || items == null) return
-        val oldItems = view.items
 
+        val oldItems = view.items
         if (!oldItems.contentEquals(items)) view.items = items
 
-        val oldAnswer = view.selectedItem as? String
+        val oldAnswer = view.text?.toString()
         val newAnswer = answer.firstOrNull()
-        if (oldAnswer != newAnswer) view.selectedItem = newAnswer
+
+        if (oldAnswer != newAnswer) {
+            if (newAnswer in view.items) view.setText(newAnswer) else view.text = null
+        }
     }
 
     @InverseBindingAdapter(attribute = "answer", event = "answerAttrChanged")
     @JvmStatic
-    fun getResponse(view: ArraySpinner): Set<String> = setOfNotNull(view.selectedItem as? String)
+    fun getResponse(view: AutoCompleteTextView): Set<String> = setOfNotNull(view.text?.toString())
 
     @BindingAdapter("answerAttrChanged")
     @JvmStatic
-    fun setListener(view: ArraySpinner, answerAttrChanged: InverseBindingListener?) {
+    fun setListener(view: AutoCompleteTextView, answerAttrChanged: InverseBindingListener?) {
         if (answerAttrChanged == null) return
-
-        view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                answerAttrChanged.onChange()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        view.setOnItemClickListener { _, _, _, _ ->
+            answerAttrChanged.onChange()
         }
     }
 
@@ -245,9 +242,11 @@ object ResponseBindingAdapter {
         if (view.valueTo != maxValue) view.valueTo = maxValue.coerceAtLeast(minValue)
         if (view.stepSize != stepValue) view.stepSize = stepValue.coerceIn(0F, view.valueTo)
 
-        val newAnswer = answer.mapNotNull { it.toFloatOrNull()?.coerceIn(view.valueFrom, view.valueTo) }.sorted().take(2)
+        val newAnswer = answer.mapNotNull {
+            it.toFloatOrNull()?.coerceIn(view.valueFrom, view.valueTo)
+        }.sorted().take(2).takeIf { it.size == 2 } ?: listOf(view.valueFrom, view.valueTo)
 
-        if (newAnswer.size == 2 && view.values.sorted() == newAnswer) {
+        if (newAnswer.size == 2 && view.values.sorted() != newAnswer) {
             view.values = newAnswer
         }
     }
@@ -270,19 +269,16 @@ object ResponseBindingAdapter {
         view.addOnChangeListener(newListener)
     }
 
-    @BindingAdapter("enabled")
-    fun setEnabled(view: ArraySpinner, enabled: Boolean?) {
-        if (enabled == null) return
-        view.isEnabled = enabled
-    }
 
     @BindingAdapter("enabled")
+    @JvmStatic
     fun setEnabled(view: RadioGroup, enabled: Boolean?) {
         if (enabled == null) return
         view.isEnabled = enabled
     }
 
     @BindingAdapter("enabled")
+    @JvmStatic
     fun setEnabled(view: CheckBoxGroup, enabled: Boolean?) {
         if (enabled == null) return
         view.isEnabled = enabled

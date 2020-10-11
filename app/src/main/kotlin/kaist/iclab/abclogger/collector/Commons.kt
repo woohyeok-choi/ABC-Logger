@@ -5,17 +5,13 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.provider.ContactsContract
-import android.util.TypedValue
-import androidx.annotation.AttrRes
-import androidx.core.content.ContextCompat
 import androidx.core.database.getIntOrNull
-import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.commons.Formatter
 
 fun formatDateTime(context: Context, timeInMillis: Long) =
-    timeInMillis.takeIf { it > 0 }?.let { Formatter.formatDateTime(context, timeInMillis) } ?: context.getString(R.string.general_hyphen)
+    timeInMillis.takeIf { it > 0 }?.let { Formatter.formatDateTime(context, timeInMillis) } ?: context.getString(R.string.general_mdash)
 
 internal data class Contact(
         val contactType: String = "UNKNOWN",

@@ -7,6 +7,7 @@ import android.os.Build
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
@@ -23,25 +24,33 @@ object AuthRepository {
             .requestEmail()
             .build()
 
-    fun email(): String = FirebaseAuth.getInstance().currentUser?.email.takeUnless { it.isNullOrBlank() } ?: Preference.lastSignedEmail
+    val email: String
+        get() = FirebaseAuth.getInstance().currentUser?.email.takeUnless { it.isNullOrBlank() } ?: Preference.lastSignedEmail
 
-    fun name(): String = FirebaseAuth.getInstance().currentUser?.displayName.takeUnless { it.isNullOrBlank() } ?: Preference.lastSignedName
+    val name: String
+        get() = FirebaseAuth.getInstance().currentUser?.displayName.takeUnless { it.isNullOrBlank() } ?: Preference.lastSignedName
 
-    fun isSignedIn() = FirebaseAuth.getInstance().currentUser != null
+    val isSignedIn: Boolean
+        get() = FirebaseAuth.getInstance().currentUser != null
 
-    fun instanceId() : String = FirebaseInstanceId.getInstance().id
+    val instanceId: String
+        get() = FirebaseInstanceId.getInstance().id
 
-    val deviceManufacturer = Build.MANUFACTURER
+    val deviceManufacturer: String
+        get() = Build.MANUFACTURER ?: ""
 
-    val deviceModel = Build.MODEL
+    val deviceModel: String
+        get() = Build.MODEL ?: ""
 
-    val deviceVersion = Build.VERSION.RELEASE
+    val deviceVersion: String
+        get() = Build.VERSION.RELEASE
 
     val deviceOs = "Android-${Build.VERSION.SDK_INT}"
 
-    val appVersion = BuildConfig.VERSION_NAME
+    val appVersion: String
+        get() = BuildConfig.VERSION_NAME
 
-    val source: String = "SMARTPHONE"
+    const val source: String = "SMARTPHONE"
 
     var groupName: String
         get() = Preference.groupName
@@ -49,7 +58,7 @@ object AuthRepository {
             Preference.groupName = value
         }
 
-    val appId: String = BuildConfig.APPLICATION_ID
+    const val appId: String = BuildConfig.APPLICATION_ID
 
     fun avatarUrl(context: Context): String? = GoogleSignIn.getLastSignedInAccount(context)?.photoUrl?.toString()
 

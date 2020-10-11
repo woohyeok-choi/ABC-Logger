@@ -13,7 +13,7 @@
         android:id="@+id/txt_slider"
         android:layout_width="@dimen/item_width"
         android:layout_height="wrap_content"
-        android:hint="@string/general_hyphen"
+        android:hint="@string/general_mdash"
         android:gravity="start"
         android:textAppearance="?attr/textAppearanceSubtitle1"
         app:layout_constraintLeft_toLeftOf="parent"

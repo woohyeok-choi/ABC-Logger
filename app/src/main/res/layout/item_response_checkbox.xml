@@ -42,6 +42,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:focusableInTouchMode="true"
             android:orientation="vertical">
 
             <com.google.android.material.textview.MaterialTextView
@@ -59,7 +60,7 @@
                 tools:drawableStart="@drawable/baseline_error_outline_24"
                 tools:text="This is question." />
 
-            <FrameLayout
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_vert_margin"
@@ -71,16 +72,17 @@
                     enabled="@{isEnabled}"
                     isVertical="@{option.vertical}"
                     items="@{option.items}"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
-            </FrameLayout>
+            </HorizontalScrollView>
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="@dimen/space_vert_margin"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:layout_marginTop="@dimen/margin_top_text_input_layout"
                 android:enabled="@{isEnabled}"
                 android:hint="@string/survey_hint_for_others"
                 android:paddingBottom="@dimen/space_vert_padding"

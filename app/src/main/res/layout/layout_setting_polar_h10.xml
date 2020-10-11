@@ -1,302 +1,307 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <!-- Device ID -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/container_device_id"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:focusable="true"
-        android:clickable="true"
-        android:background="?selectableItemBackground">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_device_id_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingLeft="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_device_id_title"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/img_device_id_more"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_device_id_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            tools:text="This is message"
-            android:hint="-"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingLeft="@dimen/space_horiz_padding"
-            app:layout_constraintTop_toBottomOf="@id/txt_device_id_title"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/img_device_id_more"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-
-        <ImageView
-            android:id="@+id/img_device_id_more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/baseline_chevron_right_24"
-            app:tint="?attr/colorOnBackground"
-            android:paddingRight="@dimen/space_horiz_padding"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <com.google.android.material.textview.MaterialTextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="@dimen/space_horiz_padding"
-        android:paddingTop="@dimen/space_vert_padding"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Overline"
-        android:text="@string/setting_polar_h10_status_header"/>
-
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/swi_connect"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:gravity="center_vertical"
-        android:text="@string/setting_polar_h10_status_name_connect"
-        android:paddingHorizontal="@dimen/space_horiz_padding"
-        android:paddingVertical="@dimen/space_vert_padding"
-        android:textAppearance="?attr/textAppearanceSubtitle1"
-        app:layout_constraintRight_toRightOf="parent"/>
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Device ID -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_device_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="?selectableItemBackground">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_device_id_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingLeft="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_device_id_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/img_device_id_more"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_device_id_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingLeft="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/img_device_id_more"
+                app:layout_constraintTop_toBottomOf="@id/txt_device_id_title"
+                tools:text="This is message" />
+
+            <ImageView
+                android:id="@+id/img_device_id_more"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_chevron_right_24"
+                android:paddingRight="@dimen/space_horiz_padding"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="?attr/colorOnBackground" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/space_horiz_padding"
             android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_name_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
+            android:textColor="?attr/colorPrimary"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Overline"
+            android:text="@string/setting_polar_h10_status_header" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_name"
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/swi_connect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
+            android:minHeight="@dimen/item_two_line_height"
+            android:gravity="center_vertical"
+            android:text="@string/setting_polar_h10_status_name_connect"
             android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
+            android:paddingVertical="@dimen/space_vert_padding"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_name_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_address_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_connection_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_connection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_rssi_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_rssi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_battery_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_battery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_heartrate_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_heart_rate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_rr_interval_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_rr_interval"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_ecg_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_ecg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/item_two_line_height"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:text="@string/setting_polar_h10_status_accel_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_accel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2" />
+        </LinearLayout>
+
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:orientation="vertical">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_address_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_address"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:orientation="vertical">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_connection_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_connection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:orientation="vertical">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_rssi_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_rssi"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:orientation="vertical">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_battery_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_battery"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:orientation="vertical">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_heartrate_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_heart_rate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:orientation="vertical">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_rr_interval_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_rr_interval"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:orientation="vertical">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_ecg_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_ecg"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:orientation="vertical">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:text="@string/setting_polar_h10_status_accel_title"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_accel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingHorizontal="@dimen/space_horiz_padding"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

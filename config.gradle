@@ -2,18 +2,20 @@ import groovy.json.JsonSlurper
 
 
 task buildAuthToken(type: Exec) {
-    def config = [:]
-
     try {
         def json = new JsonSlurper()
-        def data = json.parse(new File("./app/abc-auth.json"))
-        config.server_address = data.server_address
-        config.server_auth_token = data.server_auth_token
-        config.test_server_address = data.test_server_address
+        def data = json.parse(new File("./app/abc-logger-client.json"))
+
+        rootProject.ext.server_address = data.server_address
+        rootProject.ext.server_auth_token = data.server_auth_token
+        rootProject.ext.test_server_address = data.test_server_address
+        rootProject.ext.keystore_path = data.keystore_path
+        rootProject.ext.keystore_password = data.keystore_password
+        rootProject.ext.key_alias = data.key_alias
+        rootProject.ext.key_password = data.key_password
     } catch (Exception ignored) {
 
     }
-    project.ext.config = config
 
 }
 

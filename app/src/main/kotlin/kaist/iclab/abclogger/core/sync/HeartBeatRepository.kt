@@ -33,7 +33,7 @@ import kaist.iclab.abclogger.core.CollectorRepository
 import kaist.iclab.abclogger.core.NotificationRepository
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.core.collector.Status
-import kaist.iclab.abclogger.grpc.proto.DataTypeProtos
+import kaist.iclab.abclogger.grpc.proto.DatumProtos
 import kaist.iclab.abclogger.grpc.service.HeartBeatsOperationGrpcKt
 import kaist.iclab.abclogger.grpc.proto.HeartBeatProtos
 import kaist.iclab.abclogger.grpc.proto.SubjectProtos
@@ -44,25 +44,24 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class HeartBeatRepository(context: Context, params: WorkerParameters) :
-    AbstractNetworkRepository<HeartBeatsOperationGrpcKt.HeartBeatsOperationCoroutineStub>(context, params),
+    AbstractNetworkRepository(context, params),
     KoinComponent {
     private val collectorRepository: CollectorRepository by inject()
 
-    override val stub: HeartBeatsOperationGrpcKt.HeartBeatsOperationCoroutineStub by lazy {
+    private val stub: HeartBeatsOperationGrpcKt.HeartBeatsOperationCoroutineStub by lazy {
         HeartBeatsOperationGrpcKt.HeartBeatsOperationCoroutineStub(channel)
     }
 
     @SuppressLint("CheckResult")
     override suspend fun doWork(): Result = withContext(dispatcher) {
         try {
-            if (AuthRepository.isSignedIn()) {
+            if (AuthRepository.isSignedIn) {
                 updateRecord()
                 checkPermission()
             }
 
             val dataStatusProto = collectorRepository.all.map { collector ->
-                val type = collectorToDataType(collector)
-
+                val nRecords = collector.count()
                 val description = collector.getDescription().associate { info ->
                     applicationContext.getString(info.stringRes) to info.value.toString()
                 }
@@ -70,15 +69,15 @@ class HeartBeatRepository(context: Context, params: WorkerParameters) :
                 proto(HeartBeatProtos.DataStatus.newBuilder()) {
                     name = collector.name
                     qualifiedName = collector.qualifiedName
-                    dataType = type
+                    datumType = collectorToDataType(collector)
                     turnedOnTime = collector.turnedOnTime
                     lastTimeWritten = collector.lastTimeDataWritten
-                    recordsCollected = collector.recordsCollected
+                    recordsCollected = nRecords
                     recordsUploaded = collector.recordsUploaded
-                    status = when (collector.getStatus()) {
-                        Status.On -> HeartBeatProtos.HeartBeat.Status.ON
-                        Status.Off -> HeartBeatProtos.HeartBeat.Status.OFF
-                        else -> HeartBeatProtos.HeartBeat.Status.ERROR
+                    operation = when (collector.getStatus()) {
+                        Status.On -> HeartBeatProtos.Operation.ON
+                        Status.Off -> HeartBeatProtos.Operation.OFF
+                        else -> HeartBeatProtos.Operation.ERROR
                     }
                     error = (collector.getStatus() as? Status.Error)?.message ?: ""
                     putAllOthers(description)
@@ -90,8 +89,8 @@ class HeartBeatRepository(context: Context, params: WorkerParameters) :
                 utcOffsetSec = TimeZone.getDefault().rawOffset / 1000
                 subject = proto(SubjectProtos.Subject.newBuilder()) {
                     groupName = AuthRepository.groupName
-                    email = AuthRepository.email()
-                    instanceId = AuthRepository.instanceId()
+                    email = AuthRepository.email
+                    instanceId = AuthRepository.instanceId
                     source = AuthRepository.source
                     deviceManufacturer = AuthRepository.deviceManufacturer
                     deviceModel = AuthRepository.deviceModel
@@ -100,11 +99,10 @@ class HeartBeatRepository(context: Context, params: WorkerParameters) :
                     appId = AuthRepository.appId
                     appVersion = AuthRepository.appVersion
                 }
-                addAllCollector(dataStatusProto)
+                addAllDataStatus(dataStatusProto)
             }
 
             val deadlineStub = stub.withDeadlineAfter(1, TimeUnit.MINUTES)
-
             deadlineStub.createHeartBeat(heartBeatProto)
             Result.success()
         } catch (e: Exception) {
@@ -118,8 +116,7 @@ class HeartBeatRepository(context: Context, params: WorkerParameters) :
     private fun updateRecord() {
         NotificationRepository.notifyForeground(
             applicationContext,
-            collectorRepository.countTotalRecords(),
-            collectorRepository.countUploadedRecords()
+            collectorRepository.nRecordsUploaded()
         )
     }
 
@@ -143,26 +140,26 @@ class HeartBeatRepository(context: Context, params: WorkerParameters) :
     }
 
     private fun collectorToDataType(collector: AbstractCollector<*>) = when (collector) {
-        is ActivityTransitionCollector -> DataTypeProtos.DataType.PHYSICAL_ACTIVITY_TRANSITION
-        is ActivityCollector -> DataTypeProtos.DataType.PHYSICAL_ACTIVITY
-        is AppUsageCollector -> DataTypeProtos.DataType.APP_USAGE_EVENT
-        is BatteryCollector -> DataTypeProtos.DataType.BATTERY
-        is BluetoothCollector -> DataTypeProtos.DataType.BLUETOOTH
-        is CallLogCollector -> DataTypeProtos.DataType.CALL_LOG
-        is DeviceEventCollector -> DataTypeProtos.DataType.DEVICE_EVENT
-        is EmbeddedSensorCollector -> DataTypeProtos.DataType.EMBEDDED_SENSOR
-        is PolarH10Collector -> DataTypeProtos.DataType.EXTERNAL_SENSOR
-        is InstalledAppCollector -> DataTypeProtos.DataType.INSTALLED_APP
-        is KeyLogCollector -> DataTypeProtos.DataType.KEY_LOG
-        is LocationCollector -> DataTypeProtos.DataType.LOCATION
-        is MediaCollector -> DataTypeProtos.DataType.MEDIA
-        is MessageCollector -> DataTypeProtos.DataType.MESSAGE
-        is NotificationCollector -> DataTypeProtos.DataType.NOTIFICATION
-        is FitnessCollector -> DataTypeProtos.DataType.FITNESS
-        is SurveyCollector -> DataTypeProtos.DataType.SURVEY
-        is DataTrafficCollector -> DataTypeProtos.DataType.DATA_TRAFFIC
-        is WifiCollector -> DataTypeProtos.DataType.WIFI
-        else -> DataTypeProtos.DataType.NOT_DATA_TYPE
+        is ActivityTransitionCollector -> DatumProtos.DatumType.PHYSICAL_ACTIVITY_TRANSITION
+        is ActivityCollector -> DatumProtos.DatumType.PHYSICAL_ACTIVITY
+        is AppUsageCollector -> DatumProtos.DatumType.APP_USAGE_EVENT
+        is BatteryCollector -> DatumProtos.DatumType.BATTERY
+        is BluetoothCollector -> DatumProtos.DatumType.BLUETOOTH
+        is CallLogCollector -> DatumProtos.DatumType.CALL_LOG
+        is DeviceEventCollector -> DatumProtos.DatumType.DEVICE_EVENT
+        is EmbeddedSensorCollector -> DatumProtos.DatumType.EMBEDDED_SENSOR
+        is PolarH10Collector -> DatumProtos.DatumType.EXTERNAL_SENSOR
+        is InstalledAppCollector -> DatumProtos.DatumType.INSTALLED_APP
+        is KeyLogCollector -> DatumProtos.DatumType.KEY_LOG
+        is LocationCollector -> DatumProtos.DatumType.LOCATION
+        is MediaCollector -> DatumProtos.DatumType.MEDIA
+        is MessageCollector -> DatumProtos.DatumType.MESSAGE
+        is NotificationCollector -> DatumProtos.DatumType.NOTIFICATION
+        is FitnessCollector -> DatumProtos.DatumType.FITNESS
+        is SurveyCollector -> DatumProtos.DatumType.SURVEY
+        is DataTrafficCollector -> DatumProtos.DatumType.DATA_TRAFFIC
+        is WifiCollector -> DatumProtos.DatumType.WIFI
+        else -> DatumProtos.DatumType.UNRECOGNIZED
     }
 
     companion object {
@@ -183,7 +180,7 @@ class HeartBeatRepository(context: Context, params: WorkerParameters) :
 
             manager.enqueueUniquePeriodicWork(
                 NAME_PERIODIC_WORKER,
-                ExistingPeriodicWorkPolicy.REPLACE,
+                ExistingPeriodicWorkPolicy.KEEP,
                 request
             )
         }

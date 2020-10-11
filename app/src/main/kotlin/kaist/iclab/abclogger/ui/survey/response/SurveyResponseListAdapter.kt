@@ -1,49 +1,55 @@
 package kaist.iclab.abclogger.ui.survey.response
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.getSystemService
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.survey.*
+import kaist.iclab.abclogger.commons.strictlyEquals
+import kaist.iclab.abclogger.core.Log
 import kaist.iclab.abclogger.databinding.*
 import kaist.iclab.abclogger.structure.survey.*
 
 class SurveyResponseListAdapter : RecyclerView.Adapter<SurveyResponseListAdapter.ViewHolder>() {
-    var responses: Array<InternalResponseEntity> = arrayOf()
-
+    val responses: ArrayList<InternalResponseEntity> = arrayListOf()
     private var isAltTextShown: Boolean = false
     private var isEnabled: Boolean = false
 
     fun bind(responses: Collection<InternalResponseEntity>, isEnabled: Boolean, isAltTextShown: Boolean) {
-        this.responses = responses.sortedBy { it.index }.toTypedArray()
-        this.isEnabled = isEnabled
-        this.isAltTextShown = isAltTextShown
+        val sortedResponses = arrayListOf(*responses.sortedBy { it.index }.toTypedArray())
+        var isChanged = false
 
-        notifyDataSetChanged()
-    }
+        if (!(this.responses strictlyEquals sortedResponses)) {
+            this.responses.clear()
+            this.responses.addAll(sortedResponses)
+            isChanged = true
+        }
 
-    fun setResponses(responses: Collection<InternalResponseEntity>) {
-        this.responses = responses.sortedBy { it.index }.toTypedArray()
-        notifyDataSetChanged()
-    }
+        if (this.isEnabled != isEnabled) {
+            this.isEnabled = isEnabled
+            isChanged = true
+        }
+        if (this.isAltTextShown != isAltTextShown){
+            this.isAltTextShown = isAltTextShown
+            isChanged = true
+        }
 
-    fun setAltTextShown(isAltTextShown: Boolean) {
-        this.isAltTextShown = isAltTextShown
-        notifyDataSetChanged()
-    }
-
-    fun setIsEnabled(isEnabled: Boolean) {
-        this.isEnabled = isEnabled
-        notifyDataSetChanged()
+        if (isChanged) {
+            notifyDataSetChanged()
+        }
     }
 
     override fun getItemViewType(position: Int): Int =
             responses.getOrNull(position)?.question?.option?.type?.ordinal ?: Option.Type.NONE.ordinal
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+
         val layoutId = when (viewType) {
             Option.Type.FREE_TEXT.ordinal -> R.layout.item_response_free_text
             Option.Type.RADIO_BUTTON.ordinal -> R.layout.item_response_radio
@@ -66,9 +72,8 @@ class SurveyResponseListAdapter : RecyclerView.Adapter<SurveyResponseListAdapter
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        responses.getOrNull(position)?.let {
-            holder.onBind(it, isEnabled, isAltTextShown)
-        }
+        val item = responses.getOrNull(position) ?: return
+        holder.onBind(item, isEnabled, isAltTextShown)
     }
 
     override fun getItemCount(): Int = responses.size

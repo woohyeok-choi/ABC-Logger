@@ -19,7 +19,6 @@ import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSuggestion
 import android.os.Build
 import android.os.PowerManager
-import android.provider.Telephony
 import android.telephony.TelephonyManager
 import android.view.KeyEvent
 import androidx.core.content.getSystemService
@@ -550,18 +549,18 @@ class DeviceEventCollector(
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            handleEventRetrieval(network)
+            handleNetworkCallback(network, true)
         }
 
         override fun onLost(network: Network) {
-            handleEventRetrieval(null)
+            handleNetworkCallback(network, false)
         }
     }
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             intent ?: return
-            handleEventRetrieval(intent)
+            handleNetworkCallback(intent)
         }
     }
 
@@ -967,27 +966,6 @@ class DeviceEventCollector(
         } else {
             ""
         }
-        var displayMessageBody = ""
-        var displayOriginatingAddress = ""
-        var originatingAddress = ""
-        var messageBody = ""
-        var pseudoSubject = ""
-        var serviceCenterAddress = ""
-        var timestampMillis = ""
-        var emailFrom = ""
-        var emailBody = ""
-
-        Telephony.Sms.Intents.getMessagesFromIntent(intent)?.firstOrNull()?.also { it ->
-            displayMessageBody = it.displayMessageBody ?: ""
-            displayOriginatingAddress = it.displayOriginatingAddress ?: ""
-            originatingAddress = it.originatingAddress ?: ""
-            messageBody = it.messageBody ?: ""
-            pseudoSubject = it.pseudoSubject ?: ""
-            serviceCenterAddress = it.serviceCenterAddress ?: ""
-            timestampMillis = it.timestampMillis.toString()
-            emailFrom = it.emailFrom ?: ""
-            emailBody = it.emailBody ?: ""
-        }
 
         val type = when (intent.action) {
             TelephonyManager.ACTION_PHONE_STATE_CHANGED -> "PHONE_STATE_CHANGED_${stringifyCallState(intent.getStringExtra(TelephonyManager.EXTRA_STATE))}"
@@ -998,16 +976,7 @@ class DeviceEventCollector(
         return DeviceEventEntity(
                 eventType = type,
                 extras = mapOf(
-                        "countryIso" to countryIso,
-                        "displayMessageBody" to displayMessageBody,
-                        "displayOriginatingAddress" to displayOriginatingAddress,
-                        "originatingAddress" to originatingAddress,
-                        "messageBody" to messageBody,
-                        "pseudoSubject" to pseudoSubject,
-                        "serviceCenterAddress" to serviceCenterAddress,
-                        "timestampMillis" to timestampMillis,
-                        "emailFrom" to emailFrom,
-                        "emailBody" to emailBody
+                        "countryIso" to countryIso
                 ).filterValues {
                     !it.isBlank()
                 }
@@ -1131,16 +1100,13 @@ class DeviceEventCollector(
         )
     }
 
-    private fun extractConnectivity(network: Network?): DeviceEventEntity? {
+    private fun extractConnectivity(network: Network, isAvailable: Boolean): DeviceEventEntity? {
         val manager = context.getSystemService<ConnectivityManager>()!!
-
-        val type = if (network == null) {
-            "NETWORK_CONNECTIVITY_LOST"
+        val transport = stringifyNetworkTransport(manager.getNetworkCapabilities(network))
+        val type = if (isAvailable) {
+            "CONNECTIVITY_AVAILABLE_$transport"
         } else {
-            val transport = manager.getNetworkCapabilities(network)?.let {
-                stringifyNetworkTransport(it)
-            } ?: "UNKNOWN"
-            "NETWORK_AVAILABLE_$transport"
+            "CONNECTIVITY_LOST_$transport"
         }
 
         return DeviceEventEntity(
@@ -1148,7 +1114,7 @@ class DeviceEventCollector(
         )
     }
 
-    private fun handleEventRetrieval(intent: Intent) = launch {
+    private fun handleNetworkCallback(intent: Intent) = launch {
         val timestamp = System.currentTimeMillis()
         val entity = when (intent.action) {
             in actionsBluetoothA2Dp -> extractBluetoothA2dp(intent)
@@ -1168,9 +1134,9 @@ class DeviceEventCollector(
         put(entity, timestamp)
     }
 
-    private fun handleEventRetrieval(network: Network?) = launch {
+    private fun handleNetworkCallback(network: Network, isAvailable: Boolean) = launch {
         val timestamp = System.currentTimeMillis()
-        val entity = extractConnectivity(network) ?: return@launch
+        val entity = extractConnectivity(network, isAvailable) ?: return@launch
 
         put(entity, timestamp)
     }

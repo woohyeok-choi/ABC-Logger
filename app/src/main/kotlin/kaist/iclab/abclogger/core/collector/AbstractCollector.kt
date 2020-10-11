@@ -68,8 +68,6 @@ abstract class AbstractCollector<E : AbstractEntity>(
 
     var lastTimeDataWritten: Long by ReadWriteStatusLong(Long.MIN_VALUE)
 
-    var recordsCollected: Long by ReadWriteStatusLong(0)
-
     var recordsUploaded: Long by ReadWriteStatusLong(0)
 
     val statusFlow = statusChannel.receiveAsFlow()
@@ -165,8 +163,8 @@ abstract class AbstractCollector<E : AbstractEntity>(
             timestamp = if (timestamp < 0) millis else timestamp
             utcOffset = TimeZone.getDefault().rawOffset / 1000
             groupName = AuthRepository.groupName
-            email = AuthRepository.email()
-            instanceId = AuthRepository.instanceId()
+            email = AuthRepository.email
+            instanceId = AuthRepository.instanceId
             source = AuthRepository.source
             deviceManufacturer = AuthRepository.deviceManufacturer
             deviceModel = AuthRepository.deviceModel
@@ -191,7 +189,6 @@ abstract class AbstractCollector<E : AbstractEntity>(
         EventBus.post(entity)
 
         if (isStatUpdates) {
-            recordsCollected++
             val timestamp = (entity as? AbstractEntity)?.timestamp ?: timeInMillis
             lastTimeDataWritten = timestamp.coerceAtLeast(lastTimeDataWritten)
         }
@@ -210,7 +207,6 @@ abstract class AbstractCollector<E : AbstractEntity>(
         entities.forEach { EventBus.post(it) }
 
         if (isStatUpdates) {
-            recordsCollected += entities.size
             val timestamp = entities.filterIsInstance<AbstractEntity>().maxOfOrNull { it.timestamp } ?: timeInMillis
             lastTimeDataWritten = timestamp.coerceAtLeast(lastTimeDataWritten)
         }

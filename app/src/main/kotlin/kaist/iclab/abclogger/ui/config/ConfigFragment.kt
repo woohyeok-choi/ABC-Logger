@@ -10,7 +10,7 @@ import kaist.iclab.abclogger.commons.AbcError
 import kaist.iclab.abclogger.commons.showSnackBar
 import kaist.iclab.abclogger.core.Log
 import kaist.iclab.abclogger.databinding.FragmentConfigBinding
-import kaist.iclab.abclogger.core.ui.BaseViewModelFragment
+import kaist.iclab.abclogger.ui.base.BaseViewModelFragment
 import kaist.iclab.abclogger.structure.config.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest

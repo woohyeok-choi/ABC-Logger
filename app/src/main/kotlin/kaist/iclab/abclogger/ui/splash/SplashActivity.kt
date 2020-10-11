@@ -11,8 +11,9 @@ import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.core.AuthRepository
 import kaist.iclab.abclogger.core.CollectorRepository
 import kaist.iclab.abclogger.core.Log
+import kaist.iclab.abclogger.core.sync.HeartBeatRepository
 import kaist.iclab.abclogger.databinding.ActivitySplashBinding
-import kaist.iclab.abclogger.core.ui.BaseActivity
+import kaist.iclab.abclogger.ui.base.BaseActivity
 import kaist.iclab.abclogger.ui.main.MainActivity
 import org.koin.android.ext.android.inject
 import java.lang.Exception
@@ -29,6 +30,7 @@ class SplashActivity : BaseActivity<ActivitySplashBinding>() {
             if (intent?.getBooleanExtra(EXTRA_SIGN_OUT, false) == true) {
                 AuthRepository.signOut(this@SplashActivity)
                 collectorRepository.stop(this@SplashActivity)
+                HeartBeatRepository.stop(this@SplashActivity)
             }
 
             try {
@@ -36,7 +38,6 @@ class SplashActivity : BaseActivity<ActivitySplashBinding>() {
                  * Step 1: Google Play Service version check.
                  */
                 AuthRepository.updateGooglePlayService(this@SplashActivity)
-
                 /**
                  * Step 2: Sign in with Google Account
                  */

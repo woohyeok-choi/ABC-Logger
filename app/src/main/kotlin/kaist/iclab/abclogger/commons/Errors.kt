@@ -323,7 +323,7 @@ open class SyncError(
     message: String? = null,
     open val isRetry: Boolean
 ) : AbcError(R.string.error_sync, detailRes, message) {
-    class NetworkStatusChanged : SyncError(R.string.error_sync_network_changed, null, true)
+    class UnavailableNetwork : SyncError(R.string.error_sync_network_unavailable, null, true)
     class StatusCode(
         detailRes: Int?,
         message: String? = null,
@@ -332,7 +332,7 @@ open class SyncError(
     ) : SyncError(detailRes, message, isRetry)
 
     companion object {
-        fun networkStatusChanged() = NetworkStatusChanged()
+        fun unavailableNetwork() = UnavailableNetwork()
 
         fun fromStatusRuntimeException(exception: StatusRuntimeException): SyncError {
             val (res, isRetry) = when (exception.status.code) {

@@ -5,6 +5,12 @@ import kaist.iclab.abclogger.core.collector.AbstractEntity
 
 @Entity
 data class NotificationEntity(
+        var key: String = "",
+        var groupKey: String = "",
+        var notificationId: Int = Int.MIN_VALUE,
+        var tag: String = "",
+        var isClearable: Boolean = false,
+        var isOngoing: Boolean = false,
         var name: String = "",
         var packageName: String = "",
         var postTime: Long = Long.MIN_VALUE,

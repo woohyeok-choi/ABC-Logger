@@ -6,11 +6,10 @@ import android.text.format.DateUtils
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.viewModelScope
 import kaist.iclab.abclogger.*
 import kaist.iclab.abclogger.commons.CollectorError
 import kaist.iclab.abclogger.core.*
-import kaist.iclab.abclogger.core.ui.BaseViewModel
+import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.commons.Formatter
 import kaist.iclab.abclogger.commons.isPermissionGranted
@@ -18,7 +17,6 @@ import kaist.iclab.abclogger.core.collector.DataRepository
 import kaist.iclab.abclogger.core.collector.Status
 import kaist.iclab.abclogger.core.sync.SyncRepository
 import kaist.iclab.abclogger.structure.config.Config
-import kaist.iclab.abclogger.structure.config.ConfigData
 import kaist.iclab.abclogger.structure.config.config
 import kaist.iclab.abclogger.ui.splash.SplashActivity
 import kaist.iclab.abclogger.view.StatusColor
@@ -45,24 +43,26 @@ class ConfigViewModel(
 
         return config {
             category(name = str(R.string.config_category_general)) {
-                readonly(name = str(R.string.config_user_name_title)) {
+                readonly(name = str(R.string.config_general_user_name_title)) {
                     format = {
-                        val name = AuthRepository.name().takeUnless { it.isBlank() }
-                            ?: str(R.string.general_hyphen)
-                        val email = AuthRepository.email().takeUnless { it.isBlank() }
-                            ?: str(R.string.general_hyphen)
+                        val name = AuthRepository.name.takeUnless { it.isBlank() }
+                            ?: str(R.string.general_mdash)
+                        val email = AuthRepository.email.takeUnless { it.isBlank() }
+                            ?: str(R.string.general_mdash)
                         "$name ($email)"
                     }
                 }
 
-                readonly(name = str(R.string.config_app_version_title)) {
-                    format = {
-                        "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
-                    }
+                text(
+                    name = str(R.string.config_general_group_name_title),
+                    default = AuthRepository.groupName
+                ) {
+                    format = { it }
+                    onAfterChange = { AuthRepository.groupName = value }
                 }
 
                 activity<Boolean, Array<String>, Map<String, Boolean>>(
-                    name = str(R.string.config_permission_title),
+                    name = str(R.string.config_general_permission_title),
                     default = isPermissionGranted(
                         getApplication(),
                         collectorRepository.permissions
@@ -77,7 +77,7 @@ class ConfigViewModel(
                     }
                 ) {
                     format = { value ->
-                        str(if (value) R.string.config_permission_text_granted else R.string.config_permission_text_denied)
+                        str(if (value) R.string.config_general_permission_text_granted else R.string.config_general_permission_text_denied)
                     }
                     color = { value ->
                         if (value) StatusColor.NORMAL else StatusColor.ERROR
@@ -85,14 +85,14 @@ class ConfigViewModel(
                 }
 
                 activity<Boolean, Intent, ActivityResult>(
-                    name = str(R.string.config_battery_optimization_ignore_title),
+                    name = str(R.string.config_general_battery_optimization_ignore_title),
                     default = CollectorRepository.isBatteryOptimizationIgnored(getApplication()),
                     contract = ActivityResultContracts.StartActivityForResult(),
                     input = CollectorRepository.getIgnoreBatteryOptimizationIntent(getApplication()),
                     transform = { CollectorRepository.isBatteryOptimizationIgnored(getApplication()) },
                 ) {
                     format = { value ->
-                        str(if (value) R.string.config_battery_optimization_ignore_text_ignored else R.string.config_battery_optimization_ignore_text_not_ignored)
+                        str(if (value) R.string.config_general_battery_optimization_ignore_text_ignored else R.string.config_general_battery_optimization_ignore_text_not_ignored)
                     }
                     color = { value ->
                         if (value) StatusColor.NORMAL else StatusColor.ERROR
@@ -100,13 +100,13 @@ class ConfigViewModel(
                 }
 
                 actionable(
-                    name = str(R.string.config_data_size_title),
+                    name = str(R.string.config_general_data_size_title),
                     default = sizeDb
                 ) {
                     format = { size ->
                         FileSizeFormatter.formatShortFileSize(getApplication(), size * 1024)
                     }
-                    confirmMessage = str(R.string.config_data_size_dialog)
+                    confirmMessage = str(R.string.config_general_data_size_dialog)
                     action = {
                         launchIo {
                             dataRepository.flush()
@@ -203,6 +203,11 @@ class ConfigViewModel(
             }
 
             category(name = str(R.string.config_category_others)) {
+                readonly(name = str(R.string.config_others_version_title)) {
+                    format = {
+                        "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+                    }
+                }
                 activity<Unit, Intent, ActivityResult>(
                     name = str(R.string.config_others_setting_title),
                     default = Unit,
@@ -249,6 +254,7 @@ class ConfigViewModel(
         if (collector == null) return Config()
 
         val currentTime = System.currentTimeMillis()
+        val nRecords = collector.count()
 
         return config {
             category(name = str(R.string.sub_config_category_collector_general)) {
@@ -353,7 +359,7 @@ class ConfigViewModel(
                 readonly(name = str(R.string.sub_config_collector_data_records_collected_title)) {
                     format = {
                         val compactNumber =
-                            Formatter.formatCompactNumber(collector.recordsCollected)
+                            Formatter.formatCompactNumber(nRecords)
                         str(
                             R.string.sub_config_collector_data_records_collected_text,
                             compactNumber
@@ -392,14 +398,14 @@ class ConfigViewModel(
             getApplication(),
             then,
             now
-        ) else str(R.string.general_hyphen)
+        ) else str(R.string.general_mdash)
 
     private fun timeSpan(then: Long, now: Long) = if (then > 0)
         DateUtils.getRelativeTimeSpanString(
             then,
             now,
             DateUtils.MINUTE_IN_MILLIS
-        ) else str(R.string.general_hyphen)
+        ) else str(R.string.general_mdash)
 
 
 }

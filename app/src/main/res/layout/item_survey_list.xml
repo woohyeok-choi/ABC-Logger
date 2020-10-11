@@ -72,11 +72,10 @@
             android:text="@{triggeredTime}"
             tools:text="3 min ago"
             android:enabled="@{isEnabled}"
-            android:paddingTop="@dimen/space_vert_padding"
             android:paddingStart="@dimen/space_horiz_padding"
             android:paddingEnd="@dimen/space_horiz_padding"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/txt_title"
             android:textAppearance="?attr/textAppearanceCaption"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

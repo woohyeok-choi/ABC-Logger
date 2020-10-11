@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.databinding.FragmentSurveyListBinding
-import kaist.iclab.abclogger.core.ui.BaseViewModelFragment
+import kaist.iclab.abclogger.ui.base.BaseViewModelFragment
 import kaist.iclab.abclogger.collector.survey.InternalSurveyEntity
 import kaist.iclab.abclogger.commons.AbcError
 import kaist.iclab.abclogger.commons.EntityError
@@ -25,7 +25,6 @@ import kaist.iclab.abclogger.ui.survey.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.stateSharedViewModel
 
 @ExperimentalCoroutinesApi

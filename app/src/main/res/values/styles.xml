@@ -23,6 +23,8 @@
         <item name="switchStyle">@style/AppTheme.Switch</item>
         <item name="checkboxStyle">@style/AppTheme.CheckBox</item>
         <item name="shapeAppearance">?attr/colorOnBackground</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MaterialComponents.Dialog.Alert</item>
+        <item name="bottomSheetDialogTheme">@style/AppTheme.BottomSheetDialog</item>
 
         <item name="textAppearanceHeadline1">@style/AppTheme.TextAppearance.Headline1</item>
         <item name="textAppearanceHeadline2">@style/AppTheme.TextAppearance.Headline2</item>
@@ -40,7 +42,7 @@
 
         <item name="android:textColor">@color/text_view_color</item>
         <item name="android:textColorHint">@color/hint_color</item>
-
+        <item name="android:editTextColor">@color/text_view_color</item>
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:statusBarColor" tools:ignore="NewApi">?attr/colorOnBackground</item>
         <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
@@ -59,11 +61,9 @@
     <style name="AppTheme.CheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
         <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
-
     <style name="AppTheme.NavigationView" parent="Widget.MaterialComponents.NavigationView">
         <item name="itemTextAppearance">?attr/textAppearanceBody2</item>
     </style>
-
     <style name="AppTheme.ToolbarStyle" parent="Widget.MaterialComponents.Toolbar.Surface">
         <item name="android:background">?attr/colorSurface</item>
         <item name="actionMenuTextColor">?attr/colorOnBackground</item>
@@ -71,6 +71,22 @@
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="subtitleTextColor">?attr/colorOnSurface</item>
         <item name="subtitleTextAppearance">?attr/textAppearanceOverline</item>
+    </style>
+    <style name="AppTheme.BottomSheetDialog" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@style/AppTheme.Animation.BottomSheet</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="bottomSheetStyle">@style/AppTheme.BottomSheet.Modal</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+        <item name="android:navigationBarDividerColor" tools:ignore="NewApi">@android:color/transparent</item>
+    </style>
+    <style name="AppTheme.BottomSheet.Modal" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="shapeAppearanceOverlay">?attr/shapeAppearanceLargeComponent</item>
+    </style>
+    <style name="AppTheme.Animation.BottomSheet" parent="Animation.AppCompat.Dialog">
+        <item name="android:windowEnterAnimation">@anim/bottom_sheet_slide_in</item>
+        <item name="android:windowExitAnimation">@anim/bottom_sheet_slide_out</item>
     </style>
 
     <style name="AppTheme.TextAppearance.Headline1" parent="TextAppearance.MaterialComponents.Headline1">

@@ -3,11 +3,7 @@ package kaist.iclab.abclogger.ui.settings.keylog
 import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import kaist.iclab.abclogger.collector.keylog.KeyLogCollector
-import kaist.iclab.abclogger.core.ui.BaseViewModel
-import kaist.iclab.abclogger.commons.CollectorError
-import kaist.iclab.abclogger.core.collector.Status
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
+import kaist.iclab.abclogger.ui.base.BaseViewModel
 
 class KeyLogViewModel(
     private val collector: KeyLogCollector,

@@ -64,16 +64,16 @@ data class InternalResponseEntity(
         parcel.readLong(),
         parcel.readLong(),
         parcel.readInt(),
-        parcel.readParcelable(Question::class.java.classLoader) ?: Question(),
-        parcel.readParcelable(InternalAnswer::class.java.classLoader) ?: InternalAnswer()
+        questionConverter.convertToEntityProperty(parcel.readString()),
+        answerConverter.convertToEntityProperty(parcel.readString())
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
         parcel.writeLong(surveyId)
         parcel.writeInt(index)
-        parcel.writeParcelable(question, flags)
-        parcel.writeParcelable(answer, flags)
+        parcel.writeString(questionConverter.convertToDatabaseValue(question))
+        parcel.writeString(answerConverter.convertToDatabaseValue(answer))
     }
 
     override fun describeContents(): Int {
@@ -88,6 +88,9 @@ data class InternalResponseEntity(
         override fun newArray(size: Int): Array<InternalResponseEntity?> {
             return arrayOfNulls(size)
         }
+
+        private val questionConverter = QuestionConverter()
+        private val answerConverter = InternalAnswerConverter()
     }
 }
 
@@ -95,13 +98,7 @@ class InternalAnswer(
     private val mutualExclusive: Boolean = true,
     mainAnswer: Set<String> = setOf(),
     otherAnswer: String = ""
-) : BaseObservable(), Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readByte() != 0.toByte(),
-        parcel.createStringArray()?.toSet() ?: setOf(),
-        parcel.readString() ?: ""
-    )
-
+) : BaseObservable() {
     fun isEmptyAnswer() = main.isEmpty() && other.isBlank()
 
     @Transient
@@ -132,24 +129,6 @@ class InternalAnswer(
                 main = setOf()
             }
         }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeByte(if (mutualExclusive) 1 else 0)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<InternalAnswer> {
-        override fun createFromParcel(parcel: Parcel): InternalAnswer {
-            return InternalAnswer(parcel)
-        }
-
-        override fun newArray(size: Int): Array<InternalAnswer?> {
-            return arrayOfNulls(size)
-        }
-    }
 }
 
 class InternalAnswerConverter : JsonConverter<InternalAnswer>(

@@ -10,7 +10,7 @@ import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-abstract class AbstractNetworkRepository <T: AbstractCoroutineStub<T>>(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+abstract class AbstractNetworkRepository(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     private val interceptor = object :
         ClientInterceptor {
         override fun <ReqT : Any?, RespT : Any?> interceptCall(
@@ -29,17 +29,16 @@ abstract class AbstractNetworkRepository <T: AbstractCoroutineStub<T>>(context: 
         }
     }
 
-    protected val channel: ManagedChannel = ManagedChannelBuilder.forTarget(BuildConfig.SERVER_ADDRESS)
-        .usePlaintext()
-        .directExecutor()
-        .intercept(interceptor)
-        .build()
-
-    protected abstract val stub: T
+    protected val channel: ManagedChannel by lazy {
+        ManagedChannelBuilder.forTarget(BuildConfig.SERVER_ADDRESS)
+            .usePlaintext()
+            .directExecutor()
+            .intercept(interceptor)
+            .build()
+    }
 
     protected val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     protected fun shutdown() {
         channel.shutdown().awaitTermination(10, TimeUnit.SECONDS)
     }

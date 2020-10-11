@@ -215,11 +215,10 @@ object NotificationRepository {
         NotificationManagerCompat.from(context).notify(ID_COLLECTOR_ERROR, ntf)
     }
 
-    private fun foreground(context: Context, recordsCollected: Long, recordsUploaded: Long) : Notification {
+    private fun foreground(context: Context, recordsUploaded: Long) : Notification {
         val builder = getBuilder(context, CHANNEL_ID_FOREGROUND)
 
         val primaryColor = getColorFromAttr(context, R.attr.colorPrimary)
-        val compactFormatCollected = Formatter.formatCompactNumber(recordsCollected.coerceAtLeast(0))
         val compactFormatUploaded = Formatter.formatCompactNumber(recordsUploaded.coerceAtLeast(0))
 
         return builder.apply {
@@ -231,18 +230,17 @@ object NotificationRepository {
             setContentTitle(context.getString(R.string.ntf_foreground_title))
             setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(
                 R.string.ntf_foreground_text,
-                compactFormatCollected,
                 compactFormatUploaded
             )))
         }.build()
     }
 
-    fun notifyForeground(service: Service, recordsCollected: Long, recordsUploaded: Long) {
-        service.startForeground(ID_FOREGROUND, foreground(service, recordsCollected, recordsUploaded))
+    fun notifyForeground(service: Service, recordsUploaded: Long) {
+        service.startForeground(ID_FOREGROUND, foreground(service, recordsUploaded))
     }
 
-    fun notifyForeground(context: Context, recordsCollected: Long, recordsUploaded: Long) {
-        NotificationManagerCompat.from(context).notify(ID_FOREGROUND, foreground(context, recordsCollected, recordsUploaded))
+    fun notifyForeground(context: Context, recordsUploaded: Long) {
+        NotificationManagerCompat.from(context).notify(ID_FOREGROUND, foreground(context, recordsUploaded))
     }
 
     fun syncInitialize(context: Context, cancelIntent: PendingIntent) : ForegroundInfo {
@@ -258,7 +256,7 @@ object NotificationRepository {
             setProgress(0, 0, true)
             addAction(
                 NotificationCompat.Action.Builder(
-                    R.drawable.baseline_remove_24, context.getString(R.string.ntf_sync_action_cancel), cancelIntent
+                    R.drawable.baseline_clear_24, context.getString(R.string.ntf_sync_action_cancel), cancelIntent
                 ).build()
             )
         }.build()
@@ -293,7 +291,7 @@ object NotificationRepository {
             )
             addAction(
                 NotificationCompat.Action.Builder(
-                    R.drawable.baseline_remove_24,
+                    R.drawable.baseline_clear_24,
                     context.getString(R.string.ntf_sync_action_cancel),
                     cancelIntent
                 ).build()

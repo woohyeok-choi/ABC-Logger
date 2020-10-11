@@ -1,21 +1,17 @@
 package kaist.iclab.abclogger.ui.settings.survey
 
 import android.app.Application
-import android.os.Bundle
 import android.webkit.URLUtil
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.viewModelScope
 import kaist.iclab.abclogger.structure.survey.Survey
 import kaist.iclab.abclogger.collector.survey.SurveyCollector
-import kaist.iclab.abclogger.core.ui.BaseViewModel
+import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kaist.iclab.abclogger.commons.AbcError
 import kaist.iclab.abclogger.commons.HttpRequestError
 import kaist.iclab.abclogger.structure.survey.SurveyConfiguration
 import kaist.iclab.abclogger.commons.getHttp
 import kaist.iclab.abclogger.ui.State
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
 class SurveySettingViewModel(

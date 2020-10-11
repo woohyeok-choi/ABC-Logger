@@ -5,11 +5,13 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.core.Log
 import kaist.iclab.abclogger.databinding.ItemSurveyConfigurationBinding
 import kaist.iclab.abclogger.structure.survey.SurveyConfiguration
 import kotlin.collections.ArrayList
 
-class SurveyConfigurationListAdapter : RecyclerView.Adapter<SurveyConfigurationListAdapter.ViewHolder>() {
+class SurveyConfigurationListAdapter :
+    RecyclerView.Adapter<SurveyConfigurationListAdapter.ViewHolder>() {
     interface OnItemClickListener {
         fun onItemClick(position: Int, item: SurveyConfiguration)
     }
@@ -52,30 +54,37 @@ class SurveyConfigurationListAdapter : RecyclerView.Adapter<SurveyConfigurationL
         }
     }
 
-    fun changeItem(item: SurveyConfiguration) {
-        val idx = items.indexOf(item)
+    fun changeItem(prevItem: SurveyConfiguration, newItem: SurveyConfiguration) {
+        val idx = items.indexOf(prevItem)
         if (idx != -1) {
-            items[idx] = item
+            items[idx] = newItem
             notifyItemChanged(idx)
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
-            DataBindingUtil.inflate(
-                    LayoutInflater.from(parent.context), R.layout.item_survey_configuration, parent, false
-            )
+        binding = DataBindingUtil.inflate(
+            LayoutInflater.from(parent.context), R.layout.item_survey_configuration, parent, false
+        ),
+        listener = onItemClickListener
     )
 
     override fun getItemCount(): Int = items.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items.getOrNull(position) ?: return
-        holder.binding.item = item
-
-        holder.binding.root.setOnClickListener {
-            onItemClickListener?.onItemClick(position, item)
-        }
+        holder.onBind(position, item)
     }
 
-    class ViewHolder(val binding: ItemSurveyConfigurationBinding) : RecyclerView.ViewHolder(binding.root)
+    class ViewHolder(
+        private val binding: ItemSurveyConfigurationBinding,
+        private val listener: OnItemClickListener?
+    ) : RecyclerView.ViewHolder(binding.root) {
+        fun onBind(position: Int, item: SurveyConfiguration) {
+            binding.item = item
+            binding.root.setOnClickListener {
+                listener?.onItemClick(position, item)
+            }
+        }
+    }
 }

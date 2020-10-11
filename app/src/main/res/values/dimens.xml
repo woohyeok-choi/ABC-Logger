@@ -21,5 +21,6 @@
 
     <dimen name="bottom_nav_height">56dp</dimen>
 
+    <dimen name="fab_bottom_margin">32dp</dimen>
     
 </resources>

@@ -14,7 +14,10 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:focusable="@{!item.loading}"
+        android:clickable="@{!item.loading}"
+        android:background="?selectableItemBackground">
 
         <ProgressBar
             style="?android:progressBarStyle"
@@ -32,7 +35,7 @@
             android:text="@{item.error}"
             tools:text="This is error message"
             android:textAppearance="?attr/textAppearanceSubtitle2"
-            android:visibility="@{item.error == null ? View.GONE : View.VISIBLE}"
+            android:visibility="@{!item.loading &amp;&amp; item.error != null ? View.VISIBLE : View.GONE}"
             android:textColor="?attr/colorError"
             tools:visibility="visible" />
 
@@ -41,9 +44,7 @@
             android:layout_height="wrap_content"
             android:minHeight="@dimen/item_two_line_height"
             android:orientation="vertical"
-            android:focusable="true"
-            android:clickable="true"
-            android:background="?selectableItemBackground">
+            android:visibility="@{!item.loading &amp;&amp; item.error == null ? View.VISIBLE : View.GONE}">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/txt_title"
@@ -84,11 +85,10 @@
                 android:layout_height="wrap_content"
                 android:text="@{Formatter.formatDateTime(context, item.lastAccessTime)}"
                 tools:text="2020. 3. 20"
-                android:paddingTop="@dimen/space_vert_padding"
                 android:paddingStart="0dp"
                 android:paddingEnd="@dimen/space_horiz_padding"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/txt_title"
                 android:textAppearance="?attr/textAppearanceCaption"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 

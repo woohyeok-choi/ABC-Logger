@@ -7,7 +7,6 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kaist.iclab.abclogger.commons.safeEnumValueOf
 import java.util.*
 import kotlin.Exception
 
@@ -22,46 +21,20 @@ data class Survey(
     val timeTo: Duration = Duration.NONE,
     val interDaySchedule: InterDaySchedule = DailySchedule(),
     val intraDaySchedule: IntraDaySchedule = NoneIntraDaySchedule()
-) : Parcelable {
+) {
     enum class TimeoutAction {
         NONE,
         ALT_TEXT,
         DISABLED;
     }
-
-    constructor(parcel: Parcel) : this(
-        parcel.readParcelable(AltText::class.java.classLoader) ?: AltText(),
-        parcel.readParcelable(AltText::class.java.classLoader) ?: AltText(),
-        parcel.readParcelable(AltText::class.java.classLoader) ?: AltText(),
-        parcel.createTypedArray(Question) ?: arrayOf(),
-        parcel.readParcelable(Duration::class.java.classLoader) ?: Duration.MIN,
-        safeEnumValueOf(parcel.readString(), TimeoutAction.NONE),
-        parcel.readParcelable(Duration::class.java.classLoader) ?: Duration.NONE,
-        parcel.readParcelable(Duration::class.java.classLoader) ?: Duration.NONE,
-        parcel.readParcelable(InterDaySchedule::class.java.classLoader) ?: DailySchedule(),
-        parcel.readParcelable(IntraDaySchedule::class.java.classLoader) ?: NoneIntraDaySchedule()
-    )
-
-    fun toJson(): String = try {
-        Adapter.toJson(this) ?: ""
+    fun toJson(prettify: Boolean = false): String = try {
+        if (prettify) {
+            Adapter.indent("\t").toJson(this) ?: ""
+        } else {
+            Adapter.toJson(this) ?: ""
+        }
     } catch (e: Exception) {
         ""
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeParcelable(title, flags)
-        parcel.writeParcelable(message, flags)
-        parcel.writeParcelable(instruction, flags)
-        parcel.writeTypedArray(question, flags)
-        parcel.writeParcelable(timeout, flags)
-        parcel.writeParcelable(timeFrom, flags)
-        parcel.writeParcelable(timeTo, flags)
-        parcel.writeParcelable(interDaySchedule, flags)
-        parcel.writeParcelable(intraDaySchedule, flags)
-    }
-
-    override fun describeContents(): Int {
-        return 0
     }
 
     override fun equals(other: Any?): Boolean {
@@ -98,7 +71,7 @@ data class Survey(
         return result
     }
 
-    companion object CREATOR : Parcelable.Creator<Survey> {
+    companion object {
         val Empty = Survey()
 
         val Adapter: JsonAdapter<Survey> = Moshi.Builder()
@@ -114,16 +87,7 @@ data class Survey(
         } catch (e: Exception) {
             null
         }
-
-        override fun createFromParcel(parcel: Parcel): Survey {
-            return Survey(parcel)
-        }
-
-        override fun newArray(size: Int): Array<Survey?> {
-            return arrayOfNulls(size)
-        }
     }
-
 }
 
 data class SurveyConfiguration(
@@ -132,13 +96,6 @@ data class SurveyConfiguration(
     val lastAccessTime: Long = Long.MIN_VALUE,
     val survey: Survey = Survey.Empty
 ) : BaseObservable(), Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readString() ?: "",
-        parcel.readString() ?: "",
-        parcel.readLong(),
-        parcel.readParcelable(Survey::class.java.classLoader) ?: Survey.Empty
-    )
-
     @Transient
     var isLoading: Boolean = false
         set(value) {
@@ -155,11 +112,12 @@ data class SurveyConfiguration(
             notifyChange()
         }
 
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(uuid)
         parcel.writeString(url)
         parcel.writeLong(lastAccessTime)
-        parcel.writeParcelable(survey, flags)
+        parcel.writeString(survey.toJson())
     }
 
     override fun describeContents(): Int {
@@ -167,9 +125,12 @@ data class SurveyConfiguration(
     }
 
     companion object CREATOR : Parcelable.Creator<SurveyConfiguration> {
-        override fun createFromParcel(parcel: Parcel): SurveyConfiguration {
-            return SurveyConfiguration(parcel)
-        }
+        override fun createFromParcel(parcel: Parcel): SurveyConfiguration = SurveyConfiguration(
+            parcel.readString() ?: "",
+            parcel.readString() ?: "",
+            parcel.readLong(),
+            Survey.fromJson(parcel.readString() ?: "") ?: Survey.Empty
+        )
 
         override fun newArray(size: Int): Array<SurveyConfiguration?> {
             return arrayOfNulls(size)

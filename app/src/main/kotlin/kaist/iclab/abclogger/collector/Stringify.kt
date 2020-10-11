@@ -20,25 +20,24 @@ import android.telephony.TelephonyManager
 import android.view.KeyEvent
 import com.google.android.gms.fitness.data.Device
 import com.google.android.gms.location.DetectedActivity
-import com.google.api.Usage
 
-private const val UNKNOWN = "UNKNOWN"
+private const val UNDEFINED = "UNDEFINED"
 
-internal fun stringifyBluetoothDeviceBondState(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyBluetoothDeviceBondState(flag: Int?, default: String = UNDEFINED) = when (flag) {
     BluetoothDevice.BOND_BONDED -> "BONDED"
     BluetoothDevice.BOND_BONDING -> "BONDING"
     BluetoothDevice.BOND_NONE -> "NONE"
     else -> default
 }
 
-internal fun stringifyBluetoothDeviceType(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyBluetoothDeviceType(flag: Int?, default: String = UNDEFINED) = when (flag) {
     BluetoothDevice.DEVICE_TYPE_CLASSIC -> "CLASSIC"
     BluetoothDevice.DEVICE_TYPE_LE -> "LE"
     BluetoothDevice.DEVICE_TYPE_DUAL -> "DUAL"
     else -> default
 }
 
-internal fun stringifyBluetoothClass(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyBluetoothClass(flag: Int?, default: String = UNDEFINED) = when (flag) {
     BluetoothClass.Device.AUDIO_VIDEO_CAMCORDER -> "AUDIO_VIDEO_CAMCORDER"
     BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO -> "AUDIO_VIDEO_CAR_AUDIO"
     BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE -> "AUDIO_VIDEO_HANDSFREE"
@@ -92,7 +91,7 @@ internal fun stringifyBluetoothClass(flag: Int?, default: String = UNKNOWN) = wh
     else -> default
 }
 
-internal fun stringifyBluetoothProfileConnectionState(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyBluetoothProfileConnectionState(flag: Int?, default: String = UNDEFINED) = when (flag) {
     BluetoothProfile.STATE_CONNECTED -> "CONNECTED"
     BluetoothProfile.STATE_CONNECTING -> "CONNECTING"
     BluetoothProfile.STATE_DISCONNECTED -> "DISCONNECTED"
@@ -100,13 +99,13 @@ internal fun stringifyBluetoothProfileConnectionState(flag: Int?, default: Strin
     else -> default
 }
 
-internal fun stringifyBluetoothA2dpPlayingState(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyBluetoothA2dpPlayingState(flag: Int?, default: String = UNDEFINED) = when (flag) {
     BluetoothA2dp.STATE_PLAYING -> "PLAYING"
     BluetoothA2dp.STATE_NOT_PLAYING -> "NOT_PLAYING"
     else -> default
 }
 
-internal fun stringifyActivityType(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyActivityType(flag: Int?, default: String = UNDEFINED) = when (flag) {
     DetectedActivity.IN_VEHICLE -> "IN_VEHICLE"
     DetectedActivity.ON_BICYCLE -> "ON_BICYCLE"
     DetectedActivity.ON_FOOT -> "ON_FOOT"
@@ -117,7 +116,7 @@ internal fun stringifyActivityType(flag: Int?, default: String = UNKNOWN) = when
     else -> default
 }
 
-internal fun stringifyAppUsageEvent(flag: Int?, bucket: Int? = null, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyAppUsageEvent(flag: Int?, bucket: Int? = null, default: String = UNDEFINED) = when (flag) {
     UsageEvents.Event.ACTIVITY_PAUSED -> "ACTIVITY_PAUSED"
     UsageEvents.Event.ACTIVITY_RESUMED -> "ACTIVITY_RESUMED"
     UsageEvents.Event.ACTIVITY_STOPPED -> "ACTIVITY_STOPPED"
@@ -161,7 +160,7 @@ internal fun stringifyAppUsageEvent(flag: Int?, bucket: Int? = null, default: St
     else -> default
 }
 
-internal fun stringifyBatteryHealth(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyBatteryHealth(flag: Int?, default: String = UNDEFINED) = when (flag) {
     BatteryManager.BATTERY_HEALTH_COLD -> "COLD"
     BatteryManager.BATTERY_HEALTH_DEAD -> "DEAD"
     BatteryManager.BATTERY_HEALTH_GOOD -> "GOOD"
@@ -171,14 +170,14 @@ internal fun stringifyBatteryHealth(flag: Int?, default: String = UNKNOWN) = whe
     else -> default
 }
 
-internal fun stringifyBatteryPlugType(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyBatteryPlugType(flag: Int?, default: String = UNDEFINED) = when (flag) {
     BatteryManager.BATTERY_PLUGGED_AC -> "AC"
     BatteryManager.BATTERY_PLUGGED_USB -> "USB"
     BatteryManager.BATTERY_PLUGGED_WIRELESS -> "WIRELESS"
     else -> default
 }
 
-internal fun stringifyBatteryStatus(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyBatteryStatus(flag: Int?, default: String = UNDEFINED) = when (flag) {
     BatteryManager.BATTERY_STATUS_CHARGING -> "CHARGING"
     BatteryManager.BATTERY_STATUS_DISCHARGING -> "DISCHARGING"
     BatteryManager.BATTERY_STATUS_FULL -> "FULL"
@@ -186,7 +185,7 @@ internal fun stringifyBatteryStatus(flag: Int?, default: String = UNKNOWN) = whe
     else -> default
 }
 
-internal fun stringifyCallType(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyCallType(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     CallLog.Calls.INCOMING_TYPE -> "INCOMING"
     CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
     CallLog.Calls.MISSED_TYPE -> "MISSED"
@@ -197,7 +196,7 @@ internal fun stringifyCallType(flag: Int?, default: String = UNKNOWN): String = 
     else -> default
 }
 
-internal fun stringifyCallPresentation(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyCallPresentation(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     CallLog.Calls.PRESENTATION_ALLOWED -> "ALLOWED"
     CallLog.Calls.PRESENTATION_PAYPHONE -> "PAYPHONE"
     CallLog.Calls.PRESENTATION_RESTRICTED -> "RESTRICTED"
@@ -206,7 +205,7 @@ internal fun stringifyCallPresentation(flag: Int?, default: String = UNKNOWN): S
 }
 
 
-internal fun stringifyMessageType(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyMessageType(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     Telephony.TextBasedSmsColumns.MESSAGE_TYPE_DRAFT -> "DRAFT"
     Telephony.TextBasedSmsColumns.MESSAGE_TYPE_FAILED -> "FAILED"
     Telephony.TextBasedSmsColumns.MESSAGE_TYPE_INBOX -> "INBOX"
@@ -217,7 +216,7 @@ internal fun stringifyMessageType(flag: Int?, default: String = UNKNOWN): String
 }
 
 
-internal fun stringifyBluetoothConnectionState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyBluetoothConnectionState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     BluetoothAdapter.STATE_CONNECTED -> "CONNECTED"
     BluetoothAdapter.STATE_CONNECTING -> "CONNECTING"
     BluetoothAdapter.STATE_DISCONNECTED -> "DISCONNECTED"
@@ -225,7 +224,7 @@ internal fun stringifyBluetoothConnectionState(flag: Int?, default: String = UNK
     else -> default
 }
 
-internal fun stringifyBluetoothState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyBluetoothState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     BluetoothAdapter.STATE_OFF -> "OFF"
     BluetoothAdapter.STATE_TURNING_OFF -> "TURNING_OFF"
     BluetoothAdapter.STATE_ON -> "ON"
@@ -233,21 +232,21 @@ internal fun stringifyBluetoothState(flag: Int?, default: String = UNKNOWN): Str
     else -> default
 }
 
-internal fun stringifyBluetoothScanMode(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyBluetoothScanMode(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     BluetoothAdapter.SCAN_MODE_CONNECTABLE -> "CONNECTABLE"
     BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE -> "CONNECTABLE_DISCOVERABLE"
     BluetoothAdapter.SCAN_MODE_NONE -> "NONE"
     else -> default
 }
 
-internal fun stringifyBluetoothHeadsetAudioState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyBluetoothHeadsetAudioState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     BluetoothHeadset.STATE_AUDIO_CONNECTED -> "CONNECTED"
     BluetoothHeadset.STATE_AUDIO_CONNECTING -> "CONNECTING"
     BluetoothHeadset.STATE_AUDIO_DISCONNECTED -> "DISCONNECTED"
     else -> default
 }
 
-internal fun stringifyUsbClass(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyUsbClass(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     UsbConstants.USB_CLASS_APP_SPEC -> "APP_SPEC"
     UsbConstants.USB_CLASS_AUDIO -> "AUDIO"
     UsbConstants.USB_CLASS_CDC_DATA -> "CDC_DATA"
@@ -268,7 +267,7 @@ internal fun stringifyUsbClass(flag: Int?, default: String = UNKNOWN): String = 
     else -> default
 }
 
-internal fun stringifyKeyMetaState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyKeyMetaState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     KeyEvent.META_ALT_LEFT_ON -> "ALT_LEFT_ON"
     KeyEvent.META_ALT_MASK -> "ALT_MASK"
     KeyEvent.META_ALT_ON -> "ALT_ON"
@@ -293,7 +292,7 @@ internal fun stringifyKeyMetaState(flag: Int?, default: String = UNKNOWN): Strin
     else -> default
 }
 
-internal fun stringifyKeyCode(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyKeyCode(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     KeyEvent.KEYCODE_0 -> "0"
     KeyEvent.KEYCODE_1 -> "1"
     KeyEvent.KEYCODE_11 -> "11"
@@ -586,14 +585,14 @@ internal fun stringifyKeyCode(flag: Int?, default: String = UNKNOWN): String = w
     else -> default
 }
 
-internal fun stringifyKeyAction(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyKeyAction(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     KeyEvent.ACTION_DOWN -> "DOWN"
     KeyEvent.ACTION_UP -> "UP"
     KeyEvent.ACTION_MULTIPLE -> "MULTIPLE"
     else -> default
 }
 
-internal fun stringifyDockState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyDockState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     Intent.EXTRA_DOCK_STATE_CAR -> "CAR"
     Intent.EXTRA_DOCK_STATE_DESK -> "DESK"
     Intent.EXTRA_DOCK_STATE_HE_DESK -> "HE_DESK"
@@ -602,14 +601,14 @@ internal fun stringifyDockState(flag: Int?, default: String = UNKNOWN): String =
     else -> default
 }
 
-internal fun stringifyCallState(flag: String?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyCallState(flag: String?, default: String = UNDEFINED): String = when (flag) {
     TelephonyManager.EXTRA_STATE_IDLE -> "IDLE"
     TelephonyManager.EXTRA_STATE_OFFHOOK -> "OFFHOOK"
     TelephonyManager.EXTRA_STATE_RINGING -> "RINGING"
     else -> default
 }
 
-internal fun stringifyWifiState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyWifiState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     WifiManager.WIFI_STATE_DISABLED -> "DISABLED"
     WifiManager.WIFI_STATE_DISABLING -> "DISABLING"
     WifiManager.WIFI_STATE_ENABLED -> "ENABLED"
@@ -618,57 +617,55 @@ internal fun stringifyWifiState(flag: Int?, default: String = UNKNOWN): String =
     else -> default
 }
 
-internal fun stringifyHeadsetState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyHeadsetState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     0 -> "UNPLUGGED"
     1 -> "PLUGGED"
     else -> default
 }
 
-internal fun stringifyRingerMode(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyRingerMode(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     AudioManager.RINGER_MODE_NORMAL -> "NORMAL"
     AudioManager.RINGER_MODE_SILENT -> "SILENT"
     AudioManager.RINGER_MODE_VIBRATE -> "VIBRATE"
     else -> default
 }
 
-internal fun stringifyScoAudioState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyScoAudioState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     AudioManager.SCO_AUDIO_STATE_DISCONNECTED -> "DISCONNECTED"
     AudioManager.SCO_AUDIO_STATE_CONNECTING -> "CONNECTING"
     AudioManager.SCO_AUDIO_STATE_CONNECTED -> "CONNECTED"
     else -> default
 }
 
-internal fun stringifyAudioPlugState(flag: Int?, default: String = UNKNOWN): String = when (flag) {
+internal fun stringifyAudioPlugState(flag: Int?, default: String = UNDEFINED): String = when (flag) {
     0 -> "UNPLUGGED"
     1 -> "PLUGGED"
     else -> default
 }
 
-internal fun stringifyNetworkTransport(capabilities: NetworkCapabilities, default: String = UNKNOWN) =
-        with(capabilities) {
-            listOfNotNull(
-                    if (hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) "BLUETOOTH" else null,
-                    if (hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) "CELLULAR" else null,
-                    if (hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) "WIFI" else null,
-                    if (hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) "BLUETOOTH" else null,
-                    if (hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) "ETHERNET" else null,
-                    if (hasTransport(NetworkCapabilities.TRANSPORT_VPN)) "VPN" else null,
-                    if (hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE)) "WIFI_AWARE" else null,
-                    if (hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN)) "LOWPAN" else null
-            )
-        }.sorted().joinToString(";").let {
-            if (it.isEmpty()) default else it
-        }
+internal fun stringifyNetworkTransport(capabilities: NetworkCapabilities?, default: String = UNDEFINED) =
+    capabilities?.let {
+        listOfNotNull(
+            if (it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) "BLUETOOTH" else null,
+            if (it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) "CELLULAR" else null,
+            if (it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) "WIFI" else null,
+            if (it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) "BLUETOOTH" else null,
+            if (it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) "ETHERNET" else null,
+            if (it.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) "VPN" else null,
+            if (it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE)) "WIFI_AWARE" else null,
+            if (it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN)) "LOWPAN" else null
+        ).sorted().joinToString(";")
+    }?.takeIf { it.isNotBlank() } ?: default
 
 
-internal fun stringifyNotificationVisibility(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyNotificationVisibility(flag: Int?, default: String = UNDEFINED) = when (flag) {
     Notification.VISIBILITY_PRIVATE -> "PRIVATE"
     Notification.VISIBILITY_PUBLIC -> "PUBLIC"
     Notification.VISIBILITY_SECRET -> "SECRET"
     else -> default
 }
 
-internal fun stringifyNotificationCategory(flag: String?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyNotificationCategory(flag: String?, default: String = UNDEFINED) = when (flag) {
     Notification.CATEGORY_ALARM -> "ALARM"
     Notification.CATEGORY_CALL -> "CALL"
     Notification.CATEGORY_EMAIL -> "EMAIL"
@@ -688,7 +685,7 @@ internal fun stringifyNotificationCategory(flag: String?, default: String = UNKN
     else -> default
 }
 
-internal fun stringifyNotificationPriority(flag: Int?, default: String = UNKNOWN) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+internal fun stringifyNotificationPriority(flag: Int?, default: String = UNDEFINED) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
     when (flag) {
         NotificationManager.IMPORTANCE_DEFAULT -> "DEFAULT"
         NotificationManager.IMPORTANCE_HIGH -> "HIGH"
@@ -709,7 +706,7 @@ internal fun stringifyNotificationPriority(flag: Int?, default: String = UNKNOWN
     }
 }
 
-internal fun stringifyFitnessDeviceType(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifyFitnessDeviceType(flag: Int?, default: String = UNDEFINED) = when (flag) {
     Device.TYPE_UNKNOWN -> "UNKNOWN"
     Device.TYPE_PHONE -> "PHONE"
     Device.TYPE_TABLET -> "TABLET"
@@ -720,14 +717,14 @@ internal fun stringifyFitnessDeviceType(flag: Int?, default: String = UNKNOWN) =
     else -> default
 }
 
-internal fun stringifySensorAccuracy(flag: Int?, default: String = UNKNOWN) = when (flag) {
+internal fun stringifySensorAccuracy(flag: Int?, default: String = UNDEFINED) = when (flag) {
     SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "HIGH"
     SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "MEDIUM"
     SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "LOW"
     else -> default
 }
 
-internal fun stringifyContactType(flag: Int?, default: String = UNKNOWN): String? = when (flag) {
+internal fun stringifyContactType(flag: Int?, default: String = UNDEFINED): String? = when (flag) {
     ContactsContract.CommonDataKinds.Phone.TYPE_ASSISTANT -> "ASSISTANT"
     ContactsContract.CommonDataKinds.Phone.TYPE_CALLBACK -> "CALLBACK"
     ContactsContract.CommonDataKinds.Phone.TYPE_CAR -> "CAR"

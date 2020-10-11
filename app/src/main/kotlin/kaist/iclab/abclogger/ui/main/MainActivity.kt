@@ -17,7 +17,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.animation.AnimationUtils
 import com.google.android.material.textview.MaterialTextView
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.core.ui.BaseActivity
+import kaist.iclab.abclogger.ui.base.BaseActivity
 import kaist.iclab.abclogger.commons.showToast
 import kaist.iclab.abclogger.databinding.ActivityMainBinding
 import kaist.iclab.abclogger.core.Log
@@ -97,8 +97,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             .circleCrop()
             .transition(DrawableTransitionOptions.withCrossFade())
             .into(imgAvatar)
-        txtEmail.text = AuthRepository.email()
-        txtName.text = AuthRepository.name()
+        txtEmail.text = AuthRepository.email
+        txtName.text = AuthRepository.name
     }
 
     private fun animateToBottomNav(slideDown: Boolean) {

@@ -52,6 +52,14 @@
         android:layout_height="wrap_content"
         android:text="Switch" />
 
+    <Spinner
+        android:id="@+id/spinner2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:spinnerMode="dropdown"
+        android:entries="@android:array/emailAddressTypes" />
+
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
@@ -62,6 +70,7 @@
             android:layout_height="wrap_content"
             android:hint="hint"
             android:text="341234" />
+
     </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

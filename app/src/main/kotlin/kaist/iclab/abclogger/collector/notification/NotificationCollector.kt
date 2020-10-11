@@ -35,7 +35,8 @@ class NotificationCollector(
 
     override val setupIntent: Intent? = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
 
-    override fun isAvailable(): Boolean = context.packageName in NotificationManagerCompat.getEnabledListenerPackages(context)
+    override fun isAvailable(): Boolean =
+        context.packageName in NotificationManagerCompat.getEnabledListenerPackages(context)
 
     override fun getDescription(): Array<Description> = arrayOf()
 
@@ -50,7 +51,8 @@ class NotificationCollector(
         recordsUploaded += entities.size
     }
 
-    override suspend fun list(limit: Long): Collection<NotificationEntity> = dataRepository.find(0, limit)
+    override suspend fun list(limit: Long): Collection<NotificationEntity> =
+        dataRepository.find(0, limit)
 
     class NotificationCollectorService : NotificationListenerService() {
         private val collector: NotificationCollector by inject()
@@ -71,9 +73,20 @@ class NotificationCollector(
             handleNotificationReceived(sbn, System.currentTimeMillis(), false)
         }
 
-        private fun handleNotificationReceived(sbn: StatusBarNotification, timestamp: Long, isPosted: Boolean) = collector.launch {
+        private fun handleNotificationReceived(
+            sbn: StatusBarNotification,
+            timestamp: Long,
+            isPosted: Boolean
+        ) = collector.launch {
             val notification = sbn.notification ?: return@launch
             if (NotificationRepository.isSync(sbn.id) && sbn.packageName == packageName) return@launch
+
+            val key = sbn.key
+            val groupKey = sbn.groupKey
+            val notificationId = sbn.id
+            val tag = sbn.tag
+            val isClearable = sbn.isClearable
+            val isOngoing = sbn.isOngoing
 
             val postTime = sbn.postTime
             val packageName = sbn.packageName
@@ -83,7 +96,8 @@ class NotificationCollector(
             val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
             val subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString() ?: ""
             val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
-            val summaryText = extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
+            val summaryText =
+                extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
             val infoText = extras.getCharSequence(Notification.EXTRA_INFO_TEXT)?.toString() ?: ""
             val vibrate: String
             val sound: String
@@ -107,26 +121,41 @@ class NotificationCollector(
             }
 
             val entity = NotificationEntity(
-                    name = getApplicationName(packageManager = packageManager, packageName = packageName)
-                            ?: "",
-                    packageName = packageName ?: "",
-                    postTime = postTime,
-                    isSystemApp = isSystemApp(packageManager = packageManager, packageName = packageName),
-                    isUpdatedSystemApp = isUpdatedSystemApp(packageManager = packageManager, packageName = packageName),
-                    title = title,
-                    bigTitle = bigTitle,
-                    text = text,
-                    subText = subText,
-                    bigText = bigText,
-                    summaryText = summaryText,
-                    infoText = infoText,
-                    visibility = stringifyNotificationVisibility(notification.visibility),
-                    category = stringifyNotificationCategory(notification.category),
-                    priority = priority,
-                    vibrate = vibrate,
-                    sound = sound,
-                    lightColor = lightColor,
-                    isPosted = isPosted
+                key = key,
+                groupKey = groupKey,
+                notificationId = notificationId,
+                tag = tag,
+                isClearable = isClearable,
+                isOngoing = isOngoing,
+                name = getApplicationName(
+                    packageManager = packageManager,
+                    packageName = packageName
+                )
+                    ?: "",
+                packageName = packageName ?: "",
+                postTime = postTime,
+                isSystemApp = isSystemApp(
+                    packageManager = packageManager,
+                    packageName = packageName
+                ),
+                isUpdatedSystemApp = isUpdatedSystemApp(
+                    packageManager = packageManager,
+                    packageName = packageName
+                ),
+                title = title,
+                bigTitle = bigTitle,
+                text = text,
+                subText = subText,
+                bigText = bigText,
+                summaryText = summaryText,
+                infoText = infoText,
+                visibility = stringifyNotificationVisibility(notification.visibility),
+                category = stringifyNotificationCategory(notification.category),
+                priority = priority,
+                vibrate = vibrate,
+                sound = sound,
+                lightColor = lightColor,
+                isPosted = isPosted
             )
 
             collector.put(entity, timestamp)

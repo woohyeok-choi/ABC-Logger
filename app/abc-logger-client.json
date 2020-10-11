@@ -1,0 +1,9 @@
+{
+  "server_address": "abc.kaist.ac.kr:50030",
+  "server_auth_token": "abclogger-android-client",
+  "test_server_address": "143.248.90.87:50030",
+  "keystore_path": "F:/Certificates/abclogger.jks",
+  "keystore_password": "iclabsystem12!@",
+  "key_alias": "abclogger",
+  "key_password": "iclabsystem12!@"
+}

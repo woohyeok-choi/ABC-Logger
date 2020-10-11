@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="general_hyphen" translatable="false">-</string>
+    <string name="general_mdash" translatable="false">&#8212;</string>
     <string name="general_unknown">Unknown</string>
 
     <string name="action_refresh">Refresh</string>
@@ -11,18 +11,16 @@
 
     <!-- Config -->
     <string name="config_category_general">General</string>
-    <string name="config_user_name_title">User name</string>
-    <string name="config_app_version_title">Version</string>
-    <string name="config_permission_title">Permission</string>
-    <string name="config_permission_text_granted">Granted</string>
-    <string name="config_permission_text_denied">Denied</string>
-    <string name="config_battery_optimization_ignore_title">Battery Optimization</string>
-    <string name="config_battery_optimization_ignore_text_ignored">Ignored</string>
-    <string name="config_battery_optimization_ignore_text_not_ignored">Not ignored</string>
-    <string name="config_others_ntf_management_title">Notification Management</string>
-    <string name="config_others_ntf_management_text">Open a setting for notifications.</string>
-    <string name="config_data_size_title">Data Size on Disk</string>
-    <string name="config_data_size_dialog">Do you want to really remove data?</string>
+    <string name="config_general_user_name_title">User name</string>
+    <string name="config_general_group_name_title">Group</string>
+    <string name="config_general_permission_title">Permission</string>
+    <string name="config_general_permission_text_granted">Granted</string>
+    <string name="config_general_permission_text_denied">Denied</string>
+    <string name="config_general_battery_optimization_ignore_title">Battery Optimization</string>
+    <string name="config_general_battery_optimization_ignore_text_ignored">Ignored</string>
+    <string name="config_general_battery_optimization_ignore_text_not_ignored">Not ignored</string>
+    <string name="config_general_data_size_title">Data Size on Disk</string>
+    <string name="config_general_data_size_dialog">Do you want to really remove data?</string>
 
     <string name="config_category_sync">Sync</string>
     <string name="config_sync_status_title">Last Sync Time</string>
@@ -47,7 +45,10 @@
     <string name="config_category_others">Others</string>
     <string name="config_others_setting_title">Setting</string>
     <string name="config_others_setting_text">Open a setting.</string>
+    <string name="config_others_ntf_management_title">Notification Management</string>
+    <string name="config_others_ntf_management_text">Open a setting for notifications.</string>
     <string name="config_others_sign_out_title">Sign Out</string>
+    <string name="config_others_version_title">Version</string>
     <string name="config_others_sign_out_text">Stop collecting data and sign out.</string>
     <string name="config_others_sign_out_dialog">Do you want to really sign-out?</string>
 
@@ -80,6 +81,7 @@
     <!-- Strings for survey list and response -->
     <string name="survey_hint_for_others">Others</string>
     <string name="survey_hint_for_text">Response</string>
+    <string name="survey_hint_for_dropdown">Unselected</string>
     <string name="survey_msg_no_records">No surveys in %1s.</string>
     <string name="survey_msg_error_occurs">Error occurs in loading data from %1s.</string>
     <string name="survey_msg_failed_load_response">Failed to load response.</string>
@@ -113,7 +115,7 @@
 
     <!-- Notification -->
     <string name="ntf_foreground_title">ABC Logger is operating&#8230;</string>
-    <string name="ntf_foreground_text">Collected %1s records / Uploaded %2s records.</string>
+    <string name="ntf_foreground_text">You have provided %1s records in total.</string>
 
     <string name="ntf_sync_title">Sync</string>
     <string name="ntf_sync_text_initialize">Preparing for sync&#8230;</string>
@@ -206,6 +208,9 @@
     <string name="collector_embedded_sensor_info_light_supported">Light Sensor</string>
     <string name="collector_embedded_sensor_info_sensor_supported">Supported</string>
     <string name="collector_embedded_sensor_info_sensor_none">None</string>
+
+    <string name="settings_undo_title">Revert</string>
+    <string name="settings_undo_message">Do you want to revert any changes?</string>
 
    <!-- Settings for collector -->
     <string name="setting_key_log_keyboard_type_title">Type of Korean Soft-Keyboard</string>
@@ -351,7 +356,7 @@
     <string name="error_precondition_invalid_format">Invalid format</string>
 
     <string name="error_sync">Sync error</string>
-    <string name="error_sync_network_changed">Network status is changed during sync.</string>
+    <string name="error_sync_network_unavailable">Unavailable network.</string>
     <string name="error_sync_canceled">Request is canceled.</string>
     <string name="error_sync_unknown">Unknown error occurs.</string>
     <string name="error_sync_invalid_argument">Invalid argument.</string>

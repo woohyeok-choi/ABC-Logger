@@ -213,8 +213,8 @@ val collectorModules = module {
         DataTrafficCollector(
             context = androidContext(),
             qualifiedName = "${BuildConfig.APPLICATION_ID}.collector.DataTrafficCollector",
-            name = androidContext().getString(R.string.collector_wifi_name),
-            description = androidContext().getString(R.string.collector_wifi_desc),
+            name = androidContext().getString(R.string.collector_traffic_name),
+            description = androidContext().getString(R.string.collector_traffic_desc),
             dataRepository = get()
         )
     }

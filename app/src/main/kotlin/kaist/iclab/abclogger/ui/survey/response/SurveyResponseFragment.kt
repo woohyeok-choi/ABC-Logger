@@ -9,15 +9,15 @@ import androidx.navigation.NavDeepLinkBuilder
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.RecyclerView
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.core.ui.BaseViewModelFragment
+import kaist.iclab.abclogger.ui.base.BaseViewModelFragment
 import kaist.iclab.abclogger.collector.survey.InternalResponseEntity
 import kaist.iclab.abclogger.collector.survey.InternalSurveyEntity
 import kaist.iclab.abclogger.commons.AbcError
 import kaist.iclab.abclogger.commons.Formatter
 import kaist.iclab.abclogger.commons.crossFade
 import kaist.iclab.abclogger.commons.showSnackBar
-import kaist.iclab.abclogger.core.Log
 import kaist.iclab.abclogger.core.NotificationRepository
 import kaist.iclab.abclogger.databinding.FragmentSurveyResponseBinding
 import kaist.iclab.abclogger.ui.State
@@ -26,7 +26,6 @@ import kaist.iclab.abclogger.ui.survey.sharedViewNameForMessage
 import kaist.iclab.abclogger.ui.survey.sharedViewNameForTitle
 import kaist.iclab.abclogger.ui.survey.SurveyViewModel
 import kotlinx.coroutines.flow.collectLatest
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.stateSharedViewModel
 
 class SurveyResponseFragment : BaseViewModelFragment<FragmentSurveyResponseBinding, SurveyViewModel>() {
@@ -65,6 +64,19 @@ class SurveyResponseFragment : BaseViewModelFragment<FragmentSurveyResponseBindi
 
         viewBinding.recyclerView.adapter = adapter
         viewBinding.recyclerView.itemAnimator = DefaultItemAnimator()
+        viewBinding.recyclerView.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                rv.requestFocusFromTouch()
+                return false
+            }
+
+            override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
+            }
+
+            override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
+            }
+
+        })
     }
 
     override fun afterViewCreated(viewBinding: FragmentSurveyResponseBinding) {
@@ -77,7 +89,6 @@ class SurveyResponseFragment : BaseViewModelFragment<FragmentSurveyResponseBindi
                         viewBinding.txtError.visibility = View.GONE
                     }
                     is State.Failure -> {
-                        Log.e(this@SurveyResponseFragment.javaClass, state.error)
                         showSnackBar(viewBinding.root, AbcError.wrap(state.error).toSimpleString(requireContext()))
 
                         crossFade(

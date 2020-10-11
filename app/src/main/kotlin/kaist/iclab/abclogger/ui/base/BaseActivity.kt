@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.core.ui
+package kaist.iclab.abclogger.ui.base
 
 import android.os.Bundle
 import android.view.LayoutInflater

@@ -91,6 +91,5 @@ class ConfigDataAdapter : RecyclerView.Adapter<ConfigDataAdapter.ViewHolder>() {
     companion object {
         private const val VIEW_TYPE_HEADER = 0x0
         private const val VIEW_TYPE_ITEM = 0x1
-        private const val VIEW_TYPE_COLLECTOR_ITEM = 0x2
     }
 }

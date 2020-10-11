@@ -4,10 +4,8 @@ import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kaist.iclab.abclogger.collector.external.PolarH10Collector
-import kaist.iclab.abclogger.core.ui.BaseViewModel
+import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kaist.iclab.abclogger.commons.AbcError
-import kaist.iclab.abclogger.commons.CollectorError
-import kaist.iclab.abclogger.core.collector.Status
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -100,7 +98,6 @@ class PolarH10ViewModel(
                 ecgChannel.send(null)
             }
         } catch (e: Exception) {
-            errorChannel.offer(AbcError.wrap(e))
         }
     }
 }

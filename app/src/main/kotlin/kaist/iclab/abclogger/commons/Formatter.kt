@@ -17,7 +17,8 @@ object Formatter {
                 DateUtils.FORMAT_SHOW_TIME or
                         DateUtils.FORMAT_SHOW_DATE or
                         DateUtils.FORMAT_SHOW_WEEKDAY or
-                        DateUtils.FORMAT_SHOW_YEAR
+                        DateUtils.FORMAT_SHOW_YEAR or
+                        DateUtils.FORMAT_ABBREV_ALL
         )
 
     @JvmStatic

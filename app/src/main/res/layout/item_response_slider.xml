@@ -73,35 +73,36 @@
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/txt_slider_from"
+                        index="@{0}"
+                        textSet="@{answer.main}"
+                        defaultValue="@{String.valueOf(option.min)}"
                         android:layout_width="@dimen/item_width"
                         android:layout_height="wrap_content"
-                        android:hint="@string/general_hyphen"
+                        android:hint="@string/general_mdash"
                         android:gravity="start"
-                        android:textAppearance="?attr/textAppearanceSubtitle1"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:textAppearance="?attr/textAppearanceBody2"
                         android:paddingEnd="@dimen/space_horiz_padding"
                         android:paddingStart="0dp"
                         android:enabled="@{isEnabled}"
-                        textSet="@{answer.main}"
-                        index="@{0}"
-                        tools:text="150"/>
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="150" />
 
                     <com.google.android.material.slider.Slider
                         android:id="@+id/range_slider"
-                        android:layout_width="0dp"
-                        minValue="@{option.min}"
-                        maxValue="@{option.max}"
-                        stepValue="@{option.step}"
-                        defaultValue="@{option.min}"
                         answer="@={answer.main}"
+                        defaultValue="@{option.min}"
+                        maxValue="@{option.max}"
+                        minValue="@{option.min}"
+                        stepValue="@{option.step}"
+                        android:layout_width="0dp"
                         android:enabled="@{isEnabled}"
                         android:layout_height="wrap_content"
-                        app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintLeft_toRightOf="@id/txt_slider_from"
-                        app:layout_constraintRight_toRightOf="parent"/>
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -113,7 +114,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="@dimen/space_vert_margin"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:layout_marginTop="@dimen/margin_top_text_input_layout"
                 android:enabled="@{isEnabled}"
                 android:hint="@string/survey_hint_for_others"
                 android:paddingBottom="@dimen/space_vert_padding"

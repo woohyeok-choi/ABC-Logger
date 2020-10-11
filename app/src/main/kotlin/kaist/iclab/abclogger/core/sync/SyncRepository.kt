@@ -41,190 +41,172 @@ import kotlinx.coroutines.flow.Flow
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 class SyncRepository(context: Context, params: WorkerParameters) :
-    AbstractNetworkRepository<DataOperationsGrpcKt.DataOperationsCoroutineStub>(context, params),
+    AbstractNetworkRepository(context, params),
     KoinComponent {
     private val collectorRepository: CollectorRepository by inject()
+
     private val cancelIntent by lazy {
         WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
     }
 
-    override val stub: DataOperationsGrpcKt.DataOperationsCoroutineStub by lazy {
+    val stub: DataOperationsGrpcKt.DataOperationsCoroutineStub by lazy {
         DataOperationsGrpcKt.DataOperationsCoroutineStub(channel)
     }
 
-    override suspend fun doWork(): Result {
-        if (!checkNetworkConstraints()) return Result.retry()
+    private val nTotalRecords = AtomicLong(0L)
+    private val nUploadedRecords = AtomicLong(0L)
 
+    override suspend fun doWork(): Result {
         setForeground(NotificationRepository.syncInitialize(applicationContext, cancelIntent))
 
-        val throwable: Throwable? = withContext(dispatcher) {
-            val totalCount = collectorRepository.countLocalRecords()
-            var totalUploadCount = 0L
+        return try {
+            val totalRecords = collectorRepository.nLocalRecords()
 
-            if (totalCount <= 0) return@withContext null
-
-            for (collector in collectorRepository.all) {
-                val throwable = upload(SIZE_BULK, collector) { size ->
-                    totalUploadCount += size
-                    val progress = NotificationRepository.syncProgress(
-                        context = applicationContext,
-                        max = totalCount,
-                        progress = totalUploadCount,
-                        cancelIntent = cancelIntent
+            if (totalRecords > 0) {
+                nTotalRecords.set(totalRecords)
+                collectorRepository.all.forEach { collector ->
+                    uploadData(
+                        collector = collector,
+                        stub = stub.withDeadlineAfter(1, TimeUnit.MINUTES)
                     )
-                    setForeground(progress)
                 }
-
-                if (throwable != null) return@withContext throwable
             }
 
-            return@withContext null
-        }
-
-        shutdown()
-
-        return if (throwable == null) {
             setForeground(NotificationRepository.syncSuccess(applicationContext))
             Preference.lastTimeDataSync = System.currentTimeMillis()
+
             Result.success()
-        } else {
-            val isRetry = isRetryableException(throwable)
-            val wrapException = when (throwable) {
-                is StatusRuntimeException -> SyncError.fromStatusRuntimeException(throwable)
-                else -> throwable
-            }
-            setForeground(NotificationRepository.syncFailure(applicationContext, wrapException))
-            Log.e(javaClass, wrapException, report = true)
+        } catch (e: Exception) {
+            val abcError = AbcError.wrap(e)
+            setForeground(NotificationRepository.syncFailure(applicationContext, abcError))
+            Log.e(javaClass, abcError, report = true)
+
+            val isRetry = isRetry(e)
 
             if (isRetry) Result.retry() else Result.failure()
+        } finally {
+            shutdown()
         }
     }
 
-    private fun <T : AbstractEntity> toDatum(entities: Collection<T>) = entities.map { entity ->
-        proto(DatumProtos.Datum.newBuilder()) {
-            timestamp = entity.timestamp
-            utcOffsetSec = entity.utcOffset
-            uploadTime = System.currentTimeMillis()
-            subject = proto(SubjectProtos.Subject.newBuilder()) {
-                groupName = entity.groupName
-                email = entity.email
-                instanceId = entity.instanceId
-                source = entity.source
-                deviceManufacturer = entity.deviceManufacturer
-                deviceModel = entity.deviceModel
-                deviceVersion = entity.deviceVersion
-                deviceOs = entity.deviceOs
-                appId = entity.appId
-                appVersion = entity.appVersion
-            }
+    private suspend fun updateProgress(nUploads: Int) {
+        val progress = NotificationRepository.syncProgress(
+            context = applicationContext,
+            max = nTotalRecords.get(),
+            progress = nUploadedRecords.addAndGet(nUploads.toLong()),
+            cancelIntent = cancelIntent
+        )
 
-            when (entity) {
-                is PhysicalActivityEntity -> physicalActivity = toProto(entity)
-                is PhysicalActivityTransitionEntity -> physicalActivityTransition = toProto(entity)
-                is AppUsageEventEntity -> appUsageEvent = toProto(entity)
-                is BatteryEntity -> battery = toProto(entity)
-                is BluetoothEntity -> bluetooth = toProto(entity)
-                is CallLogEntity -> callLog = toProto(entity)
-                is DeviceEventEntity -> deviceEvent = toProto(entity)
-                is EmbeddedSensorEntity -> embeddedSensor = toProto(entity)
-                is ExternalSensorEntity -> externalSensor = toProto(entity)
-                is InstalledAppEntity -> installedApp = toProto(entity)
-                is KeyLogEntity -> keyLog = toProto(entity)
-                is LocationEntity -> location = toProto(entity)
-                is MediaEntity -> media = toProto(entity)
-                is MessageEntity -> message = toProto(entity)
-                is NotificationEntity -> notification = toProto(entity)
-                is FitnessEntity -> fitness = toProto(entity)
-                is SurveyEntity -> survey = toProto(entity)
-                is DataTrafficEntity -> dataTraffic = toProto(entity)
-                is WifiEntity -> wifi = toProto(entity)
-            }
-        }
+        setForeground(progress)
     }
 
-    private fun checkNetworkConstraints(): Boolean {
-        if (!isNetworkAvailable(applicationContext)) {
-            return false
-        }
-
-        if (!isNonMeteredNetworkAvailable(applicationContext) && Preference.isSyncableWithWifiOnly) {
-            return false
-        }
-
-        return true
-    }
-
-    @SuppressLint("CheckResult")
-    private suspend fun <T : AbstractCollector<E>, E : AbstractEntity> upload(
-        bulkSize: Long,
+    private suspend fun <T : AbstractCollector<E>, E : AbstractEntity> uploadData(
         collector: T,
-        block: suspend (Long) -> Unit
-    ): Throwable? {
-        val totalSize = collector.count()
-        var uploadSize = 0L
+        stub: DataOperationsGrpcKt.DataOperationsCoroutineStub
+    ) {
+        withContext(dispatcher) {
+            val nRecords = collector.count()
+            var nUploads = 0L
 
-        val deadlineStub = stub.withDeadlineAfter(DEADLINE_STUB, TimeUnit.MILLISECONDS)
+            while(nRecords > nUploads) {
+                val entities = collector.list(SIZE_BULK)
+                val size = entities.size
+                val bulk = toProto(entities)
 
-        while (uploadSize < totalSize) {
-            val entities = collector.list(bulkSize)
-            val size = entities.size
+                uploadBulk(
+                    bulk = bulk,
+                    stub = stub,
+                    maxRetries = MAX_RETRY_ATTEMPTS,
+                    backOffDelayMs = TimeUnit.SECONDS.toMillis(15)
+                )
 
-            if (size == 0) break
+                collector.flush(entities)
+                nUploads += size
 
-            val bulkProto = proto(ServiceProtos.Bulk.Data.newBuilder()) {
-                addAllDatum(toDatum(entities))
+                updateProgress(size)
             }
-
-            val throwable = upload(bulkProto, deadlineStub)
-            if (throwable != null) {
-                return throwable
-            }
-
-            collector.flush(entities)
-
-            uploadSize += size
-            block.invoke(size.toLong())
         }
-
-        return null
     }
 
     @SuppressLint("CheckResult")
-    private suspend fun upload(
-        bulkProto: ServiceProtos.Bulk.Data,
-        stub: DataOperationsGrpcKt.DataOperationsCoroutineStub
-    ): Throwable? {
-        var trial = 0
+    private suspend fun uploadBulk(
+        bulk: ServiceProtos.Bulk.Data,
+        stub: DataOperationsGrpcKt.DataOperationsCoroutineStub,
+        maxRetries: Int,
+        backOffDelayMs: Long
+    ) {
         var throwable: Throwable? = null
 
-        while (trial < MAX_RETRY_ATTEMPTS) {
+        for (trial in (0 until maxRetries)) {
             try {
-                trial++
+                if (!isNetworkAvailable(applicationContext)) throw SyncError.unavailableNetwork()
+                if (!isNonMeteredNetworkAvailable(applicationContext) && Preference.isSyncableWithWifiOnly) throw SyncError.unavailableNetwork()
 
-                if (!checkNetworkConstraints()) throw SyncError.networkStatusChanged()
-
-                throwable = null
-
-                stub.createData(bulkProto)
+                stub.createData(bulk)
                 break
             } catch (e: Exception) {
+                delay(backOffDelayMs)
                 throwable = e
-
-                if (!isRetryableException(e)) break
             }
-
-            delay(INTERVAL_RETRY)
         }
 
-        return throwable
+        if (throwable != null) throw throwable
     }
 
-    private fun isRetryableException(throwable: Throwable) = when (throwable) {
+    private fun isRetry(throwable: Throwable) = when (throwable) {
         is SyncError -> throwable.isRetry
         is StatusRuntimeException -> SyncError.fromStatusRuntimeException(throwable).isRetry
         else -> false
+    }
+
+    private fun <T : AbstractEntity> toProto(entities: Collection<T>) : ServiceProtos.Bulk.Data {
+        val data = entities.map { entity ->
+            proto(DatumProtos.Datum.newBuilder()) {
+                timestamp = entity.timestamp
+                utcOffsetSec = entity.utcOffset
+                uploadTime = System.currentTimeMillis()
+                subject = proto(SubjectProtos.Subject.newBuilder()) {
+                    groupName = entity.groupName
+                    email = entity.email
+                    instanceId = entity.instanceId
+                    source = entity.source
+                    deviceManufacturer = entity.deviceManufacturer
+                    deviceModel = entity.deviceModel
+                    deviceVersion = entity.deviceVersion
+                    deviceOs = entity.deviceOs
+                    appId = entity.appId
+                    appVersion = entity.appVersion
+                }
+
+                when (entity) {
+                    is PhysicalActivityEntity -> physicalActivity = toProto(entity)
+                    is PhysicalActivityTransitionEntity -> physicalActivityTransition = toProto(entity)
+                    is AppUsageEventEntity -> appUsageEvent = toProto(entity)
+                    is BatteryEntity -> battery = toProto(entity)
+                    is BluetoothEntity -> bluetooth = toProto(entity)
+                    is CallLogEntity -> callLog = toProto(entity)
+                    is DeviceEventEntity -> deviceEvent = toProto(entity)
+                    is EmbeddedSensorEntity -> embeddedSensor = toProto(entity)
+                    is ExternalSensorEntity -> externalSensor = toProto(entity)
+                    is InstalledAppEntity -> installedApp = toProto(entity)
+                    is KeyLogEntity -> keyLog = toProto(entity)
+                    is LocationEntity -> location = toProto(entity)
+                    is MediaEntity -> media = toProto(entity)
+                    is MessageEntity -> message = toProto(entity)
+                    is NotificationEntity -> notification = toProto(entity)
+                    is FitnessEntity -> fitness = toProto(entity)
+                    is SurveyEntity -> survey = toProto(entity)
+                    is DataTrafficEntity -> dataTraffic = toProto(entity)
+                    is WifiEntity -> wifi = toProto(entity)
+                }
+            }
+        }
+        return proto(ServiceProtos.Bulk.Data.newBuilder()) {
+            addAllDatum(data)
+        }
     }
 
     private fun toProto(entity: PhysicalActivityEntity) =
@@ -310,7 +292,7 @@ class SyncRepository(context: Context, params: WorkerParameters) :
             deviceType = entity.deviceType
             valueType = entity.valueType
             identifier = entity.identifier
-            putAllStatus(entity.status)
+            putAllOthers(entity.others)
             valueFormat = entity.valueFormat
             valueUnit = entity.valueUnit
             addAllValue(entity.values)
@@ -366,6 +348,12 @@ class SyncRepository(context: Context, params: WorkerParameters) :
     }
 
     private fun toProto(entity: NotificationEntity) = proto(DatumProtos.Notification.newBuilder()) {
+        key = entity.key
+        groupKey = entity.groupKey
+        notificationId = entity.notificationId
+        tag = entity.tag
+        isClearable = entity.isClearable
+        isOngoing = entity.isOngoing
         name = entity.name
         packageName = entity.packageName
         isSystemApp = entity.isSystemApp
@@ -451,8 +439,6 @@ class SyncRepository(context: Context, params: WorkerParameters) :
     companion object {
         private const val SIZE_BULK = 500L
         private const val MAX_RETRY_ATTEMPTS = 5
-        private const val INTERVAL_RETRY = 1000L * 5
-        private const val DEADLINE_STUB = 1000L * 60 * 5
         private const val INTERVAL_MINUTE = 60L
 
         private const val NAME_PERIODIC_WORKER =
@@ -486,6 +472,7 @@ class SyncRepository(context: Context, params: WorkerParameters) :
             initialDelay: Long
         ): Flow<Operation.State>? {
             val manager = WorkManager.getInstance(context)
+
             val isIdle = manager.getWorkInfosForUniqueWork(
                 if (isPeriodic) NAME_PERIODIC_WORKER else NAME_ONETIME_WORKER
             ).await().find {

@@ -44,9 +44,9 @@ class PolarH10Collector(
 
     var deviceConnectionStatus by ReadWriteStatusString("")
         private set
-    var deviceBatteryLevel by ReadWriteStatusInt(0)
+    var deviceBatteryLevel by ReadWriteStatusInt(Int.MIN_VALUE)
         private set
-    var deviceRssi by ReadWriteStatusInt(0)
+    var deviceRssi by ReadWriteStatusInt(Int.MIN_VALUE)
         private set
     var deviceName by ReadWriteStatusString("")
         private set
@@ -273,7 +273,7 @@ class PolarH10Collector(
                 deviceType = DEVICE_TYPE,
                 valueType = "HR",
                 identifier = identifier,
-                status = mapOf(
+                others = mapOf(
                     "contactStatus" to contactStatus.toString(),
                     "contactStatusSupported" to contactStatusSupported.toString(),
                     "rrAvailable" to rrAvailable.toString()
@@ -292,7 +292,7 @@ class PolarH10Collector(
                 deviceType = DEVICE_TYPE,
                 valueType = "RR-Interval-Second",
                 identifier = identifier,
-                status = mapOf(
+                others = mapOf(
                     "contactStatus" to contactStatus.toString(),
                     "contactStatusSupported" to contactStatusSupported.toString(),
                     "rrAvailable" to rrAvailable.toString()
@@ -307,7 +307,7 @@ class PolarH10Collector(
                 deviceType = DEVICE_TYPE,
                 valueType = "RR-Interval-Millis",
                 identifier = identifier,
-                status = mapOf(
+                others = mapOf(
                     "contactStatus" to contactStatus.toString(),
                     "contactStatusSupported" to contactStatusSupported.toString(),
                     "rrAvailable" to rrAvailable.toString()
@@ -346,7 +346,7 @@ class PolarH10Collector(
                 deviceType = DEVICE_TYPE,
                 valueType = "ACCELEROMETER",
                 identifier = identifier,
-                valueFormat = "INT,INT,INT(X,Y,Z)",
+                valueFormat = "INT,INT,INT (X,Y,Z)",
                 valueUnit = "MILLI_G",
                 values = samples.map { "${it.first},${it.second},${it.third}" }
             )
@@ -378,8 +378,8 @@ class PolarH10Collector(
         R.string.collector_polar_h10_info_status with deviceConnectionStatus,
         R.string.collector_polar_h10_info_name with deviceName,
         R.string.collector_polar_h10_info_address with deviceAddress,
-        R.string.collector_polar_h10_info_battery with deviceBatteryLevel,
-        R.string.collector_polar_h10_info_rssi with deviceRssi
+        R.string.collector_polar_h10_info_battery with (deviceBatteryLevel.takeIf { it >= 0 } ?: ""),
+        R.string.collector_polar_h10_info_rssi with (deviceRssi.takeIf { it >= 0 } ?: "")
     )
 
     override suspend fun onStart() {

@@ -5,12 +5,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.CallSuper
+import androidx.lifecycle.lifecycleScope
 import androidx.viewbinding.ViewBinding
 import kaist.iclab.abclogger.R
-import kaist.iclab.abclogger.core.ui.BaseViewModel
-import kaist.iclab.abclogger.core.ui.BaseViewModelActivity
+import kaist.iclab.abclogger.ui.base.BaseViewModel
+import kaist.iclab.abclogger.ui.base.BaseViewModelActivity
 import kaist.iclab.abclogger.commons.crossFade
 import kaist.iclab.abclogger.databinding.ActivitySettingBinding
+import kaist.iclab.abclogger.dialog.VersatileDialog
 
 abstract class AbstractSettingActivity<V : ViewBinding, VM : BaseViewModel> : BaseViewModelActivity<ActivitySettingBinding, VM>() {
     lateinit var childBinding: V
@@ -27,7 +29,7 @@ abstract class AbstractSettingActivity<V : ViewBinding, VM : BaseViewModel> : Ba
     }
 
     override fun afterViewInflate() {
-        viewBinding.nestedScrollView.visibility = View.GONE
+        viewBinding.container.visibility = View.GONE
         viewBinding.progressBar.visibility = View.VISIBLE
 
         setSupportActionBar(viewBinding.toolBar)
@@ -41,7 +43,7 @@ abstract class AbstractSettingActivity<V : ViewBinding, VM : BaseViewModel> : Ba
         viewBinding.container.addView(childBinding.root)
 
         afterToolbarCreated()
-        crossFade(viewBinding.nestedScrollView, viewBinding.progressBar)
+        crossFade(viewBinding.container, viewBinding.progressBar)
     }
 
     abstract fun afterToolbarCreated()
@@ -55,7 +57,16 @@ abstract class AbstractSettingActivity<V : ViewBinding, VM : BaseViewModel> : Ba
                 true
             }
             R.id.menu_undo -> {
-                undo()
+                lifecycleScope.launchWhenCreated {
+                    val isUndone = VersatileDialog.confirm(
+                        manager = supportFragmentManager,
+                        owner = this@AbstractSettingActivity,
+                        title = getString(R.string.settings_undo_title),
+                        message = getString(R.string.settings_undo_message)
+                    )
+                    if (isUndone) undo()
+                }
+
                 true
             }
             else -> super.onOptionsItemSelected(item)

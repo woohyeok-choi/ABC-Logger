@@ -15,7 +15,7 @@ object Preference : PreferenceHolder(name = "${BuildConfig.APPLICATION_ID}.Prefe
     var lastSignedName: String by ReadWriteString(default = "")
     var groupName: String by ReadWriteString(default = "")
 
-    /**
+     /**
      * Belows are not presented to a user
      */
     var dbVersion: Int by ReadWriteInt(default = 1)

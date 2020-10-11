@@ -257,8 +257,8 @@ suspend fun FragmentActivity.getFragmentResult(requestKey: String, context: Coro
     val owner = this@getFragmentResult
     suspendCoroutine { continuation ->
         supportFragmentManager.setFragmentResultListener(
-            requestKey = requestKey,
-            lifecycleOwner = owner
+            requestKey,
+            owner
         ) { _, bundle ->
             supportFragmentManager.clearFragmentResultListener(requestKey)
             continuation.resume(bundle)
@@ -270,8 +270,8 @@ suspend fun Fragment.getFragmentResult(requestKey: String, context: CoroutineCon
     val owner = this@getFragmentResult
     suspendCoroutine { continuation ->
         parentFragmentManager.setFragmentResultListener(
-            requestKey = requestKey,
-            lifecycleOwner = owner
+            requestKey,
+            owner
         ) { _, bundle ->
             parentFragmentManager.clearFragmentResultListener(requestKey)
             continuation.resume(bundle)
@@ -284,3 +284,7 @@ fun <A, B, R> Iterable<A>.combination(other: Iterable<B>, transform: (A, B) -> R
             transform.invoke(a, b)
         }
     }
+
+
+infix fun <T> Collection<T>.strictlyEquals(other: Collection<T>) =
+    this.size == other.size && this.containsAll(other) && other.containsAll(this)

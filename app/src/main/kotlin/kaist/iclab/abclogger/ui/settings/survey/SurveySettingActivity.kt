@@ -14,13 +14,13 @@ import kaist.iclab.abclogger.structure.survey.SurveyConfiguration
 import kaist.iclab.abclogger.commons.AbcError
 import kaist.iclab.abclogger.commons.Formatter
 import kaist.iclab.abclogger.commons.showSnackBar
+import kaist.iclab.abclogger.core.Log
 import kaist.iclab.abclogger.databinding.LayoutSettingSurveyBinding
 import kaist.iclab.abclogger.dialog.ChoiceDialog
 import kaist.iclab.abclogger.dialog.VersatileDialog
 import kaist.iclab.abclogger.ui.State
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.viewmodel.ext.android.stateViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SurveySettingActivity :
     AbstractSettingActivity<LayoutSettingSurveyBinding, SurveySettingViewModel>(),
@@ -33,10 +33,10 @@ class SurveySettingActivity :
     private val adapter = SurveyConfigurationListAdapter()
 
     override fun afterToolbarCreated() {
+        adapter.setOnItemClickListener(this)
+
         childBinding.recyclerView.adapter = adapter
         childBinding.recyclerView.itemAnimator = DefaultItemAnimator()
-
-        adapter.setOnItemClickListener(this)
 
         childBinding.containerBaseDate.setOnClickListener { onClickBaseDate() }
         childBinding.fabAddSurvey.setOnClickListener { onClickAddSurvey() }
@@ -49,7 +49,7 @@ class SurveySettingActivity :
             setConfigurations(configurations)
 
             viewModel.saveState(KEY_BASE_SCHEDULE_DATE, baseScheduleDate)
-            viewModel.saveState(KEY_CONFIGURATIONS, configurations.toTypedArray())
+            viewModel.saveState(KEY_CONFIGURATIONS, arrayListOf(*configurations.toTypedArray()))
         }
     }
 
@@ -77,7 +77,7 @@ class SurveySettingActivity :
                 ),
                 icons = intArrayOf(
                     R.drawable.baseline_date_range_24,
-                    R.drawable.baseline_remove_24
+                    R.drawable.baseline_clear_24
                 )
             )
 
@@ -87,7 +87,7 @@ class SurveySettingActivity :
                         manager = supportFragmentManager,
                         owner = this@SurveySettingActivity,
                         title = getString(R.string.setting_survey_base_date_dialog_change),
-                        value = viewModel.baseScheduledDate
+                        value = viewModel.baseScheduledDate.takeIf { it > 0 }
                     )
 
                     if (baseScheduleDate != null) {
@@ -133,12 +133,12 @@ class SurveySettingActivity :
         }
     }
 
-    private fun changeConfiguration(config: SurveyConfiguration) {
-        adapter.changeItem(config)
+    private fun changeConfiguration(prevConfig: SurveyConfiguration, newConfig: SurveyConfiguration) {
+        adapter.changeItem(prevConfig, newConfig)
         updateUi()
 
         lifecycleScope.launchWhenCreated {
-            download(config)
+            download(newConfig)
             viewModel.setConfigurations(adapter.getItems())
         }
     }
@@ -158,14 +158,14 @@ class SurveySettingActivity :
                     R.drawable.baseline_preview_24,
                     R.drawable.baseline_edit_24,
                     R.drawable.baseline_open_in_browser_24,
-                    R.drawable.baseline_remove_24
+                    R.drawable.baseline_clear_24
                 )
             )
 
             when (choice) {
                 0 -> SurveyPreviewDialogFragment.newInstance(item.survey)
                     .show(supportFragmentManager, null)
-                1 -> openUrlDialog(item.url)?.let { changeConfiguration(item.copy(url = it)) }
+                1 -> openUrlDialog(item.url)?.let { changeConfiguration(item, item.copy(url = it)) }
                 2 -> try {
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url)))
                 } catch (e: Exception) {
@@ -194,6 +194,7 @@ class SurveySettingActivity :
             when (state) {
                 is State.Success<*> -> {
                     adapter.changeItem(
+                        item,
                         item.copy(
                             survey = (state.data as? Survey) ?: Survey.Empty,
                             lastAccessTime = System.currentTimeMillis()

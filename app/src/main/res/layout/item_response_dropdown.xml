@@ -59,27 +59,34 @@
                 tools:drawableStart="@drawable/baseline_error_outline_24"
                 tools:text="This is question." />
 
-            <FrameLayout
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_vert_margin"
+                android:layout_gravity="center"
                 android:paddingBottom="@{isOthersShown ? 0F : @dimen/space_vert_padding}"
-                android:paddingHorizontal="@dimen/space_horiz_padding">
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:layout_marginTop="@dimen/space_vert_margin"
+                android:enabled="@{isEnabled}">
 
-                <kaist.iclab.abclogger.view.ArraySpinner
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    enabled="@{isEnabled}"
+                <kaist.iclab.abclogger.view.AutoCompleteTextView
                     answer="@={answer.main}"
-                    items="@{option.items}"/>
-            </FrameLayout>
+                    items="@{option.items}"
+                    android:paddingHorizontal="@dimen/space_horiz_padding"
+                    android:gravity="center_vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="@dimen/space_vert_margin"
+                android:paddingHorizontal="@dimen/space_horiz_padding"
+                android:layout_marginTop="@dimen/margin_top_text_input_layout"
                 android:enabled="@{isEnabled}"
                 android:hint="@string/survey_hint_for_others"
                 android:paddingBottom="@dimen/space_vert_padding"

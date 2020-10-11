@@ -6,11 +6,14 @@ import kaist.iclab.abclogger.commons.getColorFromAttr
 import kaist.iclab.abclogger.view.StatusColor
 
 object TextViewBindingAdapter {
-    @BindingAdapter("textSet", "index")
+    @BindingAdapter("textSet", "index", "defaultValue")
     @JvmStatic
-    fun setTextSet(view: MaterialTextView, textSet: Set<String>?, index: Int?) {
-        if (textSet == null || index == null) return
-        view.text = textSet.elementAtOrNull(index)
+    fun setTextSet(view: MaterialTextView, textSet: Set<String>?, index: Int?, defaultValue: String?) {
+        if (textSet == null || index == null) {
+            view.text = defaultValue
+        } else {
+            view.text = textSet.elementAtOrNull(index) ?: defaultValue
+        }
     }
 
     @BindingAdapter("statusColor")

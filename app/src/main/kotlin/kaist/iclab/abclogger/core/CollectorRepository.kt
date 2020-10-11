@@ -6,7 +6,6 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
@@ -16,7 +15,6 @@ import androidx.core.content.getSystemService
 import kaist.iclab.abclogger.collector.event.DeviceEventCollector
 import kaist.iclab.abclogger.commons.isServiceRunning
 import org.koin.android.ext.android.inject
-import kotlin.random.Random
 import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.core.collector.Status
@@ -48,11 +46,9 @@ class CollectorRepository(vararg collector: AbstractCollector<*>) {
         context.stopService(Intent(context, ForegroundService::class.java))
     }
 
-    suspend fun countLocalRecords() = all.sumOf { it.count() }
+    suspend fun nLocalRecords() = all.sumOf { it.count() }
 
-    fun countTotalRecords() = all.sumOf { it.recordsCollected }
-
-    fun countUploadedRecords() = all.sumOf { it.recordsUploaded }
+    fun nRecordsUploaded() = all.sumOf { it.recordsUploaded }
 
     class ForegroundService : Service() {
         private val collectorRepository: CollectorRepository by inject()
@@ -66,8 +62,7 @@ class CollectorRepository(vararg collector: AbstractCollector<*>) {
         override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
             NotificationRepository.notifyForeground(
                 this,
-                collectorRepository.countTotalRecords(),
-                collectorRepository.countUploadedRecords()
+                collectorRepository.nRecordsUploaded()
             )
             collectorRepository.get<DeviceEventCollector>()?.writeBootEvent(intent)
 

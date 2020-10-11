@@ -1,102 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/container_keyboard"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:focusable="true"
-        android:clickable="true"
-        android:background="?selectableItemBackground">
+        android:orientation="vertical">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_keyboard_title"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_keyboard"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingLeft="@dimen/space_horiz_padding"
-            android:text="@string/setting_key_log_keyboard_type_title"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/img_keyboard_more"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
+            android:minHeight="@dimen/item_two_line_height"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="?selectableItemBackground">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_keyboard_text"
-            android:layout_width="0dp"
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_keyboard_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingLeft="@dimen/space_horiz_padding"
+                android:text="@string/setting_key_log_keyboard_type_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/img_keyboard_more"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_keyboard_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:hint="@string/general_mdash"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingLeft="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/img_keyboard_more"
+                app:layout_constraintTop_toBottomOf="@id/txt_keyboard_title" />
+
+            <ImageView
+                android:id="@+id/img_keyboard_more"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_chevron_right_24"
+                android:paddingRight="@dimen/space_horiz_padding"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="?attr/colorOnBackground" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_accessibility"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/general_hyphen"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingLeft="@dimen/space_horiz_padding"
-            app:layout_constraintTop_toBottomOf="@id/txt_keyboard_title"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/img_keyboard_more"
-            android:textAppearance="?attr/textAppearanceBody2"/>
+            android:minHeight="@dimen/item_two_line_height"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="?selectableItemBackground">
 
-        <ImageView
-            android:id="@+id/img_keyboard_more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/baseline_chevron_right_24"
-            app:tint="?attr/colorOnBackground"
-            android:paddingRight="@dimen/space_horiz_padding"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_accessibility_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/space_vert_padding"
+                android:paddingLeft="@dimen/space_horiz_padding"
+                android:text="@string/setting_key_log_accessibility_title"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/img_accessibility_more"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/container_accessibility"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/item_two_line_height"
-        android:focusable="true"
-        android:clickable="true"
-        android:background="?selectableItemBackground">
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_accessibility_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:alpha="0.60"
+                android:paddingBottom="@dimen/space_vert_padding"
+                android:paddingLeft="@dimen/space_horiz_padding"
+                android:textAppearance="?attr/textAppearanceBody2"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/img_accessibility_more"
+                app:layout_constraintTop_toBottomOf="@id/txt_accessibility_title"
+                tools:text="This is message" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_accessibility_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingTop="@dimen/space_vert_padding"
-            android:paddingLeft="@dimen/space_horiz_padding"
-            android:text="@string/setting_key_log_accessibility_title"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/img_accessibility_more"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
+            <ImageView
+                android:id="@+id/img_accessibility_more"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_chevron_right_24"
+                android:paddingRight="@dimen/space_horiz_padding"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="?attr/colorOnBackground" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/txt_accessibility_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            tools:text="This is message"
-            android:alpha="0.60"
-            android:paddingBottom="@dimen/space_vert_padding"
-            android:paddingLeft="@dimen/space_horiz_padding"
-            app:layout_constraintTop_toBottomOf="@id/txt_accessibility_title"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/img_accessibility_more"
-            android:textAppearance="?attr/textAppearanceBody2"/>
-
-        <ImageView
-            android:id="@+id/img_accessibility_more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/baseline_chevron_right_24"
-            app:tint="?attr/colorOnBackground"
-            android:paddingRight="@dimen/space_horiz_padding"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</LinearLayout>
-
-
+</androidx.core.widget.NestedScrollView>

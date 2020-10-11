@@ -15,19 +15,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "438290174407-mcl4dpbl0uskiafnoi8kg60jmgt46bv4.apps.googleusercontent.com",
+          "client_id": "438290174407-370q9iuk6qj22e3gu0c8p2vpg252bh9t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kaist.iclab.abclogger",
+            "certificate_hash": "52a683125eceda0f09c5c473d21716f3774c63c1"
+          }
+        },
+        {
+          "client_id": "438290174407-24i7ekafng6a1ridnu3ranlj7ej8tr3v.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "kaist.iclab.abclogger",
             "certificate_hash": "b97a283b749c6f7e923da38b6842d932b93e703b"
-          }
-        },
-        {
-          "client_id": "438290174407-volqd36slo8b9hs9v3tcsudlo3m0fsnq.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "kaist.iclab.abclogger",
-            "certificate_hash": "70f41fa902944b6d7caee8764ee8ea561c42d778"
           }
         },
         {

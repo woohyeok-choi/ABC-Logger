@@ -143,14 +143,14 @@ class SurveyCollector(
         }
 
         val dateFrom = if (latestSchedule == null) {
-            dateBase + (survey.timeFrom.takeIf { it != Duration.NONE } ?: Duration.MIN)
+            dateBase + (survey.timeFrom.takeIf { !it.isNone() } ?: Duration.MIN)
         } else {
             LocalDate.fromMillis(latestSchedule.intendedTriggerTime) + 1
         }
 
         if (dateCurrent + DAYS_MARGIN_FOR_SCHEDULE < dateFrom) return
 
-        val dateTo = if (survey.timeTo == Duration.NONE) {
+        val dateTo = if (survey.timeTo.isNone()) {
             dateFrom + DAYS_SCHEDULE
         } else {
             dateBase + survey.timeTo
@@ -302,7 +302,9 @@ class SurveyCollector(
             is DayOfWeekSchedule -> (dateFrom..dateTo).filter {
                 it.toDayOfWeek() in schedule.daysOfWeek
             }
-            is DailySchedule -> (dateFrom..dateTo).toList()
+            is DailySchedule -> (dateFrom..dateTo).filter {
+                it !in schedule.exceptDates
+            }
         }
 
         return localDates.filter { it in dateFrom..dateTo }
