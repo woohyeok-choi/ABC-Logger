@@ -90,3 +90,5 @@ lint/tmp/
 
 
 app/apks/
+
+app/debug/
