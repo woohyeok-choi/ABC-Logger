@@ -37,9 +37,6 @@
 * [ABC Logger gRPC specification](https://github.com/woohyeok-choi/ABC-Logger-gRPC-Specs)
 * [ABC Logger gRPC communication for Python](https://github.com/woohyeok-choi/ABC-Logger-CRUD-Boilerplate)
 
-## Download
-* [Release Page](https://github.com/woohyeok-choi/ABC-Logger/releases)
-
 ## Secrets (for qualified members only)
 * Check [this](https://docs.google.com/document/d/1h7MI8P9RrywgHGY0U7LNLkN_geRb_D54BSLYjqgxKjs)
 
