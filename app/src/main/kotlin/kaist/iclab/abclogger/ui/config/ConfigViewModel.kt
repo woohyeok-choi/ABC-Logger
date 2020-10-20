@@ -294,13 +294,13 @@ class ConfigViewModel(
                     onAfterChange = {
                         if (value == Status.On) {
                             collector.start()
-                            launchIo {
-                                collector.statusFlow.collectLatest {
-                                    value = it
-                                }
-                            }
                         } else if (value == Status.Off) {
                             collector.stop()
+                        }
+                        launchIo {
+                            collector.statusFlow.collectLatest {
+                                value = it
+                            }
                         }
                     }
                 }

@@ -38,7 +38,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/txt_text"
-            statusColor="@{item.statusColor}"
+            statusColor="@{item.statusColor()}"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@{item.toString()}"
