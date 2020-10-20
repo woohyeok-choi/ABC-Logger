@@ -126,6 +126,8 @@ class ActivityResultConfigItem<T : Any, I, O> private constructor(
     private val confirmMessage: String?,
 ) : ReadWriteConfigItem<T>(name, default, format, statusColor, onBeforeChange, onAfterChange) {
     suspend fun run(fragmentManager: FragmentManager, lifecycleOwner: LifecycleOwner, caller: ActivityResultCaller) {
+        if (input == null) return
+
         onBeforeChange.invoke(this)
 
         if (!confirmMessage.isNullOrBlank()) {
