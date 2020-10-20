@@ -48,7 +48,7 @@ abstract class AbstractCollector<E : AbstractEntity>(
             description = description
         )
 
-        Log.e(javaClass, exception, report = true)
+        Log.e(javaClass, throwable, report = true)
         lastErrorMessage = message
         statusChannel.offer(getStatus())
     }

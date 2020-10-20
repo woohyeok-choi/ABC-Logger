@@ -32,7 +32,8 @@ class MessageCollector(
     dataRepository
 ) {
     override val permissions: List<String> = listOf(
-        Manifest.permission.READ_CONTACTS
+        Manifest.permission.READ_CONTACTS,
+        Manifest.permission.READ_SMS
     )
 
     override val setupIntent: Intent? = null
