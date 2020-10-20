@@ -81,24 +81,24 @@ class NotificationCollector(
             val notification = sbn.notification ?: return@launch
             if (NotificationRepository.isSync(sbn.id) && sbn.packageName == packageName) return@launch
 
-            val key = sbn.key
-            val groupKey = sbn.groupKey
+            val key = sbn.key ?: ""
+            val groupKey = sbn.groupKey ?: ""
             val notificationId = sbn.id
-            val tag = sbn.tag
+            val tag = sbn.tag ?: ""
             val isClearable = sbn.isClearable
             val isOngoing = sbn.isOngoing
 
             val postTime = sbn.postTime
-            val packageName = sbn.packageName
+            val packageName = sbn.packageName ?: ""
             val extras = notification.extras
-            val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
-            val bigTitle = extras.getCharSequence(Notification.EXTRA_TITLE_BIG)?.toString() ?: ""
-            val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
-            val subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString() ?: ""
-            val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
+            val title = extras?.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
+            val bigTitle = extras?.getCharSequence(Notification.EXTRA_TITLE_BIG)?.toString() ?: ""
+            val text = extras?.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+            val subText = extras?.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString() ?: ""
+            val bigText = extras?.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
             val summaryText =
-                extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
-            val infoText = extras.getCharSequence(Notification.EXTRA_INFO_TEXT)?.toString() ?: ""
+                extras?.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString() ?: ""
+            val infoText = extras?.getCharSequence(Notification.EXTRA_INFO_TEXT)?.toString() ?: ""
             val vibrate: String
             val sound: String
             val lightColor: String
@@ -132,7 +132,7 @@ class NotificationCollector(
                     packageName = packageName
                 )
                     ?: "",
-                packageName = packageName ?: "",
+                packageName = packageName,
                 postTime = postTime,
                 isSystemApp = isSystemApp(
                     packageManager = packageManager,
