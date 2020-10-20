@@ -1,11 +1,8 @@
 package kaist.iclab.abclogger.collector.external
 
 import android.content.Context
-import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.core.collector.AbstractCollector
-import kaist.iclab.abclogger.core.collector.DataRepository
-import kaist.iclab.abclogger.core.collector.Description
-import kaist.iclab.abclogger.core.collector.with
+import kaist.iclab.abclogger.core.DataRepository
 
 abstract class AbstractExternalSensorCollector(
     context: Context,

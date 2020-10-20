@@ -12,11 +12,11 @@ object EventBus: ToEvent {
     }
 
     fun register(subscriber: Any) {
-        GreenRobotEventBus.getDefault().register(subscriber)
+        if (!GreenRobotEventBus.getDefault().isRegistered(subscriber)) GreenRobotEventBus.getDefault().register(subscriber)
     }
 
     fun unregister(subscriber: Any) {
-        GreenRobotEventBus.getDefault().unregister(subscriber)
+        if (GreenRobotEventBus.getDefault().isRegistered(subscriber)) GreenRobotEventBus.getDefault().unregister(subscriber)
     }
 
     /**

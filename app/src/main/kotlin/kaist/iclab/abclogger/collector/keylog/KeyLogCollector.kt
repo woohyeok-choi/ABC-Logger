@@ -5,10 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import github.agustarc.koap.delegator.ReadWriteInt
-import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.ui.settings.keylog.KeyLogSettingActivity
 import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.*
 import org.koin.android.ext.android.inject
 import java.util.*

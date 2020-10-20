@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.TrafficStats
 import kaist.iclab.abclogger.core.collector.AbstractCollector
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Description
 import kotlinx.coroutines.delay
 import java.util.concurrent.TimeUnit

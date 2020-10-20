@@ -4,11 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.annotation.WorkerThread
-import kaist.iclab.abclogger.core.EventBus
 import kaist.iclab.abclogger.commons.*
-import kaist.iclab.abclogger.core.AuthRepository
-import kaist.iclab.abclogger.core.Log
-import kaist.iclab.abclogger.core.NotificationRepository
+import kaist.iclab.abclogger.core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -48,7 +45,7 @@ abstract class AbstractCollector<E : AbstractEntity>(
             description = description
         )
 
-        Log.e(javaClass, exception, report = true)
+        Log.e(javaClass, throwable, report = true)
         lastErrorMessage = message
         statusChannel.offer(getStatus())
     }

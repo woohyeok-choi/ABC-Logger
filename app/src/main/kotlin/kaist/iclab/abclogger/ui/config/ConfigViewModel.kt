@@ -13,7 +13,7 @@ import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.commons.Formatter
 import kaist.iclab.abclogger.commons.isPermissionGranted
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Status
 import kaist.iclab.abclogger.core.sync.SyncRepository
 import kaist.iclab.abclogger.structure.config.Config
@@ -39,7 +39,7 @@ class ConfigViewModel(
 
     private suspend fun buildConfig(): Config {
         val currentTime = System.currentTimeMillis()
-        val sizeDb = dataRepository.sizeOnDiskInKb()
+        val sizeDb = dataRepository.sizeOnDisk()
 
         return config {
             category(name = str(R.string.config_category_general)) {
@@ -104,13 +104,13 @@ class ConfigViewModel(
                     default = sizeDb
                 ) {
                     format = { size ->
-                        FileSizeFormatter.formatShortFileSize(getApplication(), size * 1024)
+                        FileSizeFormatter.formatShortFileSize(getApplication(), size)
                     }
                     confirmMessage = str(R.string.config_general_data_size_dialog)
                     action = {
                         launchIo {
                             dataRepository.flush()
-                            value = dataRepository.sizeOnDiskInKb()
+                            value = dataRepository.sizeOnDisk()
                         }
                     }
                 }

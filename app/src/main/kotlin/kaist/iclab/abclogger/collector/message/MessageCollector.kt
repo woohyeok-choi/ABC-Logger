@@ -15,6 +15,7 @@ import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.*
 import java.util.concurrent.TimeUnit
 
@@ -32,7 +33,8 @@ class MessageCollector(
     dataRepository
 ) {
     override val permissions: List<String> = listOf(
-        Manifest.permission.READ_CONTACTS
+        Manifest.permission.READ_CONTACTS,
+        Manifest.permission.READ_SMS
     )
 
     override val setupIntent: Intent? = null

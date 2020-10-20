@@ -12,7 +12,7 @@ import io.reactivex.rxjava3.subjects.Subject
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.collector.stringifySensorAccuracy
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Description
 import kaist.iclab.abclogger.core.collector.with
 import kotlinx.coroutines.flow.collect
