@@ -1,4 +1,4 @@
-package kaist.iclab.abclogger.core.collector
+package kaist.iclab.abclogger.core
 
 import android.content.Context
 import io.objectbox.BoxStore
@@ -9,8 +9,6 @@ import io.objectbox.query.Query
 import io.objectbox.query.QueryBuilder
 import kaist.iclab.abclogger.collector.MyObjectBox
 import kaist.iclab.abclogger.commons.EntityError
-import kaist.iclab.abclogger.core.Log
-import kaist.iclab.abclogger.core.Preference
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -78,7 +76,7 @@ class DataRepository(private val context: Context) {
         deleteAllFiles()
     }
 
-    suspend fun sizeOnDiskInKb(): Long = op { sizeOnDisk() } ?: 0L
+    suspend fun sizeOnDisk(): Long = op { sizeOnDisk() } ?: 0L
 
     suspend inline fun <reified T : Any> put(entity: T): Long = op {
         boxFor<T>().put(entity)

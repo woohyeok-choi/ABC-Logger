@@ -22,6 +22,7 @@ import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.formatDateTime
 import kaist.iclab.abclogger.collector.stringifyFitnessDeviceType
 import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.*
 import java.util.concurrent.TimeUnit
 

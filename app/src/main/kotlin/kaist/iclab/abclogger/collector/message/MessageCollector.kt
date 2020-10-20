@@ -15,6 +15,7 @@ import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.*
 import java.util.concurrent.TimeUnit
 

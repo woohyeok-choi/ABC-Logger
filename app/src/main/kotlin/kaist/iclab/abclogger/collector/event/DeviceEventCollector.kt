@@ -46,7 +46,7 @@ import kaist.iclab.abclogger.collector.stringifyUsbClass
 import kaist.iclab.abclogger.collector.stringifyWifiState
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.commons.*
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Description
 import java.util.*
 

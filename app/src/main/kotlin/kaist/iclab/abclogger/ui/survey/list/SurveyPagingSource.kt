@@ -4,7 +4,7 @@ import androidx.paging.PagingSource
 import io.objectbox.query.QueryBuilder
 import kaist.iclab.abclogger.collector.survey.InternalSurveyEntity
 import kaist.iclab.abclogger.commons.EntityError
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

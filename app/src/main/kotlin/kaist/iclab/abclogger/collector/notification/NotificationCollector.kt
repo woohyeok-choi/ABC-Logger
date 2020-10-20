@@ -13,7 +13,7 @@ import kaist.iclab.abclogger.collector.stringifyNotificationPriority
 import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.collector.stringifyNotificationVisibility
 import kaist.iclab.abclogger.core.collector.AbstractCollector
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.NotificationRepository
 import kaist.iclab.abclogger.core.collector.Description
 import org.koin.android.ext.android.inject

@@ -15,6 +15,7 @@ import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.ui.settings.polar.PolarH10SettingActivity
 import kaist.iclab.abclogger.commons.*
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.reactive.asFlow

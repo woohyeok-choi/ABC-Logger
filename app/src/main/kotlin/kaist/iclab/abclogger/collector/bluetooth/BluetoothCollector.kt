@@ -22,7 +22,7 @@ import kaist.iclab.abclogger.collector.stringifyBluetoothDeviceBondState
 import kaist.iclab.abclogger.collector.stringifyBluetoothDeviceType
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.commons.*
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Description
 import kaist.iclab.abclogger.core.collector.with
 import kotlinx.coroutines.delay

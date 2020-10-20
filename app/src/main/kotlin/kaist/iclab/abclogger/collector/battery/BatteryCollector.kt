@@ -10,7 +10,7 @@ import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.collector.stringifyBatteryStatus
 import kaist.iclab.abclogger.collector.stringifyBatteryHealth
 import kaist.iclab.abclogger.collector.stringifyBatteryPlugType
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Description
 
 class BatteryCollector(

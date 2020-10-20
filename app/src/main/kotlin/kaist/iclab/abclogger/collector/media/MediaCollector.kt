@@ -17,6 +17,7 @@ import kaist.iclab.abclogger.collector.*
 import kaist.iclab.abclogger.commons.atLeastPositive
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
 import kaist.iclab.abclogger.commons.safeUnregisterReceiver
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.*
 import java.util.concurrent.TimeUnit
 

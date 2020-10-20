@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kaist.iclab.abclogger.collector.survey.*
 import kaist.iclab.abclogger.commons.AbcError

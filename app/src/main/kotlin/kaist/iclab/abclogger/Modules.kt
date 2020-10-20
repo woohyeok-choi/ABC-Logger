@@ -25,7 +25,7 @@ import kaist.iclab.abclogger.collector.traffic.DataTrafficCollector
 import kaist.iclab.abclogger.collector.transition.ActivityTransitionCollector
 import kaist.iclab.abclogger.collector.wifi.WifiCollector
 import kaist.iclab.abclogger.core.CollectorRepository
-import kaist.iclab.abclogger.core.collector.DataRepository
+import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.ui.config.ConfigViewModel
 import kaist.iclab.abclogger.ui.survey.SurveyViewModel
 import org.koin.android.ext.koin.androidApplication
