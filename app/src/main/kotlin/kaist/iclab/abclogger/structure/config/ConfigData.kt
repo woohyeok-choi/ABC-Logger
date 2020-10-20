@@ -27,7 +27,7 @@ abstract class ConfigItem<T : Any>(
     protected val color: (T) -> StatusColor
 ) : ConfigData, BaseObservable() {
     abstract override fun toString(): String
-    abstract fun getStatusColor(): StatusColor
+    abstract fun statusColor(): StatusColor
 
     abstract class Builder<T : Any, I : ConfigItem<T>>(val name: String, val default: T) {
         var format: ((T) -> String) = { it.toString() }
@@ -44,7 +44,7 @@ class ReadOnlyConfigItem private constructor(
 ) : ConfigItem<Any>(name, EMPTY_VALUE, format, statusColor) {
     override fun toString(): String = format.invoke(default)
 
-    override fun getStatusColor(): StatusColor = color.invoke(default)
+    override fun statusColor(): StatusColor = color.invoke(default)
 
     class Builder(name: String) : ConfigItem.Builder<Any, ReadOnlyConfigItem>(name, EMPTY_VALUE) {
         override fun build(): ReadOnlyConfigItem = ReadOnlyConfigItem(name, format, color)
@@ -69,7 +69,7 @@ abstract class ReadWriteConfigItem<T: Any>(
 
     override fun toString(): String = format.invoke(value)
 
-    override fun getStatusColor(): StatusColor = color.invoke(value)
+    override fun statusColor(): StatusColor = color.invoke(value)
 
     abstract class Builder<T : Any, I : ReadWriteConfigItem<T>>(name: String, default: T): ConfigItem.Builder<T, I>(name, default){
         var onBeforeChange: ReadWriteConfigItem<T>.() -> Unit = { }
