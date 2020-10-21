@@ -40,7 +40,7 @@ class KeyLogSettingActivity :
                     manager = supportFragmentManager,
                     owner = this@KeyLogSettingActivity,
                     title = getString(R.string.setting_key_log_keyboard_type_title),
-                    value = viewModel.keyboardType,
+                    value = options.indexOf(viewModel.keyboardType),
                     items = items
                 )
 
