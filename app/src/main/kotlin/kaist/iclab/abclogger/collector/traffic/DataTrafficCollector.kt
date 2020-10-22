@@ -69,8 +69,10 @@ class DataTrafficCollector(
                     txBytes = netTotalTxBytes,
                     mobileRxBytes = netMobileRxBytes,
                     mobileTxBytes = netMobileTxBytes
-            )
-            put(entity, curTimestamp)
+            ).apply {
+                this.timestamp = curTimestamp
+            }
+            put(entity)
         }
     }
 

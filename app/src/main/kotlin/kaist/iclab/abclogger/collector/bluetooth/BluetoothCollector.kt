@@ -161,14 +161,14 @@ class BluetoothCollector(
     }
 
     private fun handleDeviceFound(intent: Intent) = launch {
-        val timestamp = System.currentTimeMillis()
         val extras = intent.extras ?: return@launch
         val rssi = extras.getShort(BluetoothDevice.EXTRA_RSSI, 0).toInt()
         val device = extras.getParcelable<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
                 ?: return@launch
-        val entity = buildEntity(device, rssi, false)
-
-        put(entity, timestamp)
+        val entity = buildEntity(device, rssi, false).apply {
+            timestamp = System.currentTimeMillis()
+        }
+        put(entity)
     }
 
     private fun handleLeScanRequest() = launch {
@@ -190,12 +190,15 @@ class BluetoothCollector(
             leScanner.stopScan(scanCallback)
         }
 
-        val timestamp = System.currentTimeMillis()
-        putAll(discoveredLeDevices.values, timestamp)
+        discoveredLeDevices.values.forEach {
+            put(it)
+        }
     }
 
     private fun handleLeDeviceFound(scanResult: ScanResult) {
-        discoveredLeDevices[scanResult.device.address] = buildEntity(scanResult.device, scanResult.rssi, true)
+        discoveredLeDevices[scanResult.device.address] = buildEntity(scanResult.device, scanResult.rssi, true).apply {
+            timestamp = System.currentTimeMillis()
+        }
     }
 
     private fun buildEntity(device: BluetoothDevice, rssi: Int, isLowEnergy: Boolean) =

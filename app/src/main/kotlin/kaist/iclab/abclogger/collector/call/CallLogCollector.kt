@@ -134,7 +134,7 @@ class CallLogCollector(
                 timestamp = millis
             }
         }
-        putAll(entities)
+        entities.forEach { put(it) }
     }
 
     companion object {

@@ -42,8 +42,8 @@ class InstalledAppCollector(
 
     private val intent by lazy {
         PendingIntent.getBroadcast(
-                context, REQUEST_CODE_RETRIEVE_PACKAGES,
-                Intent(ACTION_RETRIEVE_PACKAGES), PendingIntent.FLAG_UPDATE_CURRENT
+            context, REQUEST_CODE_RETRIEVE_PACKAGES,
+            Intent(ACTION_RETRIEVE_PACKAGES), PendingIntent.FLAG_UPDATE_CURRENT
         )
     }
 
@@ -68,10 +68,10 @@ class InstalledAppCollector(
         val realTriggerTime = scheduledTriggerTime.coerceAtLeast(leastTriggerTime)
 
         alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                realTriggerTime,
-                TimeUnit.HOURS.toMillis(3),
-                intent
+            AlarmManager.RTC_WAKEUP,
+            realTriggerTime,
+            TimeUnit.HOURS.toMillis(3),
+            intent
         )
     }
 
@@ -87,34 +87,40 @@ class InstalledAppCollector(
         recordsUploaded += entities.size
     }
 
-    override suspend fun list(limit: Long): Collection<InstalledAppEntity> = dataRepository.find(0, limit)
+    override suspend fun list(limit: Long): Collection<InstalledAppEntity> =
+        dataRepository.find(0, limit)
 
     private fun handleScanRequest() = launch {
         val timestamp = System.currentTimeMillis()
         val apps = packageManager.getInstalledPackages(
-                PackageManager.GET_META_DATA
+            PackageManager.GET_META_DATA
         ).map { info ->
             InstalledAppEntity.App(
-                    name = getApplicationName(
-                            packageManager = packageManager,
-                            packageName = info.packageName
-                    ) ?: "",
-                    packageName = info.packageName ?: "",
-                    isSystemApp = isSystemApp(
-                            packageManager = packageManager, packageName = info.packageName
-                    ),
-                    isUpdatedSystemApp = isUpdatedSystemApp(
-                            packageManager = packageManager, packageName = info.packageName
-                    ),
-                    firstInstallTime = info.firstInstallTime,
-                    lastUpdateTime = info.lastUpdateTime
+                name = getApplicationName(
+                    packageManager = packageManager,
+                    packageName = info.packageName
+                ) ?: "",
+                packageName = info.packageName ?: "",
+                isSystemApp = isSystemApp(
+                    packageManager = packageManager, packageName = info.packageName
+                ),
+                isUpdatedSystemApp = isUpdatedSystemApp(
+                    packageManager = packageManager, packageName = info.packageName
+                ),
+                firstInstallTime = info.firstInstallTime,
+                lastUpdateTime = info.lastUpdateTime
             )
         }
-        put(InstalledAppEntity(apps = apps), timestamp)
+        put(
+            InstalledAppEntity(apps = apps).apply {
+                this.timestamp = timestamp
+            }
+        )
     }
 
     companion object {
-        private const val ACTION_RETRIEVE_PACKAGES = "${BuildConfig.APPLICATION_ID}.ACTION_RETRIEVE_PACKAGES"
+        private const val ACTION_RETRIEVE_PACKAGES =
+            "${BuildConfig.APPLICATION_ID}.ACTION_RETRIEVE_PACKAGES"
         private const val REQUEST_CODE_RETRIEVE_PACKAGES = 0xef
     }
 }

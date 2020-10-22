@@ -130,7 +130,11 @@ class AppUsageCollector(
             }
             entities.add(entity)
         }
-        putAll(entities)
+
+        entities.forEach {
+            put(it)
+        }
+
     }
 
     companion object {

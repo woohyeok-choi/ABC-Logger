@@ -82,14 +82,6 @@ class DataRepository(private val context: Context) {
         boxFor<T>().put(entity)
     } ?: -1L
 
-    suspend inline fun <reified T : Any> put(vararg entity: T) = op {
-        boxFor<T>().put(*entity)
-    }
-
-    suspend inline fun <reified T : Any> put(entities: Collection<T>) = op {
-        boxFor<T>().put(entities)
-    }
-
     suspend inline fun <reified T : Any> query(crossinline block: QueryBuilder<T>.() -> Unit): Query<T>? =
         op {
             boxFor<T>().query(block)

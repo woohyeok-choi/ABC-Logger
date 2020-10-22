@@ -94,7 +94,8 @@ class ActivityCollector(
         recordsUploaded += entities.size
     }
 
-    override suspend fun list(limit: Long): Collection<PhysicalActivityEntity> = dataRepository.find(0, limit)
+    override suspend fun list(limit: Long): Collection<PhysicalActivityEntity> =
+        dataRepository.find(0, limit)
 
     private fun handleActivityRetrieval(intent: Intent) = launch {
         if (!ActivityRecognitionResult.hasResult(intent)) return@launch
@@ -111,7 +112,11 @@ class ActivityCollector(
             )
         }
 
-        put(PhysicalActivityEntity(activities = activities), curTime)
+        put(
+            PhysicalActivityEntity(activities = activities).apply {
+                timestamp = curTime
+            }
+        )
     }
 
     companion object {

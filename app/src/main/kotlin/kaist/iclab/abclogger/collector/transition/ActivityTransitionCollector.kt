@@ -127,10 +127,11 @@ class ActivityTransitionCollector(
             PhysicalActivityTransitionEntity(
                 type = stringifyActivityType(event.activityType),
                 isEntered = event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
-            )
+            ).apply {
+                this.timestamp = timestamp
+            }
         }
-
-        putAll(entities, timestamp)
+        entities.forEach { put(it) }
     }
 
     companion object {

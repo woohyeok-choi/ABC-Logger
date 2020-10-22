@@ -86,8 +86,10 @@ class EmbeddedSensorCollector(
                 10, TimeUnit.SECONDS
             ).toFlowable(
                 BackpressureStrategy.BUFFER
-            ).asFlow().collect {
-                putAll(it)
+            ).asFlow().collect { entities ->
+                entities.forEach {
+                    put(it)
+                }
             }
         }
     }
@@ -106,7 +108,7 @@ class EmbeddedSensorCollector(
     override suspend fun list(limit: Long): Collection<EmbeddedSensorEntity> =
         dataRepository.find(0, limit)
 
-    private fun handleSensorEvent(event: SensorEvent, timestamp: Long) {
+    private fun handleSensorEvent(event: SensorEvent, timeInMillis: Long) {
         val type = event.sensor.type
         if (type !in arrayOf(Sensor.TYPE_PROXIMITY, Sensor.TYPE_LIGHT)) return
 
@@ -121,8 +123,9 @@ class EmbeddedSensorCollector(
             values = listOfNotNull(
                 event.values.firstOrNull()?.toString()
             )
-        )
-        entity.timestamp = timestamp
+        ).apply {
+            timestamp = timeInMillis
+        }
         buffer.onNext(entity)
     }
 

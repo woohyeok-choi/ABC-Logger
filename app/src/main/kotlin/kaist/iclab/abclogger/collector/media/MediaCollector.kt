@@ -151,6 +151,11 @@ class MediaCollector(
             }
         }
 
+        internalPhotos.forEach { put(it) }
+
+        lastTimeInternalPhotoWritten = internalPhotos.maxOfOrNull {
+            it.timestamp
+        }?.coerceAtLeast(lastTimeInternalPhotoWritten) ?: lastTimeInternalPhotoWritten
 
         /**
          * Retrieve external photo
@@ -172,6 +177,11 @@ class MediaCollector(
                 timestamp = millis
             }
         }
+        externalPhotos.forEach { put(it) }
+
+        lastTimeExternalPhotoWritten = externalPhotos.maxOfOrNull {
+            it.timestamp
+        }?.coerceAtLeast(lastTimeExternalPhotoWritten) ?: lastTimeExternalPhotoWritten
 
         /**
          * Retrieve internal video
@@ -194,6 +204,12 @@ class MediaCollector(
             }
         }
 
+        internalVideos.forEach { put(it) }
+
+        lastTimeInternalVideoWritten = internalVideos.maxOfOrNull {
+            it.timestamp
+        }?.coerceAtLeast(lastTimeInternalVideoWritten) ?: lastTimeInternalVideoWritten
+
         /**
          * Retrieve external video
          */
@@ -215,24 +231,12 @@ class MediaCollector(
             }
         }
 
+        externalVideos.forEach { put(it) }
 
-        lastTimeInternalPhotoWritten = internalPhotos.maxOfOrNull {
-            it.timestamp
-        }?.coerceAtLeast(lastTimeInternalPhotoWritten) ?: lastTimeInternalPhotoWritten
-        lastTimeExternalPhotoWritten = externalPhotos.maxOfOrNull {
-            it.timestamp
-        }?.coerceAtLeast(lastTimeExternalPhotoWritten) ?: lastTimeExternalPhotoWritten
-        lastTimeInternalVideoWritten = internalVideos.maxOfOrNull {
-            it.timestamp
-        }?.coerceAtLeast(lastTimeInternalVideoWritten) ?: lastTimeInternalVideoWritten
         lastTimeExternalVideoWritten = externalVideos.maxOfOrNull {
             it.timestamp
         }?.coerceAtLeast(lastTimeExternalVideoWritten) ?: lastTimeExternalVideoWritten
 
-        putAll(internalPhotos)
-        putAll(internalVideos)
-        putAll(externalVideos)
-        putAll(externalPhotos)
     }
 
     companion object {

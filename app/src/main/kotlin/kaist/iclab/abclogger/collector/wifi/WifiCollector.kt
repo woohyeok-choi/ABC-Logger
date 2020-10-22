@@ -46,15 +46,15 @@ class WifiCollector(
 
     private val intent: PendingIntent by lazy {
         PendingIntent.getBroadcast(
-                context, REQUEST_CODE_WIFI_SCAN,
-                Intent(ACTION_WIFI_SCAN), PendingIntent.FLAG_UPDATE_CURRENT
+            context, REQUEST_CODE_WIFI_SCAN,
+            Intent(ACTION_WIFI_SCAN), PendingIntent.FLAG_UPDATE_CURRENT
         )
     }
 
     override val permissions: List<String> = listOf(
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
+        Manifest.permission.ACCESS_WIFI_STATE,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION
     )
 
     override val setupIntent: Intent? = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
@@ -70,10 +70,10 @@ class WifiCollector(
         })
 
         alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                System.currentTimeMillis() + 5000,
-                TimeUnit.MINUTES.toMillis(5),
-                intent
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + 5000,
+            TimeUnit.MINUTES.toMillis(5),
+            intent
         )
     }
 
@@ -97,13 +97,17 @@ class WifiCollector(
         val timestamp = System.currentTimeMillis()
         val accessPoints = wifiManager.scanResults.map { result ->
             WifiEntity.AccessPoint(
-                    bssid = result.BSSID,
-                    ssid = result.SSID,
-                    frequency = result.frequency,
-                    rssi = result.level
+                bssid = result.BSSID,
+                ssid = result.SSID,
+                frequency = result.frequency,
+                rssi = result.level
             )
         }
-        put(WifiEntity(accessPoints = accessPoints), timestamp)
+        put(
+            WifiEntity(accessPoints = accessPoints).apply {
+                this.timestamp = timestamp
+            }
+        )
     }
 
     companion object {
