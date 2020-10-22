@@ -143,6 +143,12 @@ class MessageCollector(
             }
         }
 
+        sms.forEach { put(it) }
+
+        lastTimeSmsWritten = sms.maxOfOrNull {
+            it.timestamp
+        }?.coerceAtLeast(lastTimeSmsWritten) ?: lastTimeSmsWritten
+
         /**
          * Retrieve MMS Messages
          */
@@ -176,15 +182,11 @@ class MessageCollector(
             }
         }
 
-        lastTimeSmsWritten = sms.maxOfOrNull {
-            it.timestamp
-        }?.coerceAtLeast(lastTimeSmsWritten) ?: lastTimeSmsWritten
+        mms.forEach { put(it) }
+
         lastTimeMmsWritten = mms.maxOfOrNull {
             it.timestamp
         }?.coerceAtLeast(lastTimeMmsWritten) ?: lastTimeMmsWritten
-
-        putAll(sms)
-        putAll(mms)
     }
 
     private fun getMmsAddress(contentResolver: ContentResolver, id: Long?): String? {

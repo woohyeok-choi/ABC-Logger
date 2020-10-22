@@ -388,8 +388,10 @@ class PolarH10Collector(
 
         buffer.buffer(
             10, TimeUnit.SECONDS
-        ).toFlowable(BackpressureStrategy.BUFFER).asFlow().collect {
-            putAll(it)
+        ).toFlowable(BackpressureStrategy.BUFFER).asFlow().collect { entities ->
+            entities.forEach {
+                put(it)
+            }
         }
     }
 

@@ -200,7 +200,9 @@ class SurveyCollector(
                 timeoutAction = survey.timeoutAction
             )
         }
-        putAll(entities, isStatUpdates = false)
+        entities.forEach {
+            put(it, isStatUpdates = false)
+        }
     }
 
     private suspend fun timer(timestamp: Long) {
@@ -281,7 +283,10 @@ class SurveyCollector(
         }
 
         put(entity.copy(actualTriggerTime = timestamp))
-        putAll(responses, isStatUpdates = false)
+
+        responses.forEach {
+            put(it, isStatUpdates = false)
+        }
 
         NotificationRepository.notifySurvey(
             context = context,

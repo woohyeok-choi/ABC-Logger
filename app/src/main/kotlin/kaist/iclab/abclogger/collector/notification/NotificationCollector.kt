@@ -158,7 +158,9 @@ class NotificationCollector(
                 isPosted = isPosted
             )
 
-            collector.put(entity, timestamp)
+            collector.put(
+                entity.apply { this.timestamp = timestamp }
+            )
         }
     }
 }

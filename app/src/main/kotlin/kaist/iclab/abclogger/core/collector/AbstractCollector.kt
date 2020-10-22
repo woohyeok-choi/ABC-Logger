@@ -155,9 +155,8 @@ abstract class AbstractCollector<E : AbstractEntity>(
             }
     }
 
-    fun <T : Any> fill(datum: T, millis: Long) = if (datum is AbstractEntity) {
+    fun <T : Any> fill(datum: T) = if (datum is AbstractEntity) {
         datum.apply {
-            timestamp = if (timestamp < 0) millis else timestamp
             utcOffset = TimeZone.getDefault().rawOffset / 1000
             groupName = AuthRepository.groupName
             email = AuthRepository.email
@@ -176,35 +175,16 @@ abstract class AbstractCollector<E : AbstractEntity>(
 
     suspend inline fun <reified T : Any> put(
         datum: T,
-        timeInMillis: Long = System.currentTimeMillis(),
         isStatUpdates: Boolean = true
     ) {
-        val entity = fill(datum, timeInMillis)
+        val entity = fill(datum)
         Log.d(javaClass, entity)
 
         dataRepository.put(entity)
         EventBus.post(entity)
 
         if (isStatUpdates) {
-            val timestamp = (entity as? AbstractEntity)?.timestamp ?: timeInMillis
-            lastTimeDataWritten = timestamp.coerceAtLeast(lastTimeDataWritten)
-        }
-
-    }
-
-    suspend inline fun <reified T : Any> putAll(
-        data: Collection<T>,
-        timeInMillis: Long = System.currentTimeMillis(),
-        isStatUpdates: Boolean = true
-    ) {
-        val entities = data.map { fill(it, timeInMillis) }
-        Log.d(javaClass, entities)
-
-        dataRepository.put(entities)
-        entities.forEach { EventBus.post(it) }
-
-        if (isStatUpdates) {
-            val timestamp = entities.filterIsInstance<AbstractEntity>().maxOfOrNull { it.timestamp } ?: timeInMillis
+            val timestamp = (entity as? AbstractEntity)?.timestamp ?: System.currentTimeMillis()
             lastTimeDataWritten = timestamp.coerceAtLeast(lastTimeDataWritten)
         }
     }

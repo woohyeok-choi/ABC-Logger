@@ -34,8 +34,8 @@ class LocationCollector(
     dataRepository
 ) {
     override val permissions: List<String> = listOfNotNull(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION
     )
 
     override val setupIntent: Intent? = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
@@ -46,10 +46,10 @@ class LocationCollector(
 
     private val intent: PendingIntent by lazy {
         PendingIntent.getBroadcast(
-                context,
-                REQUEST_CODE_LOCATION_UPDATE,
-                Intent(ACTION_LOCATION_UPDATE),
-                PendingIntent.FLAG_UPDATE_CURRENT
+            context,
+            REQUEST_CODE_LOCATION_UPDATE,
+            Intent(ACTION_LOCATION_UPDATE),
+            PendingIntent.FLAG_UPDATE_CURRENT
         )
     }
 
@@ -72,9 +72,9 @@ class LocationCollector(
         })
 
         val request = LocationRequest.create()
-                .setInterval(TimeUnit.MINUTES.toMillis(3))
-                .setSmallestDisplacement(5.0F)
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(TimeUnit.MINUTES.toMillis(3))
+            .setSmallestDisplacement(5.0F)
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
         client.requestLocationUpdates(request, intent)
     }
@@ -91,24 +91,30 @@ class LocationCollector(
         recordsUploaded += entities.size
     }
 
-    override suspend fun list(limit: Long): Collection<LocationEntity> = dataRepository.find(0, limit)
+    override suspend fun list(limit: Long): Collection<LocationEntity> =
+        dataRepository.find(0, limit)
 
     private fun handleLocationRetrieval(intent: Intent) = launch {
         val location = LocationResult.extractResult(intent)?.lastLocation ?: return@launch
 
         val entity = LocationEntity(
-                latitude = location.latitude,
-                longitude = location.longitude,
-                altitude = location.altitude,
-                accuracy = location.accuracy,
-                speed = location.speed
+            latitude = location.latitude,
+            longitude = location.longitude,
+            altitude = location.altitude,
+            accuracy = location.accuracy,
+            speed = location.speed
         )
 
-        put(entity, location.time)
+        put(
+            entity.apply {
+                this.timestamp = location.time
+            }
+        )
     }
 
     companion object {
-        private const val ACTION_LOCATION_UPDATE = "${BuildConfig.APPLICATION_ID}.ACTION_LOCATION_UPDATE"
+        private const val ACTION_LOCATION_UPDATE =
+            "${BuildConfig.APPLICATION_ID}.ACTION_LOCATION_UPDATE"
         private const val REQUEST_CODE_LOCATION_UPDATE = 0xff
     }
 }

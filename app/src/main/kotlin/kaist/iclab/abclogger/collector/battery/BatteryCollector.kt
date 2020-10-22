@@ -77,7 +77,9 @@ class BatteryCollector(
                 currentNow = manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW),
                 energyCounter = manager.getLongProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER),
                 technology = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: ""
-        )
-        put(entity, timestamp)
+        ).apply {
+            this.timestamp = timestamp
+        }
+        put(entity)
     }
 }

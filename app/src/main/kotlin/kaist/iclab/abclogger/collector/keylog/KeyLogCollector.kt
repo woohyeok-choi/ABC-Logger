@@ -176,7 +176,11 @@ class KeyLogCollector(
                     currentKey = newKeyLog.key,
                     currentKeyType = newKeyLog.type.name
                 )
-                collector.put(entity, timestamp)
+                collector.put(
+                    entity.apply {
+                        this.timestamp = timestamp
+                    }
+                )
             }
 
             for (i in 0 until node.childCount) {
@@ -290,7 +294,7 @@ class KeyLogCollector(
             return result
         }
 
-        private fun stringifyKeyboardType(flag: Int) = when(flag) {
+        private fun stringifyKeyboardType(flag: Int) = when (flag) {
             KEYBOARD_TYPE_CHUNJIIN -> "CHUNJIIN"
             KEYBOARD_TYPE_QWERTY_KOR -> "QWERTY_KOR"
             KEYBOARD_TYPE_OTHERS -> "OTHERS"

@@ -231,6 +231,12 @@ class FitnessCollector(
             entity.endTime >= fromTimeStepCount
         }
 
+        stepCounts.forEach { put(it) }
+
+        lastTimeStepCountWritten =
+            stepCounts.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeStepCountWritten)
+                ?: lastTimeStepCountWritten
+
         /**
          * Extract activity segments
          */
@@ -243,6 +249,12 @@ class FitnessCollector(
             entity.endTime >= fromTimeActivity
         }
 
+        activities.forEach { put(it) }
+
+        lastTimeActivityWritten =
+            activities.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeActivityWritten)
+                ?: lastTimeActivityWritten
+
         /**
          * Extract distances
          */
@@ -254,6 +266,13 @@ class FitnessCollector(
         ).filter { entity ->
             entity.endTime >= fromTimeDistance
         }
+
+        distances.forEach { put(it) }
+
+        lastTimeDistanceWritten =
+            distances.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeDistanceWritten)
+                ?: lastTimeDistanceWritten
+
 
         /**
          * Extract calories
@@ -269,23 +288,13 @@ class FitnessCollector(
             entity.endTime >= fromTimeCalories
         }
 
-        lastTimeStepCountWritten =
-            stepCounts.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeStepCountWritten)
-                ?: lastTimeStepCountWritten
-        lastTimeActivityWritten =
-            activities.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeActivityWritten)
-                ?: lastTimeActivityWritten
-        lastTimeDistanceWritten =
-            distances.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeDistanceWritten)
-                ?: lastTimeDistanceWritten
+        calories.forEach { put(it) }
+
         lastTimeCaloriesWritten =
             calories.maxOfOrNull { it.endTime }?.coerceAtLeast(lastTimeCaloriesWritten)
                 ?: lastTimeCaloriesWritten
 
-        putAll(stepCounts, toTime)
-        putAll(activities, toTime)
-        putAll(distances, toTime)
-        putAll(calories, toTime)
+
     }
 
     private suspend fun extractData(

@@ -434,118 +434,118 @@ class DeviceEventCollector(
     dataRepository
 ) {
     private val actionsBluetoothA2Dp = listOf(
-            BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED,
-            BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED
+        BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED,
+        BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED
     )
 
     private val actionsBluetooth = listOf(
-            BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED,
-            BluetoothAdapter.ACTION_DISCOVERY_STARTED,
-            BluetoothAdapter.ACTION_DISCOVERY_FINISHED,
-            BluetoothAdapter.ACTION_SCAN_MODE_CHANGED,
-            BluetoothAdapter.ACTION_LOCAL_NAME_CHANGED,
-            BluetoothAdapter.ACTION_STATE_CHANGED
+        BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED,
+        BluetoothAdapter.ACTION_DISCOVERY_STARTED,
+        BluetoothAdapter.ACTION_DISCOVERY_FINISHED,
+        BluetoothAdapter.ACTION_SCAN_MODE_CHANGED,
+        BluetoothAdapter.ACTION_LOCAL_NAME_CHANGED,
+        BluetoothAdapter.ACTION_STATE_CHANGED
     )
 
     private val actionsBluetoothDevice = listOfNotNull(
-            BluetoothDevice.ACTION_ACL_CONNECTED,
-            BluetoothDevice.ACTION_ACL_DISCONNECTED,
-            BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED,
-            BluetoothDevice.ACTION_BOND_STATE_CHANGED,
-            BluetoothDevice.ACTION_CLASS_CHANGED,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) BluetoothDevice.ACTION_ALIAS_CHANGED else null
+        BluetoothDevice.ACTION_ACL_CONNECTED,
+        BluetoothDevice.ACTION_ACL_DISCONNECTED,
+        BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED,
+        BluetoothDevice.ACTION_BOND_STATE_CHANGED,
+        BluetoothDevice.ACTION_CLASS_CHANGED,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) BluetoothDevice.ACTION_ALIAS_CHANGED else null
     )
 
     private val actionsBluetoothHeadset = listOf(
-            BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED,
-            BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED
+        BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED,
+        BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED
     )
 
     private val actionsUsbManager = listOf(
-            UsbManager.ACTION_USB_ACCESSORY_ATTACHED,
-            UsbManager.ACTION_USB_ACCESSORY_DETACHED,
-            UsbManager.ACTION_USB_DEVICE_ATTACHED,
-            UsbManager.ACTION_USB_DEVICE_DETACHED
+        UsbManager.ACTION_USB_ACCESSORY_ATTACHED,
+        UsbManager.ACTION_USB_ACCESSORY_DETACHED,
+        UsbManager.ACTION_USB_DEVICE_ATTACHED,
+        UsbManager.ACTION_USB_DEVICE_DETACHED
     )
 
     private val actionsCommon = listOfNotNull(
-            Intent.ACTION_POWER_CONNECTED,
-            Intent.ACTION_POWER_DISCONNECTED,
-            Intent.ACTION_SHUTDOWN,
-            Intent.ACTION_AIRPLANE_MODE_CHANGED,
-            Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED,
-            Intent.ACTION_BATTERY_LOW,
-            Intent.ACTION_BATTERY_OKAY,
-            Intent.ACTION_CAMERA_BUTTON,
-            Intent.ACTION_CLOSE_SYSTEM_DIALOGS,
-            Intent.ACTION_CONFIGURATION_CHANGED,
-            Intent.ACTION_DOCK_EVENT,
-            Intent.ACTION_HEADSET_PLUG,
-            Intent.ACTION_INPUT_METHOD_CHANGED,
-            Intent.ACTION_MEDIA_BAD_REMOVAL,
-            Intent.ACTION_MEDIA_BUTTON,
-            Intent.ACTION_MEDIA_CHECKING,
-            Intent.ACTION_MEDIA_EJECT,
-            Intent.ACTION_MEDIA_MOUNTED,
-            Intent.ACTION_MEDIA_NOFS,
-            Intent.ACTION_MEDIA_REMOVED,
-            Intent.ACTION_MEDIA_SCANNER_STARTED,
-            Intent.ACTION_MEDIA_SCANNER_FINISHED,
-            Intent.ACTION_MEDIA_SHARED,
-            Intent.ACTION_MEDIA_UNMOUNTABLE,
-            Intent.ACTION_MEDIA_UNMOUNTED,
-            Intent.ACTION_REBOOT,
-            Intent.ACTION_TIMEZONE_CHANGED,
-            Intent.ACTION_USER_PRESENT,
-            Intent.ACTION_SCREEN_OFF,
-            Intent.ACTION_SCREEN_ON,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) Intent.ACTION_USER_UNLOCKED else null
+        Intent.ACTION_POWER_CONNECTED,
+        Intent.ACTION_POWER_DISCONNECTED,
+        Intent.ACTION_SHUTDOWN,
+        Intent.ACTION_AIRPLANE_MODE_CHANGED,
+        Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED,
+        Intent.ACTION_BATTERY_LOW,
+        Intent.ACTION_BATTERY_OKAY,
+        Intent.ACTION_CAMERA_BUTTON,
+        Intent.ACTION_CLOSE_SYSTEM_DIALOGS,
+        Intent.ACTION_CONFIGURATION_CHANGED,
+        Intent.ACTION_DOCK_EVENT,
+        Intent.ACTION_HEADSET_PLUG,
+        Intent.ACTION_INPUT_METHOD_CHANGED,
+        Intent.ACTION_MEDIA_BAD_REMOVAL,
+        Intent.ACTION_MEDIA_BUTTON,
+        Intent.ACTION_MEDIA_CHECKING,
+        Intent.ACTION_MEDIA_EJECT,
+        Intent.ACTION_MEDIA_MOUNTED,
+        Intent.ACTION_MEDIA_NOFS,
+        Intent.ACTION_MEDIA_REMOVED,
+        Intent.ACTION_MEDIA_SCANNER_STARTED,
+        Intent.ACTION_MEDIA_SCANNER_FINISHED,
+        Intent.ACTION_MEDIA_SHARED,
+        Intent.ACTION_MEDIA_UNMOUNTABLE,
+        Intent.ACTION_MEDIA_UNMOUNTED,
+        Intent.ACTION_REBOOT,
+        Intent.ACTION_TIMEZONE_CHANGED,
+        Intent.ACTION_USER_PRESENT,
+        Intent.ACTION_SCREEN_OFF,
+        Intent.ACTION_SCREEN_ON,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) Intent.ACTION_USER_UNLOCKED else null
     )
 
     private val actionsDownloadManager = listOf(
-            DownloadManager.ACTION_DOWNLOAD_COMPLETE,
-            DownloadManager.ACTION_NOTIFICATION_CLICKED
+        DownloadManager.ACTION_DOWNLOAD_COMPLETE,
+        DownloadManager.ACTION_NOTIFICATION_CLICKED
     )
 
     private val actionsTelephony = listOfNotNull(
-            TelephonyManager.ACTION_PHONE_STATE_CHANGED,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED else null
+        TelephonyManager.ACTION_PHONE_STATE_CHANGED,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED else null
     )
 
     private val actionsPowerManager = listOf(
-            PowerManager.ACTION_POWER_SAVE_MODE_CHANGED,
-            PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED
+        PowerManager.ACTION_POWER_SAVE_MODE_CHANGED,
+        PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED
     )
 
     private val actionsWifiManager = listOfNotNull(
-            WifiManager.NETWORK_IDS_CHANGED_ACTION,
-            WifiManager.NETWORK_STATE_CHANGED_ACTION,
-            WifiManager.WIFI_STATE_CHANGED_ACTION,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION else null,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) WifiManager.ACTION_WIFI_SCAN_AVAILABILITY_CHANGED else null
+        WifiManager.NETWORK_IDS_CHANGED_ACTION,
+        WifiManager.NETWORK_STATE_CHANGED_ACTION,
+        WifiManager.WIFI_STATE_CHANGED_ACTION,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION else null,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) WifiManager.ACTION_WIFI_SCAN_AVAILABILITY_CHANGED else null
     )
 
     private val actionsAudioManager = listOfNotNull(
-            AudioManager.ACTION_HEADSET_PLUG,
-            AudioManager.RINGER_MODE_CHANGED_ACTION,
-            AudioManager.ACTION_AUDIO_BECOMING_NOISY,
-            AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED,
-            AudioManager.ACTION_HDMI_AUDIO_PLUG,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AudioManager.ACTION_SPEAKERPHONE_STATE_CHANGED else null,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AudioManager.ACTION_MICROPHONE_MUTE_CHANGED else null
+        AudioManager.ACTION_HEADSET_PLUG,
+        AudioManager.RINGER_MODE_CHANGED_ACTION,
+        AudioManager.ACTION_AUDIO_BECOMING_NOISY,
+        AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED,
+        AudioManager.ACTION_HDMI_AUDIO_PLUG,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AudioManager.ACTION_SPEAKERPHONE_STATE_CHANGED else null,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AudioManager.ACTION_MICROPHONE_MUTE_CHANGED else null
     )
 
     private val networkTransports =
-            listOfNotNull(
-                    NetworkCapabilities.TRANSPORT_BLUETOOTH,
-                    NetworkCapabilities.TRANSPORT_CELLULAR,
-                    NetworkCapabilities.TRANSPORT_WIFI,
-                    NetworkCapabilities.TRANSPORT_BLUETOOTH,
-                    NetworkCapabilities.TRANSPORT_ETHERNET,
-                    NetworkCapabilities.TRANSPORT_VPN,
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NetworkCapabilities.TRANSPORT_WIFI_AWARE else null,
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) NetworkCapabilities.TRANSPORT_LOWPAN else null
-            )
+        listOfNotNull(
+            NetworkCapabilities.TRANSPORT_BLUETOOTH,
+            NetworkCapabilities.TRANSPORT_CELLULAR,
+            NetworkCapabilities.TRANSPORT_WIFI,
+            NetworkCapabilities.TRANSPORT_BLUETOOTH,
+            NetworkCapabilities.TRANSPORT_ETHERNET,
+            NetworkCapabilities.TRANSPORT_VPN,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NetworkCapabilities.TRANSPORT_WIFI_AWARE else null,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) NetworkCapabilities.TRANSPORT_LOWPAN else null
+        )
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
@@ -565,11 +565,11 @@ class DeviceEventCollector(
     }
 
     override val permissions: List<String> = listOf(
-            Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.INTERNET
+        Manifest.permission.READ_PHONE_STATE,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_NETWORK_STATE,
+        Manifest.permission.BLUETOOTH,
+        Manifest.permission.INTERNET
     )
 
     override val setupIntent: Intent? = null
@@ -595,10 +595,10 @@ class DeviceEventCollector(
 
         context.safeRegisterReceiver(receiver, filter)
         context.getSystemService<ConnectivityManager>()?.registerNetworkCallback(
-                NetworkRequest.Builder().apply {
-                    networkTransports.forEach { addTransportType(it) }
-                }.build(),
-                networkCallback
+            NetworkRequest.Builder().apply {
+                networkTransports.forEach { addTransportType(it) }
+            }.build(),
+            networkCallback
         )
     }
 
@@ -614,7 +614,8 @@ class DeviceEventCollector(
         recordsUploaded += entities.size
     }
 
-    override suspend fun list(limit: Long): Collection<DeviceEventEntity> = dataRepository.find(0, limit)
+    override suspend fun list(limit: Long): Collection<DeviceEventEntity> =
+        dataRepository.find(0, limit)
 
     private fun extractBluetoothA2dp(intent: Intent): DeviceEventEntity? {
         var address = ""
@@ -634,28 +635,48 @@ class DeviceEventCollector(
         val type = when (intent.action) {
             BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED ->
                 "BLUETOOTH_A2DP_CONNECTION_STATE_CHANGED_" +
-                        stringifyBluetoothProfileConnectionState(intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)) +
+                        stringifyBluetoothProfileConnectionState(
+                            intent.getIntExtra(
+                                BluetoothProfile.EXTRA_PREVIOUS_STATE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
-                        stringifyBluetoothProfileConnectionState(intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1))
+                        stringifyBluetoothProfileConnectionState(
+                            intent.getIntExtra(
+                                BluetoothProfile.EXTRA_STATE,
+                                -1
+                            )
+                        )
             BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED ->
                 "BLUETOOTH_A2DP_PLAYING_STATE_CHANGED_" +
-                        stringifyBluetoothA2dpPlayingState(intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)) +
+                        stringifyBluetoothA2dpPlayingState(
+                            intent.getIntExtra(
+                                BluetoothProfile.EXTRA_PREVIOUS_STATE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
-                        stringifyBluetoothA2dpPlayingState(intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1))
+                        stringifyBluetoothA2dpPlayingState(
+                            intent.getIntExtra(
+                                BluetoothProfile.EXTRA_STATE,
+                                -1
+                            )
+                        )
             else -> null
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "address" to address,
-                        "name" to name,
-                        "deviceType" to deviceType,
-                        "bondState" to bondState,
-                        "bluetoothClass" to bluetoothClass
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "address" to address,
+                "name" to name,
+                "deviceType" to deviceType,
+                "bondState" to bondState,
+                "bluetoothClass" to bluetoothClass
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -678,41 +699,71 @@ class DeviceEventCollector(
         val type = when (intent.action) {
             BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED -> {
                 "BLUETOOTH_CONNECTION_STATE_CHANGED_" +
-                        stringifyBluetoothConnectionState(intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_CONNECTION_STATE, -1)) +
+                        stringifyBluetoothConnectionState(
+                            intent.getIntExtra(
+                                BluetoothAdapter.EXTRA_PREVIOUS_CONNECTION_STATE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
-                        stringifyBluetoothConnectionState(intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, -1))
+                        stringifyBluetoothConnectionState(
+                            intent.getIntExtra(
+                                BluetoothAdapter.EXTRA_CONNECTION_STATE,
+                                -1
+                            )
+                        )
             }
             BluetoothAdapter.ACTION_DISCOVERY_STARTED -> "BLUETOOTH_DISCOVERY_STARTED"
             BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> "BLUETOOTH_DISCOVERY_FINISHED"
             BluetoothAdapter.ACTION_LOCAL_NAME_CHANGED -> "BLUETOOTH_LOCAL_NAME_CHANGED"
             BluetoothAdapter.ACTION_SCAN_MODE_CHANGED -> {
                 "BLUETOOTH_SCAN_MODE_CHANGED_" +
-                        stringifyBluetoothScanMode(intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE, -1)) +
+                        stringifyBluetoothScanMode(
+                            intent.getIntExtra(
+                                BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
-                        stringifyBluetoothScanMode(intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, -1))
+                        stringifyBluetoothScanMode(
+                            intent.getIntExtra(
+                                BluetoothAdapter.EXTRA_SCAN_MODE,
+                                -1
+                            )
+                        )
             }
             BluetoothAdapter.ACTION_STATE_CHANGED -> {
                 "BLUETOOTH_STATE_CHANGED_" +
-                        stringifyBluetoothState(intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE, -1)) +
+                        stringifyBluetoothState(
+                            intent.getIntExtra(
+                                BluetoothAdapter.EXTRA_PREVIOUS_STATE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
-                        stringifyBluetoothState(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1))
+                        stringifyBluetoothState(
+                            intent.getIntExtra(
+                                BluetoothAdapter.EXTRA_STATE,
+                                -1
+                            )
+                        )
 
             }
             else -> null
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "address" to address,
-                        "name" to name,
-                        "deviceType" to deviceType,
-                        "bondState" to bondState,
-                        "bluetoothClass" to bluetoothClass,
-                        "localName" to localName
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "address" to address,
+                "name" to name,
+                "deviceType" to deviceType,
+                "bondState" to bondState,
+                "bluetoothClass" to bluetoothClass,
+                "localName" to localName
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -739,7 +790,11 @@ class DeviceEventCollector(
             BluetoothDevice.ACTION_BOND_STATE_CHANGED -> {
                 val state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, -1)
                 val prevState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, -1)
-                "BLUETOOTH_DEVICE_BOND_STATE_CHANGED_${stringifyBluetoothDeviceBondState(prevState)}_TO_${stringifyBluetoothDeviceBondState(state)}"
+                "BLUETOOTH_DEVICE_BOND_STATE_CHANGED_${stringifyBluetoothDeviceBondState(prevState)}_TO_${
+                    stringifyBluetoothDeviceBondState(
+                        state
+                    )
+                }"
             }
             BluetoothDevice.ACTION_CLASS_CHANGED -> "BLUETOOTH_DEVICE_CLASS_CHANGED"
             BluetoothDevice.ACTION_ALIAS_CHANGED -> "BLUETOOTH_DEVICE_ALIAS_CHANGED"
@@ -747,17 +802,17 @@ class DeviceEventCollector(
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "address" to address,
-                        "name" to name,
-                        "deviceType" to deviceType,
-                        "bondState" to bondState,
-                        "bluetoothClass" to bluetoothClass,
-                        "deviceName" to deviceName
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "address" to address,
+                "name" to name,
+                "deviceType" to deviceType,
+                "bondState" to bondState,
+                "bluetoothClass" to bluetoothClass,
+                "deviceName" to deviceName
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -779,28 +834,48 @@ class DeviceEventCollector(
         val type = when (intent.action) {
             BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED ->
                 "BLUETOOTH_HEADSET_CONNECTION_STATE_CHANGED_" +
-                        stringifyBluetoothProfileConnectionState(intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)) +
+                        stringifyBluetoothProfileConnectionState(
+                            intent.getIntExtra(
+                                BluetoothProfile.EXTRA_PREVIOUS_STATE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
-                        stringifyBluetoothProfileConnectionState(intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1))
+                        stringifyBluetoothProfileConnectionState(
+                            intent.getIntExtra(
+                                BluetoothProfile.EXTRA_STATE,
+                                -1
+                            )
+                        )
             BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED ->
                 "BLUETOOTH_HEADSET_AUDIO_STATE_CHANGED_" +
-                        stringifyBluetoothHeadsetAudioState(intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1)) +
+                        stringifyBluetoothHeadsetAudioState(
+                            intent.getIntExtra(
+                                BluetoothProfile.EXTRA_PREVIOUS_STATE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
-                        stringifyBluetoothHeadsetAudioState(intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1))
+                        stringifyBluetoothHeadsetAudioState(
+                            intent.getIntExtra(
+                                BluetoothProfile.EXTRA_STATE,
+                                -1
+                            )
+                        )
             else -> null
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "address" to address,
-                        "name" to name,
-                        "deviceType" to deviceType,
-                        "bondState" to bondState,
-                        "bluetoothClass" to bluetoothClass
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "address" to address,
+                "name" to name,
+                "deviceType" to deviceType,
+                "bondState" to bondState,
+                "bluetoothClass" to bluetoothClass
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -852,26 +927,26 @@ class DeviceEventCollector(
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "deviceName" to deviceName,
-                        "deviceProtocol" to deviceProtocol,
-                        "deviceClass" to deviceClass,
-                        "deviceSubClass" to deviceSubClass,
-                        "deviceManufactureName" to deviceManufactureName,
-                        "deviceProductId" to deviceProductId,
-                        "deviceSerialNumber" to deviceSerialNumber,
-                        "deviceProductName" to deviceProductName,
-                        "deviceVersion" to deviceVersion,
-                        "accessoryManufacturer" to accessoryManufacturer,
-                        "accessoryModel" to accessoryModel,
-                        "accessoryDescription" to accessoryDescription,
-                        "accessorySerial" to accessorySerial,
-                        "accessoryUri" to accessoryUri,
-                        "accessoryVersion" to accessoryVersion
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "deviceName" to deviceName,
+                "deviceProtocol" to deviceProtocol,
+                "deviceClass" to deviceClass,
+                "deviceSubClass" to deviceSubClass,
+                "deviceManufactureName" to deviceManufactureName,
+                "deviceProductId" to deviceProductId,
+                "deviceSerialNumber" to deviceSerialNumber,
+                "deviceProductName" to deviceProductName,
+                "deviceVersion" to deviceVersion,
+                "accessoryManufacturer" to accessoryManufacturer,
+                "accessoryModel" to accessoryModel,
+                "accessoryDescription" to accessoryDescription,
+                "accessorySerial" to accessorySerial,
+                "accessoryUri" to accessoryUri,
+                "accessoryVersion" to accessoryVersion
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -910,7 +985,14 @@ class DeviceEventCollector(
             Intent.ACTION_MEDIA_BUTTON -> "MEDIA_BUTTON"
             Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> "CLOSE_SYSTEM_DIALOGS"
             Intent.ACTION_CONFIGURATION_CHANGED -> "CONFIGURATION_CHANGED"
-            Intent.ACTION_DOCK_EVENT -> "DOCK_EVENT_${stringifyDockState(intent.getIntExtra(Intent.EXTRA_DOCK_STATE, -1))})"
+            Intent.ACTION_DOCK_EVENT -> "DOCK_EVENT_${
+                stringifyDockState(
+                    intent.getIntExtra(
+                        Intent.EXTRA_DOCK_STATE,
+                        -1
+                    )
+                )
+            })"
             Intent.ACTION_INPUT_METHOD_CHANGED -> "INPUT_METHOD_CHANGED"
             Intent.ACTION_MEDIA_BAD_REMOVAL -> "MEDIA_BAD_REMOVAL"
             Intent.ACTION_MEDIA_CHECKING -> "MEDIA_CHECKING"
@@ -935,16 +1017,16 @@ class DeviceEventCollector(
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "keyCode" to keyCode,
-                        "keyAction" to keyAction,
-                        "keyMetaState" to keyMetaState,
-                        "timeZoneId" to timeZoneId,
-                        "timeZoneName" to timeZoneName
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "keyCode" to keyCode,
+                "keyAction" to keyAction,
+                "keyMetaState" to keyMetaState,
+                "timeZoneId" to timeZoneId,
+                "timeZoneName" to timeZoneName
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -956,7 +1038,7 @@ class DeviceEventCollector(
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type
+            eventType = type
         )
     }
 
@@ -968,18 +1050,22 @@ class DeviceEventCollector(
         }
 
         val type = when (intent.action) {
-            TelephonyManager.ACTION_PHONE_STATE_CHANGED -> "PHONE_STATE_CHANGED_${stringifyCallState(intent.getStringExtra(TelephonyManager.EXTRA_STATE))}"
+            TelephonyManager.ACTION_PHONE_STATE_CHANGED -> "PHONE_STATE_CHANGED_${
+                stringifyCallState(
+                    intent.getStringExtra(TelephonyManager.EXTRA_STATE)
+                )
+            }"
             TelephonyManager.ACTION_NETWORK_COUNTRY_CHANGED -> "NETWORK_COUNTRY_CHANGED"
             else -> null
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "countryIso" to countryIso
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "countryIso" to countryIso
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -995,7 +1081,7 @@ class DeviceEventCollector(
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type
+            eventType = type
         )
     }
 
@@ -1013,19 +1099,20 @@ class DeviceEventCollector(
         var isUserInteractionRequired = ""
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            intent.getParcelableExtra<WifiNetworkSuggestion>(WifiManager.EXTRA_NETWORK_SUGGESTION)?.also { it ->
-                bssid = it.bssid?.toString() ?: ""
-                passphrase = it.passphrase ?: ""
-                ssid = it.ssid ?: ""
-                isAppInteractionRequired = it.isAppInteractionRequired.toString()
-                isCredentialShareWithUser = it.isCredentialSharedWithUser.toString()
-                isEnhancedOpen = it.isEnhancedOpen.toString()
-                isHiddenSsid = it.isHiddenSsid.toString()
-                isInitialAutoJoinEnabled = it.isInitialAutojoinEnabled.toString()
-                isMetered = it.isMetered.toString()
-                isUntrusted = it.isUntrusted.toString()
-                isUserInteractionRequired = it.isUserInteractionRequired.toString()
-            }
+            intent.getParcelableExtra<WifiNetworkSuggestion>(WifiManager.EXTRA_NETWORK_SUGGESTION)
+                ?.also { it ->
+                    bssid = it.bssid?.toString() ?: ""
+                    passphrase = it.passphrase ?: ""
+                    ssid = it.ssid ?: ""
+                    isAppInteractionRequired = it.isAppInteractionRequired.toString()
+                    isCredentialShareWithUser = it.isCredentialSharedWithUser.toString()
+                    isEnhancedOpen = it.isEnhancedOpen.toString()
+                    isHiddenSsid = it.isHiddenSsid.toString()
+                    isInitialAutoJoinEnabled = it.isInitialAutojoinEnabled.toString()
+                    isMetered = it.isMetered.toString()
+                    isUntrusted = it.isUntrusted.toString()
+                    isUserInteractionRequired = it.isUserInteractionRequired.toString()
+                }
         }
 
         val type = when (intent.action) {
@@ -1033,33 +1120,44 @@ class DeviceEventCollector(
                 "WIFI_NETWORK_IDS_CHANGED"
             WifiManager.WIFI_STATE_CHANGED_ACTION ->
                 "WIFI_STATE_CHANGED_" +
-                        stringifyWifiState(intent.getIntExtra(WifiManager.EXTRA_PREVIOUS_WIFI_STATE, -1)) +
+                        stringifyWifiState(
+                            intent.getIntExtra(
+                                WifiManager.EXTRA_PREVIOUS_WIFI_STATE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
                         stringifyWifiState(intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, -1))
             WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION ->
                 "WIFI_NETWORK_SUGGESTION_POST_CONNECTION"
             WifiManager.ACTION_WIFI_SCAN_AVAILABILITY_CHANGED ->
-                "WIFI_SCAN_AVAILABILITY_CHANGED_${if (intent.getBooleanExtra(WifiManager.EXTRA_SCAN_AVAILABLE, false)) "AVAILABLE" else "UNAVAILABLE"}"
+                "WIFI_SCAN_AVAILABILITY_CHANGED_${
+                    if (intent.getBooleanExtra(
+                            WifiManager.EXTRA_SCAN_AVAILABLE,
+                            false
+                        )
+                    ) "AVAILABLE" else "UNAVAILABLE"
+                }"
             else -> null
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "bssid" to bssid,
-                        "passphrase" to passphrase,
-                        "ssid" to ssid,
-                        "isAppInteractionRequired" to isAppInteractionRequired,
-                        "isCredentialShareWithUser" to isCredentialShareWithUser,
-                        "isEnhancedOpen" to isEnhancedOpen,
-                        "isHiddenSsid" to isHiddenSsid,
-                        "isInitialAutoJoinEnabled" to isInitialAutoJoinEnabled,
-                        "isMetered" to isMetered,
-                        "isUntrusted" to isUntrusted,
-                        "isUserInteractionRequired" to isUserInteractionRequired
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "bssid" to bssid,
+                "passphrase" to passphrase,
+                "ssid" to ssid,
+                "isAppInteractionRequired" to isAppInteractionRequired,
+                "isCredentialShareWithUser" to isCredentialShareWithUser,
+                "isEnhancedOpen" to isEnhancedOpen,
+                "isHiddenSsid" to isHiddenSsid,
+                "isInitialAutoJoinEnabled" to isInitialAutoJoinEnabled,
+                "isMetered" to isMetered,
+                "isUntrusted" to isUntrusted,
+                "isUserInteractionRequired" to isUserInteractionRequired
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -1072,16 +1170,40 @@ class DeviceEventCollector(
             AudioManager.ACTION_HEADSET_PLUG ->
                 "HEADSET_PLUG_${stringifyHeadsetState(intent.getIntExtra("state", -1))}"
             AudioManager.RINGER_MODE_CHANGED_ACTION ->
-                "RINGER_MODE_CHANGED_${stringifyRingerMode(intent.getIntExtra(AudioManager.EXTRA_RINGER_MODE, -1))}"
+                "RINGER_MODE_CHANGED_${
+                    stringifyRingerMode(
+                        intent.getIntExtra(
+                            AudioManager.EXTRA_RINGER_MODE,
+                            -1
+                        )
+                    )
+                }"
             AudioManager.ACTION_AUDIO_BECOMING_NOISY ->
                 "AUDIO_BECOMING_NOISY"
             AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED ->
                 "RINGER_MODE_CHANGED_" +
-                        stringifyScoAudioState(intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_PREVIOUS_STATE, -1)) +
+                        stringifyScoAudioState(
+                            intent.getIntExtra(
+                                AudioManager.EXTRA_SCO_AUDIO_PREVIOUS_STATE,
+                                -1
+                            )
+                        ) +
                         "_TO_" +
-                        stringifyRingerMode(intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1))
+                        stringifyRingerMode(
+                            intent.getIntExtra(
+                                AudioManager.EXTRA_SCO_AUDIO_STATE,
+                                -1
+                            )
+                        )
             AudioManager.ACTION_HDMI_AUDIO_PLUG ->
-                "HDMI_AUDIO_PLUG_${stringifyAudioPlugState(intent.getIntExtra(AudioManager.EXTRA_AUDIO_PLUG_STATE, -1))}"
+                "HDMI_AUDIO_PLUG_${
+                    stringifyAudioPlugState(
+                        intent.getIntExtra(
+                            AudioManager.EXTRA_AUDIO_PLUG_STATE,
+                            -1
+                        )
+                    )
+                }"
             AudioManager.ACTION_SPEAKERPHONE_STATE_CHANGED ->
                 "SPEAKERPHONE_STATE_CHANGED_${if (manager.isSpeakerphoneOn) "ON" else "OFF"}"
             AudioManager.ACTION_MICROPHONE_MUTE_CHANGED ->
@@ -1090,13 +1212,13 @@ class DeviceEventCollector(
         } ?: return null
 
         return DeviceEventEntity(
-                eventType = type,
-                extras = mapOf(
-                        "headsetName" to headsetName,
-                        "hasMicrophone" to hasMicrophone
-                ).filterValues {
-                    !it.isBlank()
-                }
+            eventType = type,
+            extras = mapOf(
+                "headsetName" to headsetName,
+                "hasMicrophone" to hasMicrophone
+            ).filterValues {
+                !it.isBlank()
+            }
         )
     }
 
@@ -1110,7 +1232,7 @@ class DeviceEventCollector(
         }
 
         return DeviceEventEntity(
-                eventType = type
+            eventType = type
         )
     }
 
@@ -1131,14 +1253,22 @@ class DeviceEventCollector(
             else -> null
         } ?: return@launch
 
-        put(entity, timestamp)
+        put(
+            entity.apply {
+                this.timestamp = timestamp
+            }
+        )
     }
 
     private fun handleNetworkCallback(network: Network, isAvailable: Boolean) = launch {
         val timestamp = System.currentTimeMillis()
         val entity = extractConnectivity(network, isAvailable) ?: return@launch
 
-        put(entity, timestamp)
+        put(
+            entity.apply {
+                this.timestamp = timestamp
+            }
+        )
     }
 
     fun writeBootEvent(intent: Intent?) = launch {
@@ -1149,7 +1279,7 @@ class DeviceEventCollector(
         if (!intent.hasExtra(EXTRA_BOOT_TIMESTAMP)) return@launch
         if (!intent.hasExtra(EXTRA_TYPE_BOOT_EVENT)) return@launch
 
-        val bootType = when(intent.getIntExtra(EXTRA_TYPE_BOOT_EVENT, -1)) {
+        val bootType = when (intent.getIntExtra(EXTRA_TYPE_BOOT_EVENT, -1)) {
             BOOT_COMPLETED -> "BOOT_COMPLETED"
             LOCKED_BOOT_COMPLETED -> "LOCKED_BOOT_COMPLETED"
             QUICKBOOT_POWERON -> "QUICKBOOT_POWERON"
@@ -1158,12 +1288,18 @@ class DeviceEventCollector(
 
         val timestamp = intent.getLongExtra(EXTRA_BOOT_TIMESTAMP, Long.MIN_VALUE)
 
-        put(DeviceEventEntity(eventType = bootType), timestamp)
+        put(
+            DeviceEventEntity(eventType = bootType).apply {
+                this.timestamp = timestamp
+            }
+        )
     }
 
     companion object {
-        private const val EXTRA_TYPE_BOOT_EVENT = "${BuildConfig.APPLICATION_ID}.EXTRA_TYPE_BOOT_EVENT"
-        private const val EXTRA_BOOT_TIMESTAMP = "${BuildConfig.APPLICATION_ID}.EXTRA_BOOT_TIMESTAMP"
+        private const val EXTRA_TYPE_BOOT_EVENT =
+            "${BuildConfig.APPLICATION_ID}.EXTRA_TYPE_BOOT_EVENT"
+        private const val EXTRA_BOOT_TIMESTAMP =
+            "${BuildConfig.APPLICATION_ID}.EXTRA_BOOT_TIMESTAMP"
 
         private const val BOOT_COMPLETED = 0x01
         private const val LOCKED_BOOT_COMPLETED = 0x02
@@ -1178,8 +1314,8 @@ class DeviceEventCollector(
             } ?: return sourceIntent
 
             return sourceIntent.fillExtras(
-                    EXTRA_TYPE_BOOT_EVENT to bootType,
-                    EXTRA_BOOT_TIMESTAMP to timestamp
+                EXTRA_TYPE_BOOT_EVENT to bootType,
+                EXTRA_BOOT_TIMESTAMP to timestamp
             )
         }
     }
