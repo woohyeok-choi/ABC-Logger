@@ -114,6 +114,10 @@ abstract class AbstractCollector<E : AbstractEntity>(
     abstract suspend fun list(limit: Long): Collection<E>
 
     fun start() {
+        if (!isAvailable()) {
+            stop(CollectorError.turningOnRequestWhenUnavaiable(qualifiedName))
+        }
+
         isEnabled = true
 
         lastErrorMessage = ""
@@ -134,7 +138,7 @@ abstract class AbstractCollector<E : AbstractEntity>(
     /**
      * function stop is called only by a user's explicit interaction.
      */
-    fun stop() {
+    fun stop(throwable: Throwable? = null) {
         isEnabled = false
 
         turnedOnTime = Long.MIN_VALUE
@@ -143,6 +147,7 @@ abstract class AbstractCollector<E : AbstractEntity>(
 
         launch {
             onStop()
+            if (throwable != null) throw throwable
         }
 
         scope.cancel()

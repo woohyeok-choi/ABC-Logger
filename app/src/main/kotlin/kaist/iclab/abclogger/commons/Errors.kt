@@ -285,8 +285,14 @@ open class CollectorError(
         qualifiedName = qualifiedName
     )
 
+    class TurningOnRequestWhenUnavailable(override val qualifiedName: String) : CollectorError(
+        R.string.error_collector_turning_on_request_when_unavailable,
+        qualifiedName = qualifiedName
+    )
+
     companion object {
         fun notFound(qualifiedName: String) = NotFound(qualifiedName)
+        fun turningOnRequestWhenUnavaiable(qualifiedName: String) = TurningOnRequestWhenUnavailable(qualifiedName)
         fun changeSettingDuringOperating(qualifiedName: String) =
             SettingChangedDuringOperating(qualifiedName)
     }

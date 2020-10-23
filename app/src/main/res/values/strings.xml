@@ -386,6 +386,7 @@
     <string name="error_collector">Collector error</string>
     <string name="error_collector_not_found">Corresponding collector not found.</string>
     <string name="error_collector_change_setting_during_operating">Cannot change settings during operating.</string>
+    <string name="error_collector_turning_on_request_when_unavailable">Invalid request for turning on a collector due to unavailability of data collection.</string>
 
 </resources>
 
