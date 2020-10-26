@@ -6,9 +6,11 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.ContactsContract
 import androidx.core.database.getIntOrNull
+import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.commons.Formatter
+import java.util.concurrent.TimeUnit
 
 fun formatDateTime(context: Context, timeInMillis: Long) =
     timeInMillis.takeIf { it > 0 }?.let { Formatter.formatDateTime(context, timeInMillis) } ?: context.getString(R.string.general_mdash)
@@ -20,14 +22,44 @@ internal data class Contact(
 )
 
 internal suspend fun <R> getRecentContents(
-        contentResolver: ContentResolver,
-        uri: Uri, timeColumn: String, columns: Array<String>,
-        lastTime: Long = -1, block: suspend (cursor: Cursor) -> R): Collection<R> {
+    contentResolver: ContentResolver,
+    uri: Uri, timeColumn: String, columns: Array<String>,
+    lastTimeInMillis: Long = -1,
+    block: suspend (timeInMillis: Long, cursor: Cursor) -> R
+): Collection<R> {
     val results = mutableListOf<R>()
+    /**
+     * At first, retrieve data with milliseconds
+     */
     contentResolver.query(
-            uri, columns, "$timeColumn > ?", arrayOf(lastTime.toString()), "$timeColumn ASC"
+            uri, columns, "$timeColumn > ?", arrayOf(lastTimeInMillis.toString()), "$timeColumn ASC"
     )?.use { cursor ->
-        while (cursor.moveToNext()) results.add(block.invoke(cursor))
+        while (cursor.moveToNext()) {
+            val time = try {
+                val idx = cursor.getColumnIndexOrThrow(timeColumn)
+                cursor.getLongOrNull(idx) ?: Long.MIN_VALUE
+            } catch (e: Exception) {
+                null
+            } ?: Long.MIN_VALUE
+            results.add(block.invoke(time, cursor))
+        }
+    }
+
+    /**
+     * And then, retrieve data with seconds-unit
+     */
+    contentResolver.query(
+        uri, columns, "$timeColumn > ?", arrayOf(TimeUnit.MILLISECONDS.toSeconds(lastTimeInMillis).toString()), "$timeColumn ASC"
+    )?.use { cursor ->
+        while (cursor.moveToNext()) {
+            val time = try {
+                val idx = cursor.getColumnIndexOrThrow(timeColumn)
+                cursor.getIntOrNull(idx) ?: Int.MIN_VALUE
+            } catch (e: Exception) {
+                null
+            } ?: Long.MIN_VALUE
+            results.add(block.invoke(TimeUnit.SECONDS.toMillis(time.toLong()), cursor))
+        }
     }
     return results
 }

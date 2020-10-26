@@ -81,15 +81,13 @@ class EmbeddedSensorCollector(
             )
         }
 
-        launch {
-            buffer.buffer(
-                10, TimeUnit.SECONDS
-            ).toFlowable(
-                BackpressureStrategy.BUFFER
-            ).asFlow().collect { entities ->
-                entities.forEach {
-                    put(it)
-                }
+        buffer.buffer(
+            10, TimeUnit.SECONDS
+        ).toFlowable(
+            BackpressureStrategy.BUFFER
+        ).asFlow().collect { entities ->
+            entities.forEach {
+                launch { put(it) }
             }
         }
     }

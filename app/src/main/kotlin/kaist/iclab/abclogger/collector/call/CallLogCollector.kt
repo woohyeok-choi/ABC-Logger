@@ -115,9 +115,8 @@ class CallLogCollector(
                 CallLog.Calls.NUMBER_PRESENTATION,
                 CallLog.Calls.DATA_USAGE
             ),
-            lastTime = fromTime
-        ) { cursor ->
-            val millis = cursor.getLongOrNull(0) ?: 0
+            lastTimeInMillis = fromTime
+        ) { millis, cursor ->
             val number = cursor.getStringOrNull(2) ?: ""
             val contact = getContact(contentResolver, number) ?: Contact()
 

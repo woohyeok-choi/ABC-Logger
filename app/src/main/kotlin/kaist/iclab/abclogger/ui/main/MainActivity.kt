@@ -68,7 +68,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             animateToBottomNav(id == R.id.config_collector || id == R.id.survey_response)
         }
 
-
         lifecycleScope.launchWhenCreated {
             Log.sendReports()
 

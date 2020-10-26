@@ -119,15 +119,14 @@ class MessageCollector(
         val sms = getRecentContents(
             contentResolver = contentResolver,
             uri = Telephony.Sms.CONTENT_URI,
-            lastTime = fromTimeSms,
+            lastTimeInMillis = fromTimeSms,
             timeColumn = Telephony.Sms.DATE,
             columns = arrayOf(
                 Telephony.Sms.DATE,
                 Telephony.Sms.ADDRESS,
                 Telephony.Sms.TYPE
             )
-        ) { cursor ->
-            val millis = cursor.getLongOrNull(0) ?: Long.MIN_VALUE
+        ) { millis, cursor ->
             val number = cursor.getStringOrNull(1) ?: ""
             val contact = getContact(contentResolver, number) ?: Contact()
 
@@ -158,15 +157,14 @@ class MessageCollector(
             /**
              * Time column of MMS messages are stored as second, not millis.
              */
-            lastTime = TimeUnit.MILLISECONDS.toSeconds(fromTimeMms),
+            lastTimeInMillis = TimeUnit.MILLISECONDS.toSeconds(fromTimeMms),
             timeColumn = Telephony.Mms.DATE,
             columns = arrayOf(
                 Telephony.Mms.DATE,
                 Telephony.Mms._ID,
                 Telephony.Mms.MESSAGE_BOX
             )
-        ) { cursor ->
-            val seconds = cursor.getLongOrNull(0) ?: Long.MIN_VALUE
+        ) { millis, cursor ->
             val number = getMmsAddress(contentResolver, cursor.getLongOrNull(1)) ?: ""
             val contact = getContact(contentResolver, number) ?: Contact()
 
@@ -178,7 +176,7 @@ class MessageCollector(
                 isStarred = contact.isStarred,
                 isPinned = contact.isPinned
             ).apply {
-                timestamp = TimeUnit.SECONDS.toMillis(seconds)
+                timestamp = millis
             }
         }
 
