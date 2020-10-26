@@ -109,8 +109,7 @@ class SurveyViewModel(
             )
 
             dataRepository.put(updatedSurvey)
-            dataRepository.put(responses)
-
+            responses.forEach { dataRepository.put(it) }
             dataRepository.put(toSurveyEntity(updatedSurvey, responses))
             saveStatusChannel.send(State.Success(Unit))
         } catch (e: Exception) {
@@ -133,7 +132,9 @@ class SurveyViewModel(
                 }
                 toSurveyEntity(survey, responses)
             }
-            dataRepository.put(expiredEntities)
+            expiredEntities.forEach {
+                dataRepository.put(it)
+            }
         } catch (e: Exception) { }
     }
 
