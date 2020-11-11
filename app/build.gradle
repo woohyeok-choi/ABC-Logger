@@ -136,9 +136,9 @@ dependencies {
     /**
      * Android X Support libraries
      */
-    implementation "androidx.core:core-ktx:1.3.2"
-    implementation "androidx.activity:activity-ktx:1.2.0-beta01"
-    implementation "androidx.fragment:fragment-ktx:1.3.0-beta01"
+    implementation "androidx.core:core-ktx:1.3.1"   // DO NOT update this (1.3.1): (error) LifecycleOwners must call register before they are STARTED.
+    implementation "androidx.activity:activity-ktx:1.2.0-alpha08"   // DO NOT update this (1.2.0-alpha08): (error) LifecycleOwners must call register before they are STARTED.
+    implementation "androidx.fragment:fragment-ktx:1.3.0-alpha08"   // DO NOT update this (1.3.0-alpha08): (error) LifecycleOwners must call register before they are STARTED.
     implementation "androidx.core:core-ktx:1.3.2"
     implementation "androidx.preference:preference-ktx:1.1.1"
     implementation "androidx.paging:paging-common-ktx:3.0.0-alpha08"

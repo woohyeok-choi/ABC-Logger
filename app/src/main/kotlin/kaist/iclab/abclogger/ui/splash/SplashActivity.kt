@@ -41,6 +41,7 @@ class SplashActivity : BaseActivity<ActivitySplashBinding>() {
                 /**
                  * Step 2: Sign in with Google Account
                  */
+                // need to change all getActivityResult calls after update AndroidX lifecycle libraries.
                 val signInResult = getActivityResult(
                     AuthRepository.getGoogleSignInIntent(this@SplashActivity),
                     ActivityResultContracts.StartActivityForResult()
