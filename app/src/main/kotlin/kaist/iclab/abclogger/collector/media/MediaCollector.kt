@@ -129,7 +129,7 @@ class MediaCollector(
         /**
          * Retrieve internal photo
          */
-        val internalPhotos = getRecentContents(
+        val internalPhotos = getRecentContentsWithSeconds(
             contentResolver = contentResolver,
             uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI,
             timeColumn = MediaStore.Images.Media.DATE_ADDED,
@@ -137,7 +137,7 @@ class MediaCollector(
                 MediaStore.Images.Media.DATE_ADDED,
                 MediaStore.Images.Media.MIME_TYPE
             ),
-            lastTimeInMillis = fromTimeInternalPhoto
+            lastTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(fromTimeInternalPhoto)
         ) { millis, cursor ->
             MediaEntity(
                 mimeType = cursor.getStringOrNull(1) ?: "image/*"
@@ -155,7 +155,7 @@ class MediaCollector(
         /**
          * Retrieve external photo
          */
-        val externalPhotos = getRecentContents(
+        val externalPhotos = getRecentContentsWithSeconds(
             contentResolver = contentResolver,
             uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             timeColumn = MediaStore.Images.Media.DATE_ADDED,
@@ -163,7 +163,7 @@ class MediaCollector(
                 MediaStore.Images.Media.DATE_ADDED,
                 MediaStore.Images.Media.MIME_TYPE,
             ),
-            lastTimeInMillis = fromTimeExternalPhoto
+            lastTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(fromTimeExternalPhoto)
         ) { millis, cursor ->
             MediaEntity(
                 mimeType = cursor.getStringOrNull(1) ?: "image/*"
@@ -180,7 +180,7 @@ class MediaCollector(
         /**
          * Retrieve internal video
          */
-        val internalVideos = getRecentContents(
+        val internalVideos = getRecentContentsWithSeconds(
             contentResolver = contentResolver,
             uri = MediaStore.Video.Media.INTERNAL_CONTENT_URI,
             timeColumn = MediaStore.Video.Media.DATE_ADDED,
@@ -188,7 +188,7 @@ class MediaCollector(
                 MediaStore.Video.Media.DATE_ADDED,
                 MediaStore.Video.Media.MIME_TYPE
             ),
-            lastTimeInMillis = fromTimeInternalVideo
+            lastTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(fromTimeInternalVideo)
         ) { millis, cursor ->
             MediaEntity(
                 mimeType = cursor.getStringOrNull(1) ?: "video/*"
@@ -206,7 +206,7 @@ class MediaCollector(
         /**
          * Retrieve external video
          */
-        val externalVideos = getRecentContents(
+        val externalVideos = getRecentContentsWithSeconds(
             contentResolver = contentResolver,
             uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
             timeColumn = MediaStore.Video.Media.DATE_ADDED,
@@ -214,7 +214,7 @@ class MediaCollector(
                 MediaStore.Video.Media.DATE_ADDED,
                 MediaStore.Video.Media.MIME_TYPE
             ),
-            lastTimeInMillis = fromTimeExternalVideo
+            lastTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(fromTimeExternalVideo)
         ) { millis, cursor ->
             MediaEntity(
                 mimeType = cursor.getStringOrNull(1) ?: "video/*"

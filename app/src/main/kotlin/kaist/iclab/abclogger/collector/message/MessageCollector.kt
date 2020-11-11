@@ -151,13 +151,13 @@ class MessageCollector(
         /**
          * Retrieve MMS Messages
          */
-        val mms = getRecentContents(
+        val mms = getRecentContentsWithSeconds(
             contentResolver = contentResolver,
             uri = Telephony.Mms.CONTENT_URI,
             /**
              * Time column of MMS messages are stored as second, not millis.
              */
-            lastTimeInMillis = TimeUnit.MILLISECONDS.toSeconds(fromTimeMms),
+            lastTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(fromTimeMms),
             timeColumn = Telephony.Mms.DATE,
             columns = arrayOf(
                 Telephony.Mms.DATE,

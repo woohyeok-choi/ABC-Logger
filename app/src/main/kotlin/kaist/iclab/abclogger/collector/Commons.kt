@@ -45,11 +45,22 @@ internal suspend fun <R> getRecentContents(
         }
     }
 
+    return results
+}
+
+internal suspend fun <R> getRecentContentsWithSeconds(
+    contentResolver: ContentResolver,
+    uri: Uri, timeColumn: String, columns: Array<String>,
+    lastTimeInSeconds: Long = -1,
+    block: suspend (timeInMillis: Long, cursor: Cursor) -> R
+): Collection<R> {
+    val results = mutableListOf<R>()
+
     /**
-     * And then, retrieve data with seconds-unit
+     * retrieve data with seconds-unit
      */
     contentResolver.query(
-        uri, columns, "$timeColumn > ?", arrayOf(TimeUnit.MILLISECONDS.toSeconds(lastTimeInMillis).toString()), "$timeColumn ASC"
+        uri, columns, "$timeColumn > ?", arrayOf(lastTimeInSeconds.toString()), "$timeColumn ASC"
     )?.use { cursor ->
         while (cursor.moveToNext()) {
             val time = try {
