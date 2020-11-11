@@ -357,7 +357,9 @@ class FitnessCollector(
             fitnessDeviceType = fitnessDeviceType,
             dataSourceName = dataSourceName,
             dataSourcePackageName = dataSourcePackageName
-        )
+        ).apply {
+            this.timestamp = endTime
+        }
     }
 
     companion object {
