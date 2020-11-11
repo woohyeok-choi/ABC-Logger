@@ -74,12 +74,14 @@ class ActivityTransitionCollector(
 
     override suspend fun onStart() {
         val request = listOf(
-            DetectedActivity.IN_VEHICLE,
-            DetectedActivity.ON_FOOT,
-            DetectedActivity.RUNNING,
-            DetectedActivity.WALKING,
-            DetectedActivity.ON_BICYCLE,
-            DetectedActivity.STILL
+                DetectedActivity.IN_VEHICLE,
+                DetectedActivity.ON_BICYCLE,
+                DetectedActivity.ON_FOOT,
+                DetectedActivity.RUNNING,
+                DetectedActivity.STILL,
+                DetectedActivity.TILTING,
+                DetectedActivity.UNKNOWN,
+                DetectedActivity.WALKING
         ).map { activity ->
             listOf(
                 ActivityTransition.Builder()
