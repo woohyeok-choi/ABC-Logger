@@ -113,6 +113,11 @@ abstract class AbstractCollector<E : AbstractEntity>(
 
     abstract suspend fun list(limit: Long): Collection<E>
 
+    /**
+     * function start is called when
+     * 1) a user changes the collector status into On, or
+     * 2) the app restarts (e.g., rebooting, error...)
+     */
     fun start() {
         if (!isAvailable()) {
             stop(CollectorError.turningOnRequestWhenUnavaiable(qualifiedName))

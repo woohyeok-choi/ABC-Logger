@@ -6,6 +6,7 @@ import android.net.TrafficStats
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Description
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
@@ -35,6 +36,8 @@ class DataTrafficCollector(
 
     override fun getDescription(): Array<Description> = arrayOf()
 
+    private var job: Job? = null
+
     override suspend fun onStart() {
         val timestamp = AtomicLong(System.currentTimeMillis())
         val totalRxBytes = AtomicLong(TrafficStats.getTotalRxBytes())
@@ -42,41 +45,47 @@ class DataTrafficCollector(
         val mobileRxBytes = AtomicLong(TrafficStats.getMobileRxBytes())
         val mobileTxBytes = AtomicLong(TrafficStats.getMobileTxBytes())
 
-        while (true) {
-            delay(TimeUnit.SECONDS.toMillis(15))
+        if (job?.isActive == true) return
 
-            val curTimestamp = System.currentTimeMillis()
-            val curTotalRxBytes = TrafficStats.getTotalRxBytes()
-            val curTotalTxBytes = TrafficStats.getTotalTxBytes()
-            val curMobileRxBytes = TrafficStats.getMobileRxBytes()
-            val curMobileTxBytes = TrafficStats.getMobileTxBytes()
+        job = launch {
+            while (true) {
+                delay(TimeUnit.SECONDS.toMillis(15))
 
-            val prevTimestamp = timestamp.getAndSet(curTimestamp)
-            val prevTotalRxBytes = totalRxBytes.getAndSet(curTotalRxBytes)
-            val prevTotalTxBytes = totalTxBytes.getAndSet(curTotalTxBytes)
-            val prevMobileRxBytes = mobileRxBytes.getAndSet(curMobileRxBytes)
-            val prevMobileTxBytes = mobileTxBytes.getAndSet(curMobileTxBytes)
+                val curTimestamp = System.currentTimeMillis()
+                val curTotalRxBytes = TrafficStats.getTotalRxBytes()
+                val curTotalTxBytes = TrafficStats.getTotalTxBytes()
+                val curMobileRxBytes = TrafficStats.getMobileRxBytes()
+                val curMobileTxBytes = TrafficStats.getMobileTxBytes()
 
-            val netTotalRxBytes = curTotalRxBytes - prevTotalRxBytes
-            val netTotalTxBytes = curTotalTxBytes - prevTotalTxBytes
-            val netMobileRxBytes = curMobileRxBytes - prevMobileRxBytes
-            val netMobileTxBytes = curMobileTxBytes - prevMobileTxBytes
+                val prevTimestamp = timestamp.getAndSet(curTimestamp)
+                val prevTotalRxBytes = totalRxBytes.getAndSet(curTotalRxBytes)
+                val prevTotalTxBytes = totalTxBytes.getAndSet(curTotalTxBytes)
+                val prevMobileRxBytes = mobileRxBytes.getAndSet(curMobileRxBytes)
+                val prevMobileTxBytes = mobileTxBytes.getAndSet(curMobileTxBytes)
 
-            val entity = DataTrafficEntity(
-                    fromTime = prevTimestamp,
-                    toTime = curTimestamp,
-                    rxBytes = netTotalRxBytes,
-                    txBytes = netTotalTxBytes,
-                    mobileRxBytes = netMobileRxBytes,
-                    mobileTxBytes = netMobileTxBytes
-            ).apply {
-                this.timestamp = curTimestamp
+                val netTotalRxBytes = curTotalRxBytes - prevTotalRxBytes
+                val netTotalTxBytes = curTotalTxBytes - prevTotalTxBytes
+                val netMobileRxBytes = curMobileRxBytes - prevMobileRxBytes
+                val netMobileTxBytes = curMobileTxBytes - prevMobileTxBytes
+
+                val entity = DataTrafficEntity(
+                        fromTime = prevTimestamp,
+                        toTime = curTimestamp,
+                        rxBytes = netTotalRxBytes,
+                        txBytes = netTotalTxBytes,
+                        mobileRxBytes = netMobileRxBytes,
+                        mobileTxBytes = netMobileTxBytes
+                ).apply {
+                    this.timestamp = curTimestamp
+                }
+                put(entity)
             }
-            put(entity)
         }
     }
 
-    override suspend fun onStop() { }
+    override suspend fun onStop() {
+        job?.cancel()
+    }
 
     override suspend fun count(): Long = dataRepository.count<DataTrafficEntity>()
 

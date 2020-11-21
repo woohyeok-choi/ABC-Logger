@@ -73,14 +73,18 @@ class ActivityTransitionCollector(
     }
 
     override suspend fun onStart() {
+        /** [20.11.19]
+         * Activity transition takes only 5 types of DetectedActivity:
+         * IN_VEHICLE, ON_BICYCLE, RUNNING, STILL, WALKING.
+         *
+         * https://developer.android.com/guide/topics/location/transitions
+         */
+
         val request = listOf(
                 DetectedActivity.IN_VEHICLE,
                 DetectedActivity.ON_BICYCLE,
-                DetectedActivity.ON_FOOT,
                 DetectedActivity.RUNNING,
                 DetectedActivity.STILL,
-                DetectedActivity.TILTING,
-                DetectedActivity.UNKNOWN,
                 DetectedActivity.WALKING
         ).map { activity ->
             listOf(
