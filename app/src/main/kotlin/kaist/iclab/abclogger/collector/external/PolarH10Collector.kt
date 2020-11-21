@@ -16,6 +16,7 @@ import kaist.iclab.abclogger.R
 import kaist.iclab.abclogger.ui.settings.polar.PolarH10SettingActivity
 import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.core.DataRepository
+import kaist.iclab.abclogger.core.Log
 import kaist.iclab.abclogger.core.collector.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.reactive.asFlow
@@ -167,7 +168,7 @@ class PolarH10Collector(
                     heartRate = data.hr,
                     rrAvailable = data.rrAvailable,
                     rrIntervalInSec = data.rrs,
-                    rrIntervalInMillis = data.rrsMs,
+                    rrIntervalInMillis = data.rrsMs,    // @swkang: strange definition.
                     contactStatus = data.contactStatus,
                     contactStatusSupported = data.contactStatus
                 )
@@ -208,7 +209,7 @@ class PolarH10Collector(
         }
 
         fun disconnect(deviceId: String) {
-            api.setApiCallback(null)
+            api.stopRecording(deviceId)
 
             ecgDisposable?.dispose()
             accDisposable?.dispose()
@@ -216,6 +217,7 @@ class PolarH10Collector(
             accDisposable = null
 
             api.disconnectFromDevice(deviceId)
+            //api.setApiCallback(null)      // check needed.
         }
     }
 
@@ -301,8 +303,9 @@ class PolarH10Collector(
                 valueFormat = "INT",
                 valueUnit = "SEC",
                 values = rrIntervalInSec.map { it.toString() }
-            )
-            rrIntervalSecEntity.timestamp = timestamp
+            ).apply{
+                this.timestamp = timestamp
+            }
 
             val rrIntervalMillisEntity = ExternalSensorEntity(
                 deviceType = DEVICE_TYPE,
@@ -316,8 +319,9 @@ class PolarH10Collector(
                 valueFormat = "INT",
                 valueUnit = "MS",
                 values = rrIntervalInMillis.map { it.toString() }
-            )
-            rrIntervalMillisEntity.timestamp = timestamp
+            ).apply{
+                this.timestamp = timestamp
+            }
 
             buffer.onNext(rrIntervalSecEntity)
             buffer.onNext(rrIntervalMillisEntity)
@@ -332,8 +336,9 @@ class PolarH10Collector(
                 valueFormat = "INT",
                 valueUnit = "MICRO_VOLT",
                 values = samples.map { it.toString() }
-            )
-            entity.timestamp = timestamp
+            ).apply{
+                this.timestamp = timestamp
+            }
 
             buffer.onNext(entity)
         }
@@ -347,11 +352,12 @@ class PolarH10Collector(
                 deviceType = DEVICE_TYPE,
                 valueType = "ACCELEROMETER",
                 identifier = identifier,
-                valueFormat = "INT,INT,INT (X,Y,Z)",
+                valueFormat = "INT;INT;INT (X;Y;Z)",
                 valueUnit = "MILLI_G",
-                values = samples.map { "${it.first},${it.second},${it.third}" }
-            )
-            entity.timestamp = timestamp
+                values = samples.map { "${it.first};${it.second};${it.third}" }
+            ).apply{
+                this.timestamp = timestamp
+            }
 
             buffer.onNext(entity)
         }
@@ -401,7 +407,7 @@ class PolarH10Collector(
         try {
             api.disconnect(deviceId)
         } catch (e: Exception) {
-
+            Log.d(javaClass, e)
         }
 
         alarmManager.cancel(intent)
