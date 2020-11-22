@@ -790,11 +790,10 @@ class DeviceEventCollector(
             BluetoothDevice.ACTION_BOND_STATE_CHANGED -> {
                 val state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, -1)
                 val prevState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, -1)
-                "BLUETOOTH_DEVICE_BOND_STATE_CHANGED_${stringifyBluetoothDeviceBondState(prevState)}_TO_${
-                    stringifyBluetoothDeviceBondState(
-                        state
-                    )
-                }"
+                "BLUETOOTH_DEVICE_BOND_STATE_CHANGED_" +
+                        stringifyBluetoothDeviceBondState(prevState) +
+                        "_TO_" +
+                        stringifyBluetoothDeviceBondState(state)
             }
             BluetoothDevice.ACTION_CLASS_CHANGED -> "BLUETOOTH_DEVICE_CLASS_CHANGED"
             BluetoothDevice.ACTION_ALIAS_CHANGED -> "BLUETOOTH_DEVICE_ALIAS_CHANGED"
@@ -985,14 +984,13 @@ class DeviceEventCollector(
             Intent.ACTION_MEDIA_BUTTON -> "MEDIA_BUTTON"
             Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> "CLOSE_SYSTEM_DIALOGS"
             Intent.ACTION_CONFIGURATION_CHANGED -> "CONFIGURATION_CHANGED"
-            Intent.ACTION_DOCK_EVENT -> "DOCK_EVENT_${
-                stringifyDockState(
-                    intent.getIntExtra(
-                        Intent.EXTRA_DOCK_STATE,
-                        -1
+            Intent.ACTION_DOCK_EVENT -> "DOCK_EVENT_" +
+                    stringifyDockState(
+                        intent.getIntExtra(
+                            Intent.EXTRA_DOCK_STATE,
+                            -1
+                        )
                     )
-                )
-            })"
             Intent.ACTION_INPUT_METHOD_CHANGED -> "INPUT_METHOD_CHANGED"
             Intent.ACTION_MEDIA_BAD_REMOVAL -> "MEDIA_BAD_REMOVAL"
             Intent.ACTION_MEDIA_CHECKING -> "MEDIA_CHECKING"
@@ -1189,7 +1187,7 @@ class DeviceEventCollector(
                             )
                         ) +
                         "_TO_" +
-                        stringifyRingerMode(
+                        stringifyScoAudioState(
                             intent.getIntExtra(
                                 AudioManager.EXTRA_SCO_AUDIO_STATE,
                                 -1
