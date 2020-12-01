@@ -118,7 +118,7 @@
 			"option": {
 				"type": "SLIDER",
 				"min": -3.0,
-				"max": +3.0,
+				"max":  3.0,
 				"step": 1.0
 			}
 		},
