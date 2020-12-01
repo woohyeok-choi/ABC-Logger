@@ -171,9 +171,11 @@ class KeyLogCollector(
                     distance = distance,
                     timeTaken = newKeyLog.eventTime - oldKeyLog.eventTime,
                     keyboardType = stringifyKeyboardType(collector.keyboardType),
-                    prevKey = oldKeyLog.key,
                     prevKeyType = oldKeyLog.type.name,
+                    /*
+                    prevKey = oldKeyLog.key,
                     currentKey = newKeyLog.key,
+                     */ // delete due to privacy concerns.
                     currentKeyType = newKeyLog.type.name
                 )
                 collector.put(

@@ -142,6 +142,7 @@ class NotificationCollector(
                     packageManager = packageManager,
                     packageName = packageName
                 ),
+                    /*
                 title = title,
                 bigTitle = bigTitle,
                 text = text,
@@ -149,6 +150,7 @@ class NotificationCollector(
                 bigText = bigText,
                 summaryText = summaryText,
                 infoText = infoText,
+                     */ // delete due to privacy concerns.
                 visibility = stringifyNotificationVisibility(notification.visibility),
                 category = stringifyNotificationCategory(notification.category),
                 priority = priority,
