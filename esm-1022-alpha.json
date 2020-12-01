@@ -65,7 +65,7 @@
 				"type": "SLIDER",
 				"min":  1.0,
 				"max":  60.0,
-				"step": 1.0,
+				"step": 1.0
 			}
 		},
 		{
