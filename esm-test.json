@@ -1,73 +1,176 @@
 {
-  "type": "INTERVAL",
-  "title": "감정 설문이 도착했습니다",
-  "message": "설문에 응답해주세요",
-  "instruction": "알림 도착 이후 10분 이내의 상황을 기준으로 아래에 응답해주세요",
-  "timeoutSec": 600,
-  "timeoutPolicy": "DISABLED",
-  "initialDelaySec": 0,
-  "intervalSec": 2400,
-  "flexIntervalSec": 1200,
-  "dailyStartTimeHour": 0,
-  "dailyStartTimeMinute": 0,
-  "dailyEndTimeHour": 24,
-  "dailyEndTimeMinute": 0,
-  "questions": [
-    {
-      "type": "RADIO_BUTTON",
-      "shouldAnswer": true,
-      "showEtc": true,
-      "text": "My emotion right before doing this survey could be rated as (-3: very negative ~ +3: very positive)",
-      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
-    },
-    {
-      "type": "RADIO_BUTTON",
-      "shouldAnswer": true,
-      "showEtc": false,
-      "text": "My emotion right before doing this survey could be rated as (-3: very calm ~ +3: very excited)",
-      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
-    },
-    {
-      "type": "CHECK_BOX",
-      "shouldAnswer": true,
-      "showEtc": true,
-      "text": "My stress level right before doing this survey could be rated as (-3: not stressed at all ~ +3: very stressed)",
-      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
-    },
-    {
-      "type": "CHECK_BOX",
-      "shouldAnswer": true,
-      "showEtc": false,
-      "text": "My attention level right before doing this survey could be rated as (-3: very bored ~ +3: very engaged)",
-      "options": ["-3", "-2", "-1", "0", "1", "2", "3"]
-    },
-    {
-      "type": "SLIDER",
-      "shouldAnswer": true,
-      "showEtc": false,
-      "text": "The emotion that I answered with above has not changed for the past ___ minutes. (0 ~ 60 min; or type \"I'm not sure.\" if you are not sure)",
-      "options": ["0", "60"]
-    },
-    {
-      "type": "SLIDER",
-      "shouldAnswer": true,
-      "showEtc": true,
-      "text": "The emotion that I answered with above has not changed for the past ___ minutes. (0 ~ 60 min; or type \"I'm not sure.\" if you are not sure)",
-      "options": ["0", "60"]
-    },
-
-    {
-      "type": "FREE_TEXT",
-      "shouldAnswer": true,
-      "showEtc": false,
-      "text": "Did answering this survey disturb the activity that I was performing before doing it? (-3: did not disturb me at all ~ +3: it was very disturbing)"
-    },
-    {
-      "type": "FREE_TEXT",
-      "shouldAnswer": true,
-      "showEtc": true,
-      "text": "How mentally demanding was my activity before doing this survey? (-3: very low ~ +3: very high)"
-    }
-
-  ]
+	"title": {
+		"main": "감정 설문이 도착했습니다",
+		"alt": "감정 설문이 도착했습니다"
+	},
+	"message": {
+		"main": "설문에 응답해주세요",
+		"alt": "설문에 응답해주세요"
+	},
+	"instruction": {
+		"main": "설문 응답 시작 시각 기준으로 아래에 응답해주세요",
+		"alt": "설문 응답 시작 시각 기준으로 아래에 응답해주세요"
+	},
+	"question": [
+		{
+			"title": {
+				"main": "My emotion right before doing this survey could be rated as (-3: very negative ~ +3: very positive)",
+				"alt": "My emotion right before doing this survey could be rated as (-3: very negative ~ +3: very positive)"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "SLIDER",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0
+			}
+		},
+		{
+			"title": {
+				"main": "My emotion right before doing this survey could be rated as (-3: very calm ~ +3: very excited)",
+				"alt": "My emotion right before doing this survey could be rated as (-3: very calm ~ +3: very excited)"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "RADIO_BUTTON",
+				"isVertical": false,
+				"items": [
+				    "-3", "-2", "-1", "0", "1", "2", "3"
+				]
+			}
+		},
+		{
+			"title": {
+				"main": "My stress level right before doing this survey could be rated as",
+				"alt": "My stress level right before doing this survey could be rated as"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "not stressed at all (-3)",
+				"maxLabel": "very Stressed (+3)"
+			}
+		},
+		{
+			"title": {
+				"main": "The emotion that I answered with above has not changed for the past ___ minutes. (0 ~ 60 min; or type \"I'm not sure.\" if you are not sure)",
+				"alt": "The emotion that I answered with above has not changed for the past ___ minutes. (0 ~ 60 min; or type \"I'm not sure.\" if you are not sure)"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "SLIDER",
+				"min":  1.0,
+				"max":  60.0
+			}
+		},
+		{
+			"title": {
+				"main": "My attention level right before doing this survey could be rated as (-3: very bored ~ +3: very engaged)",
+				"alt": "My attention level right before doing this survey could be rated as (-3: very bored ~ +3: very engaged)"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "SLIDER",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0
+			}
+		},
+		{
+			"title": {
+				"main": "Did answering this survey disturb the activity that I was performing before doing it? (-3: did not disturb me at all ~ +3: it was very disturbing)",
+				"alt": "Did answering this survey disturb the activity that I was performing before doing it? (-3: did not disturb me at all ~ +3: it was very disturbing)"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "RADIO_BUTTON",
+				"isVertical": false,
+				"items": [
+				    "-3", "-2", "-1", "0", "1", "2", "3"
+				]
+			}
+		},
+		{
+			"title": {
+				"main": "How mentally demanding was my activity before doing this survey? (-3: very low ~ +3: very high)",
+				"alt": "How mentally demanding was my activity before doing this survey? (-3: very low ~ +3: very high)"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "RADIO_BUTTON",
+				"isVertical": false,
+				"items": [
+				    "-3", "-2", "-1", "0", "1", "2", "3"
+				]
+			}
+		},
+		{
+			"title": {
+				"main": "My emotion right now (while doing this survey) could be rated as (-3: very negative ~ +3: very positive)",
+				"alt": "My emotion right now (while doing this survey) could be rated as (-3: very negative ~ +3: very positive)"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "SLIDER",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0
+			}
+		},
+		{
+			"title": {
+				"main": "My emotion *right now* (while doing this survey) could be rated as (-3: very calm ~ +3: very excited)",
+				"alt": "My emotion *right now* (while before doing this survey) could be rated as (-3: very calm ~ +3: very excited)"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "RADIO_BUTTON",
+				"isVertical": false,
+				"items": [
+				    "-3", "-2", "-1", "0", "1", "2", "3"
+				]
+			}
+		}
+	],
+	"timeout": {
+		"amount": 15,
+		"unit": "MINUTE"
+	},
+	"timeoutAction": "DISABLED",
+	"timeFrom": {
+		"amount": 10,
+		"unit": "HOUR"
+	},
+	"timeTo": {
+		"amount": 22,
+		"unit": "HOUR"
+	},
+	"interDaySchedule": {
+		"type": "DAILY"
+	},
+	"intraDaySchedule": {
+		"type": "INTERVAL",
+		"timeFrom": {
+			"hour": 10,
+			"minute": 0,
+			"second": 0
+		},
+		"timeTo": {
+			"hour": 22,
+			"minute": 0,
+			"second": 0
+		},
+		"intervalDefault": {
+			"amount": 5,
+			"unit": "MINUTE"
+		},
+		"intervalFlex": {
+			"amount": 5,
+			"unit": "MINUTE"
+		}
+	}
 }
