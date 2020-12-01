@@ -21,7 +21,7 @@
 			"option": {
 				"type": "SLIDER",
 				"min": -3.0,
-				"max": +3.0,
+				"max":  3.0,
 				"step": 1.0
 			}
 		},
@@ -48,7 +48,7 @@
 			"option": {
 				"type": "LINEAR_SCALE",
 				"min": -3.0,
-				"max": +3.0,
+				"max":  3.0,
 				"step": 1.0,
 				"defaultValue": 0.0,
 				"minLabel": "not stressed at all (-3)",
@@ -77,7 +77,7 @@
 			"option": {
 				"type": "SLIDER",
 				"min": -3.0,
-				"max": +3.0,
+				"max":  3.0,
 				"step": 1.0
 			}
 		},
