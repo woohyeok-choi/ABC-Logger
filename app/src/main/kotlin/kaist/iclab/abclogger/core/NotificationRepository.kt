@@ -228,10 +228,12 @@ object NotificationRepository {
             setSmallIcon(R.drawable.ic_ntf_abc)
             setShowWhen(false)
             setContentTitle(context.getString(R.string.ntf_foreground_title))
+            /*
             setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(
                 R.string.ntf_foreground_text,
                 compactFormatUploaded
             )))
+             */
         }.build()
     }
 

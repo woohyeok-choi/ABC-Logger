@@ -44,7 +44,7 @@ class PolarH10SettingActivity : AbstractSettingActivity<LayoutSettingPolarH10Bin
             childBinding.txtDeviceIdText.isEnabled = !isChecked
 
             if (isChecked) {
-                viewModel.connect(childBinding.txtDeviceIdText.toString())
+                viewModel.connect(childBinding.txtDeviceIdText.text.toString())
             } else {
                 viewModel.disconnect()
             }

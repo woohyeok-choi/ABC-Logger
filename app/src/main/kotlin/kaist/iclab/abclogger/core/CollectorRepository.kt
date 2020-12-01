@@ -35,10 +35,12 @@ class CollectorRepository(vararg collector: AbstractCollector<*>) {
 
     fun clear() = all.forEach { it.clear() }
 
-    fun restart() = collectors.filter { collector ->
-        collector.getStatus() != Status.Off
-    }.forEach {
-        it.start()
+    fun restart() = collectors.forEach {
+        if (it.getStatus() != Status.Off) {
+            it.start()
+        } else {
+            it.stop()
+        }
     }
 
     fun stop(context: Context) {

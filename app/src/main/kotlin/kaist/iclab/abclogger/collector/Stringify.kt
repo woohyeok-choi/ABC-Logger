@@ -646,14 +646,13 @@ internal fun stringifyAudioPlugState(flag: Int?, default: String = UNDEFINED): S
 internal fun stringifyNetworkTransport(capabilities: NetworkCapabilities?, default: String = UNDEFINED) =
     capabilities?.let {
         listOfNotNull(
-            if (it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) "BLUETOOTH" else null,
-            if (it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) "CELLULAR" else null,
-            if (it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) "WIFI" else null,
-            if (it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) "BLUETOOTH" else null,
-            if (it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) "ETHERNET" else null,
-            if (it.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) "VPN" else null,
-            if (it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE)) "WIFI_AWARE" else null,
-            if (it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN)) "LOWPAN" else null
+                if (it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) "CELLULAR" else null,
+                if (it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) "WIFI" else null,
+                if (it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) "BLUETOOTH" else null,
+                if (it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) "ETHERNET" else null,
+                if (it.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) "VPN" else null,
+                if (it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE)) "WIFI_AWARE" else null,
+                if (it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN)) "LOWPAN" else null
         ).sorted().joinToString(";")
     }?.takeIf { it.isNotBlank() } ?: default
 
