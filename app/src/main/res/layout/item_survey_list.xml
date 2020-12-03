@@ -34,49 +34,52 @@
             android:id="@+id/txt_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{title}"
-            tools:text="This is title"
-            android:maxLines="2"
             android:ellipsize="end"
             android:enabled="@{isEnabled}"
+            android:maxLines="2"
             android:paddingStart="@dimen/space_horiz_padding"
-            android:paddingEnd="0dp"
             android:paddingTop="@dimen/space_vert_padding"
-            app:layout_constraintTop_toTopOf="parent"
+            android:paddingEnd="0dp"
+            android:text="@{title}"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:transitionName="txt_title"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@id/txt_triggered_time"
-            android:textAppearance="?attr/textAppearanceSubtitle1"/>
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="This is title" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/txt_message"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            tools:text="This is message"
-            android:text="@{message}"
             android:alpha="0.60"
-            android:maxLines="2"
             android:ellipsize="end"
             android:enabled="@{isEnabled}"
+            android:maxLines="2"
             android:paddingStart="@dimen/space_horiz_padding"
             android:paddingEnd="0dp"
             android:paddingBottom="@dimen/space_vert_padding"
-            app:layout_constraintTop_toBottomOf="@id/txt_title"
+            android:text="@{message}"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:transitionName="txt_message"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@id/txt_triggered_time"
-            android:textAppearance="?attr/textAppearanceBody2"/>
+            app:layout_constraintTop_toBottomOf="@id/txt_title"
+            tools:text="This is message" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/txt_triggered_time"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@{triggeredTime}"
-            tools:text="3 min ago"
             android:enabled="@{isEnabled}"
             android:paddingStart="@dimen/space_horiz_padding"
             android:paddingEnd="@dimen/space_horiz_padding"
-            app:layout_constraintRight_toRightOf="parent"
+            android:text="@{triggeredTime}"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:transitionName="txt_triggered_time"
             app:layout_constraintBottom_toBottomOf="@id/txt_title"
-            android:textAppearance="?attr/textAppearanceCaption"/>
+            app:layout_constraintRight_toRightOf="parent"
+            tools:text="3 min ago" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

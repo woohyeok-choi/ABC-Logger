@@ -103,8 +103,11 @@
     <string name="menu_toolbar_save">Save</string>
 
     <!-- Titles represented in a toolbar -->
-    <string name="title_survey_list">Survey</string>
-    <string name="title_survey_response">Expired Surveys</string>
+    <string name="title_survey_list">All Surveys</string>
+    <string name="title_survey_unanswered_list">Unanswered Surveys</string>
+    <string name="title_survey_answered_list">Answered Surveys</string>
+    <string name="title_survey_expired_list">Expired Surveys</string>
+    <string name="title_survey_response">Survey Response</string>
     <string name="title_config">Config</string>
 
     <!-- Notification channel -->

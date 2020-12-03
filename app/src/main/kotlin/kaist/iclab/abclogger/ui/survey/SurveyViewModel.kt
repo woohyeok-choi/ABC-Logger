@@ -10,6 +10,7 @@ import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kaist.iclab.abclogger.collector.survey.*
 import kaist.iclab.abclogger.commons.AbcError
 import kaist.iclab.abclogger.commons.EntityError
+import kaist.iclab.abclogger.core.EventBus
 import kaist.iclab.abclogger.structure.survey.Survey
 import kaist.iclab.abclogger.ui.State
 import kaist.iclab.abclogger.ui.survey.list.SurveyPagingSource
@@ -57,8 +58,6 @@ class SurveyViewModel(
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
                 greater(InternalSurveyEntity_.responseTime, 0)
-                    .or()
-                    .equal(InternalSurveyEntity_.responseTime, 0)
                 orderDesc(InternalSurveyEntity_.actualTriggerTime)
             }
         }.flow
@@ -114,7 +113,10 @@ class SurveyViewModel(
 
             dataRepository.put(updatedSurvey)
             responses.forEach { dataRepository.put(it) }
-            dataRepository.put(toSurveyEntity(updatedSurvey, responses))
+
+            val answeredSurveyEntity = toSurveyEntity(updatedSurvey, responses)
+            dataRepository.put(answeredSurveyEntity)
+            EventBus.post(answeredSurveyEntity)
             saveStatusChannel.send(State.Success(Unit))
         } catch (e: Exception) {
             saveStatusChannel.send(State.Failure(AbcError.wrap(e)))
@@ -173,7 +175,8 @@ class SurveyViewModel(
                     answer = response.answer.main + response.answer.other
                 )
             }
-        ).apply {
-            id = survey.id
-        }
+        )/*.apply {
+            id = survey.id                      // error: ID is higher or equal to internal ID sequence: 1 (vs. 1). Use ID 0 (zero) to insert new entities.
+            instanceId = survey.id.toString()   // instanceId is uuid for each participant defined by AuthRepository.
+        }*/
 }

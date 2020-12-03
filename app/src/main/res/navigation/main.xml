@@ -15,7 +15,7 @@
     <fragment
         android:id="@+id/survey_not_answered_list"
         android:name="kaist.iclab.abclogger.ui.survey.list.SurveyNotAnsweredListFragment"
-        android:label="@string/title_survey_list">
+        android:label="@string/title_survey_unanswered_list">
         <action
             android:id="@+id/action_survey_not_answered_list_to_survey_response"
             app:destination="@id/survey_response" />
@@ -23,7 +23,7 @@
     <fragment
         android:id="@+id/survey_answered_list"
         android:name="kaist.iclab.abclogger.ui.survey.list.SurveyAnsweredListFragment"
-        android:label="@string/title_survey_list">
+        android:label="@string/title_survey_answered_list">
         <action
             android:id="@+id/action_survey_answered_list_to_survey_response"
             app:destination="@id/survey_response" />
@@ -31,7 +31,7 @@
     <fragment
         android:id="@+id/survey_expired_list"
         android:name="kaist.iclab.abclogger.ui.survey.list.SurveyExpiredListFragment"
-        android:label="@string/title_survey_list">
+        android:label="@string/title_survey_expired_list">
         <action
             android:id="@+id/action_survey_expired_list_to_survey_response"
             app:destination="@id/survey_response" />

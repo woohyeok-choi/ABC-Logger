@@ -38,7 +38,7 @@ class SurveyResponseFragment : BaseViewModelFragment<FragmentSurveyResponseBindi
     private var isAlreadyAnswered: Boolean = false
     private var isResponseTimeout: Boolean = false
 
-    private val entityId by lazy { if (args.restore) cache?.id ?: 0 else args.entityId }
+    private val entityId by lazy { if (args.restore) cache?.id ?: -1 else args.entityId }
     private val title by lazy { if (args.restore) cache?.title else args.title }
     private val message by lazy { if (args.restore) cache?.message else args.message }
     private val triggerTime by lazy { if (args.restore) cache?.triggerTime ?: 0 else args.triggerTime }
@@ -117,8 +117,8 @@ class SurveyResponseFragment : BaseViewModelFragment<FragmentSurveyResponseBindi
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.survey_response, menu)
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.setting, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =

@@ -163,7 +163,7 @@ object NotificationRepository {
             setContentTitle(title)
             setStyle(NotificationCompat.BigTextStyle().bigText(message))
             setGroup(GROUP_ID_SURVEY)
-            setTimeoutAfter(15*60*1000L)
+            setTimeoutAfter(15*60*1000L)        // hard coded. need to fix this with expired time.
         }.build()
 
         NotificationManagerCompat.from(context).notify(entityIdToTag(entityId), ID_SURVEY_TRIGGERED, ntf)

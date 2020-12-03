@@ -147,7 +147,7 @@ class SurveyCollector(
         val dateBase = LocalDate.fromMillis(baseTime)
         val dateCurrent = LocalDate.fromMillis(timestamp)
 
-        val uuid = setting.uuid
+        val uuid = setting.uuid                         // this is uuid for each survey setting.
         val survey = setting.survey
         val intraDaySchedule = survey.intraDaySchedule
         val interDaySchedule = survey.interDaySchedule
@@ -156,6 +156,8 @@ class SurveyCollector(
             equal(InternalSurveyEntity_.uuid, uuid)
             orderDesc(InternalSurveyEntity_.intendedTriggerTime)
         }
+
+        Log.d(javaClass, survey)
 
         val dateFrom = if (latestSchedule == null) {
             dateBase + (survey.timeFrom.takeIf { !it.isNone() } ?: Duration.MIN)
@@ -237,7 +239,7 @@ class SurveyCollector(
             trigger(entity.id, timestamp)
         }
 
-        val latestSchedule = dataRepository.findFirst<InternalSurveyEntity> {
+        val upcomingSchedule = dataRepository.findFirst<InternalSurveyEntity> {
             inValues(InternalSurveyEntity_.uuid, configurations.map { it.uuid }.toTypedArray())
             greater(InternalSurveyEntity_.intendedTriggerTime, timestamp)
             order(InternalSurveyEntity_.intendedTriggerTime)
@@ -245,7 +247,7 @@ class SurveyCollector(
 
         val alarmManager = context.getSystemService<AlarmManager>() ?: return
 
-        if (latestSchedule == null) {
+        if (upcomingSchedule == null) {
             val triggerIntent = PendingIntent.getBroadcast(
                 context, REQUEST_CODE_ACTION_SCHEDULE,
                 Intent(ACTION_SCHEDULE),
@@ -261,7 +263,7 @@ class SurveyCollector(
             val triggerIntent = PendingIntent.getBroadcast(
                 context, REQUEST_CODE_ACTION_SCHEDULE,
                 Intent(ACTION_SCHEDULE).putExtra(
-                    EXTRA_SURVEY_ID, latestSchedule.id
+                    EXTRA_SURVEY_ID, upcomingSchedule.id
                 ), PendingIntent.FLAG_UPDATE_CURRENT
             )
 
@@ -274,7 +276,7 @@ class SurveyCollector(
 
             AlarmManagerCompat.setAlarmClock(
                 alarmManager,
-                latestSchedule.intendedTriggerTime,
+                upcomingSchedule.intendedTriggerTime,
                 showIntent,
                 triggerIntent
             )
@@ -290,14 +292,16 @@ class SurveyCollector(
 
         val responses = survey.question.mapIndexed { idx, question ->
             InternalResponseEntity(
-                surveyId = id,
+                surveyId = entity.id,
                 index = idx,
                 question = question,
                 answer = InternalAnswer(question.option.type != Option.Type.CHECK_BOX)
             )
         }
 
-        put(entity.copy(actualTriggerTime = timestamp))
+        val updateEntity = entity.copy(actualTriggerTime = timestamp)
+        Log.d(javaClass, updateEntity)
+        put(updateEntity)    // temporary entity that will be notified but not be responded yet.
 
         responses.forEach {
             put(it, isStatUpdates = false)
