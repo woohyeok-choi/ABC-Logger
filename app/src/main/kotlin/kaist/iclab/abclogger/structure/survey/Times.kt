@@ -157,7 +157,7 @@ data class LocalDateTimeRange(
 ) : Iterable<LocalDateTime> {
     override fun iterator(): Iterator<LocalDateTime> = object : Iterator<LocalDateTime> {
         private var hasNext: Boolean =
-            millis > 0 && timeFrom >= timeTo
+            millis > 0 && timeFrom <= timeTo
 
         private var next = if (hasNext) timeFrom else timeTo
 
@@ -184,7 +184,8 @@ data class LocalDateRange(
     val millis: Long = 0
 ) : Iterable<LocalDate> {
     override fun iterator(): Iterator<LocalDate> = object : Iterator<LocalDate> {
-        private var hasNext: Boolean = millis > 0 && timeFrom >= timeTo
+        //private var hasNext: Boolean = millis > 0 && timeFrom >= timeTo
+        private var hasNext: Boolean = millis > 0 && timeFrom <= timeTo
 
         private var next = if (hasNext) timeFrom else timeTo
 
@@ -215,7 +216,7 @@ data class LocalTimeRange(
     val millis: Long = 0
 ) : Iterable<LocalTime> {
     override fun iterator(): Iterator<LocalTime> = object : Iterator<LocalTime> {
-        private var hasNext: Boolean = millis > 0 && timeFrom >= timeTo
+        private var hasNext: Boolean = millis > 0 && timeFrom <= timeTo
 
         private var next = if (hasNext) timeFrom else timeTo
 
@@ -242,7 +243,7 @@ fun LocalDateTime.toDayOfWeek(): DayOfWeek = DayOfWeek.fromMillis(toMillis())
 fun LocalDate.toDayOfWeek(): DayOfWeek = DayOfWeek.fromMillis(toMillis())
 
 fun LocalDateTime.toMillis(): Long = GregorianCalendar.getInstance().apply {
-    set(year, month - 1, day, 0, 0, 0)
+    set(year, month - 1, day, hour, minute, second)
     set(Calendar.MILLISECOND, 0)
 }.timeInMillis
 
@@ -303,10 +304,10 @@ operator fun LocalDateTime.minus(localDate: LocalDate): LocalDateTime = this - l
 operator fun LocalDateTime.minus(localDateTime: LocalDateTime): LocalDateTime =
     this - localDateTime.toMillis()
 
-operator fun LocalDateTime.rangeTo(other: LocalDateTime) = LocalDateTimeRange(this, other, true)
+operator fun LocalDateTime.rangeTo(other: LocalDateTime) = LocalDateTimeRange(this, other, true, millis = Duration.seconds(1).toMillis())
 infix fun LocalDateTime.until(other: LocalDateTime) = LocalDateTimeRange(this, other, false)
 
-operator fun LocalTime.rangeTo(other: LocalTime) = LocalTimeRange(this, other, true)
+operator fun LocalTime.rangeTo(other: LocalTime) = LocalTimeRange(this, other, true, millis = Duration.seconds(1).toMillis())
 operator fun LocalTime.plus(millis: Long) = LocalTime.fromMillis(toMillis() + millis)
 operator fun LocalTime.plus(other: LocalTime) = this + other.toMillis()
 operator fun LocalTime.minus(millis: Long) = LocalTime.fromMillis(toMillis() - millis)
@@ -326,7 +327,7 @@ operator fun LocalDate.minus(localDate: LocalDate): LocalDate = this - localDate
 operator fun LocalDate.minus(localTime: LocalTime): LocalDateTime =
     LocalDateTime.fromMillis(toMillis() - localTime.toMillis())
 
-operator fun LocalDate.rangeTo(other: LocalDate) = LocalDateRange(this, other, true)
+operator fun LocalDate.rangeTo(other: LocalDate) = LocalDateRange(this, other, true, millis = Duration.days(1).toMillis())
 infix fun LocalDate.until(other: LocalDate) = LocalDateRange(this, other, false)
 
 operator fun Duration.plus(other: Duration): Duration =
@@ -340,13 +341,13 @@ operator fun Duration.times(t: Long): Duration = Duration(toMillis() * t, Durati
 infix fun LocalDateTimeRange.step(millis: Long) = copy(millis = millis)
 infix fun LocalDateTimeRange.step(duration: Duration) = copy(millis = duration.toMillis())
 operator fun LocalDateTimeRange.contains(value: LocalDateTime): Boolean = if (isInclusive) {
-    value in timeFrom..timeTo
+    value >= this.timeFrom && value <= this.timeTo
 } else {
     value >= timeFrom && value < timeTo
 }
 
 operator fun LocalDateTimeRange.contains(value: LocalDate): Boolean = if (isInclusive) {
-    value.startOfDate() in timeFrom..timeTo
+    value.startOfDate() >= this.timeFrom && value.startOfDate() <= this.timeTo
 } else {
     value.startOfDate() >= timeFrom && value.startOfDate() < timeTo
 }
@@ -355,7 +356,7 @@ infix fun LocalTimeRange.step(millis: Long) = copy(millis = millis)
 infix fun LocalTimeRange.step(duration: Duration) = copy(millis = duration.toMillis())
 operator fun LocalTimeRange.contains(value: LocalTime): Boolean =
     if (isInclusive) {
-        value in timeFrom..timeTo
+        value >= this.timeFrom && value <= this.timeTo
     } else {
         value >= timeFrom && value < timeTo
     }
@@ -365,7 +366,7 @@ infix fun LocalDateRange.step(millis: Long) = copy(millis = millis)
 infix fun LocalDateRange.step(day: Int) = copy(millis = Duration.days(day).toMillis())
 operator fun LocalDateRange.contains(value: LocalDate): Boolean =
     if (isInclusive) {
-        value in timeFrom..timeTo
+        value >= this.timeFrom && value <= this.timeTo
     } else {
         value >= timeFrom && value < timeTo
     }

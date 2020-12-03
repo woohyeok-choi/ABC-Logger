@@ -40,11 +40,13 @@ class SurveyViewModel(
     }
 
     suspend fun listAll() : Flow<PagingData<InternalSurveyEntity>> {
-        prepareSync(System.currentTimeMillis())
+        val curTime = System.currentTimeMillis()
+        prepareSync(curTime)
 
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
-                orderDesc(InternalSurveyEntity_.actualTriggerTime)
+                less(InternalSurveyEntity_.intendedTriggerTime, curTime)
+                orderDesc(InternalSurveyEntity_.intendedTriggerTime)
             }
         }.flow
     }
@@ -63,29 +65,31 @@ class SurveyViewModel(
     }
 
     suspend fun listNotAnswered() : Flow<PagingData<InternalSurveyEntity>> {
-        prepareSync(System.currentTimeMillis())
+        val curTime = System.currentTimeMillis()
+        prepareSync(curTime)
 
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
-                less(InternalSurveyEntity_.responseTime, 0)
-                orderDesc(InternalSurveyEntity_.actualTriggerTime)
+                less(InternalSurveyEntity_.intendedTriggerTime, curTime)
+                    .and()
+                    .less(InternalSurveyEntity_.responseTime, 0)
+                orderDesc(InternalSurveyEntity_.intendedTriggerTime)
             }
         }.flow
     }
 
     suspend fun listExpired() : Flow<PagingData<InternalSurveyEntity>> {
-        prepareSync(System.currentTimeMillis())
+        val curTime = System.currentTimeMillis()
+        prepareSync(curTime)
 
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
-                val timestamp = System.currentTimeMillis()
-
-                less(InternalSurveyEntity_.timeoutUntil, timestamp)
+                less(InternalSurveyEntity_.timeoutUntil, curTime)
                 equal(
                     InternalSurveyEntity_.timeoutAction,
                     Survey.TimeoutAction.DISABLED.ordinal.toLong()
                 )
-                orderDesc(InternalSurveyEntity_.actualTriggerTime)
+                orderDesc(InternalSurveyEntity_.intendedTriggerTime)
             }
         }.flow
     }
@@ -138,6 +142,9 @@ class SurveyViewModel(
         } catch (e: Exception) { }
     }
 
+    /**
+     * The function toSurveyEntity makes the actual SurveyEntity to be uploaded into the DB.
+     */
     private fun toSurveyEntity(
         survey: InternalSurveyEntity,
         responses: List<InternalResponseEntity>
