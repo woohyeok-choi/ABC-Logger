@@ -38,7 +38,7 @@ class PolarH10ViewModel(
 
         override fun onHeartRateReceived(identifier: String, heartRate: Int, rrAvailable: Boolean, rrIntervalInSec: List<Int>, rrIntervalInMillis: List<Int>, contactStatusSupported: Boolean, contactStatus: Boolean) {
             viewModelScope.launch(Dispatchers.IO) {
-                hrChannel.send(HeartRate(heartRate, rrIntervalInSec, contactStatus))
+                hrChannel.send(HeartRate(heartRate, rrIntervalInMillis, contactStatus))
             }
         }
 

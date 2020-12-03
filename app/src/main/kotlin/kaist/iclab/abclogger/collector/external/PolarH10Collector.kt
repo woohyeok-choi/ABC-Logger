@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import androidx.core.app.AlarmManagerCompat
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxjava3.core.BackpressureStrategy
@@ -70,6 +71,8 @@ class PolarH10Collector(
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d(javaClass, "${intent?.action}")
+
             launch {
                 if (isEnabled) throw PolarDeviceDisconnected()
             }
@@ -151,7 +154,7 @@ class PolarH10Collector(
                     name = polarDeviceInfo.name ?: "",
                     address = polarDeviceInfo.address ?: "",
                     rssi = polarDeviceInfo.rssi,
-                    state = DISCONNECTED
+                    state = ACCIDENTALLY_DISCONNECTED
                 )
             }
 
@@ -217,7 +220,9 @@ class PolarH10Collector(
             accDisposable = null
 
             api.disconnectFromDevice(deviceId)
-            //api.setApiCallback(null)      // check needed.
+            //api.cleanup()
+            //api.shutDown()
+            api.setApiCallback(null)      // check needed.
         }
     }
 
@@ -249,7 +254,7 @@ class PolarH10Collector(
                 AlarmManagerCompat.setExactAndAllowWhileIdle(
                     alarmManager,
                     AlarmManager.RTC_WAKEUP,
-                    System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(10),
+                    System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1),
                     intent
                 )
             } else if (state == CONNECTED) {
@@ -293,7 +298,7 @@ class PolarH10Collector(
 
             val rrIntervalSecEntity = ExternalSensorEntity(
                 deviceType = DEVICE_TYPE,
-                valueType = "RR-Interval-Second",
+                valueType = "RR-Interval-1/1024-Second",
                 identifier = identifier,
                 others = mapOf(
                     "contactStatus" to contactStatus.toString(),
@@ -301,7 +306,7 @@ class PolarH10Collector(
                     "rrAvailable" to rrAvailable.toString()
                 ),
                 valueFormat = "INT",
-                valueUnit = "SEC",
+                valueUnit = "1/1024 SEC",
                 values = rrIntervalInSec.map { it.toString() }
             ).apply{
                 this.timestamp = timestamp
@@ -390,7 +395,13 @@ class PolarH10Collector(
     )
 
     override suspend fun onStart() {
-        api.connect(deviceId)
+        if (deviceConnectionStatus != CONNECTED) {
+            api.connect(deviceId)
+
+            context.safeRegisterReceiver(receiver, IntentFilter().apply {
+                addAction(ACTION_CHECK_CONNECTION_STATUS)
+            })
+        }
 
         buffer.buffer(
             10, TimeUnit.SECONDS
@@ -402,26 +413,40 @@ class PolarH10Collector(
     }
 
     override suspend fun onStop() {
+        deviceConnectionStatus = DISCONNECTED_BY_USER
         context.safeUnregisterReceiver(receiver)
 
         try {
             api.disconnect(deviceId)
         } catch (e: Exception) {
-            Log.d(javaClass, e)
+            Log.d(javaClass, "onStop(): $e")
         }
 
         alarmManager.cancel(intent)
     }
 
+    override suspend fun count(): Long = dataRepository.count<ExternalSensorEntity>()
+
+    override suspend fun flush(entities: Collection<ExternalSensorEntity>) {
+        dataRepository.remove(entities)
+        recordsUploaded += entities.size
+    }
+
+    override suspend fun list(limit: Long): Collection<ExternalSensorEntity> = dataRepository.find(0, limit)
+
     companion object {
         private const val DISCONNECTED = "DISCONNECTED"
         private const val CONNECTING = "CONNECTING"
         private const val CONNECTED = "CONNECTED"
+        private const val ACCIDENTALLY_DISCONNECTED = "ACCIDENTALLY_DISCONNECTED"
+        private const val DISCONNECTED_BY_USER = "DISCONNECTED_BY_USER"
 
         private const val ACTION_CHECK_CONNECTION_STATUS =
             "${BuildConfig.APPLICATION_ID}.ACTION_CHECK_CONNECTION_STATUS"
         private const val REQUEST_CODE_CHECK_CONNECTION_STATUS = 0x06
 
         private const val DEVICE_TYPE = "POLAR H10"
+
+        private const val DEFAULT_EPOCH_TIMESTAMP_MS = 946684800000L    // 2000.01.01
     }
 }
