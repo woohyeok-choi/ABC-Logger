@@ -48,6 +48,7 @@ import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Description
+import java.lang.Exception
 import java.util.*
 
 
@@ -604,7 +605,11 @@ class DeviceEventCollector(
 
     override suspend fun onStop() {
         context.safeUnregisterReceiver(receiver)
-        context.getSystemService<ConnectivityManager>()?.unregisterNetworkCallback(networkCallback)
+        try {
+            context.getSystemService<ConnectivityManager>()?.unregisterNetworkCallback(networkCallback)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override suspend fun count(): Long = dataRepository.count<DeviceEventEntity>()
@@ -903,7 +908,7 @@ class DeviceEventCollector(
             deviceSubClass = stringifyUsbClass(it.deviceSubclass)
             deviceManufactureName = it.manufacturerName ?: ""
             deviceProductId = it.productId.toString()
-            deviceSerialNumber = it.serialNumber ?: ""
+            //deviceSerialNumber = it.serialNumber ?: ""
             deviceProductName = it.productName ?: ""
             deviceVersion = it.version
         }
@@ -912,7 +917,7 @@ class DeviceEventCollector(
             accessoryManufacturer = it.manufacturer
             accessoryModel = it.model
             accessoryDescription = it.description ?: ""
-            accessorySerial = it.serial ?: ""
+            //accessorySerial = it.serial ?: ""
             accessoryUri = it.uri ?: ""
             accessoryVersion = it.version ?: ""
         }

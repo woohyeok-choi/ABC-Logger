@@ -78,11 +78,26 @@ class SurveyCollector(
             addAction(ACTION_SCHEDULE)
             addAction(ACTION_EMPTY)
         })
+
+        val timestamp = System.currentTimeMillis()
+        handleSchedule(0, timestamp, null)
     }
 
     override suspend fun onStop() {
         EventBus.unregister(this)
         context.safeUnregisterReceiver(receiver)
+
+        val alarmManager = context.getSystemService<AlarmManager>() ?: return
+
+        val triggerIntent = PendingIntent.getBroadcast(
+                context, REQUEST_CODE_ACTION_SCHEDULE,
+                Intent(ACTION_SCHEDULE),
+                PendingIntent.FLAG_NO_CREATE
+        )
+
+        if (triggerIntent != null) {
+            alarmManager.cancel(triggerIntent)
+        }
     }
 
     override suspend fun count(): Long = dataRepository.count<SurveyEntity>()

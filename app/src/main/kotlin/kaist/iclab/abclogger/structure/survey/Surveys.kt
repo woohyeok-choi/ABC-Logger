@@ -85,6 +85,7 @@ data class Survey(
         fun fromJson(json: String): Survey? = try {
             Adapter.fromJson(json)
         } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
     }

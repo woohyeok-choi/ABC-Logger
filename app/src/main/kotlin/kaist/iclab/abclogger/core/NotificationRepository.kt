@@ -54,11 +54,15 @@ object NotificationRepository {
     private val DEFAULT_RINGTONE_URI =
         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
+    /**
+     * All kinds of notifications from this app are managed by here.
+     * Please study https://developer.android.com/training/notify-user/time-sensitive
+     */
     private val NOTIFICATION_SETTINGS = mapOf(
         CHANNEL_ID_SURVEY_TRIGGERED to Setting(
             nameRes = R.string.ntf_channel_survey,
-            category = NotificationCompat.CATEGORY_EVENT,
-            priority = NotificationCompat.PRIORITY_HIGH,
+            category = NotificationCompat.CATEGORY_REMINDER,
+            priority = NotificationCompat.PRIORITY_HIGH,            // consider to use PRIORITY_MAX
             visibility = NotificationCompat.VISIBILITY_PUBLIC,
             importance = NotificationManagerCompat.IMPORTANCE_HIGH,
             hasSound = true,
@@ -84,7 +88,7 @@ object NotificationRepository {
         ),
         CHANNEL_ID_ERROR to Setting(
             nameRes = R.string.ntf_channel_error,
-            category = NotificationCompat.CATEGORY_EVENT,
+            category = NotificationCompat.CATEGORY_ERROR,
             priority = NotificationCompat.PRIORITY_HIGH,
             visibility = NotificationCompat.VISIBILITY_PUBLIC,
             importance = NotificationManagerCompat.IMPORTANCE_HIGH,
@@ -159,6 +163,7 @@ object NotificationRepository {
             setContentTitle(title)
             setStyle(NotificationCompat.BigTextStyle().bigText(message))
             setGroup(GROUP_ID_SURVEY)
+            setTimeoutAfter(15*60*1000L)
         }.build()
 
         NotificationManagerCompat.from(context).notify(entityIdToTag(entityId), ID_SURVEY_TRIGGERED, ntf)

@@ -232,7 +232,7 @@
     <string name="setting_polar_h10_status_rssi_title">Signal Strength (dBm)</string>
     <string name="setting_polar_h10_status_battery_title">Battery (%)</string>
     <string name="setting_polar_h10_status_heartrate_title">Heart rate (bpm)</string>
-    <string name="setting_polar_h10_status_rr_interval_title">RR Interval (sec.)</string>
+    <string name="setting_polar_h10_status_rr_interval_title">RR Interval (msec.)</string>
     <string name="setting_polar_h10_status_ecg_title">ECG (mV)</string>
     <string name="setting_polar_h10_status_accel_title">Accelerometer (mG)</string>
 
