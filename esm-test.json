@@ -172,17 +172,17 @@
 	"intraDaySchedule": {
 		"type": "INTERVAL",
 		"timeFrom": {
-			"hour": 10,
+			"hour": 0,
 			"minute": 0,
 			"second": 0
 		},
 		"timeTo": {
-			"hour": 22,
-			"minute": 0,
-			"second": 0
+			"hour": 23,
+			"minute": 59,
+			"second": 59
 		},
 		"intervalDefault": {
-			"amount": 5,
+			"amount": 1,
 			"unit": "MINUTE"
 		},
 		"intervalFlex": {
