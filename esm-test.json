@@ -159,11 +159,11 @@
 	},
 	"timeoutAction": "DISABLED",
 	"timeFrom": {
-		"amount": -1,
+		"amount": 0,
 		"unit": "HOUR"
 	},
 	"timeTo": {
-		"amount": -1,
+		"amount": 0,
 		"unit": "HOUR"
 	},
 	"interDaySchedule": {
