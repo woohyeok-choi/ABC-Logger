@@ -8,6 +8,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
+import androidx.paging.filter
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -159,7 +160,8 @@ abstract class SurveyListFragment :
             id = item.id,
             title = binding.title,
             message = binding.message,
-            triggerTime = item.actualTriggerTime
+            triggerTime = item.actualTriggerTime,
+            restore = false                 // means that it does started by "restore"
         )
 
         val extras = FragmentNavigatorExtras(

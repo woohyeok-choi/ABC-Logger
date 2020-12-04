@@ -46,6 +46,7 @@ class SurveyViewModel(
 
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
+                greater(InternalSurveyEntity_.actualTriggerTime, 0)
                 less(InternalSurveyEntity_.intendedTriggerTime, curTime)
                 orderDesc(InternalSurveyEntity_.intendedTriggerTime)
             }
@@ -57,6 +58,8 @@ class SurveyViewModel(
 
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
+                greater(InternalSurveyEntity_.actualTriggerTime, 0)
+                //equal(InternalSurveyEntity_.isTransferredToSync, true)    //may needed
                 greater(InternalSurveyEntity_.responseTime, 0)
                 orderDesc(InternalSurveyEntity_.actualTriggerTime)
             }
@@ -69,6 +72,7 @@ class SurveyViewModel(
 
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
+                greater(InternalSurveyEntity_.actualTriggerTime, 0)
                 less(InternalSurveyEntity_.intendedTriggerTime, curTime)
                     .and()
                     .less(InternalSurveyEntity_.responseTime, 0)
@@ -83,6 +87,8 @@ class SurveyViewModel(
 
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
+                greater(InternalSurveyEntity_.actualTriggerTime, 0)
+                equal(InternalSurveyEntity_.isTransferredToSync, false)
                 less(InternalSurveyEntity_.timeoutUntil, curTime)
                 equal(
                     InternalSurveyEntity_.timeoutAction,
@@ -126,6 +132,7 @@ class SurveyViewModel(
     private suspend fun prepareSync(timestamp: Long) = withContext(ioContext) {
         try {
             val expiredEntities = dataRepository.find<InternalSurveyEntity> {
+                greater(InternalSurveyEntity_.actualTriggerTime, 0)
                 equal(InternalSurveyEntity_.isTransferredToSync, false)
                 less(InternalSurveyEntity_.timeoutUntil, timestamp)
                 equal(
