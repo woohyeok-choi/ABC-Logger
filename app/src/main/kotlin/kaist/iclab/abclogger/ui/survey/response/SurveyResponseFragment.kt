@@ -48,6 +48,8 @@ class SurveyResponseFragment : BaseViewModelFragment<FragmentSurveyResponseBindi
             FragmentSurveyResponseBinding.inflate(inflater)
 
     override fun initView(viewBinding: FragmentSurveyResponseBinding) {
+        setHasOptionsMenu(true)
+
         NotificationRepository.cancelSurvey(requireContext(), entityId)
 
         ViewCompat.setTransitionName(viewBinding.txtTitle, sharedViewNameForTitle(entityId))

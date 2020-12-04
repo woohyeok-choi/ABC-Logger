@@ -157,8 +157,6 @@ class SurveyCollector(
             orderDesc(InternalSurveyEntity_.intendedTriggerTime)
         }
 
-        Log.d(javaClass, survey)
-
         val dateFrom = if (latestSchedule == null) {
             dateBase + (survey.timeFrom.takeIf { !it.isNone() } ?: Duration.MIN)
         } else {
@@ -193,7 +191,9 @@ class SurveyCollector(
 
         val scheduledDateTimes = scheduledDates.combination(scheduledTimes) { date, time ->
             date + time
-        }.filter { dateTime -> dateTime in (dateFrom..dateTo) }
+        }.filter { dateTime ->
+            (dateTime in (dateFrom..dateTo)) && (dateTime.toMillis() > timestamp)
+        }
 
         val eventsTrigger =
             (survey.intraDaySchedule as? EventSchedule)?.eventsTrigger ?: listOf()
@@ -224,7 +224,7 @@ class SurveyCollector(
 
     private suspend fun timer(timestamp: Long) {
         val schedulesNotTriggered = dataRepository.find<InternalSurveyEntity> {
-            inValues(InternalSurveyEntity_.uuid, configurations.map { it.uuid }.toTypedArray())
+            inValues(InternalSurveyEntity_.uuid, configurations.map { it.uuid }.toTypedArray())     // all schedule has setting id that is in the setting list.
                 .and()
                 .less(InternalSurveyEntity_.actualTriggerTime, 0)
                 .and()
@@ -300,7 +300,6 @@ class SurveyCollector(
         }
 
         val updateEntity = entity.copy(actualTriggerTime = timestamp)
-        Log.d(javaClass, updateEntity)
         put(updateEntity)    // temporary entity that will be notified but not be responded yet.
 
         responses.forEach {

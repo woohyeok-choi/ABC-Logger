@@ -188,10 +188,10 @@ abstract class AbstractCollector<E : AbstractEntity>(
         isStatUpdates: Boolean = true
     ) {
         val entity = fill(datum)
-        Log.d(javaClass, entity)
 
         dataRepository.put(entity)
         EventBus.post(entity)
+        Log.d(javaClass, entity)
 
         if (isStatUpdates) {
             val timestamp = (entity as? AbstractEntity)?.timestamp ?: System.currentTimeMillis()

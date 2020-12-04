@@ -51,7 +51,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 R.id.survey_answered_list,
                 R.id.survey_not_answered_list,
                 R.id.survey_expired_list,
-                R.id.config
+                R.id.config,
+                R.id.survey_response
             ), viewBinding.root
         )
 

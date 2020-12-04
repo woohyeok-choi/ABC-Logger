@@ -56,15 +56,16 @@ object NotificationRepository {
 
     /**
      * All kinds of notifications from this app are managed by here.
-     * Please study https://developer.android.com/training/notify-user/time-sensitive
+     * Please study here:   https://developer.android.com/training/notify-user/time-sensitive
+     * and this discussion: https://stackoverflow.com/a/45920861
      */
     private val NOTIFICATION_SETTINGS = mapOf(
         CHANNEL_ID_SURVEY_TRIGGERED to Setting(
             nameRes = R.string.ntf_channel_survey,
             category = NotificationCompat.CATEGORY_REMINDER,
-            priority = NotificationCompat.PRIORITY_HIGH,            // consider to use PRIORITY_MAX
+            priority = NotificationCompat.PRIORITY_DEFAULT,             // do not replace this with the higher priority. it may ignore the silent mode.
             visibility = NotificationCompat.VISIBILITY_PUBLIC,
-            importance = NotificationManagerCompat.IMPORTANCE_HIGH,
+            importance = NotificationManagerCompat.IMPORTANCE_DEFAULT,  // do not replace this with the higher importance. it may ignore the silent mode.
             hasSound = true,
             hasVibration = true,
         ),
@@ -73,7 +74,7 @@ object NotificationRepository {
             category = NotificationCompat.CATEGORY_STATUS,
             priority = NotificationCompat.PRIORITY_LOW,
             visibility = NotificationCompat.VISIBILITY_SECRET,
-            importance = NotificationManagerCompat.IMPORTANCE_LOW,
+            importance = NotificationManagerCompat.IMPORTANCE_MIN,
             hasSound = false,
             hasVibration = false,
         ),
@@ -82,7 +83,7 @@ object NotificationRepository {
             category = NotificationCompat.CATEGORY_PROGRESS,
             priority = NotificationCompat.PRIORITY_LOW,
             visibility = NotificationCompat.VISIBILITY_PRIVATE,
-            importance = NotificationManagerCompat.IMPORTANCE_LOW,
+            importance = NotificationManagerCompat.IMPORTANCE_MIN,
             hasSound = false,
             hasVibration = false,
         ),
