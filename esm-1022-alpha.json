@@ -182,11 +182,11 @@
 			"second": 0
 		},
 		"intervalDefault": {
-			"amount": 5,
+			"amount": 30,
 			"unit": "MINUTE"
 		},
 		"intervalFlex": {
-			"amount": 5,
+			"amount": 60,
 			"unit": "MINUTE"
 		}
 	}
