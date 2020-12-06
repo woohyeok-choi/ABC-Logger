@@ -98,10 +98,11 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:enabled="@{isEnabled}"
+                        app:labelBehavior="floating"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintLeft_toRightOf="@id/txt_slider_from"
                         app:layout_constraintRight_toLeftOf="@id/txt_slider_to"
-                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/txt_current_slider_value"
                         app:trackColor="@color/slider_inactive_color"
                         app:trackColorInactive="@color/slider_inactive_color"
                         tools:value="50F"
@@ -123,6 +124,27 @@
                         app:layout_constraintRight_toRightOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         tools:text="155" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/txt_current_slider_value"
+                        index="@{0}"
+                        textSet="@{answer.main}"
+                        defaultValue="@{String.valueOf(option.defaultValue)}"
+                        android:layout_width="@dimen/item_width"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="100dp"
+                        android:enabled="@{isEnabled}"
+                        android:gravity="center_horizontal"
+                        android:hint="@string/general_mdash"
+                        android:paddingStart="@dimen/space_horiz_padding"
+                        android:paddingEnd="0dp"
+                        android:textAppearance="?attr/textAppearanceBody2"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/range_slider"
+                        app:layout_constraintLeft_toLeftOf="@id/range_slider"
+                        app:layout_constraintVertical_bias="0.5"
+                        tools:text="77" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
