@@ -155,7 +155,7 @@ class PolarH10Collector(
                     name = polarDeviceInfo.name ?: "",
                     address = polarDeviceInfo.address ?: "",
                     rssi = polarDeviceInfo.rssi,
-                    state = ACCIDENTALLY_DISCONNECTED
+                    state = DISCONNECTED
                 )
             }
 
@@ -251,14 +251,14 @@ class PolarH10Collector(
                 deviceRssi = 0
             }
 
-            if (state == DISCONNECTED) {
+            if (state != CONNECTED) {
                 AlarmManagerCompat.setExactAndAllowWhileIdle(
                     alarmManager,
                     AlarmManager.RTC_WAKEUP,
                     System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1),
                     intent
                 )
-            } else if (state == CONNECTED) {
+            } else {
                 alarmManager.cancel(intent)
             }
         }
@@ -398,11 +398,10 @@ class PolarH10Collector(
     override suspend fun onStart() {
         if (deviceConnectionStatus != CONNECTED) {
             api.connect(deviceId)
-
-            context.safeRegisterReceiver(receiver, IntentFilter().apply {
-                addAction(ACTION_CHECK_CONNECTION_STATUS)
-            })
         }
+        context.safeRegisterReceiver(receiver, IntentFilter().apply {
+            addAction(ACTION_CHECK_CONNECTION_STATUS)
+        })
 
         buffer.buffer(
             10, TimeUnit.SECONDS

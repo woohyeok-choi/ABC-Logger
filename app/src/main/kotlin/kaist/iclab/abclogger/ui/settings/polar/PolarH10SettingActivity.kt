@@ -10,7 +10,6 @@ import kaist.iclab.abclogger.databinding.LayoutSettingPolarH10Binding
 import kaist.iclab.abclogger.dialog.VersatileDialog
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.viewmodel.ext.android.stateViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PolarH10SettingActivity : AbstractSettingActivity<LayoutSettingPolarH10Binding, PolarH10ViewModel>() {
     override val viewModel: PolarH10ViewModel by stateViewModel()
@@ -46,6 +45,7 @@ class PolarH10SettingActivity : AbstractSettingActivity<LayoutSettingPolarH10Bin
             if (isChecked) {
                 viewModel.connect(childBinding.txtDeviceIdText.text.toString())
             } else {
+                childBinding.txtConnection.text = "DISCONNECTED"
                 viewModel.disconnect()
             }
         }
@@ -98,6 +98,11 @@ class PolarH10SettingActivity : AbstractSettingActivity<LayoutSettingPolarH10Bin
 
             viewModel.saveState(KEY_DEVICE_ID, deviceId)
         }
+    }
+
+    override fun onPause() {
+        childBinding.swiConnect.isChecked = false
+        super.onPause()
     }
 
     override fun undo() {
