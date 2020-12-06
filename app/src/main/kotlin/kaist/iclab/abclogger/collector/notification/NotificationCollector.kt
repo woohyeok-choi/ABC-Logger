@@ -8,6 +8,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.provider.Settings
 import androidx.core.app.NotificationManagerCompat
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.collector.stringifyNotificationCategory
 import kaist.iclab.abclogger.collector.stringifyNotificationPriority
 import kaist.iclab.abclogger.commons.*
@@ -40,9 +41,31 @@ class NotificationCollector(
 
     override fun getDescription(): Array<Description> = arrayOf()
 
-    override suspend fun onStart() {}
+    override suspend fun onStart() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "On"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+    }
 
-    override suspend fun onStop() {}
+    override suspend fun onStop() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "Off"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+    }
 
     override suspend fun count(): Long = dataRepository.count<NotificationEntity>()
 

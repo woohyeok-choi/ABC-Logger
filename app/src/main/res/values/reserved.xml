@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">ABC Logger</string>
-    <string name="app_description" translatable="false">For the collection of a variety of smartphone data</string>
+    <string name="app_description" translatable="false">Data collection app for Android smartphone</string>
 </resources>

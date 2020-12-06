@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.net.wifi.WifiManager
 import android.provider.Settings
 import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
 import kaist.iclab.abclogger.commons.safeUnregisterReceiver
@@ -75,9 +76,31 @@ class WifiCollector(
             TimeUnit.MINUTES.toMillis(5),
             intent
         )
+
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "On"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
     }
 
     override suspend fun onStop() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "Off"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+
         context.safeUnregisterReceiver(receiver)
 
         alarmManager.cancel(intent)

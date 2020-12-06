@@ -13,6 +13,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
 import kaist.iclab.abclogger.commons.safeUnregisterReceiver
@@ -77,9 +78,31 @@ class LocationCollector(
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 
         client.requestLocationUpdates(request, intent)
+
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "On"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
     }
 
     override suspend fun onStop() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "Off"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+
         context.safeUnregisterReceiver(receiver)
         client.removeLocationUpdates(intent)
     }

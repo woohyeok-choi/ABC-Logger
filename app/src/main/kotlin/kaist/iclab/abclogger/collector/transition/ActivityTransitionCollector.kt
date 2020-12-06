@@ -11,6 +11,7 @@ import android.os.Build
 import android.provider.Settings
 import com.google.android.gms.location.*
 import kaist.iclab.abclogger.BuildConfig
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.collector.stringifyActivityType
 import kaist.iclab.abclogger.commons.safeRegisterReceiver
@@ -104,9 +105,31 @@ class ActivityTransitionCollector(
         })
 
         client.requestActivityTransitionUpdates(request, activityTransitionIntent)
+
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "On"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
     }
 
     override suspend fun onStop() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "Off"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+
         context.safeUnregisterReceiver(receiver)
 
         client.removeActivityTransitionUpdates(activityTransitionIntent)

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.ui.settings.keylog.KeyLogSettingActivity
 import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.core.DataRepository
@@ -43,9 +44,31 @@ class KeyLogCollector(
 
     override suspend fun onStart() {
         keyLog.set(null)
+
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "On"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
     }
 
-    override suspend fun onStop() {}
+    override suspend fun onStop() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "Off"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+    }
 
     override suspend fun count(): Long = dataRepository.count<KeyLogEntity>()
 
@@ -71,7 +94,8 @@ class KeyLogCollector(
         KOR,
         ENG,
         NUMBER,
-        SPECIAL;
+        SPECIAL,
+        BACKSPACE;
     }
 
     class CollectorService : AccessibilityService() {
@@ -212,7 +236,7 @@ class KeyLogCollector(
              * When previous key log does not exists (so, previous text is empty) then
              */
             val curKeyType = if (curDecomposedText.length < prevDecomposedText.length) {
-                KeyType.SPECIAL
+                KeyType.BACKSPACE
             } else {
                 getKeyType(curKey)
             }
@@ -235,16 +259,26 @@ class KeyLogCollector(
         ): Float {
             if (fromKey.isEmpty()) return Float.MIN_VALUE
             if (toKey.isEmpty()) return Float.MIN_VALUE
-            if (fromKeyType != toKeyType) return Float.MIN_VALUE
-            if (toKeyType !in arrayOf(KeyType.ENG, KeyType.KOR)) return Float.MIN_VALUE
+            //if (fromKeyType != toKeyType) return Float.MIN_VALUE
+            //if (toKeyType !in arrayOf(KeyType.ENG, KeyType.KOR)) return Float.MIN_VALUE
+            val fromKeyValue = if (fromKeyType == KeyType.BACKSPACE)
+                "backspace"
+            else
+                fromKey
+
+            val toKeyValue = if (toKeyType == KeyType.BACKSPACE)
+                "backspace"
+            else
+                toKey
+
 
             val (fromX, fromY) = findPosition(
-                key = fromKey,
+                key = fromKeyValue,
                 keyType = fromKeyType,
                 isChunjiin = isChunjiin
             ) ?: return Float.MIN_VALUE
             val (toX, toY) = findPosition(
-                key = toKey,
+                key = toKeyValue,
                 keyType = toKeyType,
                 isChunjiin = isChunjiin
             ) ?: return Float.MIN_VALUE
@@ -260,9 +294,9 @@ class KeyLogCollector(
             keyType: KeyType,
             isChunjiin: Boolean
         ): Pair<Float, Float>? = when {
-            keyType == KeyType.KOR && isChunjiin -> CHUNJIIN
-            keyType == KeyType.KOR && !isChunjiin -> QWERTY_KOR
             keyType == KeyType.ENG -> QWERTY_ENG
+            isChunjiin -> CHUNJIIN
+            !isChunjiin -> QWERTY_KOR
             else -> null
         }?.get(key)
 
@@ -313,7 +347,7 @@ class KeyLogCollector(
          * Coordinates for CHUNJIIN
          */
         private val KEYS_CHUNJIIN = arrayOf(
-            "l",
+            "ㅣ",
             "ㆍ",
             "ㅡ",
             "backspace",
@@ -329,13 +363,13 @@ class KeyLogCollector(
             "ㅎ",
             "ㅈ",
             "ㅊ",
+            ",",
             ".",
             "?",
             "!",
             "ㅇ",
             "ㅁ",
             " ",
-            "@",
             "ㅏ",
             "ㅑ",
             "ㅓ",
@@ -356,7 +390,8 @@ class KeyLogCollector(
             "ㅝ",
             "ㅚ",
             "ㅟ",
-            "ㅢ"
+            "ㅢ",
+            "\n"
         )
         private val COORDINATE_X_CHUNJIIN = arrayOf(
             1f,
@@ -378,12 +413,12 @@ class KeyLogCollector(
             4f,
             4f,
             4f,
-            2f,
-            2f,
-            3f,
             4f,
             2f,
             2f,
+            3f,
+            2f,
+            2f,
             1f,
             1f,
             3f,
@@ -402,7 +437,8 @@ class KeyLogCollector(
             1f,
             1f,
             1f,
-            1f
+            1f,
+            4f,
         )
         private val COORDINATE_Y_CHUNJIIN = arrayOf(
             1f,
@@ -424,10 +460,10 @@ class KeyLogCollector(
             3f,
             3f,
             3f,
+            3f,
             4f,
             4f,
             4f,
-            4f,
             1f,
             1f,
             1f,
@@ -448,7 +484,8 @@ class KeyLogCollector(
             1f,
             1f,
             1f,
-            1f
+            1f,
+            2f
         )
         private val CHUNJIIN = KEYS_CHUNJIIN.mapIndexed { index, key ->
             Triple(key, COORDINATE_X_CHUNJIIN[index], COORDINATE_Y_CHUNJIIN[index])
@@ -503,7 +540,8 @@ class KeyLogCollector(
             "backspace",
             "@",
             " ",
-            "."
+            ".",
+            "\n"
         )
         private val COORDINATE_X_QWERTY_KOR = arrayOf(
             1f,
@@ -552,7 +590,8 @@ class KeyLogCollector(
             9.5f,
             3f,
             6f,
-            8.5f
+            8.5f,
+            10f
         )
         private val COORDINATE_Y_QWERTY_KOR = arrayOf(
             1f,
@@ -599,6 +638,7 @@ class KeyLogCollector(
             4f,
             4f,
             4f,
+            5f,
             5f,
             5f,
             5f
@@ -649,7 +689,8 @@ class KeyLogCollector(
             "backspace",
             "@",
             " ",
-            "."
+            ".",
+            "\n"
         )
         private val COORDINATE_X_QWERTY_ENG = arrayOf(
             1f,
@@ -691,7 +732,8 @@ class KeyLogCollector(
             9.5f,
             3f,
             6f,
-            8.5f
+            8.5f,
+            10f
         )
         private val COORDINATE_Y_QWERTY_ENG = arrayOf(
             1f,
@@ -731,6 +773,7 @@ class KeyLogCollector(
             4f,
             4f,
             4f,
+            5f,
             5f,
             5f,
             5f

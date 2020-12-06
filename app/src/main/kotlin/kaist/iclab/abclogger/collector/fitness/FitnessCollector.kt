@@ -19,6 +19,7 @@ import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.tasks.Tasks
 import kaist.iclab.abclogger.BuildConfig
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.collector.formatDateTime
 import kaist.iclab.abclogger.collector.stringifyFitnessDeviceType
 import kaist.iclab.abclogger.commons.*
@@ -179,9 +180,31 @@ class FitnessCollector(
             TimeUnit.HOURS.toMillis(1),
             intent
         )
+
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "On"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
     }
 
     override suspend fun onStop() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "Off"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+
         context.safeUnregisterReceiver(receiver)
         alarmManager.cancel(intent)
     }
