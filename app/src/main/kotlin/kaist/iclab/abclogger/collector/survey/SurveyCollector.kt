@@ -50,6 +50,7 @@ class SurveyCollector(
             val timestamp = System.currentTimeMillis()
 
             if (intent?.action == ACTION_SCHEDULE) {
+                Log.d(javaClass, "schedule broadcast received: id: ${intent.getLongExtra(EXTRA_SURVEY_ID, 0)}, timestamp: $timestamp")
                 handleSchedule(intent.getLongExtra(EXTRA_SURVEY_ID, 0), timestamp, null)
             }
         }
@@ -58,7 +59,7 @@ class SurveyCollector(
     override fun isAvailable(): Boolean = configurations.isNotEmpty()
 
     override fun getDescription(): Array<Description> = arrayOf(
-        R.string.collector_survey_info_base_date with formatDateTime(context, baseScheduleDate)
+        R.string.collector_survey_info_base_date with formatDateTime(context, this.baseScheduleDate)
     )
 
     override val permissions: List<String> = listOf(
@@ -66,11 +67,23 @@ class SurveyCollector(
         Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
 
-    override val setupIntent: Intent? = Intent(context, SurveySettingActivity::class.java)
+    override val setupIntent: Intent = Intent(context, SurveySettingActivity::class.java)
+
+    private val schedulingIntent by lazy {
+        PendingIntent.getBroadcast(
+            context, REQUEST_CODE_ACTION_SCHEDULE,
+            Intent(ACTION_SCHEDULE),
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
+
+    private val alarmManager by lazy {
+        context.getSystemService<AlarmManager>()!!
+    }
 
     override suspend fun onStart() {
-        if (baseScheduleDate < 0) {
-            baseScheduleDate = System.currentTimeMillis()
+        if (this.baseScheduleDate < 0) {
+            this.baseScheduleDate = System.currentTimeMillis()
         }
 
         EventBus.register(this)
@@ -79,39 +92,26 @@ class SurveyCollector(
             addAction(ACTION_EMPTY)
         })
 
-        val timestamp = System.currentTimeMillis()
-        handleSchedule(0, timestamp, null)
+        handleSchedule(0, System.currentTimeMillis(), null)
     }
 
     override suspend fun onStop() {
         EventBus.unregister(this)
         context.safeUnregisterReceiver(receiver)
-
-        val alarmManager = context.getSystemService<AlarmManager>() ?: return
-
-        val triggerIntent = PendingIntent.getBroadcast(
-                context, REQUEST_CODE_ACTION_SCHEDULE,
-                Intent(ACTION_SCHEDULE),
-                PendingIntent.FLAG_NO_CREATE
-        )
-
-        if (triggerIntent != null) {
-            alarmManager.cancel(triggerIntent)
-        }
     }
 
     override suspend fun count(): Long = dataRepository.count<SurveyEntity>()
 
     override suspend fun flush(entities: Collection<SurveyEntity>) {
         dataRepository.remove(entities)
-        recordsUploaded += entities.size
+        this.recordsUploaded += entities.size
     }
 
     override suspend fun list(limit: Long): Collection<SurveyEntity> = dataRepository.find(0, limit)
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onEvent(event: Event) {
-        val events = configurations.flatMap { setting ->
+        val events = this.configurations.flatMap { setting ->
             (setting.survey.intraDaySchedule as? EventSchedule)?.let {
                 it.eventsTrigger + it.eventsCancel
             } ?: listOf()
@@ -165,13 +165,15 @@ class SurveyCollector(
 
         if (dateCurrent + DAYS_MARGIN_FOR_SCHEDULE < dateFrom) return
 
-        val dateTo = if (survey.timeTo.isNone()) {
+        var dateTo: LocalDate = if (survey.timeTo.isNone()) {
             dateFrom + DAYS_SCHEDULE
         } else {
             dateBase + survey.timeTo
         }
 
-        if (dateTo < dateCurrent) return
+        if (dateTo < dateCurrent) {
+            dateTo = dateCurrent + DAYS_MARGIN_FOR_SCHEDULE
+        }
 
         val scheduledDates = scheduleInterDay(
             dateFrom, dateTo, interDaySchedule
@@ -245,8 +247,6 @@ class SurveyCollector(
             order(InternalSurveyEntity_.intendedTriggerTime)
         }
 
-        val alarmManager = context.getSystemService<AlarmManager>() ?: return
-
         if (upcomingSchedule == null) {
             val triggerIntent = PendingIntent.getBroadcast(
                 context, REQUEST_CODE_ACTION_SCHEDULE,
@@ -280,6 +280,8 @@ class SurveyCollector(
                 showIntent,
                 triggerIntent
             )
+
+            Log.d(javaClass, "timer(): upcomingSchedule; id: ${upcomingSchedule.id}, alarm at: ${upcomingSchedule.intendedTriggerTime}")
         }
     }
 
@@ -300,11 +302,13 @@ class SurveyCollector(
         }
 
         val updateEntity = entity.copy(actualTriggerTime = timestamp)
-        put(updateEntity)    // temporary entity that will be notified but not be responded yet.
+        put(updateEntity, isStatUpdates = false)    // temporary entity that will be notified but not be responded yet.
 
         responses.forEach {
             put(it, isStatUpdates = false)
         }
+
+        Log.d(javaClass, "trigger() at: $timestamp")
 
         NotificationRepository.notifySurvey(
             context = context,

@@ -10,13 +10,17 @@ import kaist.iclab.abclogger.ui.base.BaseViewModel
 import kaist.iclab.abclogger.collector.survey.*
 import kaist.iclab.abclogger.commons.AbcError
 import kaist.iclab.abclogger.commons.EntityError
+import kaist.iclab.abclogger.core.AuthRepository
 import kaist.iclab.abclogger.core.EventBus
+import kaist.iclab.abclogger.core.Log
+import kaist.iclab.abclogger.grpc.proto.DatumProtos.Survey.getDefaultInstance
 import kaist.iclab.abclogger.structure.survey.Survey
 import kaist.iclab.abclogger.ui.State
 import kaist.iclab.abclogger.ui.survey.list.SurveyPagingSource
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
+import java.util.*
 
 class SurveyViewModel(
     private val dataRepository: DataRepository,
@@ -54,7 +58,8 @@ class SurveyViewModel(
     }
 
     suspend fun listAnswered() : Flow<PagingData<InternalSurveyEntity>> {
-        prepareSync(System.currentTimeMillis())
+        val curTime = System.currentTimeMillis()
+        prepareSync(curTime)
 
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
@@ -88,7 +93,7 @@ class SurveyViewModel(
         return Pager(PagingConfig(10)) {
             SurveyPagingSource(dataRepository) {
                 greater(InternalSurveyEntity_.actualTriggerTime, 0)
-                equal(InternalSurveyEntity_.isTransferredToSync, false)
+                //equal(InternalSurveyEntity_.isTransferredToSync, false)
                 less(InternalSurveyEntity_.timeoutUntil, curTime)
                 equal(
                     InternalSurveyEntity_.timeoutAction,
@@ -121,8 +126,23 @@ class SurveyViewModel(
             responses.forEach { dataRepository.put(it) }
 
             val answeredSurveyEntity = toSurveyEntity(updatedSurvey, responses)
+            answeredSurveyEntity.apply {
+                utcOffset = TimeZone.getDefault().rawOffset / 1000
+                groupName = AuthRepository.groupName
+                email = AuthRepository.email
+                instanceId = AuthRepository.instanceId
+                source = AuthRepository.source
+                deviceManufacturer = AuthRepository.deviceManufacturer
+                deviceModel = AuthRepository.deviceModel
+                deviceVersion = AuthRepository.deviceVersion
+                deviceOs = AuthRepository.deviceOs
+                appId = AuthRepository.appId
+                appVersion = AuthRepository.appVersion
+            }
+            //val answeredSurveyEntity = getDefaultInstance()
             dataRepository.put(answeredSurveyEntity)
             EventBus.post(answeredSurveyEntity)
+            Log.d(javaClass, answeredSurveyEntity)
             saveStatusChannel.send(State.Success(Unit))
         } catch (e: Exception) {
             saveStatusChannel.send(State.Failure(AbcError.wrap(e)))
@@ -131,6 +151,8 @@ class SurveyViewModel(
 
     private suspend fun prepareSync(timestamp: Long) = withContext(ioContext) {
         try {
+            saveStatusChannel.send(State.Loading)
+
             val expiredEntities = dataRepository.find<InternalSurveyEntity> {
                 greater(InternalSurveyEntity_.actualTriggerTime, 0)
                 equal(InternalSurveyEntity_.isTransferredToSync, false)
@@ -146,9 +168,27 @@ class SurveyViewModel(
                 toSurveyEntity(survey, responses)
             }
             expiredEntities.forEach {
+                it.apply {
+                    utcOffset = TimeZone.getDefault().rawOffset / 1000
+                    groupName = AuthRepository.groupName
+                    email = AuthRepository.email
+                    instanceId = AuthRepository.instanceId
+                    source = AuthRepository.source
+                    deviceManufacturer = AuthRepository.deviceManufacturer
+                    deviceModel = AuthRepository.deviceModel
+                    deviceVersion = AuthRepository.deviceVersion
+                    deviceOs = AuthRepository.deviceOs
+                    appId = AuthRepository.appId
+                    appVersion = AuthRepository.appVersion
+                }
                 dataRepository.put(it)
+                EventBus.post(it)
+                Log.d(javaClass, it)
             }
-        } catch (e: Exception) { }
+            saveStatusChannel.send(State.Success(Unit))
+        } catch (e: Exception) {
+            saveStatusChannel.send(State.Failure(AbcError.wrap(e)))
+        }
     }
 
     /**
@@ -182,8 +222,9 @@ class SurveyViewModel(
                     answer = response.answer.main + response.answer.other
                 )
             }
-        )/*.apply {
-            id = survey.id                      // error: ID is higher or equal to internal ID sequence: 1 (vs. 1). Use ID 0 (zero) to insert new entities.
-            instanceId = survey.id.toString()   // instanceId is uuid for each participant defined by AuthRepository.
-        }*/
+        ).apply {
+            this.timestamp = System.currentTimeMillis()
+            //id = survey.id                      // error: ID is higher or equal to internal ID sequence: 1 (vs. 1). Use ID 0 (zero) to insert new entities.
+            //instanceId = survey.id.toString()   // instanceId is uuid for each participant defined by AuthRepository.
+        }
 }
