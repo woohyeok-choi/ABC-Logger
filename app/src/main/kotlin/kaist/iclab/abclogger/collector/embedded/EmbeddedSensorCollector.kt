@@ -10,6 +10,7 @@ import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.subjects.PublishSubject
 import io.reactivex.rxjava3.subjects.Subject
 import kaist.iclab.abclogger.R
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.collector.stringifySensorAccuracy
 import kaist.iclab.abclogger.core.DataRepository
@@ -90,9 +91,31 @@ class EmbeddedSensorCollector(
                 launch { put(it) }
             }
         }
+
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "On"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
     }
 
     override suspend fun onStop() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "Off"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+
         sensorManager.unregisterListener(listener)
     }
 

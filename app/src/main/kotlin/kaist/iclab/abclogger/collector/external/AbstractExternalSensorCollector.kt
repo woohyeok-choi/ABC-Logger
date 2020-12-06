@@ -24,6 +24,7 @@ abstract class AbstractExternalSensorCollector(
 
     override suspend fun flush(entities: Collection<ExternalSensorEntity>) {
         dataRepository.remove(entities)
+        recordsUploaded += entities.size
     }
 
     override suspend fun list(limit: Long): Collection<ExternalSensorEntity> = dataRepository.find(0, limit) {

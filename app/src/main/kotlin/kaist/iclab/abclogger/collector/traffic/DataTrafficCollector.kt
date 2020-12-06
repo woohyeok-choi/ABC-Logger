@@ -3,6 +3,7 @@ package kaist.iclab.abclogger.collector.traffic
 import android.content.Context
 import android.content.Intent
 import android.net.TrafficStats
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.core.collector.AbstractCollector
 import kaist.iclab.abclogger.core.DataRepository
 import kaist.iclab.abclogger.core.collector.Description
@@ -39,6 +40,17 @@ class DataTrafficCollector(
     private var job: Job? = null
 
     override suspend fun onStart() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "On"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+
         val timestamp = AtomicLong(System.currentTimeMillis())
         val totalRxBytes = AtomicLong(TrafficStats.getTotalRxBytes())
         val totalTxBytes = AtomicLong(TrafficStats.getTotalTxBytes())
@@ -84,6 +96,17 @@ class DataTrafficCollector(
     }
 
     override suspend fun onStop() {
+        put(
+            DeviceEventEntity(
+                eventType = javaClass.simpleName.toString(),
+                extras = mapOf(
+                    "status" to "Off"
+                )
+            ).apply {
+                this.timestamp = System.currentTimeMillis()
+            }
+        )
+
         job?.cancel()
     }
 
