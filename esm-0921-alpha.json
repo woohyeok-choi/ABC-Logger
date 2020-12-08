@@ -1,0 +1,193 @@
+{
+	"title": {
+		"main": "감정 설문이 도착했습니다",
+		"alt": "감정 설문이 도착했습니다"
+	},
+	"message": {
+		"main": "설문에 응답해주세요",
+		"alt": "설문에 응답해주세요"
+	},
+	"instruction": {
+		"main": "설문 응답 시작 시각 기준으로 아래에 응답해주세요",
+		"alt": "설문 응답 시작 시각 기준으로 아래에 응답해주세요"
+	},
+	"question": [
+		{
+			"title": {
+				"main": "1. My emotion right before doing this survey could be rated as",
+				"alt": "My emotion right before doing this survey could be rated as"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "very negative (-3)",
+				"maxLabel": "very positive (+3)"
+			}
+		},
+		{
+			"title": {
+				"main": "2. My emotion right before doing this survey could be rated as",
+				"alt": "My emotion right before doing this survey could be rated as"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "very calm (-3)",
+				"maxLabel": "very excited (+3)"
+			}
+		},
+		{
+			"title": {
+				"main": "3. My stress level right before doing this survey could be rated as",
+				"alt": "My stress level right before doing this survey could be rated as"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "not stressed at all (-3)",
+				"maxLabel": "very stressed (+3)"
+			}
+		},
+		{
+			"title": {
+				"main": "4. The emotion that I answered with above has not changed for the past ___ minutes. (0 ~ 60 min; or type \"I'm not sure.\" if you are not sure)",
+				"alt": "The emotion that I answered with above has not changed for the past ___ minutes. (0 ~ 60 min; or type \"I'm not sure.\" if you are not sure)"
+			},
+			"isOtherShown": true,
+			"option": {
+				"type": "SLIDER",
+				"min":  0.0,
+				"max":  60.0
+			}
+		},
+		{
+			"title": {
+				"main": "5. My attention level right before doing this survey could be rated as",
+				"alt": "My attention level right before doing this survey could be rated as"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "very bored (-3)",
+				"maxLabel": "very engaged (+3)"
+			}
+		},
+		{
+			"title": {
+				"main": "6. Did answering this survey disturb the activity that I was performing before doing it?",
+				"alt": "Did answering this survey disturb the activity that I was performing before doing it?"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "did not disturb at all (-3)",
+				"maxLabel": "it was very disturbing (+3)"
+			}
+		},
+		{
+			"title": {
+				"main": "7. How mentally demanding was my activity before doing this survey?",
+				"alt": "How mentally demanding was my activity before doing this survey?"
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "very low (-3)",
+				"maxLabel": "very high (+3)"
+			}
+		},
+		{
+			"title": {
+				"main": "8. My emotion *right now* (while doing this survey) could be rated as ",
+				"alt": "My emotion *right now* (while doing this survey) could be rated as "
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "very negative (-3)",
+				"maxLabel": "very positive (+3)"
+			}
+		},
+		{
+			"title": {
+				"main": "9. My emotion *right now* (while doing this survey) could be rated as ",
+				"alt": "My emotion *right now* (while doing this survey) could be rated as "
+			},
+			"isOtherShown": false,
+			"option": {
+				"type": "LINEAR_SCALE",
+				"min": -3.0,
+				"max":  3.0,
+				"step": 1.0,
+				"defaultValue": 0.0,
+				"minLabel": "very calm (-3)",
+				"maxLabel": "very excited (+3)"
+			}
+		}
+	],
+	"timeout": {
+		"amount": 15,
+		"unit": "MINUTE"
+	},
+	"timeoutAction": "DISABLED",
+	"timeFrom": {
+		"amount": -1,
+		"unit": "HOUR"
+	},
+	"timeTo": {
+		"amount": -1,
+		"unit": "HOUR"
+	},
+	"interDaySchedule": {
+		"type": "DAILY"
+	},
+	"intraDaySchedule": {
+		"type": "INTERVAL",
+		"timeFrom": {
+			"hour": 9,
+			"minute": 0,
+			"second": 0
+		},
+		"timeTo": {
+			"hour": 21,
+			"minute": 0,
+			"second": 0
+		},
+		"intervalDefault": {
+			"amount": 30,
+			"unit": "MINUTE"
+		},
+		"intervalFlex": {
+			"amount": 60,
+			"unit": "MINUTE"
+		}
+	}
+}
