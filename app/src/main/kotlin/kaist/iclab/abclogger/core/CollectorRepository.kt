@@ -37,9 +37,7 @@ class CollectorRepository(vararg collector: AbstractCollector<*>) {
 
     fun restart() = collectors.forEach {
         if (it.getStatus() != Status.Off) {
-            if (it.javaClass.simpleName != "PolarH10Collector") {
-                it.start()
-            }
+            it.start()
         } else {
             it.stop()
         }

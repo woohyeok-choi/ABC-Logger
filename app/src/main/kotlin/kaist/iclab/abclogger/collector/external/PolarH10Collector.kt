@@ -369,6 +369,7 @@ class PolarH10Collector(
         }
 
         override fun onError(identifier: String, throwable: Throwable) {
+            deviceConnectionStatus = ACCIDENTALLY_DISCONNECTED
             launch { throw throwable }
         }
     }
@@ -392,7 +393,7 @@ class PolarH10Collector(
         R.string.collector_polar_h10_info_name with deviceName,
         R.string.collector_polar_h10_info_address with deviceAddress,
         R.string.collector_polar_h10_info_battery with (deviceBatteryLevel.takeIf { it >= 0 } ?: ""),
-        R.string.collector_polar_h10_info_rssi with (deviceRssi.takeIf { it >= 0 } ?: "")
+        R.string.collector_polar_h10_info_rssi with (deviceRssi.takeIf { it <= 0 } ?: "")
     )
 
     override suspend fun onStart() {
@@ -436,11 +437,13 @@ class PolarH10Collector(
         )
 
         deviceConnectionStatus = DISCONNECTED_BY_USER
+        deviceRssi = 0
         context.safeUnregisterReceiver(receiver)
 
         try {
             api.disconnect(deviceId)
         } catch (e: Exception) {
+            deviceConnectionStatus = ACCIDENTALLY_DISCONNECTED
             Log.d(javaClass, "onStop(): $e")
         }
 
