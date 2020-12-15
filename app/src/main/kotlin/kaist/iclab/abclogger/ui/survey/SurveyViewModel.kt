@@ -198,7 +198,7 @@ class SurveyViewModel(
         responses: List<InternalResponseEntity>
     ) = SurveyEntity(
             eventTime = survey.eventTime,
-            eventName = survey.eventName,
+            eventName = survey.uuid,        // TODO: temporary changed. the original was survey.eventName
             intendedTriggerTime = survey.intendedTriggerTime,
             actualTriggerTime = survey.actualTriggerTime,
             reactionTime = survey.reactionTime,
