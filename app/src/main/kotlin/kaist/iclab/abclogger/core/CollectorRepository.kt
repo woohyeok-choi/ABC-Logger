@@ -79,7 +79,7 @@ class CollectorRepository(vararg collector: AbstractCollector<*>) {
     }
 
     companion object {
-        private fun restart(context: Context, timestamp: Long, action: String? = null) {
+        internal fun restart(context: Context, timestamp: Long, action: String? = null) {
             if (isServiceRunning<ForegroundService>(context)) return
 
             val intent = DeviceEventCollector.fillBootEvent(

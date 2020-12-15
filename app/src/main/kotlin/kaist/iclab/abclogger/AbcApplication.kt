@@ -2,6 +2,8 @@ package kaist.iclab.abclogger
 
 import android.app.Application
 import github.agustarc.koap.Koap
+import kaist.iclab.abclogger.commons.isServiceRunning
+import kaist.iclab.abclogger.core.CollectorRepository
 import kaist.iclab.abclogger.core.Log
 import kaist.iclab.abclogger.core.NotificationRepository
 import kaist.iclab.abclogger.core.Preference
@@ -34,6 +36,9 @@ class AbcApplication : Application() {
                  */
             }
         }
+
+        if (isServiceRunning<CollectorRepository.ForegroundService>(applicationContext)) return
+        CollectorRepository.restart(applicationContext, System.currentTimeMillis())
     }
 
     override fun onTerminate() {

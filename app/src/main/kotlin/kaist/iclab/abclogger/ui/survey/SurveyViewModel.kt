@@ -139,7 +139,6 @@ class SurveyViewModel(
                 appId = AuthRepository.appId
                 appVersion = AuthRepository.appVersion
             }
-            //val answeredSurveyEntity = getDefaultInstance()
             dataRepository.put(answeredSurveyEntity)
             EventBus.post(answeredSurveyEntity)
             Log.d(javaClass, answeredSurveyEntity)
