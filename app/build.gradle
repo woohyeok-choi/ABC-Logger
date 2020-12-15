@@ -47,8 +47,8 @@ android {
         minSdkVersion 23
         targetSdkVersion 30
 
-        versionCode 39
-        versionName "0.9.9-kappa"
+        versionCode 40
+        versionName "0.9.9-lambda"
         setProperty("archivesBaseName", "$applicationId-v.$versionName")
         buildConfigField("Boolean", "GENERATE_DUMMY_ENTITY", "false")
         buildConfigField("String", "SERVER_ADDRESS", "\"${rootProject.ext.server_address}\"")
