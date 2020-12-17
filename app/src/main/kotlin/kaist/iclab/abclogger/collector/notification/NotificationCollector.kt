@@ -41,31 +41,9 @@ class NotificationCollector(
 
     override fun getDescription(): Array<Description> = arrayOf()
 
-    override suspend fun onStart() {
-        put(
-            DeviceEventEntity(
-                eventType = javaClass.simpleName.toString(),
-                extras = mapOf(
-                    "status" to "On"
-                )
-            ).apply {
-                this.timestamp = System.currentTimeMillis()
-            }
-        )
-    }
+    override suspend fun onStart() {    }
 
-    override suspend fun onStop() {
-        put(
-            DeviceEventEntity(
-                eventType = javaClass.simpleName.toString(),
-                extras = mapOf(
-                    "status" to "Off"
-                )
-            ).apply {
-                this.timestamp = System.currentTimeMillis()
-            }
-        )
-    }
+    override suspend fun onStop() {    }
 
     override suspend fun count(): Long = dataRepository.count<NotificationEntity>()
 

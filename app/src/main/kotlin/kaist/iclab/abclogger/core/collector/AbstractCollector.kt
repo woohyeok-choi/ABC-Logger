@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.annotation.WorkerThread
+import kaist.iclab.abclogger.collector.event.DeviceEventEntity
 import kaist.iclab.abclogger.commons.*
 import kaist.iclab.abclogger.core.*
 import kotlinx.coroutines.*
@@ -137,6 +138,13 @@ abstract class AbstractCollector<E : AbstractEntity>(
 
         launch {
             onStart()
+
+            put(
+                DeviceEventEntity(
+                    eventType = javaClass.simpleName.toString(),
+                    extras = mapOf( "status" to "On")
+                ).apply { this.timestamp = System.currentTimeMillis() }
+            )
         }
     }
 
@@ -151,6 +159,13 @@ abstract class AbstractCollector<E : AbstractEntity>(
         statusChannel.offer(getStatus())
 
         launch {
+            put(
+                DeviceEventEntity(
+                    eventType = javaClass.simpleName.toString(),
+                    extras = mapOf( "status" to "Off")
+                ).apply { this.timestamp = System.currentTimeMillis() }
+            )
+
             onStop()
             if (throwable != null) throw throwable
         }

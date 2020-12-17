@@ -80,31 +80,9 @@ class ActivityCollector(
         })
 
         client.requestActivityUpdates(TimeUnit.SECONDS.toMillis(15), activityIntent)
-
-        put(
-            DeviceEventEntity(
-                eventType = javaClass.simpleName.toString(),
-                extras = mapOf(
-                    "status" to "On"
-                )
-            ).apply {
-                this.timestamp = System.currentTimeMillis()
-            }
-        )
     }
 
     override suspend fun onStop() {
-        put(
-            DeviceEventEntity(
-                eventType = javaClass.simpleName.toString(),
-                extras = mapOf(
-                    "status" to "Off"
-                )
-            ).apply {
-                this.timestamp = System.currentTimeMillis()
-            }
-        )
-
         context.safeUnregisterReceiver(receiver)
 
         client.removeActivityUpdates(activityIntent)
