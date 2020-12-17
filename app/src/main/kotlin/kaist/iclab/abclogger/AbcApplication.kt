@@ -37,7 +37,6 @@ class AbcApplication : Application() {
             }
         }
 
-        if (isServiceRunning<CollectorRepository.ForegroundService>(applicationContext)) return
         CollectorRepository.restart(applicationContext, System.currentTimeMillis())
     }
 
