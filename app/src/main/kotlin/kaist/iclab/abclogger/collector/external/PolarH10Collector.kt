@@ -397,9 +397,8 @@ class PolarH10Collector(
     )
 
     override suspend fun onStart() {
-        if (deviceConnectionStatus != CONNECTED) {
-            api.connect(deviceId)
-        }
+        //if (deviceConnectionStatus != CONNECTED) {}
+        api.connect(deviceId)
         context.safeRegisterReceiver(receiver, IntentFilter().apply {
             addAction(ACTION_CHECK_CONNECTION_STATUS)
         })
@@ -408,34 +407,12 @@ class PolarH10Collector(
             10, TimeUnit.SECONDS
         ).toFlowable(BackpressureStrategy.BUFFER).asFlow().collect { entities ->
             entities.forEach {
-                put(it)
+                launch { put(it) }
             }
         }
-
-        put(
-            DeviceEventEntity(
-                eventType = javaClass.simpleName.toString(),
-                extras = mapOf(
-                    "status" to "On"
-                )
-            ).apply {
-                this.timestamp = System.currentTimeMillis()
-            }
-        )
     }
 
     override suspend fun onStop() {
-        put(
-            DeviceEventEntity(
-                eventType = javaClass.simpleName.toString(),
-                extras = mapOf(
-                    "status" to "Off"
-                )
-            ).apply {
-                this.timestamp = System.currentTimeMillis()
-            }
-        )
-
         deviceConnectionStatus = DISCONNECTED_BY_USER
         deviceRssi = 0
         context.safeUnregisterReceiver(receiver)

@@ -9,6 +9,7 @@ import io.objectbox.query.Query
 import io.objectbox.query.QueryBuilder
 import kaist.iclab.abclogger.collector.MyObjectBox
 import kaist.iclab.abclogger.commons.EntityError
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -34,8 +35,8 @@ class DataRepository(private val context: Context) {
             val dbName = "$DEFAULT_DB_NAME-${Preference.dbNameSuffix}"
             val dbVersion = Preference.dbVersion
             try {
-                boxStore = boxStore?.takeUnless { it.isClosed } ?: mutex.withLock {
-                    buildBoxStore(
+                boxStore = mutex.withLock {
+                    boxStore?.takeUnless { it.isClosed } ?: buildBoxStore(
                         versionOrder = dbVersion, dbName = dbName
                     )
                 }
@@ -57,6 +58,7 @@ class DataRepository(private val context: Context) {
                 throwable = e
                 Log.e(javaClass, e)
             }
+            delay(1000)
         }
 
         if (throwable != null) {

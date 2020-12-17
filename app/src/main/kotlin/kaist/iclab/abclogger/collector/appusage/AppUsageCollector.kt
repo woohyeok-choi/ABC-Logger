@@ -84,31 +84,9 @@ class AppUsageCollector(
             TimeUnit.MINUTES.toMillis(30),
             intent
         )
-
-        put(
-            DeviceEventEntity(
-                eventType = javaClass.simpleName.toString(),
-                extras = mapOf(
-                    "status" to "On"
-                )
-            ).apply {
-                this.timestamp = System.currentTimeMillis()
-            }
-        )
     }
 
     override suspend fun onStop() {
-        put(
-            DeviceEventEntity(
-                eventType = javaClass.simpleName.toString(),
-                extras = mapOf(
-                    "status" to "Off"
-                )
-            ).apply {
-                this.timestamp = System.currentTimeMillis()
-            }
-        )
-
         context.safeUnregisterReceiver(receiver)
         alarmManager.cancel(intent)
     }
